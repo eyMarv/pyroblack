@@ -17,6 +17,8 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from pyrogram import types
+
 from ..object import Object
 
 
@@ -35,15 +37,43 @@ class RequestPeerTypeChat(Object):
 
         is_forum (``bool``, *optional*):
             If True, show only Chat which is a forum.
-    """  # TODO user_admin_rights, bot_admin_rights
+
+        max (``int``, *optional*):
+            Maximum number of chats to be returned.
+            default 1.
+
+        is_name_requested (``bool``, *optional*):
+            If True, Chat name is requested.
+            default True.
+
+        is_username_requested (``bool``, *optional*):
+            If True, Chat username is requested.
+            default True.
+
+        is_photo_requested (``bool``, *optional*):
+            If True, Chat photo is requested.
+            default True.
+
+        user_privileges (:obj:`~pyrogram.types.ChatPrivileges`, *optional*):
+            Privileged actions that an user administrator is able to take.
+
+        bot_privileges (:obj:`~pyrogram.types.ChatPrivileges`, *optional*):
+            Privileged actions that a bot administrator is able to take.
+    """ # TODO user_admin_rights, bot_admin_rights
 
     def __init__(
         self,
+        button_id: int = 0,
         is_creator: bool = None,
         is_bot_participant: bool = None,
         is_username: bool = None,
         is_forum: bool = None,
         max: int = 1,
+        is_name_requested: bool = True,
+        is_username_requested: bool = True,
+        is_photo_requested: bool = True,
+        user_privileges: "types.ChatPrivileges" = None,
+        bot_privileges: "types.ChatPrivileges" = None
     ):
         super().__init__()
 
@@ -52,3 +82,8 @@ class RequestPeerTypeChat(Object):
         self.is_username = is_username
         self.is_forum = is_forum
         self.max = max
+        self.is_name_requested = is_name_requested
+        self.is_username_requested = is_username_requested
+        self.is_photo_requested = is_photo_requested
+        self.user_privileges = user_privileges
+        self.bot_privileges = bot_privileges
