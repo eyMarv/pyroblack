@@ -32,6 +32,7 @@ from .payments import Payments
 from .phone import Phone
 from .pyromod import Pyromod
 from .stickers import Stickers
+from .phone import Phone
 from .users import Users
 from .utilities import Utilities
 
