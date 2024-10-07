@@ -21,7 +21,7 @@ from typing import List, Union
 import pyrogram
 
 from ..object import Object
-from pyrogram import raw, types, utils
+from pyrogram import raw, types, utils, enums
 from typing import Union, List
 
 
