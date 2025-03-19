@@ -85,27 +85,12 @@ class Message(Object, Update):
         chat (:obj:`~pyrogram.types.Chat`, *optional*):
             Conversation the message belongs to.
 
-        topics (:obj:`~pyrogram.types.ForumTopic`, *optional*):
+        topic (:obj:`~pyrogram.types.ForumTopic`, *optional*):
             Topic the message belongs to.
             only returned using when client.get_messages.
 
-        forward_from (:obj:`~pyrogram.types.User`, *optional*):
-            For forwarded messages, sender of the original message.
-
-        forward_sender_name (``str``, *optional*):
-            For messages forwarded from users who have hidden their accounts, name of the user.
-
-        forward_from_chat (:obj:`~pyrogram.types.Chat`, *optional*):
-            For messages forwarded from channels, information about the original channel. For messages forwarded from anonymous group administrators, information about the original supergroup.
-
-        forward_from_message_id (``int``, *optional*):
-            For messages forwarded from channels, identifier of the original message in the channel.
-
-        forward_signature (``str``, *optional*):
-            For messages forwarded from channels, signature of the post author if present.
-
-        forward_date (:py:obj:`~datetime.datetime`, *optional*):
-            For forwarded messages, date the original message was sent.
+        forward_origin (:obj:`~pyrogram.types.MessageOrigin`, *optional*):
+            Information about the original message for forwarded messages.
 
         is_topic_message (``bool``, *optional*):
             True, if the message is sent to a forum topic
@@ -188,11 +173,8 @@ class Message(Object, Update):
             For messages with a caption, special entities like usernames, URLs, bot commands, etc. that appear
             in the caption.
 
-        quote_text (``str``, *optional*):
-            Quoted reply text.
-
-        quote_entities (List of :obj:`~pyrogram.types.MessageEntity`, *optional*):
-            For quote text, special entities like usernames, URLs, bot commands, etc. that appear in the quote text.
+        quote (:obj:`~pyrogram.types.TextQuote`, *optional*):
+            Chosen quote from the replied message.
 
         effect_id (``str``, *optional*):
             Unique identifier of the message effect added to the message.
@@ -465,13 +447,8 @@ class Message(Object, Update):
         sender_business_bot: "types.User" = None,
         date: datetime = None,
         chat: "types.Chat" = None,
-        topics: "types.ForumTopic" = None,
-        forward_from: "types.User" = None,
-        forward_sender_name: str = None,
-        forward_from_chat: "types.Chat" = None,
-        forward_from_message_id: int = None,
-        forward_signature: str = None,
-        forward_date: datetime = None,
+        topic: "types.ForumTopic" = None,
+        forward_origin: "types.MessageOrigin" = None,
         is_topic_message: bool = None,
         reply_to_chat_id: int = None,
         reply_to_message_id: int = None,
@@ -496,8 +473,7 @@ class Message(Object, Update):
         text: Str = None,
         entities: List["types.MessageEntity"] = None,
         caption_entities: List["types.MessageEntity"] = None,
-        quote_text: str = None,
-        quote_entities: List["types.MessageEntity"] = None,
+        quote: "types.TextQuote" = None,
         effect_id: str = None,
         invert_media: bool = None,
         audio: "types.Audio" = None,
@@ -585,13 +561,8 @@ class Message(Object, Update):
         self.sender_business_bot = sender_business_bot
         self.date = date
         self.chat = chat
-        self.topics = topics
-        self.forward_from = forward_from
-        self.forward_sender_name = forward_sender_name
-        self.forward_from_chat = forward_from_chat
-        self.forward_from_message_id = forward_from_message_id
-        self.forward_signature = forward_signature
-        self.forward_date = forward_date
+        self.topic = topic
+        self.forward_origin = forward_origin
         self.is_topic_message = is_topic_message
         self.reply_to_chat_id = reply_to_chat_id
         self.reply_to_message_id = reply_to_message_id
@@ -616,8 +587,7 @@ class Message(Object, Update):
         self.text = text
         self.entities = entities
         self.caption_entities = caption_entities
-        self.quote_text = quote_text
-        self.quote_entities = quote_entities
+        self.quote = quote
         self.effect_id = effect_id
         self.invert_media = invert_media
         self.audio = audio
@@ -734,7 +704,7 @@ class Message(Object, Update):
         message: raw.base.Message,
         users: dict,
         chats: dict,
-        topics: dict = None,
+        topic: dict = None,
         is_scheduled: bool = False,
         business_connection_id: str = None,
         replies: int = 1,
@@ -971,7 +941,7 @@ class Message(Object, Update):
                 message_thread_id=message_thread_id,
                 date=utils.timestamp_to_datetime(message.date),
                 chat=types.Chat._parse(client, message, users, chats, is_chat=True),
-                topics=None,
+                topic=None,
                 from_user=from_user,
                 service=service_type,
                 new_chat_members=new_chat_members,
@@ -1094,35 +1064,18 @@ class Message(Object, Update):
             entities = types.List(filter(lambda x: x is not None, entities))
 
             sender_business_bot = None
-            forward_from = None
-            forward_sender_name = None
-            forward_from_chat = None
-            forward_from_message_id = None
-            forward_signature = None
-            forward_date = None
             is_topic_message = None
 
             forward_header = message.fwd_from  # type: raw.types.MessageFwdHeader
+            forward_origin = None
 
             if forward_header:
-                forward_date = utils.timestamp_to_datetime(forward_header.date)
-                try:
-                    if forward_header.from_id:
-                        raw_peer_id = utils.get_raw_peer_id(forward_header.from_id)
-                        peer_id = utils.get_peer_id(forward_header.from_id)
-
-                        if peer_id > 0:
-                            forward_from = types.User._parse(client, users[raw_peer_id])
-                        else:
-                            forward_from_chat = types.Chat._parse_channel_chat(
-                                client, chats[raw_peer_id]
-                            )
-                            forward_from_message_id = forward_header.channel_post
-                            forward_signature = forward_header.post_author
-                    elif forward_header.from_name:
-                        forward_sender_name = forward_header.from_name
-                except Exception:
-                    pass  # sometimes, peer not found
+                forward_origin = types.MessageOrigin._parse(
+                client,
+                forward_header,
+                users,
+                chats,
+                )
 
             photo = None
             paid_media = None
@@ -1332,7 +1285,7 @@ class Message(Object, Update):
                 business_connection_id=business_connection_id,
                 date=utils.timestamp_to_datetime(message.date),
                 chat=types.Chat._parse(client, message, users, chats, is_chat=True),
-                topics=None,
+                topic=None,
                 from_user=from_user,
                 sender_business_bot=sender_business_bot,
                 text=(
@@ -1358,12 +1311,7 @@ class Message(Object, Update):
                 author_signature=message.post_author,
                 has_protected_content=message.noforwards,
                 has_media_spoiler=has_media_spoiler,
-                forward_from=forward_from,
-                forward_sender_name=forward_sender_name,
-                forward_from_chat=forward_from_chat,
-                forward_from_message_id=forward_from_message_id,
-                forward_signature=forward_signature,
-                forward_date=forward_date,
+                forward_origin=forward_origin,
                 is_topic_message=is_topic_message,
                 mentioned=message.mentioned,
                 scheduled=is_scheduled,
@@ -1414,14 +1362,11 @@ class Message(Object, Update):
 
             if message.reply_to:
                 if isinstance(message.reply_to, raw.types.MessageReplyHeader):
-                    parsed_message.quote_text = message.reply_to.quote_text
-                    if len(message.reply_to.quote_entities) > 0:
-                        quote_entities = [
-                            types.MessageEntity._parse(client, entity, users)
-                            for entity in message.reply_to.quote_entities
-                        ]
-                        parsed_message.quote_entities = types.List(
-                            filter(lambda x: x is not None, quote_entities)
+                    if message.reply_to.quote:
+                        parsed_message.quote = types.TextQuote._parse(
+                            client,
+                            users,
+                            message.reply_to
                         )
                     if message.reply_to.forum_topic:
                         if message.reply_to.reply_to_top_id:
@@ -1433,17 +1378,17 @@ class Message(Object, Update):
                             thread_id = message.reply_to.reply_to_msg_id
                         parsed_message.message_thread_id = thread_id
                         parsed_message.is_topic_message = True
-                        if topics:
-                            parsed_message.topics = types.ForumTopic._parse(
-                                topics[thread_id]
+                        if topic:
+                            parsed_message.topic = types.ForumTopic._parse(
+                                topic[thread_id]
                             )
                         else:
                             try:
                                 msg = await client.get_messages(
                                     parsed_message.chat.id, message.id
                                 )
-                                if getattr(msg, "topics"):
-                                    parsed_message.topics = msg.topics
+                                if getattr(msg, "topic"):
+                                    parsed_message.topic = msg.topic
                             except Exception:
                                 pass
                     else:
@@ -1547,6 +1492,60 @@ class Message(Object, Update):
     @property
     def content(self) -> str:
         return self.text or self.caption or Str("").init([])
+
+    # region Deprecated
+    # TODO: Remove later
+    @property
+    def forward_from(self) -> Optional["types.User"]:
+        log.warning(
+            "`message.forward_from` is deprecated and will be removed in future updates. Use `message.forward_origin.sender_user` instead."
+        )
+        return getattr(self.forward_origin, "sender_user", None)
+
+    @property
+    def forward_sender_name(self) -> Optional[str]:
+        log.warning(
+            "`message.forward_sender_name` property is deprecated and will be removed in future updates. Use `message.forward_origin.sender_user_name` instead."
+        )
+        return getattr(self.forward_origin, "sender_user_name", None)
+
+    @property
+    def forward_from_chat(self) -> Optional["types.Chat"]:
+        log.warning(
+            "`message.forward_from_chat` property is deprecated and will be removed in future updates. Use `message.forward_origin.chat.sender_chat` instead."
+        )
+        return getattr(
+            self.forward_origin,
+            "chat",
+            getattr(
+                self.forward_origin,
+                "sender_chat",
+                None
+            )
+        )
+
+    @property
+    def forward_from_message_id(self) -> Optional[int]:
+        log.warning(
+            "`message.forward_from_message_id` property is deprecated and will be removed in future updates. Use `message.forward_origin.message_id` instead."
+        )
+        return getattr(self.forward_origin, "message_id", None)
+
+    @property
+    def forward_signature(self) -> Optional[str]:
+        log.warning(
+            "`message.forward_signature` property is deprecated and will be removed in future updates. Use `message.forward_origin.author_signature` instead."
+        )
+        return getattr(self.forward_origin, "author_signature", None)
+
+    @property
+    def forward_date(self) -> Optional[datetime]:
+        log.warning(
+            "`message.forward_date` property is deprecated and will be removed in future updates. Use `message.forward_origin.date` instead."
+        )
+        return getattr(self.forward_origin, "date", None)
+
+    # endregion
 
     async def get_media_group(self) -> List["types.Message"]:
         """Bound method *get_media_group* of :obj:`~pyrogram.types.Message`.

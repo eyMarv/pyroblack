@@ -28,6 +28,7 @@ from .client_platform import ClientPlatform
 from .folder_color import FolderColor
 from .message_entity_type import MessageEntityType
 from .message_media_type import MessageMediaType
+from .message_origin_type import MessageOriginType
 from .message_service_type import MessageServiceType
 from .messages_filter import MessagesFilter
 from .next_code_type import NextCodeType
@@ -44,29 +45,30 @@ from .story_privacy import StoryPrivacy
 from .user_status import UserStatus
 
 __all__ = [
-    "BusinessSchedule",
-    "ChatAction",
-    "ChatEventAction",
-    "ChatJoinType",
-    "ChatMemberStatus",
-    "ChatMembersFilter",
-    "ChatType",
-    "ClientPlatform",
-    "FolderColor",
-    "ListenerTypes",
-    "MessageEntityType",
-    "MessageMediaType",
-    "MessageServiceType",
-    "MessagesFilter",
-    "NextCodeType",
+    'BusinessSchedule',
+    'ChatAction', 
+    'ChatEventAction', 
+    'ChatJoinType',
+    'ChatMemberStatus', 
+    'ChatMembersFilter', 
+    'ChatType', 
+    'ClientPlatform',
+    'FolderColor',
+    'ListenerTypes',
+    'MessageEntityType', 
+    'MessageMediaType',
+    'MessageOriginType',
+    'MessageServiceType', 
+    'MessagesFilter', 
+    'NextCodeType',
     "PaidReactionPrivacy",
-    "ParseMode",
-    "PollType",
+    'ParseMode', 
+    'PollType',
     "PrivacyKey",
-    "ProfileColor",
-    "ReactionType",
-    "ReplyColor",
-    "SentCodeType",
+    'ProfileColor',
+    'ReactionType',
+    'ReplyColor',
+    'SentCodeType',
     "StoriesPrivacyRules",
     "StoryPrivacy",
     "UserStatus",
