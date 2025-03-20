@@ -522,6 +522,7 @@ def pyrogram_api():
             MessageOriginChannel
             MessageOriginChat
             MessageOriginHiddenUser
+            MessageOriginImport
             MessageOriginUser
             MessageOrigin
             Photo
