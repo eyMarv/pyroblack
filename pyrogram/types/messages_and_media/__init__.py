@@ -26,6 +26,7 @@ from .available_effect import AvailableEffect
 from .contact import Contact
 from .dice import Dice
 from .document import Document
+from .external_reply_info import ExternalReplyInfo
 from .exported_story_link import ExportedStoryLink
 from .extended_media_preview import ExtendedMediaPreview
 from .game import Game
@@ -90,6 +91,7 @@ __all__ = [
     "Contact",
     "CheckedGiftCode",
     "Document",
+    "ExternalReplyInfo",
     "ExtendedMediaPreview",
     "Game",
     "Giveaway",
