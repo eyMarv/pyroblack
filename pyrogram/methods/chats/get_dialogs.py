@@ -20,6 +20,7 @@ from typing import AsyncGenerator, Optional
 
 import pyrogram
 from pyrogram import types, raw, utils
+
 # noinspection PyUnresolvedReferences
 from pyrogram.errors import ChannelPrivate
 

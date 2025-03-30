@@ -25,6 +25,7 @@ import pyrogram
 from pyrogram import raw, enums
 from pyrogram import types
 from pyrogram import utils
+
 # noinspection PyUnresolvedReferences
 from pyrogram.errors import MessageIdsEmpty
 from ..object import Object
@@ -34,174 +35,174 @@ class Chat(Object):
     # noinspection PyUnresolvedReferences
     """A chat.
 
-        Parameters:
-            id (``int``):
-                Unique identifier for this chat.
+    Parameters:
+        id (``int``):
+            Unique identifier for this chat.
 
-            type (:obj:`~pyrogram.enums.ChatType`):
-                Type of chat.
+        type (:obj:`~pyrogram.enums.ChatType`):
+            Type of chat.
 
-            is_verified (``bool``, *optional*):
-                True, if this chat has been verified by Telegram. Supergroups, channels and bots only.
+        is_verified (``bool``, *optional*):
+            True, if this chat has been verified by Telegram. Supergroups, channels and bots only.
 
-            is_restricted (``bool``, *optional*):
-                True, if this chat has been restricted. Supergroups, channels and bots only.
-                See *restriction_reason* for details.
+        is_restricted (``bool``, *optional*):
+            True, if this chat has been restricted. Supergroups, channels and bots only.
+            See *restriction_reason* for details.
 
-            is_creator (``bool``, *optional*):
-                True, if this chat owner is the current user. Supergroups, channels and groups only.
+        is_creator (``bool``, *optional*):
+            True, if this chat owner is the current user. Supergroups, channels and groups only.
 
-            is_scam (``bool``, *optional*):
-                True, if this chat has been flagged for scam.
+        is_scam (``bool``, *optional*):
+            True, if this chat has been flagged for scam.
 
-            is_fake (``bool``, *optional*):
-                True, if this chat has been flagged for impersonation.
+        is_fake (``bool``, *optional*):
+            True, if this chat has been flagged for impersonation.
 
-            is_support (``bool``):
-                True, if this chat is part of the Telegram support team. Users and bots only.
+        is_support (``bool``):
+            True, if this chat is part of the Telegram support team. Users and bots only.
 
-            is_forum (``bool``, *optional*):
-                True, if the supergroup chat is a forum
+        is_forum (``bool``, *optional*):
+            True, if the supergroup chat is a forum
 
-            is_participants_hidden (``bool``, *optional*):
-                True, if the chat members are hidden.
-                Returned only in :meth:`~pyrogram.Client.get_chat`.
+        is_participants_hidden (``bool``, *optional*):
+            True, if the chat members are hidden.
+            Returned only in :meth:`~pyrogram.Client.get_chat`.
 
-            is_join_request (``bool``, *optional*):
-                True, if the admin need to approve member(s) join request.
+        is_join_request (``bool``, *optional*):
+            True, if the admin need to approve member(s) join request.
 
-            is_join_to_send (``bool``, *optional*):
-                True, if only chat members allowed to send message in chat.
+        is_join_to_send (``bool``, *optional*):
+            True, if only chat members allowed to send message in chat.
 
-            is_slowmode_enabled (``bool``, *optional*):
-                True, if slowmode is enabled in chat.
+        is_slowmode_enabled (``bool``, *optional*):
+            True, if slowmode is enabled in chat.
 
-            is_antispam (``bool``, *optional*):
-                True, if Aggressive Anti-Spam is enabled in chat.
-                Returned only in :meth:`~pyrogram.Client.get_chat`.
+        is_antispam (``bool``, *optional*):
+            True, if Aggressive Anti-Spam is enabled in chat.
+            Returned only in :meth:`~pyrogram.Client.get_chat`.
 
-            is_paid_reactions_available (``bool``, *optional*):
-                True, if paid reactions enabled in this chat.
+        is_paid_reactions_available (``bool``, *optional*):
+            True, if paid reactions enabled in this chat.
 
-            title (``str``, *optional*):
-                Title, for supergroups, channels and basic group chats.
+        title (``str``, *optional*):
+            Title, for supergroups, channels and basic group chats.
 
-            username (``str``, *optional*):
-                Username, for private chats, bots, supergroups and channels if available.
+        username (``str``, *optional*):
+            Username, for private chats, bots, supergroups and channels if available.
 
-            first_name (``str``, *optional*):
-                First name of the other party in a private chat, for private chats and bots.
+        first_name (``str``, *optional*):
+            First name of the other party in a private chat, for private chats and bots.
 
-            last_name (``str``, *optional*):
-                Last name of the other party in a private chat, for private chats.
+        last_name (``str``, *optional*):
+            Last name of the other party in a private chat, for private chats.
 
-            photo (:obj:`~pyrogram.types.ChatPhoto`, *optional*):
-                Chat photo. Suitable for downloads only.
+        photo (:obj:`~pyrogram.types.ChatPhoto`, *optional*):
+            Chat photo. Suitable for downloads only.
 
-            stories (List of :obj:`~pyrogram.types.Story`, *optional*):
-                The list of chat's stories if available.
+        stories (List of :obj:`~pyrogram.types.Story`, *optional*):
+            The list of chat's stories if available.
 
-            wallpaper (:obj:`~pyrogram.types.Document`, *optional*):
-                Chat wallpaper.
+        wallpaper (:obj:`~pyrogram.types.Document`, *optional*):
+            Chat wallpaper.
 
-            bio (``str``, *optional*):
-                Bio of the other party in a private chat.
-                Returned only in :meth:`~pyrogram.Client.get_chat`.
+        bio (``str``, *optional*):
+            Bio of the other party in a private chat.
+            Returned only in :meth:`~pyrogram.Client.get_chat`.
 
-            description (``str``, *optional*):
-                Description, for groups, supergroups and channel chats.
-                Returned only in :meth:`~pyrogram.Client.get_chat`.
+        description (``str``, *optional*):
+            Description, for groups, supergroups and channel chats.
+            Returned only in :meth:`~pyrogram.Client.get_chat`.
 
-            dc_id (``int``, *optional*):
-                The chat assigned DC (data center). Available only in case the chat has a photo.
-                Note that this information is approximate; it is based on where Telegram stores the current chat photo.
-                It is accurate only in case the owner has set the chat photo, otherwise the dc_id will be the one assigned
-                to the administrator who set the current chat photo.
+        dc_id (``int``, *optional*):
+            The chat assigned DC (data center). Available only in case the chat has a photo.
+            Note that this information is approximate; it is based on where Telegram stores the current chat photo.
+            It is accurate only in case the owner has set the chat photo, otherwise the dc_id will be the one assigned
+            to the administrator who set the current chat photo.
 
-            folder_id (``int``, *optional*):
-                The folder identifier where the chat is located.
+        folder_id (``int``, *optional*):
+            The folder identifier where the chat is located.
 
-            has_protected_content (``bool``, *optional*):
-                True, if messages from the chat can't be forwarded to other chats.
+        has_protected_content (``bool``, *optional*):
+            True, if messages from the chat can't be forwarded to other chats.
 
-            invite_link (``str``, *optional*):
-                Chat invite link, for groups, supergroups and channels.
-                Returned only in :meth:`~pyrogram.Client.get_chat`.
+        invite_link (``str``, *optional*):
+            Chat invite link, for groups, supergroups and channels.
+            Returned only in :meth:`~pyrogram.Client.get_chat`.
 
-            pinned_message (:obj:`~pyrogram.types.Message`, *optional*):
-                Pinned message, for groups, supergroups channels and own chat.
-                Returned only in :meth:`~pyrogram.Client.get_chat`.
+        pinned_message (:obj:`~pyrogram.types.Message`, *optional*):
+            Pinned message, for groups, supergroups channels and own chat.
+            Returned only in :meth:`~pyrogram.Client.get_chat`.
 
-            sticker_set_name (``str``, *optional*):
-                For supergroups, name of group sticker set.
-                Returned only in :meth:`~pyrogram.Client.get_chat`.
+        sticker_set_name (``str``, *optional*):
+            For supergroups, name of group sticker set.
+            Returned only in :meth:`~pyrogram.Client.get_chat`.
 
-            can_set_sticker_set (``bool``, *optional*):
-                True, if the group sticker set can be changed by you.
-                Returned only in :meth:`~pyrogram.Client.get_chat`.
+        can_set_sticker_set (``bool``, *optional*):
+            True, if the group sticker set can be changed by you.
+            Returned only in :meth:`~pyrogram.Client.get_chat`.
 
-            members_count (``int``, *optional*):
-                Chat members count, for groups, supergroups and channels only.
-                Returned only in :meth:`~pyrogram.Client.get_chat`.
+        members_count (``int``, *optional*):
+            Chat members count, for groups, supergroups and channels only.
+            Returned only in :meth:`~pyrogram.Client.get_chat`.
 
-            slow_mode_delay (``int``, *optional*):
-                For supergroups, the minimum allowed delay between consecutive messages sent by each unpriviledged user in seconds.
-                Returned only in :meth:`~pyrogram.Client.get_chat`.
+        slow_mode_delay (``int``, *optional*):
+            For supergroups, the minimum allowed delay between consecutive messages sent by each unpriviledged user in seconds.
+            Returned only in :meth:`~pyrogram.Client.get_chat`.
 
-            restrictions (List of :obj:`~pyrogram.types.Restriction`, *optional*):
-                The list of reasons why this chat might be unavailable to some users.
-                This field is available only in case *is_restricted* is True.
+        restrictions (List of :obj:`~pyrogram.types.Restriction`, *optional*):
+            The list of reasons why this chat might be unavailable to some users.
+            This field is available only in case *is_restricted* is True.
 
-            permissions (:obj:`~pyrogram.types.ChatPermissions` *optional*):
-                Default chat member permissions, for groups and supergroups.
+        permissions (:obj:`~pyrogram.types.ChatPermissions` *optional*):
+            Default chat member permissions, for groups and supergroups.
 
-            distance (``int``, *optional*):
-                Distance in meters of this group chat from your location.
-                Returned only in :meth:`~pyrogram.Client.get_nearby_chats`.
+        distance (``int``, *optional*):
+            Distance in meters of this group chat from your location.
+            Returned only in :meth:`~pyrogram.Client.get_nearby_chats`.
 
-            linked_chat (:obj:`~pyrogram.types.Chat`, *optional*):
-                The linked discussion group (in case of channels) or the linked channel (in case of supergroups).
-                Returned only in :meth:`~pyrogram.Client.get_chat`.
+        linked_chat (:obj:`~pyrogram.types.Chat`, *optional*):
+            The linked discussion group (in case of channels) or the linked channel (in case of supergroups).
+            Returned only in :meth:`~pyrogram.Client.get_chat`.
 
-            send_as_chat (:obj:`~pyrogram.types.Chat`, *optional*):
-                The default "send_as" chat.
-                Returned only in :meth:`~pyrogram.Client.get_chat`.
+        send_as_chat (:obj:`~pyrogram.types.Chat`, *optional*):
+            The default "send_as" chat.
+            Returned only in :meth:`~pyrogram.Client.get_chat`.
 
-            available_reactions (:obj:`~pyrogram.types.ChatReactions`, *optional*):
-                Available reactions in the chat.
-                Returned only in :meth:`~pyrogram.Client.get_chat`.
+        available_reactions (:obj:`~pyrogram.types.ChatReactions`, *optional*):
+            Available reactions in the chat.
+            Returned only in :meth:`~pyrogram.Client.get_chat`.
 
-            full_name (``str``, *property*):
-                Full name of the other party in a private chat, for private chats and bots.
+        full_name (``str``, *property*):
+            Full name of the other party in a private chat, for private chats and bots.
 
-            usernames (List of :obj:`~pyrogram.types.Username`, *optional*):
-                List of all chat (fragment) usernames; for private chats, supergroups and channels.
-                Returned only in :meth:`~pyrogram.Client.get_chat`.
+        usernames (List of :obj:`~pyrogram.types.Username`, *optional*):
+            List of all chat (fragment) usernames; for private chats, supergroups and channels.
+            Returned only in :meth:`~pyrogram.Client.get_chat`.
 
-            level (``int``, *optional*):
-                Channel boosts level.
-                For channel only.
+        level (``int``, *optional*):
+            Channel boosts level.
+            For channel only.
 
-            reply_color (:obj:`~pyrogram.types.ChatColor`, *optional*):
-                Chat reply color.
+        reply_color (:obj:`~pyrogram.types.ChatColor`, *optional*):
+            Chat reply color.
 
-            profile_color (:obj:`~pyrogram.types.ChatColor`, *optional*):
-                Chat profile color.
+        profile_color (:obj:`~pyrogram.types.ChatColor`, *optional*):
+            Chat profile color.
 
-            business_info (:obj:`~pyrogram.types.BusinessInfo`, *optional*):
-                Business information of a chat.
+        business_info (:obj:`~pyrogram.types.BusinessInfo`, *optional*):
+            Business information of a chat.
 
-            birthday (:obj:`~pyrogram.types.Birthday`, *optional*):
-                User Date of birth.
-                Returned only in :meth:`~pyrogram.Client.get_chat`.
+        birthday (:obj:`~pyrogram.types.Birthday`, *optional*):
+            User Date of birth.
+            Returned only in :meth:`~pyrogram.Client.get_chat`.
 
-            personal_chat (:obj:`~pyrogram.types.Chat`, *optional*):
-                For private chats, the personal channel of the user.
-                Returned only in :meth:`~pyrogram.Client.get_chat`.
+        personal_chat (:obj:`~pyrogram.types.Chat`, *optional*):
+            For private chats, the personal channel of the user.
+            Returned only in :meth:`~pyrogram.Client.get_chat`.
 
-            subscription_until_date (:py:obj:`~datetime.datetime`, *optional*):
-                Date when the subscription will end.
-        """
+        subscription_until_date (:py:obj:`~datetime.datetime`, *optional*):
+            Date when the subscription will end.
+    """
 
     def __init__(
         self,
