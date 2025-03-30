@@ -913,7 +913,9 @@ class Message(Object, Update):
                 join_request_approved = True
                 service_type = enums.MessageServiceType.JOIN_REQUEST_APPROVED
             elif isinstance(action, raw.types.MessageActionGiveawayResults):
-                giveaway_result = await types.GiveawayResult._parse(client, action, True, users, chats)
+                giveaway_result = await types.GiveawayResult._parse(
+                    client, action, True, users, chats
+                )
                 service_type = enums.MessageServiceType.GIVEAWAY_RESULT
             elif isinstance(action, raw.types.MessageActionBoostApply):
                 boosts_applied = action.boosts
@@ -1073,10 +1075,10 @@ class Message(Object, Update):
 
             if forward_header:
                 forward_origin = types.MessageOrigin._parse(
-                client,
-                forward_header,
-                users,
-                chats,
+                    client,
+                    forward_header,
+                    users,
+                    chats,
                 )
 
             photo = None
@@ -1126,7 +1128,9 @@ class Message(Object, Update):
                     giveaway = await types.Giveaway._parse(client, message, chats)
                     media_type = enums.MessageMediaType.GIVEAWAY
                 elif isinstance(media, raw.types.MessageMediaGiveawayResults):
-                    giveaway_result = await types.GiveawayResult._parse(client, message.media, users=users, chats=chats)
+                    giveaway_result = await types.GiveawayResult._parse(
+                        client, message.media, users=users, chats=chats
+                    )
                     media_type = enums.MessageMediaType.GIVEAWAY_RESULT
                 elif isinstance(media, raw.types.MessageMediaStory):
                     story = await types.MessageStory._parse(client, media)
@@ -1272,7 +1276,9 @@ class Message(Object, Update):
                 else None
             )
 
-            reactions = types.MessageReactions._parse(client, message.reactions, users, chats)
+            reactions = types.MessageReactions._parse(
+                client, message.reactions, users, chats
+            )
 
             if message.via_business_bot_id:
                 sender_business_bot = types.User._parse(
@@ -1362,17 +1368,12 @@ class Message(Object, Update):
 
             if message.reply_to:
                 parsed_message.external_reply = await types.ExternalReplyInfo._parse(
-                    client,
-                    message.reply_to,
-                    users,
-                    chats
+                    client, message.reply_to, users, chats
                 )
                 if isinstance(message.reply_to, raw.types.MessageReplyHeader):
                     if message.reply_to.quote:
                         parsed_message.quote = types.TextQuote._parse(
-                            client,
-                            users,
-                            message.reply_to
+                            client, users, message.reply_to
                         )
                     if message.reply_to.forum_topic:
                         if message.reply_to.reply_to_top_id:
@@ -1428,14 +1429,17 @@ class Message(Object, Update):
                 if replies:
                     if parsed_message.reply_to_message_id:
                         try:
-                            key = (parsed_message.chat.id, parsed_message.reply_to_message_id)
+                            key = (
+                                parsed_message.chat.id,
+                                parsed_message.reply_to_message_id,
+                            )
                             reply_to_message = client.message_cache[key]
 
                             if not reply_to_message:
                                 reply_to_message = await client.get_messages(
                                     parsed_message.chat.id,
                                     reply_to_message_ids=message.id,
-                                    replies=replies - 1
+                                    replies=replies - 1,
                                 )
                             if (
                                 reply_to_message
@@ -1510,11 +1514,7 @@ class Message(Object, Update):
         return getattr(
             self.forward_origin,
             "chat",
-            getattr(
-                self.forward_origin,
-                "sender_chat",
-                None
-            )
+            getattr(self.forward_origin, "sender_chat", None),
         )
 
     @property

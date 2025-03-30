@@ -143,7 +143,9 @@ class SendWebPage:
 
         """
 
-        message, entities = (await utils.parse_text_entities(self, text, parse_mode, entities)).values()
+        message, entities = (
+            await utils.parse_text_entities(self, text, parse_mode, entities)
+        ).values()
         if not url:
             if entities:
                 for entity in entities:

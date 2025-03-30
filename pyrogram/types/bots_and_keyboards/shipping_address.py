@@ -65,7 +65,9 @@ class ShippingAddress(Object):
         self.country_code = country_code
 
     @staticmethod
-    def _parse(shipping_address: "raw.types.raw.types.PostAddress") -> "ShippingAddress":
+    def _parse(
+        shipping_address: "raw.types.raw.types.PostAddress",
+    ) -> "ShippingAddress":
         if shipping_address is None:
             return None
 
@@ -75,5 +77,5 @@ class ShippingAddress(Object):
             city=shipping_address.city,
             state=shipping_address.state,
             post_code=shipping_address.post_code,
-            country_code=shipping_address.country_code
+            country_code=shipping_address.country_code,
         )

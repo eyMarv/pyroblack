@@ -147,5 +147,5 @@ __all__ = [
     "ExportedStoryLink",
     "TranscribedAudio",
     "TranslatedText",
-    "TextQuote"
+    "TextQuote",
 ]

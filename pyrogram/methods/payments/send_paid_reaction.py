@@ -29,7 +29,7 @@ class SendPaidReaction:
         chat_id: Union[int, str],
         message_id: int,
         amount: int,
-        anonymous: bool = None
+        anonymous: bool = None,
     ) -> "types.MessageReactions":
         """Use this method to send paid reactions on a channel message.
 
@@ -64,7 +64,7 @@ class SendPaidReaction:
                 msg_id=message_id,
                 count=amount,
                 random_id=self.rnd_id(),
-                private=anonymous
+                private=anonymous,
             )
         )
         users = {i.id: i for i in r.users}

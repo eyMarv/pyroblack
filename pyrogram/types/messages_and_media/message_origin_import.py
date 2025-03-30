@@ -37,15 +37,8 @@ class MessageOriginImport(MessageOrigin):
         sender_user_name (``str``):
             Name of the original sender.
     """
-    def __init__(
-        self,
-        *,
-        date: datetime = None,
-        sender_user_name: str = None
-    ):
-        super().__init__(
-            type=enums.MessageOriginType.IMPORT,
-            date=date
-        )
+
+    def __init__(self, *, date: datetime = None, sender_user_name: str = None):
+        super().__init__(type=enums.MessageOriginType.IMPORT, date=date)
 
         self.sender_user_name = sender_user_name

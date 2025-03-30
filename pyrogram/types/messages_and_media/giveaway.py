@@ -75,7 +75,7 @@ class Giveaway(Object):
         stars: int = None,
         additional_price: str = None,
         allowed_countries: List[str] = None,
-        is_winners_hidden: bool = None
+        is_winners_hidden: bool = None,
     ):
         super().__init__(client)
 
@@ -91,12 +91,15 @@ class Giveaway(Object):
 
     @staticmethod
     async def _parse(
-        client,
-        message: "raw.types.Message",
-        chats: Dict[int, "raw.types.Chat"] = None
+        client, message: "raw.types.Message", chats: Dict[int, "raw.types.Chat"] = None
     ) -> "Giveaway":
         giveaway: "raw.types.MessageMediaGiveaway" = message.media
-        chats = types.List([types.Chat._parse_channel_chat(client, chats.get(i)) for i in giveaway.channels])
+        chats = types.List(
+            [
+                types.Chat._parse_channel_chat(client, chats.get(i))
+                for i in giveaway.channels
+            ]
+        )
 
         return Giveaway(
             chats=chats,
@@ -106,7 +109,9 @@ class Giveaway(Object):
             new_subscribers=giveaway.only_new_subscribers,
             stars=giveaway.stars,
             additional_price=giveaway.prize_description,
-            allowed_countries=giveaway.countries_iso2 if len(giveaway.countries_iso2) > 0 else None,
+            allowed_countries=(
+                giveaway.countries_iso2 if len(giveaway.countries_iso2) > 0 else None
+            ),
             is_winners_hidden=not giveaway.winners_are_visible,
             client=client,
         )

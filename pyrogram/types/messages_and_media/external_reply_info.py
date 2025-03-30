@@ -221,7 +221,9 @@ class ExternalReplyInfo(Object):
                 giveaway = types.Giveaway._parse(client, reply, chats)
                 media_type = enums.MessageMediaType.GIVEAWAY
             elif isinstance(media, raw.types.MessageMediaGiveawayResults):
-                giveaway_result = await types.GiveawayResult._parse(client, media, users, chats)
+                giveaway_result = await types.GiveawayResult._parse(
+                    client, media, users, chats
+                )
                 media_type = enums.MessageMediaType.GIVEAWAY_RESULT
             elif isinstance(media, raw.types.MessageMediaInvoice):
                 invoice = types.Invoice._parse(media)
@@ -236,14 +238,18 @@ class ExternalReplyInfo(Object):
                     attributes = {type(i): i for i in doc.attributes}
 
                     file_name = getattr(
-                        attributes.get(
-                            raw.types.DocumentAttributeFilename, None
-                        ), "file_name", None
+                        attributes.get(raw.types.DocumentAttributeFilename, None),
+                        "file_name",
+                        None,
                     )
 
                     if raw.types.DocumentAttributeAnimated in attributes:
-                        video_attributes = attributes.get(raw.types.DocumentAttributeVideo, None)
-                        animation = types.Animation._parse(client, doc, video_attributes, file_name)
+                        video_attributes = attributes.get(
+                            raw.types.DocumentAttributeVideo, None
+                        )
+                        animation = types.Animation._parse(
+                            client, doc, video_attributes, file_name
+                        )
                         media_type = enums.MessageMediaType.ANIMATION
                         has_media_spoiler = media.spoiler
                     elif raw.types.DocumentAttributeSticker in attributes:
@@ -253,7 +259,9 @@ class ExternalReplyInfo(Object):
                         video_attributes = attributes[raw.types.DocumentAttributeVideo]
 
                         if video_attributes.round_message:
-                            video_note = types.VideoNote._parse(client, doc, video_attributes)
+                            video_note = types.VideoNote._parse(
+                                client, doc, video_attributes
+                            )
                             media_type = enums.MessageMediaType.VIDEO_NOTE
                         else:
                             video = types.Video._parse(
@@ -263,7 +271,7 @@ class ExternalReplyInfo(Object):
                                 file_name,
                                 media.ttl_seconds,
                                 media.video_cover,
-                                media.video_timestamp
+                                media.video_timestamp,
                             )
                             media_type = enums.MessageMediaType.VIDEO
                             has_media_spoiler = media.spoiler
@@ -274,7 +282,9 @@ class ExternalReplyInfo(Object):
                             voice = types.Voice._parse(client, doc, audio_attributes)
                             media_type = enums.MessageMediaType.VOICE
                         else:
-                            audio = types.Audio._parse(client, doc, audio_attributes, file_name)
+                            audio = types.Audio._parse(
+                                client, doc, audio_attributes, file_name
+                            )
                             media_type = enums.MessageMediaType.AUDIO
                     else:
                         document = types.Document._parse(client, doc, file_name)
@@ -323,5 +333,5 @@ class ExternalReplyInfo(Object):
             invoice=invoice,
             location=location,
             poll=poll,
-            venue=venue
+            venue=venue,
         )
