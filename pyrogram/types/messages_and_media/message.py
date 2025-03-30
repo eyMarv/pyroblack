@@ -25,6 +25,7 @@ from typing import List, Match, Union, BinaryIO, Optional, Callable
 
 import pyrogram
 from pyrogram import enums, raw, types, utils
+# noinspection PyUnresolvedReferences
 from pyrogram.errors import ChannelPrivate, MessageIdsEmpty, PeerIdInvalid
 from pyrogram.parser import utils as parser_utils, Parser
 from ..object import Object

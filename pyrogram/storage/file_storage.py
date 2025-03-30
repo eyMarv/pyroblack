@@ -20,6 +20,7 @@ import logging
 import struct
 from pathlib import Path
 
+# noinspection PyUnresolvedReferences
 import aiosqlite
 
 from .sqlite_storage import SQLiteStorage

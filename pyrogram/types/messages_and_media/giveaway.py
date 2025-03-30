@@ -17,12 +17,10 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-import asyncio
 from datetime import datetime
-from typing import List
-
 import pyrogram
 from pyrogram import raw, types, utils
+# noinspection PyUnresolvedReferences
 from pyrogram.errors import FloodWait
 from ..object import Object
 from typing import List, Dict
@@ -55,9 +53,6 @@ class Giveaway(Object):
 
         allowed_countries (List of ``str``, *optional*):
             List of ISO country codes which eligible to join the giveaway.
-
-        private_channel_ids (List of ``int``, *optional*):
-            List of Unique channel identifier of private channel which host the giveaway.
 
         is_winners_hidden (``bool``):
             True, if the giveaway winners are hidden.

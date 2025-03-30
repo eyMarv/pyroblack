@@ -21,6 +21,7 @@ from typing import Union
 import pyrogram
 from pyrogram import raw
 from pyrogram import types
+# noinspection PyUnresolvedReferences
 from pyrogram.errors import UserNotParticipant
 
 

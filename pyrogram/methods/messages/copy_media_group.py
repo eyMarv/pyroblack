@@ -73,9 +73,6 @@ class CopyMediaGroup:
                 If a list of ``string`` passed, each element becomes caption for each media element.
                 You can pass ``None`` in list to keep the original caption (see examples below).
 
-            has_spoilers (``bool``, *optional*):
-                Pass True if the photo needs to be covered with a spoiler animation.
-
             disable_notification (``bool``, *optional*):
                 Sends the message silently.
                 Users will receive a notification with no sound.

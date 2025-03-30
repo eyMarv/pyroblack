@@ -44,6 +44,7 @@ from pyrogram import raw
 from pyrogram import utils
 from pyrogram.crypto import aes
 from pyrogram.errors import CDNFileHashMismatch
+# noinspection PyUnresolvedReferences
 from pyrogram.errors import (
     SessionPasswordNeeded,
     VolumeLocNotFound,
