@@ -36,17 +36,19 @@ class MessageReactions(Object):
         *,
         client: "pyrogram.Client" = None,
         reactions: Optional[List["types.Reaction"]] = None,
+        top_reactors: Optional[List["types.MessageReactor"]] = None,
     ):
         super().__init__(client)
 
         self.reactions = reactions
+        self.top_reactors = top_reactors
 
     @staticmethod
     def _parse(
         client: "pyrogram.Client",
         message_reactions: Optional["raw.base.MessageReactions"] = None,
         users: Optional[Dict[int, "raw.types.User"]] = None,
-        chats: Dict[int, "raw.types.Chat"] = None
+        chats: Dict[int, "raw.types.Chat"] = None,
     ) -> Optional["MessageReactions"]:
         if not message_reactions:
             return None
@@ -60,5 +62,5 @@ class MessageReactions(Object):
             top_reactors=[
                 types.MessageReactor._parse(client, reactor, users, chats)
                 for reactor in message_reactions.top_reactors
-            ]
+            ],
         )

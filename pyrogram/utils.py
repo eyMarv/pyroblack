@@ -167,7 +167,7 @@ async def parse_messages(
             reply_messages = await client.get_messages(
                 chat_id,
                 reply_to_message_ids=messages_with_replies.keys(),
-                replies=replies - 1
+                replies=replies - 1,
             )
 
             for message in parsed_messages:
@@ -525,10 +525,14 @@ async def get_reply_to(
         reply_to = types.InputReplyToStory(peer=peer, story_id=reply_to_story_id)
     return reply_to
 
+
 def get_first_url(text):
     text = re.sub(r"^\s*(<[\w<>=\s\"]*>)\s*", r"\1", text)
     text = re.sub(r"\s*(</[\w</>]*>)\s*$", r"\1", text)
 
-    matches = re.findall(r"(https?):\/\/([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-])", text)
+    matches = re.findall(
+        r"(https?):\/\/([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-])",
+        text,
+    )
 
     return f"{matches[0][0]}://{matches[0][1]}{matches[0][2]}" if matches else None
