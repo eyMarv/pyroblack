@@ -490,6 +490,7 @@ def pyrogram_api():
             BusinessWeeklyOpen
             BusinessWorkingHours
             User
+            Username
             Chat
             ChatPreview
             ChatPhoto
