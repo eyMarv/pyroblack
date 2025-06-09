@@ -536,3 +536,13 @@ WEBPUSH_AUTH_INVALID	The specified web push authentication secret is invalid
 WEBPUSH_KEY_INVALID	The specified web push elliptic curve Diffie-Hellman public key is invalid
 WEBPUSH_TOKEN_INVALID	The specified web push token is invalid
 YOU_BLOCKED_USER	You blocked this user
+STORIES_NEVER_CREATED	You have never created any stories
+MEDIA_FILE_INVALID	The provided media file is invalid
+CHANNEL_FORUM_MISSING	The channel forum is missing
+TTL_PERIOD_INVALID	The provided TTL period is invalid
+BOOSTS_REQUIRED	The specified channel must first be boosted by its users in order to perform this action
+BOOSTS_EMPTY	You can't modify the icon of the General topic.
+BOOST_NOT_MODIFIED	You're already boosting the specified channel.
+PAYMENT_REQUIRED	The payment is required
+BOOST_PEER_INVALID	The specified `boost_peer` is invalid.
+STARS_AMOUNT_INVALID	The specified `amount` is invalid.
