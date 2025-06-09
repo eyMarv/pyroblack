@@ -1028,10 +1028,7 @@ class Message(Object, Update):
                             message.reply_to.reply_to_msg_id
                         )
                     parsed_message.is_topic_message = True
-            elif (
-                parsed_message.chat.is_forum
-                and parsed_message.message_thread_id is None
-            ):
+            elif parsed_message.chat.type == enums.ChatType.FORUM and parsed_message.message_thread_id is None:
                 parsed_message.message_thread_id = 1
                 parsed_message.is_topic_message = True
 
@@ -1439,10 +1436,7 @@ class Message(Object, Update):
                             pass
                         else:
                             parsed_message.reply_to_story = reply_to_story
-            if (
-                parsed_message.chat.is_forum
-                and parsed_message.message_thread_id is None
-            ):
+            if parsed_message.chat.type == enums.ChatType.FORUM and parsed_message.message_thread_id is None:
                 parsed_message.message_thread_id = 1
                 parsed_message.is_topic_message = True
 
