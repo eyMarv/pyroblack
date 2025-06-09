@@ -161,6 +161,10 @@ class Chat(Object):
             The linked discussion group (in case of channels) or the linked channel (in case of supergroups).
             Returned only in :meth:`~pyrogram.Client.get_chat`.
 
+        linked_forum (:obj:`~pyrogram.types.Chat`, *optional*):
+            The linked monoforum (in case of channels) or the linked channel (in case of monoforum).
+            Returned only in :meth:`~pyrogram.Client.get_chat`.
+
         send_as_chat (:obj:`~pyrogram.types.Chat`, *optional*):
             The default "send_as" chat.
             Returned only in :meth:`~pyrogram.Client.get_chat`.
@@ -242,6 +246,7 @@ class Chat(Object):
         permissions: "types.ChatPermissions" = None,
         distance: int = None,
         linked_chat: "types.Chat" = None,
+        linked_forum: "types.Chat" = None,
         send_as_chat: "types.Chat" = None,
         available_reactions: Optional["types.ChatReactions"] = None,
         usernames: List["types.Username"] = None,
@@ -291,6 +296,7 @@ class Chat(Object):
         self.permissions = permissions
         self.distance = distance
         self.linked_chat = linked_chat
+        self.linked_forum = linked_forum
         self.send_as_chat = send_as_chat
         self.available_reactions = available_reactions
         self.usernames = usernames
@@ -566,10 +572,15 @@ class Chat(Object):
 
                 linked_chat_raw = chats.get(full_chat.linked_chat_id, None)
 
+                linked_forum_raw = chats.get(getattr(chat_raw, "linked_monoforum_id"), None)
+
                 if linked_chat_raw:
                     parsed_chat.linked_chat = Chat._parse_channel_chat(
                         client, linked_chat_raw
                     )
+
+                if linked_forum_raw:
+                    parsed_chat.linked_forum = Chat._parse_channel_chat(client, linked_forum_raw)
 
                 default_send_as = full_chat.default_send_as
 
