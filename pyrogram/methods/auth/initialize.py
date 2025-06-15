@@ -44,8 +44,6 @@ class Initialize:
         if self.is_initialized:
             raise ConnectionError("Client is already initialized")
 
-        self.load_plugins()
-
         await self.dispatcher.start()
 
         self.updates_watchdog_task = asyncio.create_task(self.updates_watchdog())
