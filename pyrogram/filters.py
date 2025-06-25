@@ -1121,7 +1121,7 @@ class user(Filter, set):
 
     async def __call__(self, _, message: Message):
         is_usernames_in_filters = False
-        if message.from_user.usernames:
+        if message.from_user and message.from_user.usernames:
             for username in message.from_user.usernames:
                 if (
                     username.username in self
@@ -1167,7 +1167,7 @@ class chat(Filter, set):
     async def __call__(self, _, message: Union[Message, Story]):
         if isinstance(message, Story):
             is_usernames_in_filters = False
-            if message.sender_chat.usernames:
+            if message.sender_chat and message.sender_chat.usernames:
                 for username in message.sender_chat.usernames:
                     if (
                         username.username in self
@@ -1196,7 +1196,7 @@ class chat(Filter, set):
                 ) or is_usernames_in_filters
         else:
             is_usernames_in_filters = False
-            if message.chat.usernames:
+            if message.chat and message.chat.usernames:
                 for username in message.chat.usernames:
                     if (
                         username.username in self
