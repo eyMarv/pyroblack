@@ -22,6 +22,10 @@ from .alternative_video import AlternativeVideo
 from .animation import Animation
 from .audio import Audio
 from .checked_gift_code import CheckedGiftCode
+from .checklist_task import ChecklistTask
+from .checklist_tasks_added import ChecklistTasksAdded
+from .checklist_tasks_done import ChecklistTasksDone
+from .checklist import Checklist
 from .available_effect import AvailableEffect
 from .contact import Contact
 from .dice import Dice
@@ -31,6 +35,7 @@ from .exported_story_link import ExportedStoryLink
 from .extended_media_preview import ExtendedMediaPreview
 from .game import Game
 from .giveaway import Giveaway
+from .input_checklist_task import InputChecklistTask
 from .giveaway_launched import GiveawayLaunched
 from .giveaway_result import GiveawayResult
 from .labeled_price import LabeledPrice
@@ -91,6 +96,10 @@ __all__ = [
     "AvailableEffect",
     "Contact",
     "CheckedGiftCode",
+    "ChecklistTask",
+    "ChecklistTasksAdded",
+    "ChecklistTasksDone",
+    "Checklist",
     "Document",
     "ExternalReplyInfo",
     "ExtendedMediaPreview",

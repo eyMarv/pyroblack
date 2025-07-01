@@ -202,12 +202,14 @@ def pyrogram_api():
             edit_inline_media
             edit_inline_reply_markup
             send_chat_action
+            send_checklist
             delete_messages
             get_available_effects
             get_messages
             get_message_read_participants
             get_scheduled_messages
             get_stickers
+            mark_checklist_tasks_as_done
             get_media_group
             get_chat_history
             get_chat_history_count
@@ -236,6 +238,7 @@ def pyrogram_api():
             transcribe_audio
             translate_message_text
             delete_chat_history
+            add_checklist_tasks
         """,
         chats="""
         Chats
@@ -582,7 +585,12 @@ def pyrogram_api():
             ReactionType
             MessageReactionUpdated
             MessageReactionCountUpdated
+            InputChecklistTask
             CheckedGiftCode
+            ChecklistTask
+            ChecklistTasksAdded
+            ChecklistTasksDone
+            Checklist
             SuccessfulPayment
             ExtendedMediaPreview
             PaidMedia
@@ -792,6 +800,7 @@ def pyrogram_api():
             Message.reply_video_note
             Message.reply_voice
             Message.reply_web_page
+            Message.reply_checklist
             Message.get_media_group
             Message.react
             Message.transcribe

@@ -24,6 +24,9 @@ from .auto_name import AutoName
 class MessageMediaType(AutoName):
     """Message media type enumeration used in :obj:`~pyrogram.types.Message`."""
 
+    UNSUPPORTED = auto()
+    "A message media content that is not supported in the current pyrogram version"
+
     AUDIO = auto()
     "Audio media"
 
@@ -83,3 +86,6 @@ class MessageMediaType(AutoName):
 
     PAID_MEDIA = auto()
     "Paid media"
+
+    CHECKLIST = auto()
+    "Checklist media"

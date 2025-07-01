@@ -26,6 +26,12 @@ from .auto_name import AutoName
 class MessageServiceType(AutoName):
     """Message service type enumeration used in :obj:`~pyrogram.types.Message`."""
 
+    UNSUPPORTED = auto()
+    "A message content that is not supported in the current pyrogram version"
+
+    CUSTOM_ACTION = auto()
+    "Custom action"
+
     NEW_CHAT_MEMBERS = auto()
     "New members join"
 
@@ -127,3 +133,9 @@ class MessageServiceType(AutoName):
 
     BOT_ALLOWED = auto()
     "Bot allowed"
+
+    CHECKLIST_TASKS_DONE = auto()
+    "Checklist tasks done"
+
+    CHECKLIST_TASKS_ADDED = auto()
+    "Checklist tasks added"
