@@ -4550,17 +4550,7 @@ class Message(Object, Update):
         effect_id: Optional[int] = None,
         reply_parameters: Optional["types.ReplyParameters"] = None,
         schedule_date: Optional[datetime] = None,
-        business_connection_id: Optional[str] = None,
-        allow_paid_broadcast: Optional[bool] = None,
-        paid_message_star_count: int = None,
-        reply_markup: Optional[
-            Union[
-                "types.InlineKeyboardMarkup",
-                "types.ReplyKeyboardMarkup",
-                "types.ReplyKeyboardRemove",
-                "types.ForceReply"
-            ]
-        ] = None,
+        paid_message_star_count: int = None
     ) -> "Message":
         """Bound method *reply_checklist* of :obj:`~pyrogram.types.Message`.
 
@@ -4625,21 +4615,8 @@ class Message(Object, Update):
             schedule_date (:py:obj:`~datetime.datetime`, *optional*):
                 Date when the message will be automatically sent.
 
-            business_connection_id (``str``, *optional*):
-                Unique identifier of the business connection on behalf of which the message will be sent.
-
-            allow_paid_broadcast (``bool``, *optional*):
-                If True, you will be allowed to send up to 1000 messages per second.
-                Ignoring broadcasting limits for a fee of 0.1 Telegram Stars per message.
-                The relevant Stars will be withdrawn from the bot's balance.
-                For bots only.
-
             paid_message_star_count (``int``, *optional*):
                 The number of Telegram Stars the user agreed to pay to send the messages.
-
-            reply_markup (:obj:`~pyrogram.types.InlineKeyboardMarkup` | :obj:`~pyrogram.types.ReplyKeyboardMarkup` | :obj:`~pyrogram.types.ReplyKeyboardRemove` | :obj:`~pyrogram.types.ForceReply`, *optional*):
-                Additional interface options. An object for an inline keyboard, custom reply keyboard,
-                instructions to remove reply keyboard or to force a reply from the user.
 
         Returns:
             On success, the sent :obj:`~pyrogram.types.Message` is returned.
@@ -4658,9 +4635,6 @@ class Message(Object, Update):
         if message_thread_id is None:
             message_thread_id = self.message_thread_id
 
-        if business_connection_id is None:
-            business_connection_id = self.business_connection_id
-
         return await self._client.send_checklist(
             chat_id=self.chat.id,
             title=title,
@@ -4675,10 +4649,7 @@ class Message(Object, Update):
             effect_id=effect_id,
             reply_parameters=reply_parameters,
             schedule_date=schedule_date,
-            business_connection_id=business_connection_id,
-            allow_paid_broadcast=allow_paid_broadcast,
-            paid_message_star_count=paid_message_star_count,
-            reply_markup=reply_markup,
+            paid_message_star_count=paid_message_star_count
         )
 
     async def edit_text(

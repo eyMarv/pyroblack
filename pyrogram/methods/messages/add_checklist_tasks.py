@@ -31,7 +31,7 @@ class AddChecklistTasks:
     ) -> int:
         """Add tasks to a checklist in a message.
 
-        .. include:: /_includes/usable-by/users-bots.rst
+        .. include:: /_includes/usable-by/users.rst
 
         Parameters:
             chat_id (``int`` | ``str``):

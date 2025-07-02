@@ -41,21 +41,11 @@ class SendChecklist:
         effect_id: Optional[int] = None,
         reply_parameters: Optional["types.ReplyParameters"] = None,
         schedule_date: Optional[datetime] = None,
-        business_connection_id: Optional[str] = None,
-        allow_paid_broadcast: Optional[bool] = None,
-        paid_message_star_count: int = None,
-        reply_markup: Optional[
-            Union[
-                "types.InlineKeyboardMarkup",
-                "types.ReplyKeyboardMarkup",
-                "types.ReplyKeyboardRemove",
-                "types.ForceReply"
-            ]
-        ] = None,
+        paid_message_star_count: int = None
     ) -> "types.Message":
         """Send a new checklist.
 
-        .. include:: /_includes/usable-by/users-bots.rst
+        .. include:: /_includes/usable-by/users.rst
 
         Parameters:
             chat_id (``int`` | ``str``):
@@ -102,21 +92,8 @@ class SendChecklist:
             schedule_date (:py:obj:`~datetime.datetime`, *optional*):
                 Date when the message will be automatically sent.
 
-            business_connection_id (``str``, *optional*):
-                Unique identifier of the business connection on behalf of which the message will be sent.
-
-            allow_paid_broadcast (``bool``, *optional*):
-                If True, you will be allowed to send up to 1000 messages per second.
-                Ignoring broadcasting limits for a fee of 0.1 Telegram Stars per message.
-                The relevant Stars will be withdrawn from the bot's balance.
-                For bots only.
-
             paid_message_star_count (``int``, *optional*):
                 The number of Telegram Stars the user agreed to pay to send the messages.
-
-            reply_markup (:obj:`~pyrogram.types.InlineKeyboardMarkup` | :obj:`~pyrogram.types.ReplyKeyboardMarkup` | :obj:`~pyrogram.types.ReplyKeyboardRemove` | :obj:`~pyrogram.types.ForceReply`, *optional*):
-                Additional interface options. An object for an inline keyboard, custom reply keyboard,
-                instructions to remove reply keyboard or to force a reply from the user.
 
         Returns:
             :obj:`~pyrogram.types.Message`: On success, the sent checklist message is returned.
@@ -161,12 +138,9 @@ class SendChecklist:
                 random_id=self.rnd_id(),
                 schedule_date=utils.datetime_to_timestamp(schedule_date),
                 noforwards=protect_content,
-                allow_paid_floodskip=allow_paid_broadcast,
                 allow_paid_stars=paid_message_star_count,
-                reply_markup=await reply_markup.write(self) if reply_markup else None,
                 effect=effect_id
-            ),
-            business_connection_id=business_connection_id
+            )
         )
 
         messages = await utils.parse_messages(client=self, messages=r)
