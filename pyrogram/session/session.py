@@ -59,14 +59,14 @@ class Result:
 class Session:
     START_TIMEOUT = 10
     WAIT_TIMEOUT = 15
-    RECONN_TIMEOUT = 8
+    RECONN_TIMEOUT = 5
     SLEEP_THRESHOLD = 10
     MAX_RETRIES = 50
     ACKS_THRESHOLD = 10
     PING_INTERVAL = 5
     STORED_MSG_IDS_MAX_SIZE = 1000 * 2
     RECONNECT_THRESHOLD = 5
-    RE_START_RANGE = (1, 2, 3, 4)
+    RE_START_RANGE = (1, 2, 3, 4, 5, 6)
 
     TRANSPORT_ERRORS = {
         404: "auth key not found",
@@ -302,6 +302,8 @@ class Session:
                         type(e).__name__,
                         e,
                     )
+                self.client._skip_updates_ori = self.client.skip_updates
+                self.client.skip_updates = False  # get "missed" updates after restart
 
             for try_ in self.RE_START_RANGE:
                 try_ += 1
@@ -324,6 +326,9 @@ class Session:
                             type(e).__name__,
                             e,
                         )
+            if stop:
+                self.client.skip_updates = self.client._skip_updates_ori  # revert to original setting
+                del self.client._skip_updates_ori
 
     async def handle_packet(self, packet):
         if self.instant_stop:
@@ -650,6 +655,7 @@ class Session:
                         str(e) or repr(e),
                     )
                     self.loop.create_task(self.restart(stop=True))
+                    break
                 else:
                     (log.warning if retries < 2 else log.info)(
                         '[%s] [%s] Retrying "%s" due to: %s',
