@@ -63,7 +63,7 @@ class InputMediaDocument(InputMedia):
         caption: str = "",
         parse_mode: Optional["enums.ParseMode"] = None,
         caption_entities: List[MessageEntity] = None,
-        file_name: str = None
+        file_name: str = None,
     ):
         super().__init__(media, caption, parse_mode, caption_entities)
 

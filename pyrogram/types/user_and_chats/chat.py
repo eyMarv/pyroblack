@@ -572,7 +572,9 @@ class Chat(Object):
 
                 linked_chat_raw = chats.get(full_chat.linked_chat_id, None)
 
-                linked_forum_raw = chats.get(getattr(chat_raw, "linked_monoforum_id"), None)
+                linked_forum_raw = chats.get(
+                    getattr(chat_raw, "linked_monoforum_id"), None
+                )
 
                 if linked_chat_raw:
                     parsed_chat.linked_chat = Chat._parse_channel_chat(
@@ -580,7 +582,9 @@ class Chat(Object):
                     )
 
                 if linked_forum_raw:
-                    parsed_chat.linked_forum = Chat._parse_channel_chat(client, linked_forum_raw)
+                    parsed_chat.linked_forum = Chat._parse_channel_chat(
+                        client, linked_forum_raw
+                    )
 
                 default_send_as = full_chat.default_send_as
 

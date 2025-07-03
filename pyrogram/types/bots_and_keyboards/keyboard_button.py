@@ -99,8 +99,8 @@ class KeyboardButton(Object):
                         is_username=b.peer_type.has_username,
                         max=b.max_quantity,
                         user_privileges=user_privileges,
-                        bot_privileges=bot_privileges
-                    )
+                        bot_privileges=bot_privileges,
+                    ),
                 )
             if isinstance(b.peer_type, raw.types.RequestPeerTypeChat):
                 user_privileges = getattr(b.peer_type, "user_admin_rights", None)
@@ -114,8 +114,8 @@ class KeyboardButton(Object):
                         is_forum=b.peer_type.forum,
                         max=b.max_quantity,
                         user_privileges=user_privileges,
-                        bot_privileges=bot_privileges
-                    )
+                        bot_privileges=bot_privileges,
+                    ),
                 )
 
             if isinstance(b.peer_type, raw.types.RequestPeerTypeUser):
@@ -137,7 +137,8 @@ class KeyboardButton(Object):
             user_privileges = self.request_chat.user_privileges
             bot_privileges = self.request_chat.bot_privileges
 
-            user_admin_rights = raw.types.ChatAdminRights(
+            user_admin_rights = (
+                raw.types.ChatAdminRights(
                     change_info=user_privileges.can_change_info,
                     post_messages=user_privileges.can_post_messages,
                     post_stories=user_privileges.can_post_stories,
@@ -151,10 +152,14 @@ class KeyboardButton(Object):
                     add_admins=user_privileges.can_promote_members,
                     anonymous=user_privileges.is_anonymous,
                     manage_call=user_privileges.can_manage_video_chats,
-                    other=user_privileges.can_manage_chat
-            ) if user_privileges else None
+                    other=user_privileges.can_manage_chat,
+                )
+                if user_privileges
+                else None
+            )
 
-            bot_admin_rights = raw.types.ChatAdminRights(
+            bot_admin_rights = (
+                raw.types.ChatAdminRights(
                     change_info=bot_privileges.can_change_info,
                     post_messages=bot_privileges.can_post_messages,
                     post_stories=bot_privileges.can_post_stories,
@@ -168,8 +173,11 @@ class KeyboardButton(Object):
                     add_admins=bot_privileges.can_promote_members,
                     anonymous=bot_privileges.is_anonymous,
                     manage_call=bot_privileges.can_manage_video_chats,
-                    other=bot_privileges.can_manage_chat
-            ) if bot_privileges else None
+                    other=bot_privileges.can_manage_chat,
+                )
+                if bot_privileges
+                else None
+            )
 
             if isinstance(self.request_chat, types.RequestPeerTypeChannel):
                 return raw.types.KeyboardButtonRequestPeer(
@@ -179,7 +187,7 @@ class KeyboardButton(Object):
                         creator=self.request_chat.is_creator,
                         has_username=self.request_chat.is_username,
                         user_admin_rights=user_admin_rights,
-                        bot_admin_rights=bot_admin_rights
+                        bot_admin_rights=bot_admin_rights,
                     ),
                     max_quantity=self.request_chat.max,
                 )
@@ -192,7 +200,7 @@ class KeyboardButton(Object):
                     has_username=self.request_chat.is_username,
                     forum=self.request_chat.is_forum,
                     user_admin_rights=user_admin_rights,
-                    bot_admin_rights=bot_admin_rights
+                    bot_admin_rights=bot_admin_rights,
                 ),
                 max_quantity=self.request_chat.max,
             )

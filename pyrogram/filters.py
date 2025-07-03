@@ -988,12 +988,20 @@ def command(
             for cmd in flt.commands:
                 if usernames:
                     for username in usernames:
-                        if not re.match(rf"^(?:{cmd}(?:@?{username})?)(?:\s|$)", without_prefix,
-                                        flags=re.IGNORECASE if not flt.case_sensitive else 0):
+                        if not re.match(
+                            rf"^(?:{cmd}(?:@?{username})?)(?:\s|$)",
+                            without_prefix,
+                            flags=re.IGNORECASE if not flt.case_sensitive else 0,
+                        ):
                             continue
 
-                        without_command = re.sub(rf"{cmd}(?:@?{username})?\s?", "", without_prefix, count=1,
-                                                flags=re.IGNORECASE if not flt.case_sensitive else 0)
+                        without_command = re.sub(
+                            rf"{cmd}(?:@?{username})?\s?",
+                            "",
+                            without_prefix,
+                            count=1,
+                            flags=re.IGNORECASE if not flt.case_sensitive else 0,
+                        )
 
                         # match.groups are 1-indexed, group(1) is the quote, group(2) is the text
                         # between the quotes, group(3) is unquoted, whitespace-split text
@@ -1004,8 +1012,11 @@ def command(
                             for m in command_re.finditer(without_command)
                         ]
                         return True
-                if not re.match(rf"^(?:{cmd}(?:@?{username})?)(?:\s|$)", without_prefix,
-                                flags=re.IGNORECASE if not flt.case_sensitive else 0):
+                if not re.match(
+                    rf"^(?:{cmd}(?:@?{username})?)(?:\s|$)",
+                    without_prefix,
+                    flags=re.IGNORECASE if not flt.case_sensitive else 0,
+                ):
                     continue
 
                 without_command = re.sub(
@@ -1123,19 +1134,21 @@ class user(Filter, set):
         is_usernames_in_filters = False
         if message.from_user and message.from_user.usernames:
             for username in message.from_user.usernames:
-                if (
-                    username.username in self
-                    or username.username.lower() in self
-                ):
+                if username.username in self or username.username.lower() in self:
                     is_usernames_in_filters = True
                     break
-        return (message.from_user
-                and (message.from_user.id in self
-                     or (message.from_user.username
-                         and message.from_user.username.lower() in self)
-                     or ("me" in self
-                         and message.from_user.is_self))
-                    or is_usernames_in_filters)
+        return (
+            message.from_user
+            and (
+                message.from_user.id in self
+                or (
+                    message.from_user.username
+                    and message.from_user.username.lower() in self
+                )
+                or ("me" in self and message.from_user.is_self)
+            )
+            or is_usernames_in_filters
+        )
 
 
 # noinspection PyPep8Naming
@@ -1169,13 +1182,11 @@ class chat(Filter, set):
             is_usernames_in_filters = False
             if message.sender_chat and message.sender_chat.usernames:
                 for username in message.sender_chat.usernames:
-                    if (
-                        username.username in self
-                        or username.username.lower() in self
-                    ):
+                    if username.username in self or username.username.lower() in self:
                         is_usernames_in_filters = True
                         break
             return (
+                (
                     message.sender_chat
                     and (
                         message.sender_chat.id in self
@@ -1184,7 +1195,8 @@ class chat(Filter, set):
                             and message.sender_chat.username.lower() in self
                         )
                     )
-                ) or (
+                )
+                or (
                     message.from_user
                     and (
                         message.from_user.id in self
@@ -1193,27 +1205,29 @@ class chat(Filter, set):
                             and message.from_user.username.lower() in self
                         )
                     )
-                ) or is_usernames_in_filters
+                )
+                or is_usernames_in_filters
+            )
         else:
             is_usernames_in_filters = False
             if message.chat and message.chat.usernames:
                 for username in message.chat.usernames:
-                    if (
-                        username.username in self
-                        or username.username.lower() in self
-                    ):
+                    if username.username in self or username.username.lower() in self:
                         is_usernames_in_filters = True
                         break
-            return (message.chat
-                    and (message.chat.id in self
-                         or (message.chat.username
-                             and message.chat.username.lower() in self)
-                         or ("me" in self
-                             and message.from_user
-                             and message.from_user.is_self
-                             and not message.outgoing))
-                         or (is_usernames_in_filters
-                            and not message.outgoing)
+            return (
+                message.chat
+                and (
+                    message.chat.id in self
+                    or (message.chat.username and message.chat.username.lower() in self)
+                    or (
+                        "me" in self
+                        and message.from_user
+                        and message.from_user.is_self
+                        and not message.outgoing
+                    )
+                )
+                or (is_usernames_in_filters and not message.outgoing)
             )
 
 

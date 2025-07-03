@@ -825,7 +825,9 @@ class Message(Object, Update):
             elif isinstance(action, raw.types.MessageActionBotAllowed):
                 bot_allowed = types.BotAllowed._parse(client, action)
                 service_type = enums.MessageServiceType.BOT_ALLOWED
-            elif isinstance(action, raw.types.MessageActionRequestedPeer) or isinstance(action, raw.types.MessageActionRequestedPeerSentMe):
+            elif isinstance(action, raw.types.MessageActionRequestedPeer) or isinstance(
+                action, raw.types.MessageActionRequestedPeerSentMe
+            ):
                 chats_shared = types.RequestedChats._parse(client, action)
                 service_type = enums.MessageServiceType.CHAT_SHARED
             elif isinstance(action, raw.types.MessageActionTopicCreate):
@@ -1028,7 +1030,10 @@ class Message(Object, Update):
                             message.reply_to.reply_to_msg_id
                         )
                     parsed_message.is_topic_message = True
-            elif parsed_message.chat.type == enums.ChatType.FORUM and parsed_message.message_thread_id is None:
+            elif (
+                parsed_message.chat.type == enums.ChatType.FORUM
+                and parsed_message.message_thread_id is None
+            ):
                 parsed_message.message_thread_id = 1
                 parsed_message.is_topic_message = True
 
@@ -1436,7 +1441,10 @@ class Message(Object, Update):
                             pass
                         else:
                             parsed_message.reply_to_story = reply_to_story
-            if parsed_message.chat.type == enums.ChatType.FORUM and parsed_message.message_thread_id is None:
+            if (
+                parsed_message.chat.type == enums.ChatType.FORUM
+                and parsed_message.message_thread_id is None
+            ):
                 parsed_message.message_thread_id = 1
                 parsed_message.is_topic_message = True
 

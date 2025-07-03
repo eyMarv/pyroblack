@@ -35,7 +35,7 @@ async def get_chunk(
     from_date: datetime = utils.zero_datetime(),
     min_id: int = 0,
     max_id: int = 0,
-    reverse: Optional[bool] = None
+    reverse: Optional[bool] = None,
 ):
     messages = await client.invoke(
         raw.functions.messages.GetHistory(
@@ -66,7 +66,7 @@ class GetChatHistory:
         offset_date: datetime = utils.zero_datetime(),
         min_id: int = 0,
         max_id: int = 0,
-        reverse: Optional[bool] = None
+        reverse: Optional[bool] = None,
     ) -> Optional[AsyncGenerator["types.Message", None]]:
         """Get messages from a chat history.
 
@@ -127,7 +127,7 @@ class GetChatHistory:
                 from_date=offset_date,
                 min_id=min_id,
                 max_id=max_id,
-                reverse=reverse
+                reverse=reverse,
             )
 
             if not messages:

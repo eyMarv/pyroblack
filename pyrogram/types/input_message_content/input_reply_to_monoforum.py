@@ -29,10 +29,7 @@ class InputReplyToMonoforum(Object):
             An InputPeer.
     """
 
-    def __init__(
-        self, *,
-        monoforum_peer: "raw.types.InputPeer"
-    ):
+    def __init__(self, *, monoforum_peer: "raw.types.InputPeer"):
         super().__init__()
 
         self.monoforum_peer = monoforum_peer

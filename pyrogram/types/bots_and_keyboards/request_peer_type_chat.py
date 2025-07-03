@@ -59,7 +59,7 @@ class RequestPeerTypeChat(Object):
 
         bot_privileges (:obj:`~pyrogram.types.ChatPrivileges`, *optional*):
             Privileged actions that a bot administrator is able to take.
-    """ # TODO user_admin_rights, bot_admin_rights
+    """  # TODO user_admin_rights, bot_admin_rights
 
     def __init__(
         self,
@@ -73,7 +73,7 @@ class RequestPeerTypeChat(Object):
         is_username_requested: bool = True,
         is_photo_requested: bool = True,
         user_privileges: "types.ChatPrivileges" = None,
-        bot_privileges: "types.ChatPrivileges" = None
+        bot_privileges: "types.ChatPrivileges" = None,
     ):
         super().__init__()
 

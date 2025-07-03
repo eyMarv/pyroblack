@@ -298,7 +298,9 @@ class SendMediaGroup:
                                 w=i.width,
                                 h=i.height,
                             ),
-                            raw.types.DocumentAttributeFilename(file_name=i.file_name or os.path.basename(i.media)),
+                            raw.types.DocumentAttributeFilename(
+                                file_name=i.file_name or os.path.basename(i.media)
+                            ),
                         ]
                         if is_animation:
                             attributes.append(raw.types.DocumentAttributeAnimated())
@@ -379,7 +381,10 @@ class SendMediaGroup:
                                     raw.types.DocumentAttributeFilename(
                                         file_name=getattr(i.media, "name", "video.mp4")
                                     ),
-                                    raw.types.DocumentAttributeFilename(file_name=i.file_name or getattr(i.media, "name", "video.mp4")),
+                                    raw.types.DocumentAttributeFilename(
+                                        file_name=i.file_name
+                                        or getattr(i.media, "name", "video.mp4")
+                                    ),
                                 ],
                             ),
                         ),
@@ -417,7 +422,10 @@ class SendMediaGroup:
                                         raw.types.DocumentAttributeFilename(
                                             file_name=os.path.basename(i.media)
                                         ),
-                                        raw.types.DocumentAttributeFilename(file_name=i.file_name or os.path.basename(i.media)),
+                                        raw.types.DocumentAttributeFilename(
+                                            file_name=i.file_name
+                                            or os.path.basename(i.media)
+                                        ),
                                     ],
                                 ),
                             ),
@@ -475,7 +483,10 @@ class SendMediaGroup:
                                     raw.types.DocumentAttributeFilename(
                                         file_name=getattr(i.media, "name", "audio.mp3")
                                     ),
-                                    raw.types.DocumentAttributeFilename(file_name=i.file_name or getattr(i.media, "name", "audio.mp3")),
+                                    raw.types.DocumentAttributeFilename(
+                                        file_name=i.file_name
+                                        or getattr(i.media, "name", "audio.mp3")
+                                    ),
                                 ],
                             ),
                         ),
@@ -504,7 +515,10 @@ class SendMediaGroup:
                                     file=file,
                                     thumb=thumb,
                                     attributes=[
-                                        raw.types.DocumentAttributeFilename(file_name=i.file_name or os.path.basename(i.media)),
+                                        raw.types.DocumentAttributeFilename(
+                                            file_name=i.file_name
+                                            or os.path.basename(i.media)
+                                        ),
                                     ],
                                 ),
                             ),
@@ -554,7 +568,10 @@ class SendMediaGroup:
                                 file=file,
                                 thumb=thumb,
                                 attributes=[
-                                    raw.types.DocumentAttributeFilename(file_name=i.file_name or getattr(i.media, "name", "file.zip")),
+                                    raw.types.DocumentAttributeFilename(
+                                        file_name=i.file_name
+                                        or getattr(i.media, "name", "file.zip")
+                                    ),
                                 ],
                             ),
                         ),

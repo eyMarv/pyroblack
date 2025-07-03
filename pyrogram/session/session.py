@@ -327,7 +327,9 @@ class Session:
                             e,
                         )
             if stop:
-                self.client.skip_updates = self.client._skip_updates_ori  # revert to original setting
+                self.client.skip_updates = (
+                    self.client._skip_updates_ori
+                )  # revert to original setting
                 del self.client._skip_updates_ori
 
     async def handle_packet(self, packet):
