@@ -115,6 +115,7 @@ class Messages(
     SendVideoNote,
     SendVoice,
     SendWebPage,
+    StartBot,
     ViewMessages,
     SendPoll,
     VotePoll,
