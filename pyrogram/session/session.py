@@ -657,7 +657,6 @@ class Session:
                         str(e) or repr(e),
                     )
                     self.loop.create_task(self.restart(stop=True))
-                    break
                 else:
                     (log.warning if retries < 2 else log.info)(
                         '[%s] [%s] Retrying "%s" due to: %s',
