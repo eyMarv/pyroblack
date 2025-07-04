@@ -119,6 +119,7 @@ class Session:
         self.stop_lock = asyncio.Lock()
         self.restart_lock = asyncio.Lock()
         self.last_reconnect_attempt = None
+        self.skip_updates_ori = client.skip_updates  # save default
 
     async def start(self):
         if self.instant_stop:
@@ -302,7 +303,7 @@ class Session:
                         type(e).__name__,
                         e,
                     )
-                self.client._skip_updates_ori = self.client.skip_updates
+                self.skip_updates_ori = self.client.skip_updates
                 self.client.skip_updates = False  # get "missed" updates after restart
 
             for try_ in self.RE_START_RANGE:
@@ -328,9 +329,9 @@ class Session:
                         )
             if stop:
                 self.client.skip_updates = (
-                    self.client._skip_updates_ori
+                    self.skip_updates_ori
                 )  # revert to original setting
-                del self.client._skip_updates_ori
+                self.skip_updates_ori = None
 
     async def handle_packet(self, packet):
         if self.instant_stop:
