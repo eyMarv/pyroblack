@@ -1,29 +1,35 @@
 id	message
-AUTH_KEY_DUPLICATED	The same authorization key (session file) was used in more than one place simultaneously. You must delete your session file and log in again with your phone number or bot token
+AUTH_KEY_DUPLICATED	The same authorization key (session file) was used in more than one place simultaneously, the current session was invalidated by the server for security reasons! You must delete your session file and log in again with your phone number or bot token.
 BANNED_RIGHTS_INVALID	You provided some invalid flags in the banned rights.
-BOT_PRECHECKOUT_FAILED	Bot precheckout is failed
+BOT_PRECHECKOUT_FAILED	Bot precheckout is failed.
+BUSINESS_ADDRESS_ACTIVE	The user is currently advertising a [Business Location](https://core.telegram.org/api/business#location), the location may only be changed (or removed) using [account.updateBusinessLocation »](https://core.telegram.org/method/account.updateBusinessLocation).
 CALL_PROTOCOL_COMPAT_LAYER_INVALID	The other side of the call does not support any of the VoIP protocols supported by the local client, as specified by the `protocol.layer` and `protocol.library_versions` fields.
-CHANNEL_PRIVATE	The channel/supergroup is not accessible
-CHANNEL_TOO_LARGE	Сhannel is too large to be deleted. Contact support for removal
-CHAT_FORWARDS_RESTRICTED	You can't forward messages from a protected chat
-FILEREF_UPGRADE_NEEDED	The file reference has expired and you must use a refreshed one by obtaining the original media message
-FRESH_CHANGE_ADMINS_FORBIDDEN	You were just elected admin, you can't add or modify other admins yet
-FRESH_CHANGE_PHONE_FORBIDDEN	You can't change your phone number because your session was logged-in recently
-FRESH_RESET_AUTHORISATION_FORBIDDEN	You can't terminate other authorized sessions because the current was logged-in recently
-GIFTCODE_NOT_ALLOWED	Giftcode not allowed
-INVITE_HASH_EXPIRED	The chat the user tried to join has expired and is not valid anymore
-PAYMENT_UNSUPPORTED	A detailed description of the error will be received separately as described [here &raquo;](https://core.telegram.org/api/errors#406-not-acceptable).
-PHONE_NUMBER_INVALID	The phone number is invalid
-PHONE_PASSWORD_FLOOD	You have tried to log-in too many times
-PREMIUM_CURRENTLY_UNAVAILABLE	Premium currently unavailable
-PREVIOUS_CHAT_IMPORT_ACTIVE_WAIT_XMIN	Similar to a flood wait, must wait {value} minutes
+CHANNEL_PRIVATE	The channel/supergroup is not accessible.
+CHANNEL_TOO_LARGE	Channel is too large to be deleted. Contact support for removal.
+CHAT_FORWARDS_RESTRICTED	You can't forward messages from a protected chat.
+FILEREF_UPGRADE_NEEDED	The [file references](https://core.telegram.org/api/file_reference) has expired and you must use a refreshed one by obtaining the original media message.
+FRESH_CHANGE_ADMINS_FORBIDDEN	You were just elected admin, you can't add or modify other admins yet.
+FRESH_CHANGE_PHONE_FORBIDDEN	You can't change your phone number because your session was logged-in recently, please wait at least 24 hours.
+FRESH_RESET_AUTHORISATION_FORBIDDEN	You can't terminate other authorized sessions because the current was logged-in recently, please wait at least 24 hours.
+GIFTCODE_NOT_ALLOWED	Giftcode not allowed.
+INVITE_HASH_EXPIRED	The chat the user tried to join has expired and is not valid anymore.
+PAYMENT_UNSUPPORTED	A detailed description of the error will be received separately as described [here »](https://core.telegram.org/api/errors#406-not-acceptable).
+PHONE_NUMBER_INVALID	The phone number is invalid.
+PHONE_PASSWORD_FLOOD	You have tried to log-in too many times.
+PRECHECKOUT_FAILED	Precheckout is failed.
+PREMIUM_CURRENTLY_UNAVAILABLE	You cannot currently purchase a Premium subscription.
+PREVIOUS_CHAT_IMPORT_ACTIVE_WAIT_XMIN	Import for this chat is already in progress, wait {value} minutes before starting a new one.
 PRIVACY_PREMIUM_REQUIRED	You need a [Telegram Premium subscription](https://core.telegram.org/api/premium) to send a message to this user.
-SEND_CODE_UNAVAILABLE	Returned when all available options for this type of number were already used (e.g. flash-call, then SMS, then this error might be returned to trigger a second resend)
-STICKERSET_INVALID	The sticker set is invalid
-STICKERSET_OWNER_ANONYMOUS	This sticker set can't be used as the group's sticker set because it was created by one of its anonymous admins
+SEND_CODE_UNAVAILABLE	Returned when all available options for this type of number were already used (e.g. flash-call, then SMS, then this error might be returned to trigger a second resend).
+STARGIFT_EXPORT_IN_PROGRESS	Gift export in progress.
+STARGIFT_MESSAGE_INVALID	The provided message for this gift is invalid.
+STARGIFT_USAGE_LIMITED	Star gift usage limited.
+STARS_FORM_AMOUNT_MISMATCH	Stars form amount mismatch.
+STICKERSET_INVALID	The provided sticker set is invalid.
+STICKERSET_OWNER_ANONYMOUS	The provided sticker set can't be used as the group's sticker set because it was created by one of its anonymous admins.
 TOPIC_CLOSED	This topic was closed, you can't send messages to it anymore.
 TOPIC_DELETED	The specified topic was deleted.
-UPDATE_APP_TO_LOGIN	Update app to login
-USERPIC_PRIVACY_REQUIRED	You need to disable privacy settings for your profile picture in order to make your geolocation public
-USERPIC_UPLOAD_REQUIRED	You must have a profile picture to publish your geolocation
-USER_RESTRICTED	You are limited/restricted. You can't perform this action
+UPDATE_APP_TO_LOGIN	Please update your app to login.
+USERPIC_PRIVACY_REQUIRED	You need to disable privacy settings for your profile picture in order to make your geolocation public.
+USERPIC_UPLOAD_REQUIRED	You must have a profile picture to publish your geolocation.
+USER_RESTRICTED	You're limited/restricted by telegram. You can't perform this action.
