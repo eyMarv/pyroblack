@@ -226,6 +226,8 @@ class Session:
                         )
                 except TimeoutError:
                     self.ping_task.cancel()
+                except asyncio.CancelledError:
+                    pass
                 except Exception:
                     pass
                 self.ping_task_event.clear()
@@ -234,6 +236,8 @@ class Session:
                     await asyncio.wait_for(
                         self.connection.close(), timeout=self.RECONN_TIMEOUT
                     )
+                except asyncio.CancelledError:
+                    pass
                 except Exception:
                     pass
 
@@ -244,6 +248,8 @@ class Session:
                         )
                 except TimeoutError:
                     self.recv_task.cancel()
+                except asyncio.CancelledError:
+                    pass
                 except Exception:
                     pass
 
