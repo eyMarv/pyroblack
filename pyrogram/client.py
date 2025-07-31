@@ -831,13 +831,11 @@ class Client(Methods):
                             pts=local_pts, date=local_date, qts=0
                         )
                     )
-                except (
-                    ChannelPrivate,
-                    ChannelInvalid,
-                    PersistentTimestampOutdated,
-                    PersistentTimestampInvalid,
-                ):
+                except (ChannelPrivate, ChannelInvalid):
+                    await self.storage.update_state(id)
                     break
+                except (PersistentTimestampOutdated, PersistentTimestampInvalid):
+                    continue
 
                 if isinstance(diff, raw.types.updates.DifferenceEmpty):
                     await self.storage.update_state(
@@ -851,10 +849,11 @@ class Client(Methods):
                     )
                     break
                 elif isinstance(diff, raw.types.updates.DifferenceTooLong):
+                    local_pts = diff.pts
                     await self.storage.update_state(
                         (
                             id,
-                            diff.pts,
+                            local_pts,
                             None,
                             local_date,
                             local_seq
@@ -886,10 +885,11 @@ class Client(Methods):
                     )
                     break
                 elif isinstance(diff, raw.types.updates.ChannelDifferenceTooLong):
+                    local_pts = diff.dialog.pts
                     await self.storage.update_state(
                         (
                             id,
-                            diff.dialog.pts,
+                            local_pts,
                             None,
                             local_date,
                             local_seq

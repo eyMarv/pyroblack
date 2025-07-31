@@ -654,7 +654,7 @@ class Session:
                     raise
 
                 if (isinstance(e, (OSError, RuntimeError)) and "handler" in str(e)) or (
-                    isinstance(e, TimeoutError)
+                    isinstance(e, TimeoutError) or (isinstance(e, (InternalServerError, ServiceUnavailable, TimeoutError)))
                 ):
                     (log.warning if retries < 2 else log.info)(
                         '[%s] [%s] ReConnecting session requesting "%s", due to: %s',
