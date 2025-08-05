@@ -25,7 +25,7 @@ from typing import List, Match, Union, BinaryIO, Optional, Callable, Dict
 
 import pyrogram
 from pyrogram import enums, raw, types, utils
-from pyrogram.errors import ChannelPrivate, MessageIdsEmpty, PeerIdInvalid
+from pyrogram.errors import ChannelPrivate, MessageIdsEmpty, PeerIdInvalid, ChannelInvalid
 from pyrogram.parser import utils as parser_utils, Parser
 from ..object import Object
 from ..update import Update
@@ -1459,6 +1459,8 @@ class Message(Object, Update):
                         except MessageIdsEmpty:
                             pass
                         except ChannelPrivate:
+                            pass
+                        except ChannelInvalid:
                             pass
                     elif parsed_message.reply_to_story_id:
                         try:
