@@ -446,6 +446,7 @@ def pyrogram_api():
             set_account_ttl
             set_privacy
             get_privacy
+            set_inactive_session_ttl
         """,
     )
 

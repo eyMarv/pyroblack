@@ -19,8 +19,14 @@
 from .get_account_ttl import GetAccountTTL
 from .get_privacy import GetPrivacy
 from .set_account_ttl import SetAccountTTL
+from .set_inactive_session_ttl import SetInactiveSessionTTL
 from .set_privacy import SetPrivacy
 
-
-class Account(GetAccountTTL, GetPrivacy, SetAccountTTL, SetPrivacy):
+class Account(
+    GetAccountTTL,
+    GetPrivacy,
+    SetAccountTTL,
+    SetInactiveSessionTTL,
+    SetPrivacy
+):
     pass
