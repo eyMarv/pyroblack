@@ -207,6 +207,7 @@ FILE_TITLE_EMPTY	An empty file title was specified.
 FILE_TOKEN_INVALID	The master DC did not accept the `file_token` (e.g., the token has expired). Continue downloading the file from the master DC using upload.getFile.
 FILTER_ID_INVALID	The specified filter ID is invalid.
 FILTER_INCLUDE_EMPTY	The list of include_peers of the folder is empty.
+FILTER_INCLUDE_TOO_MUCH	You can't add more chats to this folder.
 FILTER_NOT_SUPPORTED	The specified filter cannot be used in this context.
 FILTER_TITLE_EMPTY	The title field of the filter is empty.
 FIRSTNAME_INVALID	The first name is invalid.
@@ -606,6 +607,7 @@ USER_KICKED	This user was kicked from this chat.
 USER_NOT_MUTUAL_CONTACT	The provided user is not a mutual contact.
 USER_NOT_PARTICIPANT	You're not a member of this chat.
 USER_PUBLIC_MISSING	The accounts username is missing.
+USER_RIGHTS_MISSING	The user rights is missing.
 USER_VOLUME_INVALID	The specified user volume is invalid.
 VENUE_ID_INVALID	The specified venue ID is invalid.
 VIDEO_CONTENT_TYPE_INVALID	The video content type is invalid (i.e.: not streamable).
