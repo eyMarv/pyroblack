@@ -32,11 +32,11 @@ from datetime import datetime, timedelta
 from functools import lru_cache
 from hashlib import sha256
 from importlib import import_module
+from io import BytesIO, StringIO
 from collections import OrderedDict
-from io import StringIO, BytesIO
 from mimetypes import MimeTypes
 from pathlib import Path
-from typing import Union, List, Optional, Callable, AsyncGenerator, Type, Tuple, Any
+from typing import List, Optional, Callable, AsyncGenerator, Type, Tuple, Any, Union
 
 import pyrogram
 from pyrogram import __version__, __license__
@@ -45,8 +45,16 @@ from pyrogram import raw
 from pyrogram import types
 from pyrogram import utils
 from pyrogram.crypto import aes
-from pyrogram.errors import CDNFileHashMismatch
 from pyrogram.errors import (
+    AuthBytesInvalid,
+    BadRequest,
+    CDNFileHashMismatch,
+    ChannelPrivate,
+    EmailNotAllowed,
+    FloodPremiumWait,
+    FloodWait,
+    PersistentTimestampInvalid,
+    PersistentTimestampOutdated,
     SessionPasswordNeeded,
     VolumeLocNotFound,
     ChannelPrivate,
@@ -482,18 +490,53 @@ class Client(Methods):
                 else:
                     break
 
+        if sent_code.type == enums.SentCodeType.SETUP_EMAIL_REQUIRED:
+            print("Setup email required for authorization")
+
+            while True:
+                try:
+                    email = await ainput("Enter email: ", loop=self.loop)
+
+                    await self.invoke(
+                        raw.functions.account.SendVerifyEmailCode(
+                            purpose=raw.types.EmailVerifyPurposeLoginSetup(
+                                phone_number=self.phone_number,
+                                phone_code_hash=sent_code.phone_code_hash,
+                            ),
+                            email=email,
+                        )
+                    )
+
+                    email_code = await ainput("Enter confirmation code: ", loop=self.loop)
+
+                    try:
+                        await self.invoke(
+                            raw.functions.account.VerifyEmail(
+                                purpose=raw.types.EmailVerifyPurposeLoginSetup(
+                                    phone_number=self.phone_number,
+                                    phone_code_hash=sent_code.phone_code_hash,
+                                ),
+                                verification=raw.types.EmailVerificationCode(code=email_code),
+                            )
+                        )
+                    except EmailNotAllowed:
+                        print("This email is not allowed for authorization")
+                        continue
+                except BadRequest as e:
+                    print(e.MESSAGE)
+                else:
+                    break
+        else:
             sent_code_descriptions = {
                 enums.SentCodeType.APP: "Telegram app",
                 enums.SentCodeType.SMS: "SMS",
                 enums.SentCodeType.CALL: "phone call",
                 enums.SentCodeType.FLASH_CALL: "phone flash call",
-                enums.SentCodeType.FRAGMENT_SMS: "Fragment SMS",
-                enums.SentCodeType.EMAIL_CODE: "email code",
+                enums.SentCodeType.FRAGMENT_SMS: "Fragment",
+                enums.SentCodeType.EMAIL_CODE: "email code"
             }
 
-            print(
-                f"The confirmation code has been sent via {sent_code_descriptions[sent_code.type]}"
-            )
+            print(f"The confirmation code has been sent via {sent_code_descriptions[sent_code.type]}")
 
         while True:
             if not self.use_qrcode and not self.phone_code:
