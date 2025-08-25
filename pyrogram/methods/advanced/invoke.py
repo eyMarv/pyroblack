@@ -55,7 +55,7 @@ class Invoke:
             retries (``int``):
                 Number of retries.
 
-            timeout (``float``):
+            timeout (``float``, *optional*):
                 Timeout in seconds.
 
             sleep_threshold (``float``):

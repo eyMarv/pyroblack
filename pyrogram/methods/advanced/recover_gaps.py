@@ -44,7 +44,7 @@ class RecoverGaps:
         other_updates_counter = 0
 
         if self.skip_updates:
-            log.info("Recover gaps disabled in client params. Skipping recovery")
+            log.debug("Recover gaps disabled in client params. Skipping recovery")
             return (message_updates_counter, other_updates_counter)
 
         states = await self.storage.update_state()
