@@ -1015,9 +1015,7 @@ class Message(Object, Update):
                     except MessageIdsEmpty:
                         pass
 
-            client.message_cache[(parsed_message.chat.id, parsed_message.id)] = (
-                parsed_message
-            )
+            await client.message_cache.set((parsed_message.chat.id, parsed_message.id), parsed_message)
 
             if message.reply_to:
                 if message.reply_to.forum_topic:
@@ -1413,7 +1411,7 @@ class Message(Object, Update):
                                 parsed_message.chat.id,
                                 parsed_message.reply_to_message_id,
                             )
-                            reply_to_message = client.message_cache[key]
+                            reply_to_message = await client.message_cache.get(key)
 
                             if not reply_to_message:
                                 reply_to_message = await client.get_messages(
@@ -1449,9 +1447,7 @@ class Message(Object, Update):
                 parsed_message.is_topic_message = True
 
             if not parsed_message.poll:  # Do not cache poll messages
-                client.message_cache[(parsed_message.chat.id, parsed_message.id)] = (
-                    parsed_message
-                )
+                await client.message_cache.set((parsed_message.chat.id, parsed_message.id), parsed_message)
 
             return parsed_message
 

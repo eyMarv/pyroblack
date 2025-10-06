@@ -32,10 +32,11 @@ from datetime import datetime, timedelta
 from functools import lru_cache
 from hashlib import sha256
 from importlib import import_module
+from collections import OrderedDict
 from io import StringIO, BytesIO
 from mimetypes import MimeTypes
 from pathlib import Path
-from typing import Union, List, Optional, Callable, AsyncGenerator, Tuple, Type
+from typing import Union, List, Optional, Callable, AsyncGenerator, Tuple, Type, Any
 
 import pyrogram
 from pyrogram import __version__, __license__
@@ -1503,17 +1504,27 @@ class Client(Methods):
 class Cache:
     def __init__(self, capacity: int):
         self.capacity = capacity
-        self.store = {}
+        self._store = OrderedDict()
+        self._lock = asyncio.Lock()
 
-    def __getitem__(self, key):
-        return self.store.get(key, None)
+    async def get(self, key, default: Any = None) -> Any:
+        async with self._lock:
+            if key in self._store:
+                value = self._store.pop(key)
+                self._store[key] = value
+                return value
+            return default
 
-    def __setitem__(self, key, value):
-        if key in self.store:
-            del self.store[key]
+    async def set(self, key, value):
+        async with self._lock:
+            if key in self._store:
+                del self._store[key]
+            self._store[key] = value
+            if len(self._store) > self.capacity:
+                self._store.popitem(last=False)
 
-        self.store[key] = value
+    def __len__(self) -> int:
+        return len(self._store)
 
-        if len(self.store) > self.capacity:
-            for _ in range(self.capacity // 2 + 1):
-                del self.store[next(iter(self.store))]
+    def __contains__(self, key) -> bool:
+        return key in self._store
