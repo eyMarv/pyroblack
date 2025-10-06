@@ -272,6 +272,8 @@ MIN_CHAT_ID = -999999999999
 MAX_USER_ID_OLD = 2147483647
 MAX_USER_ID = 999999999999
 
+MIN_MONOFORUM_CHANNEL_ID = 1000000000000 + (1 << 31) + 1
+MAX_MONOFORUM_CHANNEL_ID = 3000000000000
 
 def get_raw_peer_id(
     peer: Union[raw.base.Peer, raw.base.InputPeer, raw.base.RequestedPeer]
