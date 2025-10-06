@@ -25,7 +25,12 @@ from typing import List, Match, Union, BinaryIO, Optional, Callable, Dict
 
 import pyrogram
 from pyrogram import enums, raw, types, utils
-from pyrogram.errors import ChannelPrivate, MessageIdsEmpty, PeerIdInvalid, ChannelInvalid
+from pyrogram.errors import (
+    ChannelPrivate,
+    MessageIdsEmpty,
+    PeerIdInvalid,
+    ChannelInvalid,
+)
 from pyrogram.parser import utils as parser_utils, Parser
 from ..object import Object
 from ..update import Update
@@ -929,86 +934,88 @@ class Message(Object, Update):
             elif isinstance(action, raw.types.MessageActionPaymentRefunded):
                 payment_refunded = await types.PaymentRefunded._parse(client, action)
                 service_type = enums.MessageServiceType.PAYMENT_REFUNDED
+                from_user = types.User._parse(client, users.get(user_id, None))
+                sender_chat = (
+                    types.Chat._parse(client, message, users, chats, is_chat=False)
+                    if not from_user
+                    else None
+                )
 
-            from_user = types.User._parse(client, users.get(user_id, None))
-            sender_chat = (
-                types.Chat._parse(client, message, users, chats, is_chat=False)
-                if not from_user
-                else None
-            )
             elif isinstance(action, raw.types.MessageActionTodoCompletions):
-            service_type = enums.MessageServiceType.CHECKLIST_TASKS_DONE
-            checklist_tasks_done = types.ChecklistTasksDone._parse(message)
-        elif isinstance(action, raw.types.MessageActionTodoAppendTasks):
-            service_type = enums.MessageServiceType.CHECKLIST_TASKS_ADDED
-            checklist_tasks_added = types.ChecklistTasksAdded._parse(client, message)
+                service_type = enums.MessageServiceType.CHECKLIST_TASKS_DONE
+                checklist_tasks_done = types.ChecklistTasksDone._parse(message)
 
+            elif isinstance(action, raw.types.MessageActionTodoAppendTasks):
+                service_type = enums.MessageServiceType.CHECKLIST_TASKS_ADDED
+                checklist_tasks_added = types.ChecklistTasksAdded._parse(
+                    client, message
+                )
 
-            parsed_message = Message(
-                id=message.id,
-                message_thread_id=message_thread_id,
-                date=utils.timestamp_to_datetime(message.date),
-                chat=types.Chat._parse(client, message, users, chats, is_chat=True),
-                topic=None,
-                from_user=from_user,
-                service=service_type,
-                new_chat_members=new_chat_members,
-                chat_joined_by_request=chat_joined_by_request,
-                left_chat_member=left_chat_member,
-                new_chat_title=new_chat_title,
-                new_chat_photo=new_chat_photo,
-                delete_chat_photo=delete_chat_photo,
-                migrate_to_chat_id=(
-                    utils.get_channel_id(migrate_to_chat_id)
-                    if migrate_to_chat_id
-                    else None
-                ),
-                migrate_from_chat_id=(
-                    -migrate_from_chat_id if migrate_from_chat_id else None
-                ),
-                group_chat_created=group_chat_created,
-                bot_allowed=bot_allowed,
-                channel_chat_created=channel_chat_created,
-                chat_shared=(
-                    chat_shared
-                    if chat_shared is not None and len(chat_shared) > 0
-                    else None
-                ),
-                user_shared=(
-                    user_shared
-                    if user_shared is not None and len(user_shared) > 0
-                    else None
-                ),
-                is_topic_message=is_topic_message,
-                forum_topic_created=forum_topic_created,
-                forum_topic_closed=forum_topic_closed,
-                forum_topic_reopened=forum_topic_reopened,
-                forum_topic_edited=forum_topic_edited,
-                general_topic_hidden=general_topic_hidden,
-                general_topic_unhidden=general_topic_unhidden,
-                video_chat_scheduled=video_chat_scheduled,
-                video_chat_started=video_chat_started,
-                video_chat_ended=video_chat_ended,
-                video_chat_members_invited=video_chat_members_invited,
-                web_app_data=web_app_data,
-                giveaway_launched=giveaway_launched,
-                giveaway_result=giveaway_result,
-                gift_code=gift_code,
-                successful_payment=successful_payment,
-                payment_refunded=payment_refunded,
-                requested_chats=requested_chats,
-                chat_ttl_period=chat_ttl_period,
-                boosts_applied=boosts_applied,
-                join_request_approved=join_request_approved,
-                checklist_tasks_done=checklist_tasks_done,
-                checklist_tasks_added=checklist_tasks_added,
-                raw=message,
-                chat_join_type=chat_join_type,
-                client=client,
-                # TODO: supergroup_chat_created
-            )
-            if parsed_message.chat.type is not enums.ChatType.CHANNEL:
-                parsed_message.sender_chat = sender_chat
+                parsed_message = Message(
+                    id=message.id,
+                    message_thread_id=message_thread_id,
+                    date=utils.timestamp_to_datetime(message.date),
+                    chat=types.Chat._parse(client, message, users, chats, is_chat=True),
+                    topic=None,
+                    from_user=from_user,
+                    service=service_type,
+                    new_chat_members=new_chat_members,
+                    chat_joined_by_request=chat_joined_by_request,
+                    left_chat_member=left_chat_member,
+                    new_chat_title=new_chat_title,
+                    new_chat_photo=new_chat_photo,
+                    delete_chat_photo=delete_chat_photo,
+                    migrate_to_chat_id=(
+                        utils.get_channel_id(migrate_to_chat_id)
+                        if migrate_to_chat_id
+                        else None
+                    ),
+                    migrate_from_chat_id=(
+                        -migrate_from_chat_id if migrate_from_chat_id else None
+                    ),
+                    group_chat_created=group_chat_created,
+                    bot_allowed=bot_allowed,
+                    channel_chat_created=channel_chat_created,
+                    chat_shared=(
+                        chat_shared
+                        if chat_shared is not None and len(chat_shared) > 0
+                        else None
+                    ),
+                    user_shared=(
+                        user_shared
+                        if user_shared is not None and len(user_shared) > 0
+                        else None
+                    ),
+                    is_topic_message=is_topic_message,
+                    forum_topic_created=forum_topic_created,
+                    forum_topic_closed=forum_topic_closed,
+                    forum_topic_reopened=forum_topic_reopened,
+                    forum_topic_edited=forum_topic_edited,
+                    general_topic_hidden=general_topic_hidden,
+                    general_topic_unhidden=general_topic_unhidden,
+                    video_chat_scheduled=video_chat_scheduled,
+                    video_chat_started=video_chat_started,
+                    video_chat_ended=video_chat_ended,
+                    video_chat_members_invited=video_chat_members_invited,
+                    web_app_data=web_app_data,
+                    giveaway_launched=giveaway_launched,
+                    giveaway_result=giveaway_result,
+                    gift_code=gift_code,
+                    successful_payment=successful_payment,
+                    payment_refunded=payment_refunded,
+                    requested_chats=requested_chats,
+                    chat_ttl_period=chat_ttl_period,
+                    boosts_applied=boosts_applied,
+                    join_request_approved=join_request_approved,
+                    checklist_tasks_done=checklist_tasks_done,
+                    checklist_tasks_added=checklist_tasks_added,
+                    raw=message,
+                    chat_join_type=chat_join_type,
+                    client=client,
+                    # TODO: supergroup_chat_created
+                )
+                if parsed_message.chat.type is not enums.ChatType.CHANNEL:
+                    parsed_message.sender_chat = sender_chat
 
             if isinstance(action, raw.types.MessageActionPinMessage):
                 try:
@@ -1041,7 +1048,9 @@ class Message(Object, Update):
                     except MessageIdsEmpty:
                         pass
 
-            await client.message_cache.set((parsed_message.chat.id, parsed_message.id), parsed_message)
+            await client.message_cache.set(
+                (parsed_message.chat.id, parsed_message.id), parsed_message
+            )
 
             if message.reply_to:
                 if message.reply_to.forum_topic:
@@ -1481,7 +1490,9 @@ class Message(Object, Update):
                 parsed_message.is_topic_message = True
 
             if not parsed_message.poll:  # Do not cache poll messages
-                await client.message_cache.set((parsed_message.chat.id, parsed_message.id), parsed_message)
+                await client.message_cache.set(
+                    (parsed_message.chat.id, parsed_message.id), parsed_message
+                )
 
             return parsed_message
 
@@ -4552,7 +4563,7 @@ class Message(Object, Update):
         effect_id: Optional[int] = None,
         reply_parameters: Optional["types.ReplyParameters"] = None,
         schedule_date: Optional[datetime] = None,
-        paid_message_star_count: int = None
+        paid_message_star_count: int = None,
     ) -> "Message":
         """Bound method *reply_checklist* of :obj:`~pyrogram.types.Message`.
 
@@ -4630,9 +4641,7 @@ class Message(Object, Update):
             quote = self.chat.type != enums.ChatType.PRIVATE
 
         if reply_parameters is None and quote:
-            reply_parameters = types.ReplyParameters(
-                message_id=self.id
-            )
+            reply_parameters = types.ReplyParameters(message_id=self.id)
 
         if message_thread_id is None:
             message_thread_id = self.message_thread_id
@@ -4651,7 +4660,7 @@ class Message(Object, Update):
             effect_id=effect_id,
             reply_parameters=reply_parameters,
             schedule_date=schedule_date,
-            paid_message_star_count=paid_message_star_count
+            paid_message_star_count=paid_message_star_count,
         )
 
     async def edit_text(

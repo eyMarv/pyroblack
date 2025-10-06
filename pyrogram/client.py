@@ -507,7 +507,9 @@ class Client(Methods):
                         )
                     )
 
-                    email_code = await ainput("Enter confirmation code: ", loop=self.loop)
+                    email_code = await ainput(
+                        "Enter confirmation code: ", loop=self.loop
+                    )
 
                     try:
                         await self.invoke(
@@ -516,7 +518,9 @@ class Client(Methods):
                                     phone_number=self.phone_number,
                                     phone_code_hash=sent_code.phone_code_hash,
                                 ),
-                                verification=raw.types.EmailVerificationCode(code=email_code),
+                                verification=raw.types.EmailVerificationCode(
+                                    code=email_code
+                                ),
                             )
                         )
                     except EmailNotAllowed:
@@ -533,10 +537,12 @@ class Client(Methods):
                 enums.SentCodeType.CALL: "phone call",
                 enums.SentCodeType.FLASH_CALL: "phone flash call",
                 enums.SentCodeType.FRAGMENT_SMS: "Fragment",
-                enums.SentCodeType.EMAIL_CODE: "email code"
+                enums.SentCodeType.EMAIL_CODE: "email code",
             }
 
-            print(f"The confirmation code has been sent via {sent_code_descriptions[sent_code.type]}")
+            print(
+                f"The confirmation code has been sent via {sent_code_descriptions[sent_code.type]}"
+            )
 
         while True:
             if not self.use_qrcode and not self.phone_code:

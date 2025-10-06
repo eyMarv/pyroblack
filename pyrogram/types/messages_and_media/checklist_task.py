@@ -83,6 +83,10 @@ class ChecklistTask(Object):
             id=item.id,
             text=text,
             entities=entities,
-            completed_by_user=types.User._parse(client, users.get(getattr(completion, "completed_by", None))),
-            completion_date=utils.timestamp_to_datetime(getattr(completion, "date", None))
+            completed_by_user=types.User._parse(
+                client, users.get(getattr(completion, "completed_by", None))
+            ),
+            completion_date=utils.timestamp_to_datetime(
+                getattr(completion, "date", None)
+            ),
         )

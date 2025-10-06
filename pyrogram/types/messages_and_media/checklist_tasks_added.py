@@ -37,10 +37,7 @@ class ChecklistTasksAdded(Object):
     """
 
     def __init__(
-        self,
-        *,
-        checklist_message_id: int,
-        tasks: List["types.ChecklistTask"]
+        self, *, checklist_message_id: int, tasks: List["types.ChecklistTask"]
     ):
 
         super().__init__()
@@ -49,10 +46,17 @@ class ChecklistTasksAdded(Object):
         self.tasks = tasks
 
     @staticmethod
-    def _parse(client: "pyrogram.Client", message: "raw.types.MessageService") -> "ChecklistTasksAdded":
+    def _parse(
+        client: "pyrogram.Client", message: "raw.types.MessageService"
+    ) -> "ChecklistTasksAdded":
         action: "raw.types.MessageActionTodoAppendTasks" = message.action
 
         return ChecklistTasksAdded(
             checklist_message_id=getattr(message.reply_to, "reply_to_msg_id", None),
-            tasks=types.List([types.ChecklistTask._parse(client, task, None, {}) for task in action.tasks])
+            tasks=types.List(
+                [
+                    types.ChecklistTask._parse(client, task, None, {})
+                    for task in action.tasks
+                ]
+            ),
         )

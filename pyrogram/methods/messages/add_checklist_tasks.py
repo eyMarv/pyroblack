@@ -27,7 +27,7 @@ class AddChecklistTasks:
         self: "pyrogram.Client",
         chat_id: Union[int, str],
         message_id: int,
-        tasks: List["types.InputChecklistTask"]
+        tasks: List["types.InputChecklistTask"],
     ) -> int:
         """Add tasks to a checklist in a message.
 
@@ -66,7 +66,7 @@ class AddChecklistTasks:
             raw.functions.messages.AppendTodoList(
                 peer=await self.resolve_peer(chat_id),
                 msg_id=message_id,
-                list=[await task.write(self) for task in tasks]
+                list=[await task.write(self) for task in tasks],
             )
         )
 

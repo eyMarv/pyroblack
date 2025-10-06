@@ -35,6 +35,7 @@ from pyrogram.file_id import FileType
 # Maximum file size for local video note (10 MB)
 _MAX_VIDEO_NOTE_SIZE_BYTES: int = 10 * 1024 * 1024
 
+
 class SendVideoNote:
     async def send_video_note(
         self: "pyrogram.Client",
@@ -84,9 +85,9 @@ class SendVideoNote:
                 pass a file path as string to upload a new video note that exists on your local machine, or
                 pass a binary file-like object with its attribute ".name" set for in-memory uploads.
                 Sending video notes by a URL is currently unsupported.
-                
+
                 .. note::
-                    When uploading from local file: if the file is larger than 10 MB, Telegram will upload 
+                    When uploading from local file: if the file is larger than 10 MB, Telegram will upload
                     it as a regular video instead of a video note.
 
             duration (``int``, *optional*):
@@ -225,9 +226,9 @@ class SendVideoNote:
                     file_size = os.path.getsize(video_note)
                     if file_size > _MAX_VIDEO_NOTE_SIZE_BYTES:
                         log.warning(
-                           "Video note file size (%.1f MB) exceeds 10 MB limit. "
-                           "Telegram will treat it as a regular video instead of a video note.",
-                           file_size / (1024 * 1024),
+                            "Video note file size (%.1f MB) exceeds 10 MB limit. "
+                            "Telegram will treat it as a regular video instead of a video note.",
+                            file_size / (1024 * 1024),
                         )
 
                     thumb = await self.save_file(thumb)

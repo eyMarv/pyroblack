@@ -22,11 +22,8 @@ from .set_account_ttl import SetAccountTTL
 from .set_inactive_session_ttl import SetInactiveSessionTTL
 from .set_privacy import SetPrivacy
 
+
 class Account(
-    GetAccountTTL,
-    GetPrivacy,
-    SetAccountTTL,
-    SetInactiveSessionTTL,
-    SetPrivacy
+    GetAccountTTL, GetPrivacy, SetAccountTTL, SetInactiveSessionTTL, SetPrivacy
 ):
     pass

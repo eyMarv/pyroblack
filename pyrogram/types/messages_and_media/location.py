@@ -47,7 +47,7 @@ class Location(Object):
         longitude: float,
         latitude: float,
         accuracy_radius: int = None,
-        address: str = None
+        address: str = None,
     ):
         super().__init__(client)
 
@@ -57,13 +57,15 @@ class Location(Object):
         self.address = address
 
     @staticmethod
-    def _parse(client, geo_point: Union["raw.types.GeoPoint", "raw.types.BusinessLocation"]) -> "Location":
+    def _parse(
+        client, geo_point: Union["raw.types.GeoPoint", "raw.types.BusinessLocation"]
+    ) -> "Location":
         if isinstance(geo_point, raw.types.GeoPoint):
             return Location(
                 longitude=geo_point.long,
                 latitude=geo_point.lat,
                 accuracy_radius=getattr(geo_point, "accuracy_radius", None),
-                client=client
+                client=client,
             )
 
         if isinstance(geo_point, raw.types.BusinessLocation):
@@ -72,5 +74,5 @@ class Location(Object):
                 latitude=getattr(geo_point.geo_point, "lat", None),
                 accuracy_radius=getattr(geo_point.geo_point, "accuracy_radius", None),
                 address=geo_point.address,
-                client=client
+                client=client,
             )

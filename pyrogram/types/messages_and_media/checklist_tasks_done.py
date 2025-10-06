@@ -43,7 +43,7 @@ class ChecklistTasksDone(Object):
         *,
         checklist_message_id: int,
         marked_as_done_task_ids: List[int],
-        marked_as_not_done_task_ids: List[int]
+        marked_as_not_done_task_ids: List[int],
     ):
 
         super().__init__()
@@ -59,5 +59,5 @@ class ChecklistTasksDone(Object):
         return ChecklistTasksDone(
             checklist_message_id=getattr(message.reply_to, "reply_to_msg_id", None),
             marked_as_done_task_ids=action.completed,
-            marked_as_not_done_task_ids=action.incompleted
+            marked_as_not_done_task_ids=action.incompleted,
         )
