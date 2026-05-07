@@ -50,6 +50,7 @@ from pyrogram.errors import (
     BadRequest,
     CDNFileHashMismatch,
     ChannelPrivate,
+    ChannelInvalid,
     EmailNotAllowed,
     FloodPremiumWait,
     FloodWait,
@@ -57,14 +58,6 @@ from pyrogram.errors import (
     PersistentTimestampOutdated,
     SessionPasswordNeeded,
     VolumeLocNotFound,
-    ChannelPrivate,
-    ChannelInvalid,
-    BadRequest,
-    AuthBytesInvalid,
-    FloodWait,
-    FloodPremiumWait,
-    PersistentTimestampInvalid,
-    PersistentTimestampOutdated,
 )
 from pyrogram.handlers.handler import Handler
 from pyrogram.methods import Methods
@@ -225,13 +218,7 @@ class Client(Methods):
         max_concurrent_transmissions (``int``, *optional*):
             Set the maximum amount of concurrent transmissions (uploads & downloads).
             A value that is too high may result in network related issues.
-            Defaults to 30.
-
-        upload_boost (``bool``, *optional*):
-            Make pyroblack use more parallel connections for file uploads.
-            As far as your network allows it, you will get better upload speeds.
-            On slow networks, this may result in network related issues.
-            Default: False.
+            Defaults to 1000.
 
         init_params (``raw.types.JsonObject``, *optional*):
             Additional initConnection parameters.
@@ -259,13 +246,13 @@ class Client(Methods):
     INVITE_LINK_RE = re.compile(
         r"^(?:https?://)?(?:www\.)?(?:t(?:elegram)?\.(?:org|me|dog)/(?:joinchat/|\+))([\w-]+)$"
     )
-    WORKERS = min(32, (os.cpu_count() or 0) + 4)  # os.cpu_count() can be None
+    WORKERS = min(64, (os.cpu_count() or 0) + 4)  # os.cpu_count() can be None
     WORKDIR = PARENT_DIR
 
     # Interval of seconds in which the updates watchdog will kick in
     UPDATES_WATCHDOG_INTERVAL = 10 * 60
 
-    MAX_CONCURRENT_TRANSMISSIONS = 30
+    MAX_CONCURRENT_TRANSMISSIONS = 1000
     MAX_MESSAGE_CACHE_SIZE = 10000
 
     mimetypes = MimeTypes()
@@ -305,7 +292,6 @@ class Client(Methods):
         sleep_threshold: int = Session.SLEEP_THRESHOLD,
         hide_password: bool = False,
         max_concurrent_transmissions: int = MAX_CONCURRENT_TRANSMISSIONS,
-        upload_boost: bool = False,
         init_params: raw.types.JsonObject = None,
         max_message_cache_size: int = MAX_MESSAGE_CACHE_SIZE,
         client_platform: "enums.ClientPlatform" = enums.ClientPlatform.OTHER,
@@ -345,7 +331,6 @@ class Client(Methods):
         self.sleep_threshold = sleep_threshold
         self.hide_password = hide_password
         self.max_concurrent_transmissions = max_concurrent_transmissions
-        self.upload_boost = upload_boost
         self.init_params = init_params
         self.max_message_cache_size = max_message_cache_size
         self.client_platform = client_platform
@@ -397,6 +382,7 @@ class Client(Methods):
         self.updates_watchdog_task = None
         self.updates_watchdog_event = asyncio.Event()
         self.last_update_time = datetime.now()
+        self.updates_invoke_error = None
         self.listeners = {
             listener_type: [] for listener_type in pyrogram.enums.ListenerTypes
         }

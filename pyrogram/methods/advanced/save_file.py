@@ -17,23 +17,21 @@
 #  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
 
 import asyncio
-import functools
-import inspect
-import io
-import os
-import logging
-import math
+from functools import partial
+from inspect import iscoroutinefunction
+from logging import getLogger
+from math import ceil
+from io import SEEK_END
 from hashlib import md5
 from pathlib import PurePath
 from typing import Union, BinaryIO, Callable
 
 import pyrogram
-from pyrogram import StopTransmission
-from pyrogram import raw
+from pyrogram import StopTransmission, raw
 from pyrogram.session import Session
 from pyrogram.utils import run_sync
 
-log = logging.getLogger(__name__)
+log = getLogger(__name__)
 
 
 class SaveFile:
@@ -102,18 +100,30 @@ class SaveFile:
             async def worker(session):
                 while True:
                     data = await queue.get()
-
                     if data is None:
                         return
-
                     for attempt in range(3):
                         try:
                             await session.invoke(data)
                             break
                         except Exception as e:
-                            loglvl = log.info if attempt < 2 else log.warning
-                            loglvl(f"Retrying file part due to error: {e}")
-                            await asyncio.sleep(2**attempt)
+                            log.warning(f"Retrying part due to error: {e}")
+                            await asyncio.sleep(2 ** attempt)
+
+            def create_rpc(chunk, file_part, is_big, file_id, file_total_parts):
+                if is_big:
+                    return raw.functions.upload.SaveBigFilePart(
+                        file_id=file_id,
+                        file_part=file_part,
+                        file_total_parts=file_total_parts,
+                        bytes=chunk,
+                    )
+                else:
+                    return raw.functions.upload.SaveFilePart(
+                        file_id=file_id,
+                        file_part=file_part,
+                        bytes=chunk
+                    )
 
             part_size = 512 * 1024
             queue = asyncio.Queue(16)
@@ -124,7 +134,7 @@ class SaveFile:
                 else path
             ) as fp:
                 file_name = getattr(fp, "name", "file.jpg")
-                fp.seek(0, os.SEEK_END)
+                fp.seek(0, SEEK_END)
                 file_size = fp.tell()
                 fp.seek(0)
 
@@ -140,13 +150,14 @@ class SaveFile:
                         f"Can't upload files bigger than {file_size_limit_mib} MiB"
                     )
 
-                file_total_parts = int(math.ceil(file_size / part_size))
-                is_big = file_size > 10 * 1024 * 1024
-                pool_size = (4 if self.upload_boost else 3) if is_big else 1
-                workers_count = (6 if self.upload_boost else 4) if is_big else 1
+                file_total_parts = ceil(file_size / part_size)
+                is_big = file_size > 100 * 1024 * 1024
+                pool_size = 2 if is_big else 1
+                workers_count = 10 if is_big else 1
                 is_missing_part = file_id is not None
                 file_id = file_id or self.rnd_id()
                 md5_sum = md5() if not is_big and not is_missing_part else None
+
                 pool = [
                     Session(
                         self,
@@ -157,6 +168,7 @@ class SaveFile:
                     )
                     for _ in range(pool_size)
                 ]
+
                 workers = [
                     self.loop.create_task(worker(session))
                     for session in pool
@@ -168,28 +180,21 @@ class SaveFile:
                         await session.start()
 
                     fp.seek(part_size * file_part)
+                    next_chunk_task = self.loop.create_task(self.preload(fp, part_size))
 
                     while True:
-                        chunk = await run_sync(fp.read, part_size)
+                        chunk = await next_chunk_task
+                        next_chunk_task = self.loop.create_task(self.preload(fp, part_size))
 
                         if not chunk:
+                            next_chunk_task.cancel()
                             if not is_big and not is_missing_part:
                                 md5_sum = md5_sum.hexdigest()  # type: ignore
                             break
 
-                        if is_big:
-                            rpc = raw.functions.upload.SaveBigFilePart(
-                                file_id=file_id,
-                                file_part=file_part,
-                                file_total_parts=file_total_parts,
-                                bytes=chunk,
-                            )
-                        else:
-                            rpc = raw.functions.upload.SaveFilePart(
-                                file_id=file_id, file_part=file_part, bytes=chunk
-                            )
-
-                        await queue.put(rpc)
+                        await queue.put(
+                            create_rpc(chunk, file_part, is_big, file_id, file_total_parts)
+                        )
 
                         if is_missing_part:
                             return
@@ -199,25 +204,22 @@ class SaveFile:
 
                         file_part += 1
 
-                        if progress:
-                            func = functools.partial(
+                        if progress and file_total_parts >= 10 and file_part % (file_total_parts // 10) == 0:
+                            func = partial(
                                 progress,
                                 min(file_part * part_size, file_size),
                                 file_size,
                                 *progress_args,
                             )
 
-                            if inspect.iscoroutinefunction(progress):
+                            if iscoroutinefunction(progress):
                                 await func()
                             else:
                                 await self.loop.run_in_executor(self.executor, func)
                 except StopTransmission:
                     raise
                 except Exception as e:
-                    log.error(
-                        f"Error during file upload at part {file_part}: {e}",
-                        exc_info=True,
-                    )
+                    log.error(f"Error during file upload at part {file_part}: {e}", exc_info=True)
                 else:
                     if is_big:
                         return raw.types.InputFileBig(
@@ -233,6 +235,12 @@ class SaveFile:
                             md5_checksum=md5_sum,  # type: ignore
                         )
                 finally:
+                    try:
+                        if "next_chunk_task" in locals() and next_chunk_task and not next_chunk_task.done():
+                            next_chunk_task.cancel()
+                    except Exception:
+                        pass
+
                     for _ in workers:
                         await queue.put(None)
 
@@ -240,3 +248,6 @@ class SaveFile:
 
                     for session in pool:
                         await session.stop()
+
+    async def preload(self, fp, part_size):
+        return await run_sync(fp.read, part_size)
