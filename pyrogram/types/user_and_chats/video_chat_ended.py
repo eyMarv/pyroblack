@@ -34,5 +34,5 @@ class VideoChatEnded(Object):
         self.duration = duration
 
     @staticmethod
-    def _parse(action: "raw.types.MessageActionGroupCall") -> "VideoChatEnded":
+    def _parse(action: "raw.functions.MessageActionGroupCall") -> "VideoChatEnded":
         return VideoChatEnded(duration=action.duration)

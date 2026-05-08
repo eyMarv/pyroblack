@@ -119,9 +119,9 @@ class ChatInviteLink(Object):
     def _parse(
         client: "pyrogram.Client",
         invite: "raw.base.ExportedChatInvite",
-        users: Dict[int, "raw.types.User"] = None,
+        users: Dict[int, "raw.functions.User"] = None,
     ) -> Optional["ChatInviteLink"]:
-        if not isinstance(invite, raw.types.ChatInviteExported):
+        if not isinstance(invite, raw.functions.ChatInviteExported):
             return None
 
         creator = (

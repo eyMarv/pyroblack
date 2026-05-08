@@ -23,65 +23,65 @@ from .auto_name import AutoName
 class MessageEntityType(AutoName):
     """Message entity type enumeration used in :obj:`~pyrogram.types.MessageEntity`."""
 
-    MENTION = raw.types.MessageEntityMention
+    MENTION = raw.functions.MessageEntityMention
     "``@username``"
 
-    HASHTAG = raw.types.MessageEntityHashtag
+    HASHTAG = raw.functions.MessageEntityHashtag
     "``#hashtag``"
 
-    CASHTAG = raw.types.MessageEntityCashtag
+    CASHTAG = raw.functions.MessageEntityCashtag
     "``$USD``"
 
-    BOT_COMMAND = raw.types.MessageEntityBotCommand
+    BOT_COMMAND = raw.functions.MessageEntityBotCommand
     "``/start@pyrogrambot``"
 
-    URL = raw.types.MessageEntityUrl
+    URL = raw.functions.MessageEntityUrl
     "``https://pyrogram.org`` (see ``url``)"
 
-    EMAIL = raw.types.MessageEntityEmail
+    EMAIL = raw.functions.MessageEntityEmail
     "``do-not-reply@pyrogram.org``"
 
-    PHONE_NUMBER = raw.types.MessageEntityPhone
+    PHONE_NUMBER = raw.functions.MessageEntityPhone
     "``+1-123-456-7890``"
 
-    BOLD = raw.types.MessageEntityBold
+    BOLD = raw.functions.MessageEntityBold
     "Bold text"
 
-    ITALIC = raw.types.MessageEntityItalic
+    ITALIC = raw.functions.MessageEntityItalic
     "Italic text"
 
-    UNDERLINE = raw.types.MessageEntityUnderline
+    UNDERLINE = raw.functions.MessageEntityUnderline
     "Underlined text"
 
-    STRIKETHROUGH = raw.types.MessageEntityStrike
+    STRIKETHROUGH = raw.functions.MessageEntityStrike
     "Strikethrough text"
 
-    SPOILER = raw.types.MessageEntitySpoiler
+    SPOILER = raw.functions.MessageEntitySpoiler
     "Spoiler text"
 
-    CODE = raw.types.MessageEntityCode
+    CODE = raw.functions.MessageEntityCode
     "Monowidth string"
 
-    PRE = raw.types.MessageEntityPre
+    PRE = raw.functions.MessageEntityPre
     "Monowidth block (see ``language``)"
 
-    BLOCKQUOTE = raw.types.MessageEntityBlockquote
+    BLOCKQUOTE = raw.functions.MessageEntityBlockquote
     "Blockquote text"
 
-    EXPANDABLE_BLOCKQUOTE = raw.types.MessageEntityBlockquote
+    EXPANDABLE_BLOCKQUOTE = raw.functions.MessageEntityBlockquote
     "collapsed-by-default block quotation"
 
-    TEXT_LINK = raw.types.MessageEntityTextUrl
+    TEXT_LINK = raw.functions.MessageEntityTextUrl
     "For clickable text URLs"
 
-    TEXT_MENTION = raw.types.MessageEntityMentionName
+    TEXT_MENTION = raw.functions.MessageEntityMentionName
     "for users without usernames (see ``user``)"
 
-    BANK_CARD = raw.types.MessageEntityBankCard
+    BANK_CARD = raw.functions.MessageEntityBankCard
     "Bank card text"
 
-    CUSTOM_EMOJI = raw.types.MessageEntityCustomEmoji
+    CUSTOM_EMOJI = raw.functions.MessageEntityCustomEmoji
     "Custom emoji"
 
-    UNKNOWN = raw.types.MessageEntityUnknown
+    UNKNOWN = raw.functions.MessageEntityUnknown
     "Unknown message entity type"

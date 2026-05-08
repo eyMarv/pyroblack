@@ -39,4 +39,4 @@ class LabeledPrice(Object):
         self.amount = amount
 
     def write(self):
-        return raw.types.LabeledPrice(label=self.label, amount=self.amount)
+        return raw.functions.LabeledPrice(label=self.label, amount=self.amount)

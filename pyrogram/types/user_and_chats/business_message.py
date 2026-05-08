@@ -82,33 +82,33 @@ class BusinessMessage(Object):
     def _parse(
         client,
         message: Union[
-            "raw.types.BusinessGreetingMessage", "raw.types.BusinessAwayMessage"
+            "raw.functions.BusinessGreetingMessage", "raw.functions.BusinessAwayMessage"
         ] = None,
-        users: Dict[int, "raw.types.User"] = None,
+        users: Dict[int, "raw.functions.User"] = None,
     ) -> Optional["BusinessMessage"]:
         if not message:
             return None
 
         schedule = None
 
-        if isinstance(message, raw.types.BusinessAwayMessage):
+        if isinstance(message, raw.functions.BusinessAwayMessage):
             if isinstance(
-                message.schedule, raw.types.BusinessAwayMessageScheduleAlways
+                message.schedule, raw.functions.BusinessAwayMessageScheduleAlways
             ):
                 schedule = enums.BusinessSchedule.ALWAYS
             elif isinstance(
-                message.schedule, raw.types.BusinessAwayMessageScheduleOutsideWorkHours
+                message.schedule, raw.functions.BusinessAwayMessageScheduleOutsideWorkHours
             ):
                 schedule = enums.BusinessSchedule.OUTSIDE_WORK_HOURS
             elif isinstance(
-                message.schedule, raw.types.BusinessAwayMessageScheduleCustom
+                message.schedule, raw.functions.BusinessAwayMessageScheduleCustom
             ):
                 schedule = enums.BusinessSchedule.CUSTOM
 
         return BusinessMessage(
             shortcut_id=message.shortcut_id,
-            is_greeting=isinstance(message, raw.types.BusinessGreetingMessage),
-            is_away=isinstance(message, raw.types.BusinessAwayMessage),
+            is_greeting=isinstance(message, raw.functions.BusinessGreetingMessage),
+            is_away=isinstance(message, raw.functions.BusinessAwayMessage),
             no_activity_days=getattr(message, "no_activity_days", None),
             offline_only=getattr(message, "offline_only", None),
             recipients=types.BusinessRecipients._parse(

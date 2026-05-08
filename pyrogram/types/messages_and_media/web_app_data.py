@@ -44,5 +44,5 @@ class WebAppData(Object):
         self.button_text = button_text
 
     @staticmethod
-    def _parse(action: "raw.types.MessageActionWebViewDataSentMe"):
+    def _parse(action: "raw.functions.MessageActionWebViewDataSentMe"):
         return WebAppData(data=action.data, button_text=action.text)

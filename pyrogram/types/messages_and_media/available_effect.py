@@ -73,8 +73,8 @@ class AvailableEffect(Object):
     @staticmethod
     async def _parse(
         client,
-        effect: "raw.types.AvailableEffect",
-        document: "raw.types.Document" = None,
+        effect: "raw.functions.AvailableEffect",
+        document: "raw.functions.Document" = None,
     ) -> "AvailableEffect":
         sticker = None
 

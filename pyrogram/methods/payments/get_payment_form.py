@@ -58,7 +58,7 @@ class GetPaymentForm:
         invoice = None
 
         if isinstance(message_id, int):
-            invoice = raw.types.InputInvoiceMessage(
+            invoice = raw.functions.InputInvoiceMessage(
                 peer=await self.resolve_peer(chat_id), msg_id=message_id
             )
         elif isinstance(message_id, str):
@@ -72,7 +72,7 @@ class GetPaymentForm:
             else:
                 slug = message_id
 
-            invoice = raw.types.InputInvoiceSlug(slug=slug)
+            invoice = raw.functions.InputInvoiceSlug(slug=slug)
 
         r = await self.invoke(raw.functions.payments.GetPaymentForm(invoice=invoice))
 

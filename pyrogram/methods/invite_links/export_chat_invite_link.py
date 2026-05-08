@@ -71,7 +71,7 @@ class ExportChatInviteLink:
             raw.functions.messages.ExportChatInvite(
                 peer=await self.resolve_peer(chat_id),
                 legacy_revoke_permanent=True,
-                subscription_pricing=raw.types.StarsSubscriptionPricing(
+                subscription_pricing=raw.functions.StarsSubscriptionPricing(
                     period=subscription_period, amount=subscription_price
                 ),
             )

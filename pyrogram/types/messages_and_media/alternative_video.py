@@ -110,8 +110,8 @@ class AlternativeVideo(Object):
     @staticmethod
     def _parse(
         client,
-        video: "raw.types.Document",
-        video_attributes: "raw.types.DocumentAttributeVideo",
+        video: "raw.functions.Document",
+        video_attributes: "raw.functions.DocumentAttributeVideo",
         file_name: str,
     ) -> "AlternativeVideo":
         return AlternativeVideo(

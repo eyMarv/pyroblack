@@ -52,7 +52,7 @@ class GetStickers:
         """
         sticker_set = await self.invoke(
             raw.functions.messages.GetStickerSet(
-                stickerset=raw.types.InputStickerSetShortName(short_name=short_name),
+                stickerset=raw.functions.InputStickerSetShortName(short_name=short_name),
                 hash=0,
             )
         )

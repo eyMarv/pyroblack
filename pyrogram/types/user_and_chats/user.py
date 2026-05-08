@@ -309,7 +309,7 @@ class User(Object, Update):
 
     @staticmethod
     def _parse(client, user: "raw.base.User") -> Optional["User"]:
-        if user is None or isinstance(user, raw.types.UserEmpty):
+        if user is None or isinstance(user, raw.functions.UserEmpty):
             return None
         user_name = user.username
         active_usernames = getattr(user, "usernames", [])
@@ -377,15 +377,15 @@ class User(Object, Update):
 
     @staticmethod
     def _parse_status(user_status: "raw.base.UserStatus", is_bot: bool = False):
-        if isinstance(user_status, raw.types.UserStatusOnline):
+        if isinstance(user_status, raw.functions.UserStatusOnline):
             status, date = enums.UserStatus.ONLINE, user_status.expires
-        elif isinstance(user_status, raw.types.UserStatusOffline):
+        elif isinstance(user_status, raw.functions.UserStatusOffline):
             status, date = enums.UserStatus.OFFLINE, user_status.was_online
-        elif isinstance(user_status, raw.types.UserStatusRecently):
+        elif isinstance(user_status, raw.functions.UserStatusRecently):
             status, date = enums.UserStatus.RECENTLY, None
-        elif isinstance(user_status, raw.types.UserStatusLastWeek):
+        elif isinstance(user_status, raw.functions.UserStatusLastWeek):
             status, date = enums.UserStatus.LAST_WEEK, None
-        elif isinstance(user_status, raw.types.UserStatusLastMonth):
+        elif isinstance(user_status, raw.functions.UserStatusLastMonth):
             status, date = enums.UserStatus.LAST_MONTH, None
         else:
             status, date = enums.UserStatus.LONG_AGO, None
@@ -409,7 +409,7 @@ class User(Object, Update):
         }
 
     @staticmethod
-    def _parse_user_status(client, user_status: "raw.types.UpdateUserStatus"):
+    def _parse_user_status(client, user_status: "raw.functions.UpdateUserStatus"):
         return User(
             id=user_status.user_id,
             **User._parse_status(user_status.status),

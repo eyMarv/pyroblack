@@ -84,11 +84,11 @@ class MessageEntity(Object):
     def _parse(
         client,
         entity: "raw.base.MessageEntity",
-        users: Dict[int, "raw.types.User"] = None,
+        users: Dict[int, "raw.functions.User"] = None,
     ) -> Optional["MessageEntity"]:
         # Special case for InputMessageEntityMentionName -> MessageEntityType.TEXT_MENTION
         # This happens in case of UpdateShortSentMessage inside send_message() where entities are parsed from the input
-        if isinstance(entity, raw.types.InputMessageEntityMentionName):
+        if isinstance(entity, raw.functions.InputMessageEntityMentionName):
             entity_type = enums.MessageEntityType.TEXT_MENTION
             user_id = entity.user_id.user_id
         else:
@@ -134,7 +134,7 @@ class MessageEntity(Object):
 
         entity = self.type.value
 
-        if entity is raw.types.MessageEntityMentionName:
-            entity = raw.types.InputMessageEntityMentionName
+        if entity is raw.functions.MessageEntityMentionName:
+            entity = raw.functions.InputMessageEntityMentionName
 
         return entity(**args)

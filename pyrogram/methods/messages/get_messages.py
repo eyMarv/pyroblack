@@ -69,7 +69,7 @@ class GetMessages:
                 Defaults to 1.
 
             link (``str``):
-                A link of the message, usually can be copied using ``Copy Link`` functionality OR obtained using :obj:`~pyrogram.raw.types.Message.link` OR  :obj:`~pyrogram.raw.functions.channels.ExportMessageLink`
+                A link of the message, usually can be copied using ``Copy Link`` functionality OR obtained using :obj:`~pyrogram.raw.functions.Message.link` OR  :obj:`~pyrogram.raw.functions.channels.ExportMessageLink`
 
         Returns:
             :obj:`~pyrogram.types.Message` | List of :obj:`~pyrogram.types.Message`: In case *message_ids* was not
@@ -98,10 +98,10 @@ class GetMessages:
         """
         if chat_id:
             ids, ids_type = (
-                (message_ids, raw.types.InputMessageID)
+                (message_ids, raw.functions.InputMessageID)
                 if message_ids
                 else (
-                    (reply_to_message_ids, raw.types.InputMessageReplyTo)
+                    (reply_to_message_ids, raw.functions.InputMessageReplyTo)
                     if reply_to_message_ids
                     else (None, None)
                 )
@@ -121,7 +121,7 @@ class GetMessages:
             if replies < 0:
                 replies = (1 << 31) - 1
 
-            if isinstance(peer, raw.types.InputPeerChannel):
+            if isinstance(peer, raw.functions.InputPeerChannel):
                 rpc = raw.functions.channels.GetMessages(channel=peer, id=ids)
             else:
                 rpc = raw.functions.messages.GetMessages(id=ids)

@@ -88,7 +88,7 @@ class AddStickerToSet:
                 _ = await document.delete()
             else:
                 decoded = FileId.decode(sticker)
-                media = raw.types.InputDocument(
+                media = raw.functions.InputDocument(
                     id=decoded.media_id,
                     access_hash=decoded.access_hash,
                     file_reference=decoded.file_reference,
@@ -107,10 +107,10 @@ class AddStickerToSet:
 
         r = await self.invoke(
             raw.functions.stickers.AddStickerToSet(
-                stickerset=raw.types.InputStickerSetShortName(
+                stickerset=raw.functions.InputStickerSetShortName(
                     short_name=set_short_name
                 ),
-                sticker=[raw.types.InputStickerSetItem(document=media, emoji=emoji)],
+                sticker=[raw.functions.InputStickerSetItem(document=media, emoji=emoji)],
             )
         )
 

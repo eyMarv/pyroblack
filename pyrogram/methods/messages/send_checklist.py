@@ -118,9 +118,9 @@ class SendChecklist:
         r = await self.invoke(
             raw.functions.messages.SendMedia(
                 peer=await self.resolve_peer(chat_id),
-                media=raw.types.InputMediaTodo(
-                    todo=raw.types.TodoList(
-                        title=raw.types.TextWithEntities(
+                media=raw.functions.InputMediaTodo(
+                    todo=raw.functions.TodoList(
+                        title=raw.functions.TextWithEntities(
                             text=title, entities=entities or []
                         ),
                         list=[await task.write(self) for task in tasks],

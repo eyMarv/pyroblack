@@ -219,18 +219,18 @@ class SendVoice:
                     file = await self.save_file(
                         voice, progress=progress, progress_args=progress_args
                     )
-                    media = raw.types.InputMediaUploadedDocument(
+                    media = raw.functions.InputMediaUploadedDocument(
                         mime_type=mime_type,
                         file=file,
                         attributes=[
-                            raw.types.DocumentAttributeAudio(
+                            raw.functions.DocumentAttributeAudio(
                                 voice=True, duration=duration
                             )
                         ],
                         ttl_seconds=(1 << 31) - 1 if view_once else None,
                     )
                 elif re.match("^https?://", voice):
-                    media = raw.types.InputMediaDocumentExternal(url=voice)
+                    media = raw.functions.InputMediaDocumentExternal(url=voice)
                 else:
                     media = utils.get_input_media_from_file_id(voice, FileType.VOICE)
             else:
@@ -240,11 +240,11 @@ class SendVoice:
                 file = await self.save_file(
                     voice, progress=progress, progress_args=progress_args
                 )
-                media = raw.types.InputMediaUploadedDocument(
+                media = raw.functions.InputMediaUploadedDocument(
                     mime_type=mime_type,
                     file=file,
                     attributes=[
-                        raw.types.DocumentAttributeAudio(voice=True, duration=duration)
+                        raw.functions.DocumentAttributeAudio(voice=True, duration=duration)
                     ],
                     ttl_seconds=(1 << 31) - 1 if view_once else None,
                 )
@@ -283,10 +283,10 @@ class SendVoice:
                         if isinstance(
                             i,
                             (
-                                raw.types.UpdateNewMessage,
-                                raw.types.UpdateNewChannelMessage,
-                                raw.types.UpdateNewScheduledMessage,
-                                raw.types.UpdateBotNewBusinessMessage,
+                                raw.functions.UpdateNewMessage,
+                                raw.functions.UpdateNewChannelMessage,
+                                raw.functions.UpdateNewScheduledMessage,
+                                raw.functions.UpdateBotNewBusinessMessage,
                             ),
                         ):
                             return await types.Message._parse(
@@ -295,7 +295,7 @@ class SendVoice:
                                 {i.id: i for i in r.users},
                                 {i.id: i for i in r.chats},
                                 is_scheduled=isinstance(
-                                    i, raw.types.UpdateNewScheduledMessage
+                                    i, raw.functions.UpdateNewScheduledMessage
                                 ),
                                 business_connection_id=business_connection_id,
                             )

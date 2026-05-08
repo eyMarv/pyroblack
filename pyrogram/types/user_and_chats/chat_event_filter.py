@@ -156,7 +156,7 @@ class ChatEventFilter(Object):
         if self.video_chats:
             group_call = True
 
-        return raw.types.ChannelAdminLogEventsFilter(
+        return raw.functions.ChannelAdminLogEventsFilter(
             join=join,
             leave=leave,
             invite=invite,

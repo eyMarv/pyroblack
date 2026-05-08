@@ -88,7 +88,7 @@ class SetProfilePhoto:
             )
             if isinstance(background_colors, int):
                 background_colors = [background_colors]
-            emoji_id = raw.types.VideoSizeEmojiMarkup(
+            emoji_id = raw.functions.VideoSizeEmojiMarkup(
                 emoji_id=emoji, background_colors=background_colors
             )
 

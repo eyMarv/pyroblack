@@ -85,7 +85,7 @@ class TranslateText:
                 raw.functions.messages.TranslateText(
                     to_lang=to_language_code,
                     text=[
-                        raw.types.TextWithEntities(
+                        raw.functions.TextWithEntities(
                             text=message, entities=entities or []
                         )
                     ],

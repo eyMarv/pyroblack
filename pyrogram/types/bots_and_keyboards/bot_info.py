@@ -50,7 +50,7 @@ class BotInfo(Object):
         self.privacy_policy_url = privacy_policy_url
 
     @staticmethod
-    def _parse(bot_info: "raw.types.bots.BotInfo") -> "BotInfo":
+    def _parse(bot_info: "raw.functions.bots.BotInfo") -> "BotInfo":
         return BotInfo(
             name=getattr(bot_info, "name", None),
             about=getattr(bot_info, "about", None),

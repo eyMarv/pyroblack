@@ -139,16 +139,16 @@ class InputInvoiceMessageContent(InputMessageContent):
         self.is_flexible = is_flexible
 
     async def write(self, client: "pyrogram.Client", reply_markup):
-        return raw.types.InputBotInlineMessageMediaInvoice(
+        return raw.functions.InputBotInlineMessageMediaInvoice(
             title=self.title,
             description=self.description,
             photo=(
-                raw.types.InputWebDocument(
+                raw.functions.InputWebDocument(
                     url=self.photo_url,
                     mime_type="image/jpg",
                     size=self.photo_size,
                     attributes=[
-                        raw.types.DocumentAttributeImageSize(
+                        raw.functions.DocumentAttributeImageSize(
                             w=self.photo_width, h=self.photo_height
                         )
                     ],
@@ -156,7 +156,7 @@ class InputInvoiceMessageContent(InputMessageContent):
                 if self.photo_url
                 else None
             ),
-            invoice=raw.types.Invoice(
+            invoice=raw.functions.Invoice(
                 currency=self.currency,
                 prices=[i.write() for i in self.prices],
                 test=client.test_mode,
@@ -172,7 +172,7 @@ class InputInvoiceMessageContent(InputMessageContent):
                 self.payload.encode() if isinstance(self.payload, str) else self.payload
             ),
             provider=self.provider_token,
-            provider_data=raw.types.DataJSON(
+            provider_data=raw.functions.DataJSON(
                 data=self.provider_data if self.provider_data else "{}"
             ),
             reply_markup=await reply_markup.write(client) if reply_markup else None,

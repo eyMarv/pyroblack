@@ -49,7 +49,7 @@ class BusinessWorkingHours(Object):
 
     @staticmethod
     def _parse(
-        work_hours: "raw.types.BusinessWorkHours" = None,
+        work_hours: "raw.functions.BusinessWorkHours" = None,
     ) -> Optional["BusinessWorkingHours"]:
         if not work_hours:
             return None

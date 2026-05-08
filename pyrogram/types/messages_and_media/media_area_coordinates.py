@@ -58,7 +58,7 @@ class MediaAreaCoordinates(Object):
         self.rotation = rotation
 
     def _parse(
-        media_area_cordinates: "raw.types.MediaAreaCoordinates",
+        media_area_cordinates: "raw.functions.MediaAreaCoordinates",
     ) -> "MediaAreaCoordinates":
         return MediaAreaCoordinates(
             x=media_area_cordinates.x,
@@ -69,7 +69,7 @@ class MediaAreaCoordinates(Object):
         )
 
     def write(self):
-        return raw.types.MediaAreaCoordinates(
+        return raw.functions.MediaAreaCoordinates(
             x=self.x or 51.596797943115,  # value from official android apps
             y=self.y or 51.580257415771,  # value from official android apps
             w=self.width or 69.867012023926,  # value from official android apps

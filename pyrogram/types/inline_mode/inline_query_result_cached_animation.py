@@ -89,11 +89,11 @@ class InlineQueryResultCachedAnimation(InlineQueryResult):
 
         file_id = FileId.decode(self.animation_file_id)
 
-        return raw.types.InputBotInlineResultDocument(
+        return raw.functions.InputBotInlineResultDocument(
             id=self.id,
             type=self.type,
             title=self.title,
-            document=raw.types.InputDocument(
+            document=raw.functions.InputDocument(
                 id=file_id.media_id,
                 access_hash=file_id.access_hash,
                 file_reference=file_id.file_reference,
@@ -101,7 +101,7 @@ class InlineQueryResultCachedAnimation(InlineQueryResult):
             send_message=(
                 await self.input_message_content.write(client, self.reply_markup)
                 if self.input_message_content
-                else raw.types.InputBotInlineMessageMediaAuto(
+                else raw.functions.InputBotInlineMessageMediaAuto(
                     reply_markup=(
                         await self.reply_markup.write(client)
                         if self.reply_markup

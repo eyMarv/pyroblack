@@ -69,8 +69,8 @@ class InputLocationMessageContent(InputMessageContent):
         self.proximity_alert_radius = proximity_alert_radius
 
     async def write(self, client: "pyrogram.Client", reply_markup):
-        return raw.types.InputBotInlineMessageMediaGeo(
-            geo_point=raw.types.InputGeoPoint(
+        return raw.functions.InputBotInlineMessageMediaGeo(
+            geo_point=raw.functions.InputGeoPoint(
                 lat=self.latitude,
                 long=self.longitude,
                 accuracy_radius=self.horizontal_accuracy,

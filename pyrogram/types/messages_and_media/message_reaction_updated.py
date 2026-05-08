@@ -82,9 +82,9 @@ class MessageReactionUpdated(Object, Update):
     @staticmethod
     def _parse(
         client: "pyrogram.Client",
-        update: "raw.types.UpdateBotMessageReaction",
-        users: Dict[int, "raw.types.User"],
-        chats: Dict[int, "raw.types.Chat"],
+        update: "raw.functions.UpdateBotMessageReaction",
+        users: Dict[int, "raw.functions.User"],
+        chats: Dict[int, "raw.functions.Chat"],
     ) -> "MessageReactionUpdated":
         chat = None
         peer_id = utils.get_peer_id(update.peer)

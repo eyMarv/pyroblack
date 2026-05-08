@@ -64,10 +64,10 @@ class TextQuote(Object):
     @staticmethod
     def _parse(
         client: "pyrogram.Client",
-        users: Dict[int, "raw.types.User"],
-        reply_to: "raw.types.MessageReplyHeader",
+        users: Dict[int, "raw.functions.User"],
+        reply_to: "raw.functions.MessageReplyHeader",
     ) -> "TextQuote":
-        if isinstance(reply_to, raw.types.MessageReplyHeader):
+        if isinstance(reply_to, raw.functions.MessageReplyHeader):
             entities = types.List(
                 filter(
                     lambda x: x is not None,

@@ -54,7 +54,7 @@ class InputReplyToMessage(Object):
         reply_to_message_id: int = None,
         message_thread_id: int = None,
         reply_to_chat: Union[
-            "raw.types.InputPeerChannel", "raw.types.InputPeerUser"
+            "raw.functions.InputPeerChannel", "raw.functions.InputPeerUser"
         ] = None,
         quote_text: str = None,
         quote_entities: List["raw.base.MessageEntity"] = None,
@@ -79,7 +79,7 @@ class InputReplyToMessage(Object):
                 top_msg_id = self.message_thread_id
             else:
                 reply_to_msg_id = self.reply_to_message_id
-            return raw.types.InputReplyToMessage(
+            return raw.functions.InputReplyToMessage(
                 reply_to_msg_id=reply_to_msg_id,
                 top_msg_id=top_msg_id,
                 reply_to_peer_id=self.reply_to_chat,

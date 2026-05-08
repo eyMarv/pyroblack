@@ -95,9 +95,9 @@ class SendReaction:
             reaction = (
                 [
                     (
-                        raw.types.ReactionCustomEmoji(document_id=i)
+                        raw.functions.ReactionCustomEmoji(document_id=i)
                         if isinstance(i, int)
-                        else raw.types.ReactionEmoji(emoticon=i)
+                        else raw.functions.ReactionEmoji(emoticon=i)
                     )
                     for i in emoji
                 ]
@@ -106,9 +106,9 @@ class SendReaction:
             )
         else:
             if isinstance(emoji, int):
-                reaction = [raw.types.ReactionCustomEmoji(document_id=emoji)]
+                reaction = [raw.functions.ReactionCustomEmoji(document_id=emoji)]
             else:
-                reaction = [raw.types.ReactionEmoji(emoticon=emoji)] if emoji else None
+                reaction = [raw.functions.ReactionEmoji(emoticon=emoji)] if emoji else None
         if message_id is not None:
             r = await self.invoke(
                 raw.functions.messages.SendReaction(
@@ -122,7 +122,7 @@ class SendReaction:
             users = {i.id: i for i in r.users}
             chats = {i.id: i for i in r.chats}
             for i in r.updates:
-                if isinstance(i, raw.types.UpdateMessageReactions):
+                if isinstance(i, raw.functions.UpdateMessageReactions):
                     return types.MessageReactions._parse(
                         self, i.reactions, users, chats
                     )
@@ -131,7 +131,7 @@ class SendReaction:
                 raw.functions.stories.SendReaction(
                     peer=await self.resolve_peer(chat_id),
                     story_id=story_id,
-                    reaction=raw.types.ReactionEmoji(emoticon=emoji) if emoji else None,
+                    reaction=raw.functions.ReactionEmoji(emoticon=emoji) if emoji else None,
                     add_to_recent=add_to_recent,
                 )
             )

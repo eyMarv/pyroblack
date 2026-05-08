@@ -36,5 +36,5 @@ class PeerUser(Object):
         self.user_id = user_id
 
     @staticmethod
-    def _parse(action: "raw.types.PeerUser") -> "PeerUser":
+    def _parse(action: "raw.functions.PeerUser") -> "PeerUser":
         return PeerUser(user_id=getattr(action, "user_id", None))

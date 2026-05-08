@@ -76,7 +76,7 @@ class Document(Object):
         self.thumbs = thumbs
 
     @staticmethod
-    def _parse(client, document: "raw.types.Document", file_name: str) -> "Document":
+    def _parse(client, document: "raw.functions.Document", file_name: str) -> "Document":
         return Document(
             file_id=FileId(
                 file_type=FileType.DOCUMENT,

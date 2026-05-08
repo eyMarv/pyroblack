@@ -44,9 +44,9 @@ class GetCollectibleItemInfo:
         input_collectible = None
 
         if username:
-            input_collectible = raw.types.InputCollectibleUsername(username=username)
+            input_collectible = raw.functions.InputCollectibleUsername(username=username)
         elif phone_number:
-            input_collectible = raw.types.InputCollectiblePhone(phone=phone_number)
+            input_collectible = raw.functions.InputCollectiblePhone(phone=phone_number)
         else:
             raise ValueError(
                 "No argument supplied. Either pass username OR phone_number"

@@ -23,50 +23,50 @@ from .auto_name import AutoName
 class ChatAction(AutoName):
     """Chat action enumeration used in :obj:`~pyrogram.types.ChatEvent`."""
 
-    TYPING = raw.types.SendMessageTypingAction
+    TYPING = raw.functions.SendMessageTypingAction
     "Typing text message"
 
-    UPLOAD_PHOTO = raw.types.SendMessageUploadPhotoAction
+    UPLOAD_PHOTO = raw.functions.SendMessageUploadPhotoAction
     "Uploading photo"
 
-    RECORD_VIDEO = raw.types.SendMessageRecordVideoAction
+    RECORD_VIDEO = raw.functions.SendMessageRecordVideoAction
     "Recording video"
 
-    UPLOAD_VIDEO = raw.types.SendMessageUploadVideoAction
+    UPLOAD_VIDEO = raw.functions.SendMessageUploadVideoAction
     "Uploading video"
 
-    RECORD_AUDIO = raw.types.SendMessageRecordAudioAction
+    RECORD_AUDIO = raw.functions.SendMessageRecordAudioAction
     "Recording audio"
 
-    UPLOAD_AUDIO = raw.types.SendMessageUploadAudioAction
+    UPLOAD_AUDIO = raw.functions.SendMessageUploadAudioAction
     "Uploading audio"
 
-    UPLOAD_DOCUMENT = raw.types.SendMessageUploadDocumentAction
+    UPLOAD_DOCUMENT = raw.functions.SendMessageUploadDocumentAction
     "Uploading document"
 
-    FIND_LOCATION = raw.types.SendMessageGeoLocationAction
+    FIND_LOCATION = raw.functions.SendMessageGeoLocationAction
     "Finding location"
 
-    RECORD_VIDEO_NOTE = raw.types.SendMessageRecordRoundAction
+    RECORD_VIDEO_NOTE = raw.functions.SendMessageRecordRoundAction
     "Recording video note"
 
-    UPLOAD_VIDEO_NOTE = raw.types.SendMessageUploadRoundAction
+    UPLOAD_VIDEO_NOTE = raw.functions.SendMessageUploadRoundAction
     "Uploading video note"
 
-    PLAYING = raw.types.SendMessageGamePlayAction
+    PLAYING = raw.functions.SendMessageGamePlayAction
     "Playing game"
 
-    CHOOSE_CONTACT = raw.types.SendMessageChooseContactAction
+    CHOOSE_CONTACT = raw.functions.SendMessageChooseContactAction
     "Choosing contact"
 
-    SPEAKING = raw.types.SpeakingInGroupCallAction
+    SPEAKING = raw.functions.SpeakingInGroupCallAction
     "Speaking in group call"
 
-    IMPORT_HISTORY = raw.types.SendMessageHistoryImportAction
+    IMPORT_HISTORY = raw.functions.SendMessageHistoryImportAction
     "Importing history"
 
-    CHOOSE_STICKER = raw.types.SendMessageChooseStickerAction
+    CHOOSE_STICKER = raw.functions.SendMessageChooseStickerAction
     "Choosing sticker"
 
-    CANCEL = raw.types.SendMessageCancelAction
+    CANCEL = raw.functions.SendMessageCancelAction
     "Cancel ongoing chat action"

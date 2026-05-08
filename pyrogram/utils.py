@@ -57,7 +57,7 @@ def get_input_media_from_file_id(
     expected_file_type: FileType = None,
     ttl_seconds: int = None,
     has_spoiler: bool = None,
-) -> Union["raw.types.InputMediaPhoto", "raw.types.InputMediaDocument"]:
+) -> Union["raw.functions.InputMediaPhoto", "raw.functions.InputMediaDocument"]:
     try:
         decoded = FileId.decode(file_id)
     except Exception:
@@ -77,8 +77,8 @@ def get_input_media_from_file_id(
         raise ValueError(f"This file id can only be used for download: {file_id}")
 
     if file_type in PHOTO_TYPES:
-        return raw.types.InputMediaPhoto(
-            id=raw.types.InputPhoto(
+        return raw.functions.InputMediaPhoto(
+            id=raw.functions.InputPhoto(
                 id=decoded.media_id,
                 access_hash=decoded.access_hash,
                 file_reference=decoded.file_reference,
@@ -88,8 +88,8 @@ def get_input_media_from_file_id(
         )
 
     if file_type in DOCUMENT_TYPES:
-        return raw.types.InputMediaDocument(
-            id=raw.types.InputDocument(
+        return raw.functions.InputMediaDocument(
+            id=raw.functions.InputDocument(
                 id=decoded.media_id,
                 access_hash=decoded.access_hash,
                 file_reference=decoded.file_reference,
@@ -103,7 +103,7 @@ def get_input_media_from_file_id(
 
 async def parse_messages(
     client,
-    messages: "raw.types.messages.Messages",
+    messages: "raw.functions.messages.Messages",
     replies: int = 1,
     business_connection_id: str = None,
 ) -> List["types.Message"]:
@@ -139,9 +139,9 @@ async def parse_messages(
             i.id: i.reply_to.reply_to_msg_id
             for i in messages.messages
             if (
-                not isinstance(i, raw.types.MessageEmpty)
+                not isinstance(i, raw.functions.MessageEmpty)
                 and i.reply_to
-                and isinstance(i.reply_to, raw.types.MessageReplyHeader)
+                and isinstance(i.reply_to, raw.functions.MessageReplyHeader)
                 and i.reply_to.reply_to_msg_id is not None
             )
         }
@@ -149,9 +149,9 @@ async def parse_messages(
         message_reply_to_story = {
             i.id: {"user_id": i.reply_to.peer.user_id, "story_id": i.reply_to.story_id}
             for i in messages.messages
-            if not isinstance(i, raw.types.MessageEmpty)
+            if not isinstance(i, raw.functions.MessageEmpty)
             and i.reply_to
-            and isinstance(i.reply_to, raw.types.MessageReplyStoryHeader)
+            and isinstance(i.reply_to, raw.functions.MessageReplyStoryHeader)
         }
 
         if messages_with_replies:
@@ -229,7 +229,7 @@ def parse_deleted_messages(
 
 
 def pack_inline_message_id(msg_id: "raw.base.InputBotInlineMessageID"):
-    if isinstance(msg_id, raw.types.InputBotInlineMessageID):
+    if isinstance(msg_id, raw.functions.InputBotInlineMessageID):
         inline_message_id_packed = struct.pack(
             "<iqq", msg_id.dc_id, msg_id.id, msg_id.access_hash
         )
@@ -250,13 +250,13 @@ def unpack_inline_message_id(
     if len(decoded) == 20:
         unpacked = struct.unpack("<iqq", decoded)
 
-        return raw.types.InputBotInlineMessageID(
+        return raw.functions.InputBotInlineMessageID(
             dc_id=unpacked[0], id=unpacked[1], access_hash=unpacked[2]
         )
     else:
         unpacked = struct.unpack("<iqiq", decoded)
 
-        return raw.types.InputBotInlineMessageID64(
+        return raw.functions.InputBotInlineMessageID64(
             dc_id=unpacked[0],
             owner_id=unpacked[1],
             id=unpacked[2],
@@ -280,21 +280,21 @@ def get_raw_peer_id(
 ) -> Optional[int]:
     """Get the raw peer id from a Peer object"""
     if isinstance(
-        peer, (raw.types.PeerUser, raw.types.InputPeerUser, raw.types.RequestedPeerUser)
+        peer, (raw.functions.PeerUser, raw.functions.InputPeerUser, raw.functions.RequestedPeerUser)
     ):
         return peer.user_id
 
     if isinstance(
-        peer, (raw.types.PeerChat, raw.types.InputPeerChat, raw.types.RequestedPeerChat)
+        peer, (raw.functions.PeerChat, raw.functions.InputPeerChat, raw.functions.RequestedPeerChat)
     ):
         return peer.chat_id
 
     if isinstance(
         peer,
         (
-            raw.types.PeerChannel,
-            raw.types.InputPeerChannel,
-            raw.types.RequestedPeerChannel,
+            raw.functions.PeerChannel,
+            raw.functions.InputPeerChannel,
+            raw.functions.RequestedPeerChannel,
         ),
     ):
         return peer.channel_id
@@ -307,21 +307,21 @@ def get_peer_id(
 ) -> int:
     """Get the non-raw peer id from a Peer object"""
     if isinstance(
-        peer, (raw.types.PeerUser, raw.types.InputPeerUser, raw.types.RequestedPeerUser)
+        peer, (raw.functions.PeerUser, raw.functions.InputPeerUser, raw.functions.RequestedPeerUser)
     ):
         return peer.user_id
 
     if isinstance(
-        peer, (raw.types.PeerChat, raw.types.InputPeerChat, raw.types.RequestedPeerChat)
+        peer, (raw.functions.PeerChat, raw.functions.InputPeerChat, raw.functions.RequestedPeerChat)
     ):
         return -peer.chat_id
 
     if isinstance(
         peer,
         (
-            raw.types.PeerChannel,
-            raw.types.InputPeerChannel,
-            raw.types.RequestedPeerChannel,
+            raw.functions.PeerChannel,
+            raw.functions.InputPeerChannel,
+            raw.functions.RequestedPeerChannel,
         ),
     ):
         return MAX_CHANNEL_ID - peer.channel_id
@@ -363,7 +363,7 @@ def xor(a: bytes, b: bytes) -> bytes:
 
 
 def compute_password_hash(
-    algo: raw.types.PasswordKdfAlgoSHA256SHA256PBKDF2HMACSHA512iter100000SHA256ModPow,
+    algo: raw.functions.PasswordKdfAlgoSHA256SHA256PBKDF2HMACSHA512iter100000SHA256ModPow,
     password: str,
 ) -> bytes:
     hash1 = sha256(algo.salt1 + password.encode() + algo.salt1)
@@ -375,8 +375,8 @@ def compute_password_hash(
 
 # noinspection PyPep8Naming
 def compute_password_check(
-    r: raw.types.account.Password, password: str
-) -> raw.types.InputCheckPasswordSRP:
+    r: raw.functions.account.Password, password: str
+) -> raw.functions.InputCheckPasswordSRP:
     algo = r.current_algo
 
     p_bytes = algo.p
@@ -430,7 +430,7 @@ def compute_password_check(
         + K_bytes
     )
 
-    return raw.types.InputCheckPasswordSRP(srp_id=srp_id, A=A_bytes, M1=M1_bytes)
+    return raw.functions.InputCheckPasswordSRP(srp_id=srp_id, A=A_bytes, M1=M1_bytes)
 
 
 async def parse_text_entities(

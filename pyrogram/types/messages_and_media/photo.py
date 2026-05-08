@@ -87,17 +87,17 @@ class Photo(Object):
         self.thumbs = thumbs
 
     @staticmethod
-    def _parse(client, photo: "raw.types.Photo", ttl_seconds: int = None) -> "Photo":
-        if isinstance(photo, raw.types.Photo):
-            photos: List[raw.types.PhotoSize] = []
+    def _parse(client, photo: "raw.functions.Photo", ttl_seconds: int = None) -> "Photo":
+        if isinstance(photo, raw.functions.Photo):
+            photos: List[raw.functions.PhotoSize] = []
 
             for p in photo.sizes:
-                if isinstance(p, raw.types.PhotoSize):
+                if isinstance(p, raw.functions.PhotoSize):
                     photos.append(p)
 
-                if isinstance(p, raw.types.PhotoSizeProgressive):
+                if isinstance(p, raw.functions.PhotoSizeProgressive):
                     photos.append(
-                        raw.types.PhotoSize(
+                        raw.functions.PhotoSize(
                             type=p.type, w=p.w, h=p.h, size=max(p.sizes)
                         )
                     )

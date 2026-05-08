@@ -58,9 +58,9 @@ class Location(Object):
 
     @staticmethod
     def _parse(
-        client, geo_point: Union["raw.types.GeoPoint", "raw.types.BusinessLocation"]
+        client, geo_point: Union["raw.functions.GeoPoint", "raw.functions.BusinessLocation"]
     ) -> "Location":
-        if isinstance(geo_point, raw.types.GeoPoint):
+        if isinstance(geo_point, raw.functions.GeoPoint):
             return Location(
                 longitude=geo_point.long,
                 latitude=geo_point.lat,
@@ -68,7 +68,7 @@ class Location(Object):
                 client=client,
             )
 
-        if isinstance(geo_point, raw.types.BusinessLocation):
+        if isinstance(geo_point, raw.functions.BusinessLocation):
             return Location(
                 longitude=getattr(geo_point.geo_point, "long", None),
                 latitude=getattr(geo_point.geo_point, "lat", None),

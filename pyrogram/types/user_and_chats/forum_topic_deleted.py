@@ -34,5 +34,5 @@ class ForumTopicDeleted(Object):
         self.id = id
 
     @staticmethod
-    def _parse(forum_topic: "raw.types.ForumTopicDeleted") -> "ForumTopicDeleted":
+    def _parse(forum_topic: "raw.functions.ForumTopicDeleted") -> "ForumTopicDeleted":
         return ForumTopicDeleted(id=getattr(forum_topic, "id", None))

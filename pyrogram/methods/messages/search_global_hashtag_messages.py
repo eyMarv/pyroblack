@@ -66,7 +66,7 @@ class SearchGlobalHashtagMessages:
         total = abs(limit) or (1 << 31)
         limit = min(100, total)
 
-        offset_peer = raw.types.InputPeerEmpty()
+        offset_peer = raw.functions.InputPeerEmpty()
 
         while True:
             messages = await utils.parse_messages(

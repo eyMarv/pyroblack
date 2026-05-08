@@ -57,9 +57,9 @@ class JoinChat:
             chat = await self.invoke(
                 raw.functions.messages.ImportChatInvite(hash=match.group(1))
             )
-            if isinstance(chat.chats[0], raw.types.Chat):
+            if isinstance(chat.chats[0], raw.functions.Chat):
                 return types.Chat._parse_chat_chat(self, chat.chats[0])
-            elif isinstance(chat.chats[0], raw.types.Channel):
+            elif isinstance(chat.chats[0], raw.functions.Channel):
                 return types.Chat._parse_channel_chat(self, chat.chats[0])
         else:
             chat = await self.invoke(

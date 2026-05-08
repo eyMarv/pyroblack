@@ -120,7 +120,7 @@ class UpdateFolder:
         r = await self.invoke(
             raw.functions.messages.UpdateDialogFilter(
                 id=folder_id,
-                filter=raw.types.DialogFilter(
+                filter=raw.functions.DialogFilter(
                     id=folder_id,
                     title=title,
                     pinned_peers=[

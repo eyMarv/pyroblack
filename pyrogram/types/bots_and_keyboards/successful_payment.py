@@ -79,7 +79,7 @@ class SuccessfulPayment(Object):
         shipping_option_id = None
         payment_info = None
 
-        if isinstance(successful_payment, raw.types.MessageActionPaymentSentMe):
+        if isinstance(successful_payment, raw.functions.MessageActionPaymentSentMe):
             # Try to decode invoice payload into string. If that fails, fallback to bytes instead of decoding by
             # ignoring/replacing errors, this way, button clicks will still work.
             try:

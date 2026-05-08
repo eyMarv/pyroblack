@@ -63,7 +63,7 @@ class SendPaymentForm:
         invoice = None
 
         if isinstance(message_id, int):
-            invoice = raw.types.InputInvoiceMessage(
+            invoice = raw.functions.InputInvoiceMessage(
                 peer=await self.resolve_peer(chat_id), msg_id=message_id
             )
         elif isinstance(message_id, str):
@@ -77,7 +77,7 @@ class SendPaymentForm:
             else:
                 slug = message_id
 
-            invoice = raw.types.InputInvoiceSlug(slug=slug)
+            invoice = raw.functions.InputInvoiceSlug(slug=slug)
 
         form = await self.get_payment_form(chat_id=chat_id, message_id=message_id)
 
@@ -91,7 +91,7 @@ class SendPaymentForm:
         #         raw.functions.payments.SendPaymentForm(
         #             form_id=form.id,
         #             invoice=invoice,
-        #             credentials=raw.types.InputPaymentCredentials(data=raw.types.DataJSON(data={}))
+        #             credentials=raw.functions.InputPaymentCredentials(data=raw.functions.DataJSON(data={}))
         #         )
         #     )
 

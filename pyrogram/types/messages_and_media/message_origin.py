@@ -48,7 +48,7 @@ class MessageOrigin(Object):
     @staticmethod
     def _parse(
         client: "pyrogram.Client",
-        fwd_from: "raw.types.MessageFwdHeader",
+        fwd_from: "raw.functions.MessageFwdHeader",
         users: Dict[int, "raw.base.User"],
         chats: Dict[int, "raw.base.Chat"],
     ) -> Optional["MessageOrigin"]:

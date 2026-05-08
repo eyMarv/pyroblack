@@ -29,5 +29,5 @@ class MenuButtonCommands(MenuButton):
 
     async def write(
         self, client: "pyrogram.Client"
-    ) -> "raw.types.BotMenuButtonCommands":
-        return raw.types.BotMenuButtonCommands()
+    ) -> "raw.functions.BotMenuButtonCommands":
+        return raw.functions.BotMenuButtonCommands()

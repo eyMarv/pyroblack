@@ -129,41 +129,41 @@ class WebPage(Object):
         self.author = author
 
     @staticmethod
-    def _parse(client, webpage: "raw.types.WebPage") -> "WebPage":
+    def _parse(client, webpage: "raw.functions.WebPage") -> "WebPage":
         audio = None
         document = None
         photo = None
         animation = None
         video = None
 
-        if isinstance(webpage.photo, raw.types.Photo):
+        if isinstance(webpage.photo, raw.functions.Photo):
             photo = types.Photo._parse(client, webpage.photo)
 
         doc = webpage.document
 
-        if isinstance(doc, raw.types.Document):
+        if isinstance(doc, raw.functions.Document):
             attributes = {type(i): i for i in doc.attributes}
 
             file_name = getattr(
-                attributes.get(raw.types.DocumentAttributeFilename, None),
+                attributes.get(raw.functions.DocumentAttributeFilename, None),
                 "file_name",
                 None,
             )
 
-            if raw.types.DocumentAttributeAudio in attributes:
-                audio_attributes = attributes[raw.types.DocumentAttributeAudio]
+            if raw.functions.DocumentAttributeAudio in attributes:
+                audio_attributes = attributes[raw.functions.DocumentAttributeAudio]
                 audio = types.Audio._parse(client, doc, audio_attributes, file_name)
 
-            elif raw.types.DocumentAttributeAnimated in attributes:
+            elif raw.functions.DocumentAttributeAnimated in attributes:
                 video_attributes = attributes.get(
-                    raw.types.DocumentAttributeVideo, None
+                    raw.functions.DocumentAttributeVideo, None
                 )
                 animation = types.Animation._parse(
                     client, doc, video_attributes, file_name
                 )
 
-            elif raw.types.DocumentAttributeVideo in attributes:
-                video_attributes = attributes[raw.types.DocumentAttributeVideo]
+            elif raw.functions.DocumentAttributeVideo in attributes:
+                video_attributes = attributes[raw.functions.DocumentAttributeVideo]
                 video = types.Video._parse(client, doc, video_attributes, file_name)
 
             else:

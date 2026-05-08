@@ -40,12 +40,12 @@ class Birthday(Object):
         self.year = year
 
     @staticmethod
-    def _parse(birthday: "raw.types.Birthday" = None) -> "Birthday":
+    def _parse(birthday: "raw.functions.Birthday" = None) -> "Birthday":
         if not birthday:
             return
         return Birthday(
             day=birthday.day, month=birthday.month, year=getattr(birthday, "year", None)
         )
 
-    async def write(self) -> "raw.types.Birthday":
-        return raw.types.Birthday(day=self.day, month=self.month, year=self.year)
+    async def write(self) -> "raw.functions.Birthday":
+        return raw.functions.Birthday(day=self.day, month=self.month, year=self.year)

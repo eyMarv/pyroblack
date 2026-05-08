@@ -93,10 +93,10 @@ class InlineQueryResultCachedPhoto(InlineQueryResult):
 
         file_id = FileId.decode(self.photo_file_id)
 
-        return raw.types.InputBotInlineResultPhoto(
+        return raw.functions.InputBotInlineResultPhoto(
             id=self.id,
             type=self.type,
-            photo=raw.types.InputPhoto(
+            photo=raw.functions.InputPhoto(
                 id=file_id.media_id,
                 access_hash=file_id.access_hash,
                 file_reference=file_id.file_reference,
@@ -104,7 +104,7 @@ class InlineQueryResultCachedPhoto(InlineQueryResult):
             send_message=(
                 await self.input_message_content.write(client, self.reply_markup)
                 if self.input_message_content
-                else raw.types.InputBotInlineMessageMediaAuto(
+                else raw.functions.InputBotInlineMessageMediaAuto(
                     reply_markup=(
                         await self.reply_markup.write(client)
                         if self.reply_markup

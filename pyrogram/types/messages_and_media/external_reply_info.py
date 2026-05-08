@@ -166,11 +166,11 @@ class ExternalReplyInfo(Object):
     @staticmethod
     async def _parse(
         client,
-        reply: "raw.types.MessageReplyHeader",
-        users: Dict[int, "raw.types.User"],
-        chats: Dict[int, "raw.types.Chat"],
+        reply: "raw.functions.MessageReplyHeader",
+        users: Dict[int, "raw.functions.User"],
+        chats: Dict[int, "raw.functions.Chat"],
     ) -> Optional["ExternalReplyInfo"]:
-        if not isinstance(reply, raw.types.MessageReplyHeader):
+        if not isinstance(reply, raw.functions.MessageReplyHeader):
             return None
 
         if not reply.reply_from:
@@ -201,60 +201,60 @@ class ExternalReplyInfo(Object):
         has_media_spoiler = None
 
         if media:
-            if isinstance(media, raw.types.MessageMediaPhoto):
+            if isinstance(media, raw.functions.MessageMediaPhoto):
                 photo = types.Photo._parse(client, media.photo, media.ttl_seconds)
                 media_type = enums.MessageMediaType.PHOTO
                 has_media_spoiler = media.spoiler
-            elif isinstance(media, raw.types.MessageMediaGeo):
+            elif isinstance(media, raw.functions.MessageMediaGeo):
                 location = types.Location._parse(client, media.geo)
                 media_type = enums.MessageMediaType.LOCATION
-            elif isinstance(media, raw.types.MessageMediaContact):
+            elif isinstance(media, raw.functions.MessageMediaContact):
                 contact = types.Contact._parse(client, media)
                 media_type = enums.MessageMediaType.CONTACT
-            elif isinstance(media, raw.types.MessageMediaVenue):
+            elif isinstance(media, raw.functions.MessageMediaVenue):
                 venue = types.Venue._parse(client, media)
                 media_type = enums.MessageMediaType.VENUE
-            elif isinstance(media, raw.types.MessageMediaGame):
+            elif isinstance(media, raw.functions.MessageMediaGame):
                 game = types.Game._parse(client, media)
                 media_type = enums.MessageMediaType.GAME
-            elif isinstance(media, raw.types.MessageMediaGiveaway):
+            elif isinstance(media, raw.functions.MessageMediaGiveaway):
                 giveaway = await types.Giveaway._parse(client, reply, chats)
                 media_type = enums.MessageMediaType.GIVEAWAY
-            elif isinstance(media, raw.types.MessageMediaGiveawayResults):
+            elif isinstance(media, raw.functions.MessageMediaGiveawayResults):
                 giveaway_result = await types.GiveawayResult._parse(client, media)
                 media_type = enums.MessageMediaType.GIVEAWAY_RESULT
-            elif isinstance(media, raw.types.MessageMediaInvoice):
+            elif isinstance(media, raw.functions.MessageMediaInvoice):
                 invoice = types.Invoice._parse(media)
                 media_type = enums.MessageMediaType.INVOICE
-            elif isinstance(media, raw.types.MessageMediaStory):
+            elif isinstance(media, raw.functions.MessageMediaStory):
                 story = await types.Story._parse(client, media, media.peer)
                 media_type = enums.MessageMediaType.STORY
-            elif isinstance(media, raw.types.MessageMediaDocument):
+            elif isinstance(media, raw.functions.MessageMediaDocument):
                 doc = media.document
 
-                if isinstance(doc, raw.types.Document):
+                if isinstance(doc, raw.functions.Document):
                     attributes = {type(i): i for i in doc.attributes}
 
                     file_name = getattr(
-                        attributes.get(raw.types.DocumentAttributeFilename, None),
+                        attributes.get(raw.functions.DocumentAttributeFilename, None),
                         "file_name",
                         None,
                     )
 
-                    if raw.types.DocumentAttributeAnimated in attributes:
+                    if raw.functions.DocumentAttributeAnimated in attributes:
                         video_attributes = attributes.get(
-                            raw.types.DocumentAttributeVideo, None
+                            raw.functions.DocumentAttributeVideo, None
                         )
                         animation = types.Animation._parse(
                             client, doc, video_attributes, file_name
                         )
                         media_type = enums.MessageMediaType.ANIMATION
                         has_media_spoiler = media.spoiler
-                    elif raw.types.DocumentAttributeSticker in attributes:
+                    elif raw.functions.DocumentAttributeSticker in attributes:
                         sticker = await types.Sticker._parse(client, doc, attributes)
                         media_type = enums.MessageMediaType.STICKER
-                    elif raw.types.DocumentAttributeVideo in attributes:
-                        video_attributes = attributes[raw.types.DocumentAttributeVideo]
+                    elif raw.functions.DocumentAttributeVideo in attributes:
+                        video_attributes = attributes[raw.functions.DocumentAttributeVideo]
 
                         if video_attributes.round_message:
                             video_note = types.VideoNote._parse(
@@ -273,8 +273,8 @@ class ExternalReplyInfo(Object):
                             )
                             media_type = enums.MessageMediaType.VIDEO
                             has_media_spoiler = media.spoiler
-                    elif raw.types.DocumentAttributeAudio in attributes:
-                        audio_attributes = attributes[raw.types.DocumentAttributeAudio]
+                    elif raw.functions.DocumentAttributeAudio in attributes:
+                        audio_attributes = attributes[raw.functions.DocumentAttributeAudio]
 
                         if audio_attributes.voice:
                             voice = types.Voice._parse(client, doc, audio_attributes)
@@ -287,13 +287,13 @@ class ExternalReplyInfo(Object):
                     else:
                         document = types.Document._parse(client, doc, file_name)
                         media_type = enums.MessageMediaType.DOCUMENT
-            elif isinstance(media, raw.types.MessageMediaPoll):
+            elif isinstance(media, raw.functions.MessageMediaPoll):
                 poll = types.Poll._parse(client, media)
                 media_type = enums.MessageMediaType.POLL
-            elif isinstance(media, raw.types.MessageMediaDice):
+            elif isinstance(media, raw.functions.MessageMediaDice):
                 dice = types.Dice._parse(client, media)
                 media_type = enums.MessageMediaType.DICE
-            elif isinstance(media, raw.types.MessageMediaPaidMedia):
+            elif isinstance(media, raw.functions.MessageMediaPaidMedia):
                 paid_media = types.PaidMedia._parse(client, media)
                 media_type = enums.MessageMediaType.PAID_MEDIA
             else:

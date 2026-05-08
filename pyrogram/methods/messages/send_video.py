@@ -271,7 +271,7 @@ class SendVideo:
                         vidcover_media = await self.invoke(
                             raw.functions.messages.UploadMedia(
                                 peer=peer,
-                                media=raw.types.InputMediaUploadedPhoto(
+                                media=raw.functions.InputMediaUploadedPhoto(
                                     file=await self.save_file(cover)
                                 ),
                             )
@@ -280,7 +280,7 @@ class SendVideo:
                         vidcover_media = await self.invoke(
                             raw.functions.messages.UploadMedia(
                                 peer=peer,
-                                media=raw.types.InputMediaPhotoExternal(url=cover),
+                                media=raw.functions.InputMediaPhotoExternal(url=cover),
                             )
                         )
                     else:
@@ -291,14 +291,14 @@ class SendVideo:
                     vidcover_media = await self.invoke(
                         raw.functions.messages.UploadMedia(
                             peer=peer,
-                            media=raw.types.InputMediaUploadedPhoto(
+                            media=raw.functions.InputMediaUploadedPhoto(
                                 file=await self.save_file(cover)
                             ),
                         )
                     )
 
                 if vidcover_media:
-                    vidcover_file = raw.types.InputPhoto(
+                    vidcover_file = raw.functions.InputPhoto(
                         id=vidcover_media.photo.id,
                         access_hash=vidcover_media.photo.access_hash,
                         file_reference=vidcover_media.photo.file_reference,
@@ -310,20 +310,20 @@ class SendVideo:
                     file = await self.save_file(
                         video, progress=progress, progress_args=progress_args
                     )
-                    media = raw.types.InputMediaUploadedDocument(
+                    media = raw.functions.InputMediaUploadedDocument(
                         mime_type=self.guess_mime_type(video) or "video/mp4",
                         file=file,
                         ttl_seconds=(1 << 31) - 1 if view_once else ttl_seconds,
                         spoiler=has_spoiler,
                         thumb=thumb,
                         attributes=[
-                            raw.types.DocumentAttributeVideo(
+                            raw.functions.DocumentAttributeVideo(
                                 supports_streaming=supports_streaming or None,
                                 duration=duration,
                                 w=width,
                                 h=height,
                             ),
-                            raw.types.DocumentAttributeFilename(
+                            raw.functions.DocumentAttributeFilename(
                                 file_name=file_name or os.path.basename(video)
                             ),
                         ],
@@ -331,7 +331,7 @@ class SendVideo:
                         video_timestamp=start_timestamp,
                     )
                 elif re.match("^https?://", video):
-                    media = raw.types.InputMediaDocumentExternal(
+                    media = raw.functions.InputMediaDocumentExternal(
                         url=video,
                         ttl_seconds=(1 << 31) - 1 if view_once else ttl_seconds,
                         spoiler=has_spoiler,
@@ -350,7 +350,7 @@ class SendVideo:
                 file = await self.save_file(
                     video, progress=progress, progress_args=progress_args
                 )
-                media = raw.types.InputMediaUploadedDocument(
+                media = raw.functions.InputMediaUploadedDocument(
                     mime_type=self.guess_mime_type(file_name or video.name)
                     or "video/mp4",
                     file=file,
@@ -358,13 +358,13 @@ class SendVideo:
                     spoiler=has_spoiler,
                     thumb=thumb,
                     attributes=[
-                        raw.types.DocumentAttributeVideo(
+                        raw.functions.DocumentAttributeVideo(
                             supports_streaming=supports_streaming or None,
                             duration=duration,
                             w=width,
                             h=height,
                         ),
-                        raw.types.DocumentAttributeFilename(
+                        raw.functions.DocumentAttributeFilename(
                             file_name=file_name or video.name
                         ),
                     ],
@@ -407,10 +407,10 @@ class SendVideo:
                         if isinstance(
                             i,
                             (
-                                raw.types.UpdateNewMessage,
-                                raw.types.UpdateNewChannelMessage,
-                                raw.types.UpdateNewScheduledMessage,
-                                raw.types.UpdateBotNewBusinessMessage,
+                                raw.functions.UpdateNewMessage,
+                                raw.functions.UpdateNewChannelMessage,
+                                raw.functions.UpdateNewScheduledMessage,
+                                raw.functions.UpdateBotNewBusinessMessage,
                             ),
                         ):
                             return await types.Message._parse(
@@ -419,7 +419,7 @@ class SendVideo:
                                 {i.id: i for i in r.users},
                                 {i.id: i for i in r.chats},
                                 is_scheduled=isinstance(
-                                    i, raw.types.UpdateNewScheduledMessage
+                                    i, raw.functions.UpdateNewScheduledMessage
                                 ),
                                 business_connection_id=business_connection_id,
                             )

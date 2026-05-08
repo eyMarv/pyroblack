@@ -68,7 +68,7 @@ class BotBusinessConnection(Object):
 
     @staticmethod
     async def _parse(
-        client: "pyrogram.Client", bot_connection: "raw.types.BotBusinessConnection"
+        client: "pyrogram.Client", bot_connection: "raw.functions.BotBusinessConnection"
     ) -> "BotBusinessConnection":
         return BotBusinessConnection(
             bot_connection_id=bot_connection.connection_id,

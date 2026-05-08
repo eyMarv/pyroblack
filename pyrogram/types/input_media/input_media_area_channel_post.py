@@ -51,7 +51,7 @@ class InputMediaAreaChannelPost(InputMediaArea):
         self.message_id = message_id
 
     async def write(self, client: "pyrogram.Client"):
-        return raw.types.InputMediaAreaChannelPost(
+        return raw.functions.InputMediaAreaChannelPost(
             coordinates=self.coordinates,
             channel=await client.resolve_peer(self.chat_id),
             msg_id=self.message_id,

@@ -430,7 +430,7 @@ class Message(Object, Update):
         reactions (List of :obj:`~pyrogram.types.Reaction`):
             List of the reactions to this message.
 
-        raw (``pyrogram.raw.types.Message``, *optional*):
+        raw (``pyrogram.raw.functions.Message``, *optional*):
             The raw message object, as received from the Telegram API.
 
         link (``str``, *property*):
@@ -570,7 +570,7 @@ class Message(Object, Update):
         ] = None,
         reactions: List["types.Reaction"] = None,
         chat_join_type: "enums.ChatJoinType" = None,
-        raw: "raw.types.Message" = None,
+        raw: "raw.functions.Message" = None,
     ):
         super().__init__(client)
 
@@ -726,22 +726,22 @@ class Message(Object, Update):
     async def _parse(
         client: "pyrogram.Client",
         message: raw.base.Message,
-        users: Dict[int, "raw.types.User"],
-        chats: Dict[int, "raw.types.Chat"],
-        topics: Dict[int, "raw.types.ForumTopic"] = None,
+        users: Dict[int, "raw.functions.User"],
+        chats: Dict[int, "raw.functions.Chat"],
+        topics: Dict[int, "raw.functions.ForumTopic"] = None,
         is_scheduled: bool = False,
         business_connection_id: str = None,
         replies: int = 1,
     ):
-        if isinstance(message, raw.types.MessageEmpty):
+        if isinstance(message, raw.functions.MessageEmpty):
             return Message(id=message.id, empty=True, client=client, raw=message)
 
         from_id = utils.get_raw_peer_id(message.from_id)
         peer_id = utils.get_raw_peer_id(message.peer_id)
         user_id = from_id or peer_id
 
-        if isinstance(message.from_id, raw.types.PeerUser) and isinstance(
-            message.peer_id, raw.types.PeerUser
+        if isinstance(message.from_id, raw.functions.PeerUser) and isinstance(
+            message.peer_id, raw.functions.PeerUser
         ):
             if from_id not in users or peer_id not in users:
                 try:
@@ -758,7 +758,7 @@ class Message(Object, Update):
                 else:
                     users.update({i.id: i for i in r})
 
-        if isinstance(message, raw.types.MessageService):
+        if isinstance(message, raw.functions.MessageService):
             message_thread_id = None
             action = message.action
 
@@ -802,13 +802,13 @@ class Message(Object, Update):
             service_type = None
             chat_join_type = None
 
-            if isinstance(action, raw.types.MessageActionChatAddUser):
+            if isinstance(action, raw.functions.MessageActionChatAddUser):
                 new_chat_members = [
                     types.User._parse(client, users[i]) for i in action.users
                 ]
                 service_type = enums.MessageServiceType.NEW_CHAT_MEMBERS
                 chat_join_type = enums.ChatJoinType.BY_ADD
-            elif isinstance(action, raw.types.MessageActionChatJoinedByLink):
+            elif isinstance(action, raw.functions.MessageActionChatJoinedByLink):
                 new_chat_members = [
                     types.User._parse(
                         client, users[utils.get_raw_peer_id(message.from_id)]
@@ -816,46 +816,46 @@ class Message(Object, Update):
                 ]
                 service_type = enums.MessageServiceType.NEW_CHAT_MEMBERS
                 chat_join_type = enums.ChatJoinType.BY_LINK
-            elif isinstance(action, raw.types.MessageActionChatJoinedByRequest):
+            elif isinstance(action, raw.functions.MessageActionChatJoinedByRequest):
                 chat_joined_by_request = types.ChatJoinedByRequest()
                 service_type = enums.MessageServiceType.NEW_CHAT_MEMBERS
                 chat_join_type = enums.ChatJoinType.BY_REQUEST
-            elif isinstance(action, raw.types.MessageActionChatDeleteUser):
+            elif isinstance(action, raw.functions.MessageActionChatDeleteUser):
                 left_chat_member = types.User._parse(client, users[action.user_id])
                 service_type = enums.MessageServiceType.LEFT_CHAT_MEMBERS
-            elif isinstance(action, raw.types.MessageActionChatEditTitle):
+            elif isinstance(action, raw.functions.MessageActionChatEditTitle):
                 new_chat_title = action.title
                 service_type = enums.MessageServiceType.NEW_CHAT_TITLE
-            elif isinstance(action, raw.types.MessageActionChatDeletePhoto):
+            elif isinstance(action, raw.functions.MessageActionChatDeletePhoto):
                 delete_chat_photo = True
                 service_type = enums.MessageServiceType.DELETE_CHAT_PHOTO
-            elif isinstance(action, raw.types.MessageActionChatMigrateTo):
+            elif isinstance(action, raw.functions.MessageActionChatMigrateTo):
                 migrate_to_chat_id = action.channel_id
                 service_type = enums.MessageServiceType.MIGRATE_TO_CHAT_ID
-            elif isinstance(action, raw.types.MessageActionChannelMigrateFrom):
+            elif isinstance(action, raw.functions.MessageActionChannelMigrateFrom):
                 migrate_from_chat_id = action.chat_id
                 service_type = enums.MessageServiceType.MIGRATE_FROM_CHAT_ID
-            elif isinstance(action, raw.types.MessageActionChatCreate):
+            elif isinstance(action, raw.functions.MessageActionChatCreate):
                 group_chat_created = True
                 service_type = enums.MessageServiceType.GROUP_CHAT_CREATED
-            elif isinstance(action, raw.types.MessageActionChannelCreate):
+            elif isinstance(action, raw.functions.MessageActionChannelCreate):
                 channel_chat_created = True
                 service_type = enums.MessageServiceType.CHANNEL_CHAT_CREATED
-            elif isinstance(action, raw.types.MessageActionChatEditPhoto):
+            elif isinstance(action, raw.functions.MessageActionChatEditPhoto):
                 new_chat_photo = types.Photo._parse(client, action.photo)
                 service_type = enums.MessageServiceType.NEW_CHAT_PHOTO
-            elif isinstance(action, raw.types.MessageActionBotAllowed):
+            elif isinstance(action, raw.functions.MessageActionBotAllowed):
                 bot_allowed = types.BotAllowed._parse(client, action)
                 service_type = enums.MessageServiceType.BOT_ALLOWED
-            elif isinstance(action, raw.types.MessageActionRequestedPeer) or isinstance(
-                action, raw.types.MessageActionRequestedPeerSentMe
+            elif isinstance(action, raw.functions.MessageActionRequestedPeer) or isinstance(
+                action, raw.functions.MessageActionRequestedPeerSentMe
             ):
                 chats_shared = types.RequestedChats._parse(client, action)
                 service_type = enums.MessageServiceType.CHAT_SHARED
-            elif isinstance(action, raw.types.MessageActionTopicCreate):
+            elif isinstance(action, raw.functions.MessageActionTopicCreate):
                 forum_topic_created = types.ForumTopicCreated._parse(message)
                 service_type = enums.MessageServiceType.FORUM_TOPIC_CREATED
-            elif isinstance(action, raw.types.MessageActionTopicEdit):
+            elif isinstance(action, raw.functions.MessageActionTopicEdit):
                 if action.title:
                     forum_topic_edited = types.ForumTopicEdited._parse(action)
                     service_type = enums.MessageServiceType.FORUM_TOPIC_EDITED
@@ -872,66 +872,66 @@ class Message(Object, Update):
                     else:
                         forum_topic_reopened = types.ForumTopicReopened()
                         service_type = enums.MessageServiceType.FORUM_TOPIC_REOPENED
-            elif isinstance(action, raw.types.MessageActionGroupCallScheduled):
+            elif isinstance(action, raw.functions.MessageActionGroupCallScheduled):
                 video_chat_scheduled = types.VideoChatScheduled._parse(action)
                 service_type = enums.MessageServiceType.VIDEO_CHAT_SCHEDULED
-            elif isinstance(action, raw.types.MessageActionGroupCall):
+            elif isinstance(action, raw.functions.MessageActionGroupCall):
                 if action.duration:
                     video_chat_ended = types.VideoChatEnded._parse(action)
                     service_type = enums.MessageServiceType.VIDEO_CHAT_ENDED
                 else:
                     video_chat_started = types.VideoChatStarted()
                     service_type = enums.MessageServiceType.VIDEO_CHAT_STARTED
-            elif isinstance(action, raw.types.MessageActionInviteToGroupCall):
+            elif isinstance(action, raw.functions.MessageActionInviteToGroupCall):
                 video_chat_members_invited = types.VideoChatMembersInvited._parse(
                     client, action, users
                 )
                 service_type = enums.MessageServiceType.VIDEO_CHAT_MEMBERS_INVITED
-            elif isinstance(action, raw.types.MessageActionWebViewDataSentMe):
+            elif isinstance(action, raw.functions.MessageActionWebViewDataSentMe):
                 web_app_data = types.WebAppData._parse(action)
                 service_type = enums.MessageServiceType.WEB_APP_DATA
-            elif isinstance(action, raw.types.MessageActionGiveawayLaunch):
+            elif isinstance(action, raw.functions.MessageActionGiveawayLaunch):
                 giveaway_launched = types.GiveawayLaunched._parse(client, action)
                 service_type = enums.MessageServiceType.GIVEAWAY_LAUNCHED
-            elif isinstance(action, raw.types.MessageActionGiftCode):
+            elif isinstance(action, raw.functions.MessageActionGiftCode):
                 gift_code = types.GiftCode._parse(client, action, chats)
                 service_type = enums.MessageServiceType.GIFT_CODE
             elif isinstance(
                 action,
                 (
-                    raw.types.MessageActionRequestedPeer,
-                    raw.types.MessageActionRequestedPeerSentMe,
+                    raw.functions.MessageActionRequestedPeer,
+                    raw.functions.MessageActionRequestedPeerSentMe,
                 ),
             ):
                 requested_chats = types.RequestedChats._parse(client, action)
                 service_type = enums.MessageServiceType.REQUESTED_CHAT
-            elif isinstance(action, raw.types.MessageActionSetMessagesTTL):
+            elif isinstance(action, raw.functions.MessageActionSetMessagesTTL):
                 chat_ttl_period = action.period
                 service_type = enums.MessageServiceType.CHAT_TTL_CHANGED
-            elif isinstance(action, raw.types.MessageActionBoostApply):
+            elif isinstance(action, raw.functions.MessageActionBoostApply):
                 boosts_applied = action.boosts
                 service_type = enums.MessageServiceType.BOOST_APPLY
-            elif isinstance(action, raw.types.MessageActionChatJoinedByRequest):
+            elif isinstance(action, raw.functions.MessageActionChatJoinedByRequest):
                 join_request_approved = True
                 service_type = enums.MessageServiceType.JOIN_REQUEST_APPROVED
-            elif isinstance(action, raw.types.MessageActionGiveawayResults):
+            elif isinstance(action, raw.functions.MessageActionGiveawayResults):
                 giveaway_result = await types.GiveawayResult._parse(
                     client, action, True
                 )
                 service_type = enums.MessageServiceType.GIVEAWAY_RESULT
-            elif isinstance(action, raw.types.MessageActionBoostApply):
+            elif isinstance(action, raw.functions.MessageActionBoostApply):
                 boosts_applied = action.boosts
                 service_type = enums.MessageServiceType.BOOST_APPLY
             elif isinstance(
                 action,
                 (
-                    raw.types.MessageActionPaymentSent,
-                    raw.types.MessageActionPaymentSentMe,
+                    raw.functions.MessageActionPaymentSent,
+                    raw.functions.MessageActionPaymentSentMe,
                 ),
             ):
                 successful_payment = types.SuccessfulPayment._parse(client, action)
                 service_type = enums.MessageServiceType.SUCCESSFUL_PAYMENT
-            elif isinstance(action, raw.types.MessageActionPaymentRefunded):
+            elif isinstance(action, raw.functions.MessageActionPaymentRefunded):
                 payment_refunded = await types.PaymentRefunded._parse(client, action)
                 service_type = enums.MessageServiceType.PAYMENT_REFUNDED
                 from_user = types.User._parse(client, users.get(user_id, None))
@@ -941,11 +941,11 @@ class Message(Object, Update):
                     else None
                 )
 
-            elif isinstance(action, raw.types.MessageActionTodoCompletions):
+            elif isinstance(action, raw.functions.MessageActionTodoCompletions):
                 service_type = enums.MessageServiceType.CHECKLIST_TASKS_DONE
                 checklist_tasks_done = types.ChecklistTasksDone._parse(message)
 
-            elif isinstance(action, raw.types.MessageActionTodoAppendTasks):
+            elif isinstance(action, raw.functions.MessageActionTodoAppendTasks):
                 service_type = enums.MessageServiceType.CHECKLIST_TASKS_ADDED
                 checklist_tasks_added = types.ChecklistTasksAdded._parse(
                     client, message
@@ -1017,7 +1017,7 @@ class Message(Object, Update):
                 if parsed_message.chat.type is not enums.ChatType.CHANNEL:
                     parsed_message.sender_chat = sender_chat
 
-            if isinstance(action, raw.types.MessageActionPinMessage):
+            if isinstance(action, raw.functions.MessageActionPinMessage):
                 try:
                     parsed_message.pinned_message = await client.get_messages(
                         chat_id=parsed_message.chat.id,
@@ -1029,7 +1029,7 @@ class Message(Object, Update):
                 except Exception:
                     pass
 
-            if isinstance(action, raw.types.MessageActionGameScore):
+            if isinstance(action, raw.functions.MessageActionGameScore):
                 parsed_message.game_high_score = types.GameHighScore._parse_action(
                     client, message, users
                 )
@@ -1072,7 +1072,7 @@ class Message(Object, Update):
 
             return parsed_message
 
-        if isinstance(message, raw.types.Message):
+        if isinstance(message, raw.functions.Message):
             message_thread_id = None
             entities = [
                 types.MessageEntity._parse(client, entity, users)
@@ -1083,7 +1083,7 @@ class Message(Object, Update):
             sender_business_bot = None
             is_topic_message = None
 
-            forward_header = message.fwd_from  # type: raw.types.MessageFwdHeader
+            forward_header = message.fwd_from  # type: raw.functions.MessageFwdHeader
             forward_origin = None
 
             if forward_header:
@@ -1122,62 +1122,62 @@ class Message(Object, Update):
             has_media_spoiler = None
 
             if media:
-                if isinstance(media, raw.types.MessageMediaPhoto):
+                if isinstance(media, raw.functions.MessageMediaPhoto):
                     photo = types.Photo._parse(client, media.photo, media.ttl_seconds)
                     media_type = enums.MessageMediaType.PHOTO
                     has_media_spoiler = media.spoiler
-                elif isinstance(media, raw.types.MessageMediaGeo):
+                elif isinstance(media, raw.functions.MessageMediaGeo):
                     location = types.Location._parse(client, media.geo)
                     media_type = enums.MessageMediaType.LOCATION
-                elif isinstance(media, raw.types.MessageMediaContact):
+                elif isinstance(media, raw.functions.MessageMediaContact):
                     contact = types.Contact._parse(client, media)
                     media_type = enums.MessageMediaType.CONTACT
-                elif isinstance(media, raw.types.MessageMediaVenue):
+                elif isinstance(media, raw.functions.MessageMediaVenue):
                     venue = types.Venue._parse(client, media)
                     media_type = enums.MessageMediaType.VENUE
-                elif isinstance(media, raw.types.MessageMediaGame):
+                elif isinstance(media, raw.functions.MessageMediaGame):
                     game = types.Game._parse(client, media)
                     media_type = enums.MessageMediaType.GAME
-                elif isinstance(media, raw.types.MessageMediaGiveaway):
+                elif isinstance(media, raw.functions.MessageMediaGiveaway):
                     giveaway = await types.Giveaway._parse(client, message, chats)
                     media_type = enums.MessageMediaType.GIVEAWAY
-                elif isinstance(media, raw.types.MessageMediaGiveawayResults):
+                elif isinstance(media, raw.functions.MessageMediaGiveawayResults):
                     giveaway_result = await types.GiveawayResult._parse(
                         client, message.media
                     )
                     media_type = enums.MessageMediaType.GIVEAWAY_RESULT
-                elif isinstance(media, raw.types.MessageMediaStory):
+                elif isinstance(media, raw.functions.MessageMediaStory):
                     story = await types.MessageStory._parse(client, media)
                     media_type = enums.MessageMediaType.STORY
-                elif isinstance(media, raw.types.MessageMediaDocument):
+                elif isinstance(media, raw.functions.MessageMediaDocument):
                     doc = media.document
 
-                    if isinstance(doc, raw.types.Document):
+                    if isinstance(doc, raw.functions.Document):
                         attributes = {type(i): i for i in doc.attributes}
 
                         file_name = getattr(
-                            attributes.get(raw.types.DocumentAttributeFilename, None),
+                            attributes.get(raw.functions.DocumentAttributeFilename, None),
                             "file_name",
                             None,
                         )
 
-                        if raw.types.DocumentAttributeAnimated in attributes:
+                        if raw.functions.DocumentAttributeAnimated in attributes:
                             video_attributes = attributes.get(
-                                raw.types.DocumentAttributeVideo, None
+                                raw.functions.DocumentAttributeVideo, None
                             )
                             animation = types.Animation._parse(
                                 client, doc, video_attributes, file_name
                             )
                             media_type = enums.MessageMediaType.ANIMATION
                             has_media_spoiler = media.spoiler
-                        elif raw.types.DocumentAttributeSticker in attributes:
+                        elif raw.functions.DocumentAttributeSticker in attributes:
                             sticker = await types.Sticker._parse(
                                 client, doc, attributes
                             )
                             media_type = enums.MessageMediaType.STICKER
-                        elif raw.types.DocumentAttributeVideo in attributes:
+                        elif raw.functions.DocumentAttributeVideo in attributes:
                             video_attributes = attributes[
-                                raw.types.DocumentAttributeVideo
+                                raw.functions.DocumentAttributeVideo
                             ]
 
                             if video_attributes.round_message:
@@ -1200,13 +1200,13 @@ class Message(Object, Update):
 
                                 altdocs = media.alt_documents or []
                                 for altdoc in altdocs:
-                                    if isinstance(altdoc, raw.types.Document):
+                                    if isinstance(altdoc, raw.functions.Document):
                                         altdoc_attributes = {
                                             type(i): i for i in altdoc.attributes
                                         }
                                         altdoc_file_name = getattr(
                                             altdoc_attributes.get(
-                                                raw.types.DocumentAttributeFilename,
+                                                raw.functions.DocumentAttributeFilename,
                                                 None,
                                             ),
                                             "file_name",
@@ -1214,7 +1214,7 @@ class Message(Object, Update):
                                         )
 
                                         altdoc_video_attribute = altdoc_attributes.get(
-                                            raw.types.DocumentAttributeVideo, None
+                                            raw.functions.DocumentAttributeVideo, None
                                         )
 
                                         if altdoc_video_attribute:
@@ -1226,9 +1226,9 @@ class Message(Object, Update):
                                                     altdoc_file_name,
                                                 )
                                             )
-                        elif raw.types.DocumentAttributeAudio in attributes:
+                        elif raw.functions.DocumentAttributeAudio in attributes:
                             audio_attributes = attributes[
-                                raw.types.DocumentAttributeAudio
+                                raw.functions.DocumentAttributeAudio
                             ]
 
                             if audio_attributes.voice:
@@ -1244,9 +1244,9 @@ class Message(Object, Update):
                         else:
                             document = types.Document._parse(client, doc, file_name)
                             media_type = enums.MessageMediaType.DOCUMENT
-                elif isinstance(media, raw.types.MessageMediaWebPage):
-                    if isinstance(media.webpage, raw.types.WebPage) or isinstance(
-                        media.webpage, raw.types.WebPageEmpty
+                elif isinstance(media, raw.functions.MessageMediaWebPage):
+                    if isinstance(media.webpage, raw.functions.WebPage) or isinstance(
+                        media.webpage, raw.functions.WebPageEmpty
                     ):
                         web_page_preview = types.WebPagePreview._parse(
                             client, media, message.invert_media
@@ -1254,19 +1254,19 @@ class Message(Object, Update):
                         media_type = enums.MessageMediaType.WEB_PAGE_PREVIEW
                     else:
                         media = None
-                elif isinstance(media, raw.types.MessageMediaPoll):
+                elif isinstance(media, raw.functions.MessageMediaPoll):
                     poll = types.Poll._parse(client, media)
                     media_type = enums.MessageMediaType.POLL
-                elif isinstance(media, raw.types.MessageMediaDice):
+                elif isinstance(media, raw.functions.MessageMediaDice):
                     dice = types.Dice._parse(client, media)
                     media_type = enums.MessageMediaType.DICE
-                elif isinstance(media, raw.types.MessageMediaInvoice):
+                elif isinstance(media, raw.functions.MessageMediaInvoice):
                     invoice = types.MessageInvoice._parse(media)
                     media = enums.MessageMediaType.INVOICE
-                elif isinstance(media, raw.types.MessageMediaPaidMedia):
+                elif isinstance(media, raw.functions.MessageMediaPaidMedia):
                     paid_media = types.PaidMedia._parse(client, media)
                     media_type = enums.MessageMediaType.PAID_MEDIA
-                elif isinstance(media, raw.types.MessageMediaToDo):
+                elif isinstance(media, raw.functions.MessageMediaToDo):
                     media_type = enums.MessageMediaType.CHECKLIST
                     checklist = types.Checklist._parse(client, media, users)
                 else:
@@ -1276,13 +1276,13 @@ class Message(Object, Update):
             reply_markup = message.reply_markup
 
             if reply_markup:
-                if isinstance(reply_markup, raw.types.ReplyKeyboardForceReply):
+                if isinstance(reply_markup, raw.functions.ReplyKeyboardForceReply):
                     reply_markup = types.ForceReply.read(reply_markup)
-                elif isinstance(reply_markup, raw.types.ReplyKeyboardMarkup):
+                elif isinstance(reply_markup, raw.functions.ReplyKeyboardMarkup):
                     reply_markup = types.ReplyKeyboardMarkup.read(reply_markup)
-                elif isinstance(reply_markup, raw.types.ReplyInlineMarkup):
+                elif isinstance(reply_markup, raw.functions.ReplyInlineMarkup):
                     reply_markup = types.InlineKeyboardMarkup.read(reply_markup)
-                elif isinstance(reply_markup, raw.types.ReplyKeyboardHide):
+                elif isinstance(reply_markup, raw.functions.ReplyKeyboardHide):
                     reply_markup = types.ReplyKeyboardRemove.read(reply_markup)
                 else:
                     reply_markup = None
@@ -1389,7 +1389,7 @@ class Message(Object, Update):
                 parsed_message.external_reply = await types.ExternalReplyInfo._parse(
                     client, message.reply_to, users, chats
                 )
-                if isinstance(message.reply_to, raw.types.MessageReplyHeader):
+                if isinstance(message.reply_to, raw.functions.MessageReplyHeader):
                     if message.reply_to.quote:
                         parsed_message.quote = types.TextQuote._parse(
                             client, users, message.reply_to
@@ -1426,11 +1426,11 @@ class Message(Object, Update):
                         )
                 else:
                     parsed_message.reply_to_story_id = message.reply_to.story_id
-                    if isinstance(message.reply_to.peer, raw.types.PeerUser):
+                    if isinstance(message.reply_to.peer, raw.functions.PeerUser):
                         parsed_message.reply_to_story_user_id = (
                             message.reply_to.peer.user_id
                         )
-                    elif isinstance(message.reply_to.peer, raw.types.PeerChat):
+                    elif isinstance(message.reply_to.peer, raw.functions.PeerChat):
                         parsed_message.reply_to_story_chat_id = utils.get_channel_id(
                             message.reply_to.peer.chat_id
                         )

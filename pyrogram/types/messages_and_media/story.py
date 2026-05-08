@@ -110,7 +110,7 @@ class Story(Object, Update):
         media_areas (List of :obj:`~pyrogram.types.MediaArea`, *optional*):
             List of :obj:`~pyrogram.types.MediaArea` object in story.
 
-        raw (``pyrogram.raw.types.StoryItem``, *optional*):
+        raw (``pyrogram.raw.functions.StoryItem``, *optional*):
             The raw story object, as received from the Telegram API.
     """
 
@@ -145,7 +145,7 @@ class Story(Object, Update):
         allowed_users: List[int] = None,
         denied_users: List[int] = None,
         media_areas: List["types.MediaArea"] = None,
-        raw: "raw.types.StoryItem" = None,
+        raw: "raw.functions.StoryItem" = None,
         # allowed_chats: List[int] = None,
         # denied_chats: List[int] = None
     ):
@@ -185,15 +185,15 @@ class Story(Object, Update):
         client: "pyrogram.Client",
         stories: raw.base.StoryItem,
         peer: Union[
-            "raw.types.PeerChannel",
-            "raw.types.PeerUser",
-            "raw.types.InputPeerChannel",
-            "raw.types.InputPeerUser",
+            "raw.functions.PeerChannel",
+            "raw.functions.PeerUser",
+            "raw.functions.InputPeerChannel",
+            "raw.functions.InputPeerUser",
         ],
     ) -> "Story":
-        if isinstance(stories, raw.types.StoryItemSkipped):
+        if isinstance(stories, raw.functions.StoryItemSkipped):
             return await types.StorySkipped._parse(client, stories, peer)
-        if isinstance(stories, raw.types.StoryItemDeleted):
+        if isinstance(stories, raw.functions.StoryItemDeleted):
             return await types.StoryDeleted._parse(client, stories, peer)
         entities = [
             types.MessageEntity._parse(client, entity, {})
@@ -214,28 +214,28 @@ class Story(Object, Update):
         # denied_chats = None
         denied_users = None
         if stories.media:
-            if isinstance(stories.media, raw.types.MessageMediaPhoto):
+            if isinstance(stories.media, raw.functions.MessageMediaPhoto):
                 photo = types.Photo._parse(
                     client, stories.media.photo, stories.media.ttl_seconds
                 )
                 media_type = enums.MessageMediaType.PHOTO
-            elif isinstance(stories.media, raw.types.MessageMediaDocument):
+            elif isinstance(stories.media, raw.functions.MessageMediaDocument):
                 doc = stories.media.document
 
-                if isinstance(doc, raw.types.Document):
+                if isinstance(doc, raw.functions.Document):
                     attributes = {type(i): i for i in doc.attributes}
 
-                    if raw.types.DocumentAttributeAnimated in attributes:
+                    if raw.functions.DocumentAttributeAnimated in attributes:
                         video_attributes = attributes.get(
-                            raw.types.DocumentAttributeVideo, None
+                            raw.functions.DocumentAttributeVideo, None
                         )
                         animation = types.Animation._parse(
                             client, doc, video_attributes, None
                         )
                         media_type = enums.MessageMediaType.ANIMATION
-                    elif raw.types.DocumentAttributeVideo in attributes:
+                    elif raw.functions.DocumentAttributeVideo in attributes:
                         video_attributes = attributes.get(
-                            raw.types.DocumentAttributeVideo, None
+                            raw.functions.DocumentAttributeVideo, None
                         )
                         video = types.Video._parse(
                             client,
@@ -249,8 +249,8 @@ class Story(Object, Update):
                         media_type = None
             else:
                 media_type = None
-        if isinstance(peer, raw.types.PeerChannel) or isinstance(
-            peer, raw.types.InputPeerChannel
+        if isinstance(peer, raw.functions.PeerChannel) or isinstance(
+            peer, raw.functions.InputPeerChannel
         ):
             chat_id = utils.get_channel_id(peer.channel_id)
             chat = await client.invoke(
@@ -259,7 +259,7 @@ class Story(Object, Update):
                 )
             )
             sender_chat = types.Chat._parse_chat(client, chat.chats[0])
-        elif isinstance(peer, raw.types.InputPeerSelf):
+        elif isinstance(peer, raw.functions.InputPeerSelf):
             from_user = client.me
         else:
             from_user = await client.get_users(peer.user_id)
@@ -292,28 +292,28 @@ class Story(Object, Update):
                 sender_chat = types.Chat._parse_chat(client, chat.chats[0])
 
         for priv in stories.privacy:
-            if isinstance(priv, raw.types.PrivacyValueAllowAll):
+            if isinstance(priv, raw.functions.PrivacyValueAllowAll):
                 privacy = enums.StoryPrivacy.PUBLIC
-            elif isinstance(priv, raw.types.PrivacyValueAllowCloseFriends):
+            elif isinstance(priv, raw.functions.PrivacyValueAllowCloseFriends):
                 privacy = enums.StoryPrivacy.CLOSE_FRIENDS
-            elif isinstance(priv, raw.types.PrivacyValueAllowContacts):
+            elif isinstance(priv, raw.functions.PrivacyValueAllowContacts):
                 privacy = enums.StoryPrivacy.CONTACTS
-            elif isinstance(priv, raw.types.PrivacyValueDisallowAll):
+            elif isinstance(priv, raw.functions.PrivacyValueDisallowAll):
                 privacy = enums.StoryPrivacy.PRIVATE
-            elif isinstance(priv, raw.types.PrivacyValueDisallowContacts):
+            elif isinstance(priv, raw.functions.PrivacyValueDisallowContacts):
                 privacy = enums.StoryPrivacy.NO_CONTACTS
 
             """
             if allowed_chats and len(allowed_chats) > 0:
                 chats = [int(str(chat_id)[3:]) if str(chat_id).startswith("-100") else chat_id for chat_id in allowed_chats]
-                privacy_rules.append(raw.types.InputPrivacyValueAllowChatParticipants(chats=chats))
+                privacy_rules.append(raw.functions.InputPrivacyValueAllowChatParticipants(chats=chats))
             if denied_chats and len(denied_chats) > 0:
                 chats = [int(str(chat_id)[3:]) if str(chat_id).startswith("-100") else chat_id for chat_id in denied_chats]
-                privacy_rules.append(raw.types.InputPrivacyValueDisallowChatParticipants(chats=chats))
+                privacy_rules.append(raw.functions.InputPrivacyValueDisallowChatParticipants(chats=chats))
             """
-            if isinstance(priv, raw.types.PrivacyValueAllowUsers):
+            if isinstance(priv, raw.functions.PrivacyValueAllowUsers):
                 allowed_users = priv.users
-            if isinstance(priv, raw.types.PrivacyValueDisallowUsers):
+            if isinstance(priv, raw.functions.PrivacyValueDisallowUsers):
                 denied_users = priv.users
 
         if stories.fwd_from is not None:

@@ -54,7 +54,7 @@ class Dialog(Object):
         ttl_period (``int``, *optional*)
             Time-to-live of all messages sent in this dialog (in seconds).
 
-        raw (:obj:`~pyrogram.raw.types.Dialog`, *optional*):
+        raw (:obj:`~pyrogram.raw.functions.Dialog`, *optional*):
             The raw object, as received from the Telegram API.
     """
 
@@ -71,7 +71,7 @@ class Dialog(Object):
         is_pinned: bool,
         folder_id: int = None,
         ttl_period: int = None,
-        raw: "raw.types.Dialog" = None,
+        raw: "raw.functions.Dialog" = None,
     ):
         super().__init__(client)
 
@@ -87,7 +87,7 @@ class Dialog(Object):
         self.raw = raw
 
     @staticmethod
-    def _parse(client, dialog: "raw.types.Dialog", messages, users, chats) -> "Dialog":
+    def _parse(client, dialog: "raw.functions.Dialog", messages, users, chats) -> "Dialog":
         return Dialog(
             chat=types.Chat._parse_dialog(client, dialog.peer, users, chats),
             top_message=messages.get(utils.get_peer_id(dialog.peer)),

@@ -101,15 +101,15 @@ class InlineQueryResultLocation(InlineQueryResult):
         self.thumb_height = thumb_height
 
     async def write(self, client: "pyrogram.Client"):
-        return raw.types.InputBotInlineResult(
+        return raw.functions.InputBotInlineResult(
             id=self.id,
             type=self.type,
             title=self.title,
             send_message=(
                 await self.input_message_content.write(client, self.reply_markup)
                 if self.input_message_content
-                else raw.types.InputBotInlineMessageMediaGeo(
-                    geo_point=raw.types.InputGeoPoint(
+                else raw.functions.InputBotInlineMessageMediaGeo(
+                    geo_point=raw.functions.InputGeoPoint(
                         lat=self.latitude, long=self.longitude
                     ),
                     heading=self.heading,

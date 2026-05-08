@@ -115,7 +115,7 @@ class GroupCallMember(Object):
     @staticmethod
     def _parse(
         client: "pyrogram.Client",
-        member: "raw.types.GroupCallParticipant",
+        member: "raw.functions.GroupCallParticipant",
         users: Dict[int, "raw.base.User"],
         chats: Dict[int, "raw.base.Chat"],
     ) -> "GroupCallMember":
@@ -124,7 +124,7 @@ class GroupCallMember(Object):
 
         parsed_chat = types.Chat._parse_chat(
             client,
-            users[peer_id] if isinstance(peer, raw.types.PeerUser) else chats[peer_id],
+            users[peer_id] if isinstance(peer, raw.functions.PeerUser) else chats[peer_id],
         )
 
         parsed_chat.bio = getattr(member, "about", None)

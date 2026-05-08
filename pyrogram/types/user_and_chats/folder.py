@@ -118,7 +118,7 @@ class Folder(Object):
         self.has_my_invites = has_my_invites
 
     @staticmethod
-    def _parse(client, folder: "raw.types.DialogFilter", users, chats) -> "Folder":
+    def _parse(client, folder: "raw.functions.DialogFilter", users, chats) -> "Folder":
         included_chats = []
         excluded_chats = []
         pinned_chats = []

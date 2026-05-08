@@ -52,8 +52,8 @@ class RequestedChats(Object):
     def _parse(
         client,
         action: Union[
-            "raw.types.MessageActionRequestedPeer",
-            "raw.types.MessageActionRequestedPeerSentMe",
+            "raw.functions.MessageActionRequestedPeer",
+            "raw.functions.MessageActionRequestedPeerSentMe",
         ],
     ) -> "RequestedChats":
         _requested_chats = []

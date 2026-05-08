@@ -43,6 +43,7 @@ from .location import Location
 from .media_area import MediaArea
 from .media_area_channel_post import MediaAreaChannelPost
 from .media_area_coordinates import MediaAreaCoordinates
+from .custom_emoji import CustomEmoji
 from .message import Message
 from .message_entity import MessageEntity
 from .message_reaction_count_updated import MessageReactionCountUpdated
@@ -114,6 +115,7 @@ __all__ = [
     "MediaAreaChannelPost",
     "MediaAreaCoordinates",
     "Message",
+    "CustomEmoji",
     "MessageEntity",
     "MessageOrigin",
     "MessageOriginChannel",

@@ -66,7 +66,7 @@ class PaymentRefunded(Object):
     @staticmethod
     async def _parse(
         client: "pyrogram.Client",
-        payment_refunded: "raw.types.MessageActionPaymentRefunded",
+        payment_refunded: "raw.functions.MessageActionPaymentRefunded",
     ) -> "PaymentRefunded":
         try:
             payload = payment_refunded.payload.decode()

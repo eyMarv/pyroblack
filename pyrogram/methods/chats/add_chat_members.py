@@ -68,7 +68,7 @@ class AddChatMembers:
         if not isinstance(user_ids, list):
             user_ids = [user_ids]
 
-        if isinstance(peer, raw.types.InputPeerChat):
+        if isinstance(peer, raw.functions.InputPeerChat):
             for user_id in user_ids:
                 await self.invoke(
                     raw.functions.messages.AddChatUser(

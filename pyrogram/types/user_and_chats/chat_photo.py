@@ -70,12 +70,12 @@ class ChatPhoto(Object):
     @staticmethod
     def _parse(
         client,
-        chat_photo: Union["raw.types.UserProfilePhoto", "raw.types.ChatPhoto"],
+        chat_photo: Union["raw.functions.UserProfilePhoto", "raw.functions.ChatPhoto"],
         peer_id: int,
         peer_access_hash: int,
     ):
         if not isinstance(
-            chat_photo, (raw.types.UserProfilePhoto, raw.types.ChatPhoto)
+            chat_photo, (raw.functions.UserProfilePhoto, raw.functions.ChatPhoto)
         ):
             return None
 

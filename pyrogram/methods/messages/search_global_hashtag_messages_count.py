@@ -43,7 +43,7 @@ class SearchGlobalHashtagMessagesCount:
             raw.functions.channels.SearchPosts(
                 hashtag=hashtag,
                 offset_rate=0,
-                offset_peer=raw.types.InputPeerEmpty(),
+                offset_peer=raw.functions.InputPeerEmpty(),
                 offset_id=0,
                 limit=1,
             )

@@ -103,17 +103,17 @@ class InlineQueryResultDocument(InlineQueryResult):
         self.thumb_height = thumb_height
 
     async def write(self, client: "pyrogram.Client"):
-        document = raw.types.InputWebDocument(
+        document = raw.functions.InputWebDocument(
             url=self.document_url, size=0, mime_type=self.mime_type, attributes=[]
         )
 
         thumb = (
-            raw.types.InputWebDocument(
+            raw.functions.InputWebDocument(
                 url=self.thumb_url,
                 size=0,
                 mime_type="image/jpeg",
                 attributes=[
-                    raw.types.DocumentAttributeImageSize(
+                    raw.functions.DocumentAttributeImageSize(
                         w=self.thumb_width, h=self.thumb_height
                     )
                 ],
@@ -128,7 +128,7 @@ class InlineQueryResultDocument(InlineQueryResult):
             )
         ).values()
 
-        return raw.types.InputBotInlineResult(
+        return raw.functions.InputBotInlineResult(
             id=self.id,
             type=self.type,
             title=self.title,
@@ -138,7 +138,7 @@ class InlineQueryResultDocument(InlineQueryResult):
             send_message=(
                 await self.input_message_content.write(client, self.reply_markup)
                 if self.input_message_content
-                else raw.types.InputBotInlineMessageMediaAuto(
+                else raw.functions.InputBotInlineMessageMediaAuto(
                     reply_markup=(
                         await self.reply_markup.write(client)
                         if self.reply_markup

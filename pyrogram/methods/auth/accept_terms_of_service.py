@@ -34,7 +34,7 @@ class AcceptTermsOfService:
         """
         r = await self.invoke(
             raw.functions.help.AcceptTermsOfService(
-                id=raw.types.DataJSON(data=terms_of_service_id)
+                id=raw.functions.DataJSON(data=terms_of_service_id)
             )
         )
 

@@ -36,5 +36,5 @@ class ExportedStoryLink(Object):
         self.link = link
 
     @staticmethod
-    def _parse(exportedstorylink: "raw.types.ExportedStoryLink") -> "ExportedStoryLink":
+    def _parse(exportedstorylink: "raw.functions.ExportedStoryLink") -> "ExportedStoryLink":
         return ExportedStoryLink(link=getattr(exportedstorylink, "link", None))

@@ -39,5 +39,5 @@ class Dice(Object):
         self.value = value
 
     @staticmethod
-    def _parse(client, dice: "raw.types.MessageMediaDice") -> "Dice":
+    def _parse(client, dice: "raw.functions.MessageMediaDice") -> "Dice":
         return Dice(emoji=dice.emoticon, value=dice.value, client=client)

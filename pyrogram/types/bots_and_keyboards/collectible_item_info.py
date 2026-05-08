@@ -62,7 +62,7 @@ class CollectibleItemInfo(Object):
 
     @staticmethod
     def _parse(
-        collectible_info: "raw.types.fragment.CollectibleInfo",
+        collectible_info: "raw.functions.fragment.CollectibleInfo",
     ) -> "CollectibleItemInfo":
         return CollectibleItemInfo(
             purchase_date=utils.timestamp_to_datetime(collectible_info.purchase_date),

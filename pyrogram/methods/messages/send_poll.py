@@ -210,10 +210,10 @@ class SendPoll:
 
         rpc = raw.functions.messages.SendMedia(
             peer=await self.resolve_peer(chat_id),
-            media=raw.types.InputMediaPoll(
-                poll=raw.types.Poll(
+            media=raw.functions.InputMediaPoll(
+                poll=raw.functions.Poll(
                     id=self.rnd_id(),
-                    question=raw.types.TextWithEntities(
+                    question=raw.functions.TextWithEntities(
                         text=q, entities=q_entities or []
                     ),
                     answers=[
@@ -259,10 +259,10 @@ class SendPoll:
             if isinstance(
                 i,
                 (
-                    raw.types.UpdateNewMessage,
-                    raw.types.UpdateNewChannelMessage,
-                    raw.types.UpdateNewScheduledMessage,
-                    raw.types.UpdateBotNewBusinessMessage,
+                    raw.functions.UpdateNewMessage,
+                    raw.functions.UpdateNewChannelMessage,
+                    raw.functions.UpdateNewScheduledMessage,
+                    raw.functions.UpdateBotNewBusinessMessage,
                 ),
             ):
                 return await types.Message._parse(
@@ -270,6 +270,6 @@ class SendPoll:
                     i.message,
                     {i.id: i for i in r.users},
                     {i.id: i for i in r.chats},
-                    is_scheduled=isinstance(i, raw.types.UpdateNewScheduledMessage),
+                    is_scheduled=isinstance(i, raw.functions.UpdateNewScheduledMessage),
                     business_connection_id=business_connection_id,
                 )

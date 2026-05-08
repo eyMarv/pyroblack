@@ -67,7 +67,7 @@ class LeaveFolder:
 
         await self.invoke(
             raw.functions.chatlists.LeaveChatlist(
-                chatlist=raw.types.InputChatlistDialogFilter(filter_id=r.filter_id),
+                chatlist=raw.functions.InputChatlistDialogFilter(filter_id=r.filter_id),
                 peers=(
                     [
                         await self.resolve_peer(utils.get_peer_id(id))

@@ -54,14 +54,14 @@ class MessageStory(Object):
 
     @staticmethod
     async def _parse(
-        client: "pyrogram.Client", message_story: "raw.types.MessageMediaStory"
+        client: "pyrogram.Client", message_story: "raw.functions.MessageMediaStory"
     ) -> Union["MessageStory", "types.Story"]:
         from_user = None
         sender_chat = None
         user_id = None
         chat_id = None
         try:
-            if isinstance(message_story.peer, raw.types.PeerChannel):
+            if isinstance(message_story.peer, raw.functions.PeerChannel):
                 chat_id = utils.get_channel_id(message_story.peer.channel_id)
                 chat = await client.invoke(
                     raw.functions.channels.GetChannels(

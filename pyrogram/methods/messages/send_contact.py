@@ -154,7 +154,7 @@ class SendContact:
 
         rpc = raw.functions.messages.SendMedia(
             peer=await self.resolve_peer(chat_id),
-            media=raw.types.InputMediaContact(
+            media=raw.functions.InputMediaContact(
                 phone_number=phone_number,
                 first_name=first_name,
                 last_name=last_name or "",
@@ -183,10 +183,10 @@ class SendContact:
             if isinstance(
                 i,
                 (
-                    raw.types.UpdateNewMessage,
-                    raw.types.UpdateNewChannelMessage,
-                    raw.types.UpdateNewScheduledMessage,
-                    raw.types.UpdateBotNewBusinessMessage,
+                    raw.functions.UpdateNewMessage,
+                    raw.functions.UpdateNewChannelMessage,
+                    raw.functions.UpdateNewScheduledMessage,
+                    raw.functions.UpdateBotNewBusinessMessage,
                 ),
             ):
                 return await types.Message._parse(
@@ -194,6 +194,6 @@ class SendContact:
                     i.message,
                     {i.id: i for i in r.users},
                     {i.id: i for i in r.chats},
-                    is_scheduled=isinstance(i, raw.types.UpdateNewScheduledMessage),
+                    is_scheduled=isinstance(i, raw.functions.UpdateNewScheduledMessage),
                     business_connection_id=business_connection_id,
                 )

@@ -117,7 +117,7 @@ class GetChatMembers:
         """
         peer = await self.resolve_peer(chat_id)
 
-        if isinstance(peer, raw.types.InputPeerChat):
+        if isinstance(peer, raw.functions.InputPeerChat):
             r = await self.invoke(
                 raw.functions.messages.GetFullChat(chat_id=peer.chat_id)
             )

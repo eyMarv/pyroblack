@@ -64,7 +64,7 @@ class StartBot:
         )
 
         for i in r.updates:
-            if isinstance(i, raw.types.UpdateNewMessage):
+            if isinstance(i, raw.functions.UpdateNewMessage):
                 return await types.Message._parse(
                     self,
                     i.message,

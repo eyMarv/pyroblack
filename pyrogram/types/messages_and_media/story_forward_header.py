@@ -63,17 +63,17 @@ class StoryForwardHeader(Object):
         self.is_modified = is_modified
 
     async def _parse(
-        client: "pyrogram.Client", fwd_header: "raw.types.StoryFwdHeader"
+        client: "pyrogram.Client", fwd_header: "raw.functions.StoryFwdHeader"
     ) -> "StoryForwardHeader":
         user = None
         chat = None
         if fwd_header.from_peer is not None:
             try:
-                if isinstance(fwd_header.from_peer, raw.types.PeerChannel):
+                if isinstance(fwd_header.from_peer, raw.functions.PeerChannel):
                     chat = await client.get_chat(
                         utils.get_channel_id(fwd_header.from_peer.channel_id)
                     )
-                elif isinstance(fwd_header.from_peer, raw.types.InputPeerSelf):
+                elif isinstance(fwd_header.from_peer, raw.functions.InputPeerSelf):
                     user = client.me
                 else:
                     user = await client.get_users(fwd_header.from_peer.user_id)

@@ -97,9 +97,9 @@ class ReplyKeyboardMarkup(Object):
 
     # TODO: Implement KeyboardButtonBuy.write method
     async def write(self, _: "pyrogram.Client"):
-        return raw.types.ReplyKeyboardMarkup(
+        return raw.functions.ReplyKeyboardMarkup(
             rows=[
-                raw.types.KeyboardButtonRow(
+                raw.functions.KeyboardButtonRow(
                     buttons=[
                         (
                             types.KeyboardButton(j).write()

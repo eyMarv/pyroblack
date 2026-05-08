@@ -122,11 +122,11 @@ class Poll(Object, Update):
     @staticmethod
     def _parse(
         client,
-        media_poll: Union["raw.types.MessageMediaPoll", "raw.types.UpdateMessagePoll"],
+        media_poll: Union["raw.functions.MessageMediaPoll", "raw.functions.UpdateMessagePoll"],
     ) -> "Poll":
-        poll: raw.types.Poll = media_poll.poll
-        poll_results: raw.types.PollResults = media_poll.results
-        results: List[raw.types.PollAnswerVoters] = poll_results.results
+        poll: raw.functions.Poll = media_poll.poll
+        poll_results: raw.functions.PollResults = media_poll.results
+        results: List[raw.functions.PollAnswerVoters] = poll_results.results
 
         chosen_option_id = None
         correct_option_id = None
@@ -202,7 +202,7 @@ class Poll(Object, Update):
         )
 
     @staticmethod
-    def _parse_update(client, update: "raw.types.UpdateMessagePoll"):
+    def _parse_update(client, update: "raw.functions.UpdateMessagePoll"):
         if update.poll is not None:
             return Poll._parse(client, update)
 

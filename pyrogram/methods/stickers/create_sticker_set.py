@@ -108,7 +108,7 @@ class CreateStickerSet:
                 _ = await document.delete()
             else:
                 decoded = FileId.decode(sticker)
-                media = raw.types.InputDocument(
+                media = raw.functions.InputDocument(
                     id=decoded.media_id,
                     access_hash=decoded.access_hash,
                     file_reference=decoded.file_reference,
@@ -128,7 +128,7 @@ class CreateStickerSet:
                 user_id=await self.resolve_peer(user_id or "me"),
                 title=title,
                 short_name=short_name,
-                stickers=[raw.types.InputStickerSetItem(document=media, emoji=emoji)],
+                stickers=[raw.functions.InputStickerSetItem(document=media, emoji=emoji)],
                 masks=masks,
                 animated=animated,
                 videos=videos,

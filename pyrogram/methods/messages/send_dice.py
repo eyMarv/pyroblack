@@ -158,7 +158,7 @@ class SendDice:
 
         rpc = raw.functions.messages.SendMedia(
             peer=await self.resolve_peer(chat_id),
-            media=raw.types.InputMediaDice(emoticon=emoji),
+            media=raw.functions.InputMediaDice(emoticon=emoji),
             silent=disable_notification or None,
             reply_to=reply_to,
             random_id=self.rnd_id(),
@@ -182,10 +182,10 @@ class SendDice:
             if isinstance(
                 i,
                 (
-                    raw.types.UpdateNewMessage,
-                    raw.types.UpdateNewChannelMessage,
-                    raw.types.UpdateNewScheduledMessage,
-                    raw.types.UpdateBotNewBusinessMessage,
+                    raw.functions.UpdateNewMessage,
+                    raw.functions.UpdateNewChannelMessage,
+                    raw.functions.UpdateNewScheduledMessage,
+                    raw.functions.UpdateBotNewBusinessMessage,
                 ),
             ):
                 return await types.Message._parse(
@@ -193,6 +193,6 @@ class SendDice:
                     i.message,
                     {i.id: i for i in r.users},
                     {i.id: i for i in r.chats},
-                    is_scheduled=isinstance(i, raw.types.UpdateNewScheduledMessage),
+                    is_scheduled=isinstance(i, raw.functions.UpdateNewScheduledMessage),
                     business_connection_id=business_connection_id,
                 )

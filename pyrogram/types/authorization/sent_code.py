@@ -54,7 +54,7 @@ class SentCode(Object):
         self.timeout = timeout
 
     @staticmethod
-    def _parse(sent_code: raw.types.auth.SentCode) -> "SentCode":
+    def _parse(sent_code: raw.functions.auth.SentCode) -> "SentCode":
         return SentCode(
             type=enums.SentCodeType(type(sent_code.type)),
             phone_code_hash=sent_code.phone_code_hash,

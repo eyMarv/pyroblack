@@ -63,7 +63,7 @@ class ChatPreview(Object):
         self.members = members
 
     @staticmethod
-    def _parse(client, chat_invite: "raw.types.ChatInvite") -> "ChatPreview":
+    def _parse(client, chat_invite: "raw.functions.ChatInvite") -> "ChatPreview":
         return ChatPreview(
             title=chat_invite.title,
             type=(

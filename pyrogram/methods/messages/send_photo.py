@@ -222,13 +222,13 @@ class SendPhoto:
                     file = await self.save_file(
                         photo, progress=progress, progress_args=progress_args
                     )
-                    media = raw.types.InputMediaUploadedPhoto(
+                    media = raw.functions.InputMediaUploadedPhoto(
                         file=file,
                         ttl_seconds=(1 << 31) - 1 if view_once else ttl_seconds,
                         spoiler=has_spoiler,
                     )
                 elif re.match("^https?://", photo):
-                    media = raw.types.InputMediaPhotoExternal(
+                    media = raw.functions.InputMediaPhotoExternal(
                         url=photo,
                         ttl_seconds=(1 << 31) - 1 if view_once else ttl_seconds,
                         spoiler=has_spoiler,
@@ -243,7 +243,7 @@ class SendPhoto:
                 file = await self.save_file(
                     photo, progress=progress, progress_args=progress_args
                 )
-                media = raw.types.InputMediaUploadedPhoto(
+                media = raw.functions.InputMediaUploadedPhoto(
                     file=file,
                     ttl_seconds=(1 << 31) - 1 if view_once else ttl_seconds,
                     spoiler=has_spoiler,
@@ -284,10 +284,10 @@ class SendPhoto:
                         if isinstance(
                             i,
                             (
-                                raw.types.UpdateNewMessage,
-                                raw.types.UpdateNewChannelMessage,
-                                raw.types.UpdateNewScheduledMessage,
-                                raw.types.UpdateBotNewBusinessMessage,
+                                raw.functions.UpdateNewMessage,
+                                raw.functions.UpdateNewChannelMessage,
+                                raw.functions.UpdateNewScheduledMessage,
+                                raw.functions.UpdateBotNewBusinessMessage,
                             ),
                         ):
                             return await types.Message._parse(
@@ -296,7 +296,7 @@ class SendPhoto:
                                 {i.id: i for i in r.users},
                                 {i.id: i for i in r.chats},
                                 is_scheduled=isinstance(
-                                    i, raw.types.UpdateNewScheduledMessage
+                                    i, raw.functions.UpdateNewScheduledMessage
                                 ),
                                 business_connection_id=business_connection_id,
                             )

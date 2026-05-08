@@ -49,7 +49,7 @@ from pyrogram.handlers import (
     ChatJoinRequestHandler,
     StoryHandler,
 )
-from pyrogram.raw.types import (
+from pyrogram.raw.functions import (
     UpdateNewMessage,
     UpdateNewChannelMessage,
     UpdateNewScheduledMessage,

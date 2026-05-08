@@ -71,7 +71,7 @@ class ChangeCloudPassword:
         await self.invoke(
             raw.functions.account.UpdatePasswordSettings(
                 password=compute_password_check(r, current_password),
-                new_settings=raw.types.account.PasswordInputSettings(
+                new_settings=raw.functions.account.PasswordInputSettings(
                     new_algo=r.new_algo, new_password_hash=new_hash, hint=new_hint
                 ),
             )

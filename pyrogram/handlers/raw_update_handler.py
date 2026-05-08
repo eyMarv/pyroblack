@@ -53,7 +53,7 @@ class RawUpdateHandler(Handler):
 
         chats (``dict``):
             Dictionary of all :obj:`~pyrogram.types.Chat` and
-            :obj:`~pyrogram.raw.types.Channel` mentioned in the update.
+            :obj:`~pyrogram.raw.functions.Channel` mentioned in the update.
             You can access extra info about the chat (such as *title*, *participants_count*, etc...)
             by using the IDs you find in the *update* argument (e.g.: *chats[1701277281]*).
 
@@ -61,10 +61,10 @@ class RawUpdateHandler(Handler):
         The following Empty or Forbidden types may exist inside the *users* and *chats* dictionaries.
         They mean you have been blocked by the user or banned from the group/channel.
 
-        - :obj:`~pyrogram.raw.types.UserEmpty`
-        - :obj:`~pyrogram.raw.types.ChatEmpty`
-        - :obj:`~pyrogram.raw.types.ChatForbidden`
-        - :obj:`~pyrogram.raw.types.ChannelForbidden`
+        - :obj:`~pyrogram.raw.functions.UserEmpty`
+        - :obj:`~pyrogram.raw.functions.ChatEmpty`
+        - :obj:`~pyrogram.raw.functions.ChatForbidden`
+        - :obj:`~pyrogram.raw.functions.ChannelForbidden`
     """
 
     def __init__(self, callback: Callable, filters=None):

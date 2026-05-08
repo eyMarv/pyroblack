@@ -57,7 +57,7 @@ class TranscribedAudio:
 
     @staticmethod
     def _parse(
-        transcribe_result: "raw.types.messages.TranscribedAudio",
+        transcribe_result: "raw.functions.messages.TranscribedAudio",
     ) -> "TranscribeAudio":
         return TranscribedAudio(
             transcription_id=transcribe_result.id,

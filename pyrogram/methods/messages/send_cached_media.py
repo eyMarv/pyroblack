@@ -185,9 +185,9 @@ class SendCachedMedia:
             if isinstance(
                 i,
                 (
-                    raw.types.UpdateNewMessage,
-                    raw.types.UpdateNewChannelMessage,
-                    raw.types.UpdateNewScheduledMessage,
+                    raw.functions.UpdateNewMessage,
+                    raw.functions.UpdateNewChannelMessage,
+                    raw.functions.UpdateNewScheduledMessage,
                 ),
             ):
                 return await types.Message._parse(
@@ -195,5 +195,5 @@ class SendCachedMedia:
                     i.message,
                     {i.id: i for i in r.users},
                     {i.id: i for i in r.chats},
-                    is_scheduled=isinstance(i, raw.types.UpdateNewScheduledMessage),
+                    is_scheduled=isinstance(i, raw.functions.UpdateNewScheduledMessage),
                 )

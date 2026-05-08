@@ -111,7 +111,7 @@ class Invoice(Object):
         max_tip_amount: Optional[int] = None,
         suggested_tip_amounts: Optional[List[int]] = None,
         terms_url: Optional[str] = None,
-        raw: Union["raw.types.MessageMediaInvoice", "raw.types.Invoice"] = None,
+        raw: Union["raw.functions.MessageMediaInvoice", "raw.functions.Invoice"] = None,
     ):
         super().__init__(client)
 
@@ -137,7 +137,7 @@ class Invoice(Object):
 
     @staticmethod
     def _parse(
-        client, invoice: Union["raw.types.MessageMediaInvoice", "raw.types.Invoice"]
+        client, invoice: Union["raw.functions.MessageMediaInvoice", "raw.functions.Invoice"]
     ) -> "Invoice":
         return Invoice(
             currency=invoice.currency,

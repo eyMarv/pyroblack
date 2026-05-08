@@ -51,9 +51,9 @@ class GetCallMembers:
         """
         peer = await self.resolve_peer(chat_id)
 
-        if isinstance(peer, raw.types.InputPeerChannel):
+        if isinstance(peer, raw.functions.InputPeerChannel):
             r = await self.invoke(raw.functions.channels.GetFullChannel(channel=peer))
-        elif isinstance(peer, raw.types.InputPeerChat):
+        elif isinstance(peer, raw.functions.InputPeerChat):
             r = await self.invoke(
                 raw.functions.messages.GetFullChat(chat_id=peer.chat_id)
             )

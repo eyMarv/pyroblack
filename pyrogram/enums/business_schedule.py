@@ -23,11 +23,11 @@ from .auto_name import AutoName
 class BusinessSchedule(AutoName):
     """Business away enumeration used in :obj:`~pyrogram.types.BusinessInfo`."""
 
-    ALWAYS = raw.types.BusinessAwayMessageScheduleAlways
+    ALWAYS = raw.functions.BusinessAwayMessageScheduleAlways
     "Send always"
 
-    OUTSIDE_WORK_HOURS = raw.types.BusinessAwayMessageScheduleOutsideWorkHours
+    OUTSIDE_WORK_HOURS = raw.functions.BusinessAwayMessageScheduleOutsideWorkHours
     "Outside of Business Hours"
 
-    CUSTOM = raw.types.BusinessAwayMessageScheduleCustom
+    CUSTOM = raw.functions.BusinessAwayMessageScheduleCustom
     "Custom Schedule"

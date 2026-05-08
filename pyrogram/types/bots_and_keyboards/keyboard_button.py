@@ -17,8 +17,9 @@
 #  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
 
 from pyrogram import enums, raw, types
+from pyrogram.enums import ButtonColor
 from ..object import Object
-from typing import Union
+from typing import Union, Optional
 
 
 class KeyboardButton(Object):
@@ -52,6 +53,18 @@ class KeyboardButton(Object):
             button is pressed. The Web App will be able to send a “web_app_data” service message. Available in private
             chats only.
 
+
+        color (:obj:~pyrogram.enums.ButtonColor | `str`, *optional*):
+            Visual color style of the button.
+            Use :obj:~pyrogram.enums.ButtonColor values: `DANGER` (red), `SUCCESS` (green),
+            or `PRIMARY` (blue). If omitted, the default app-specific style is used.
+            Requires Bot API 9.4 / pyroblack layer 211+.
+
+        icon_custom_emoji_id (`int`, *optional*):
+            Unique identifier (document ID) of a custom emoji to display as an icon before the
+            button text. The bot owner must have a Telegram Premium subscription or the bot must
+            have purchased an additional username on Fragment for this to work.
+            Requires Bot API 9.4 / pyroblack layer 211+.
     """
 
     def __init__(
@@ -64,6 +77,8 @@ class KeyboardButton(Object):
         ] = None,
         request_user: "types.RequestPeerTypeUser" = None,
         web_app: "types.WebAppInfo" = None,
+        color: Optional[Union[ButtonColor, str]] = None,
+        icon_custom_emoji_id: Optional[int] = None,
     ):
         super().__init__()
 
@@ -73,23 +88,30 @@ class KeyboardButton(Object):
         self.request_chat = request_chat
         self.request_user = request_user
         self.web_app = web_app
+        # Convert ButtonColor enum to its string value if needed
+        self.color = color.value if isinstance(color, ButtonColor) else color
+        self.icon_custom_emoji_id = icon_custom_emoji_id
 
     @staticmethod
     def read(b):
-        if isinstance(b, raw.types.KeyboardButton):
-            return b.text
+        if isinstance(b, raw.functions.KeyboardButton):
+            return KeyboardButton(
+                text=b.text,
+                color=getattr(b, "color", None),
+                icon_custom_emoji_id=getattr(b, "icon_custom_emoji_id", None),
+            )
 
-        if isinstance(b, raw.types.KeyboardButtonRequestPhone):
+        if isinstance(b, raw.functions.KeyboardButtonRequestPhone):
             return KeyboardButton(text=b.text, request_contact=True)
 
-        if isinstance(b, raw.types.KeyboardButtonRequestGeoLocation):
+        if isinstance(b, raw.functions.KeyboardButtonRequestGeoLocation):
             return KeyboardButton(text=b.text, request_location=True)
 
-        if isinstance(b, raw.types.KeyboardButtonSimpleWebView):
+        if isinstance(b, raw.functions.KeyboardButtonSimpleWebView):
             return KeyboardButton(text=b.text, web_app=types.WebAppInfo(url=b.url))
 
-        if isinstance(b, raw.types.KeyboardButtonRequestPeer):
-            if isinstance(b.peer_type, raw.types.RequestPeerTypeBroadcast):
+        if isinstance(b, raw.functions.KeyboardButtonRequestPeer):
+            if isinstance(b.peer_type, raw.functions.RequestPeerTypeBroadcast):
                 user_privileges = getattr(b.peer_type, "user_admin_rights", None)
                 bot_privileges = getattr(b.peer_type, "bot_admin_rights", None)
                 return KeyboardButton(
@@ -102,7 +124,7 @@ class KeyboardButton(Object):
                         bot_privileges=bot_privileges,
                     ),
                 )
-            if isinstance(b.peer_type, raw.types.RequestPeerTypeChat):
+            if isinstance(b.peer_type, raw.functions.RequestPeerTypeChat):
                 user_privileges = getattr(b.peer_type, "user_admin_rights", None)
                 bot_privileges = getattr(b.peer_type, "bot_admin_rights", None)
                 return KeyboardButton(
@@ -118,7 +140,7 @@ class KeyboardButton(Object):
                     ),
                 )
 
-            if isinstance(b.peer_type, raw.types.RequestPeerTypeUser):
+            if isinstance(b.peer_type, raw.functions.RequestPeerTypeUser):
                 return KeyboardButton(
                     text=b.text,
                     request_user=types.RequestPeerTypeUser(
@@ -128,17 +150,26 @@ class KeyboardButton(Object):
                     ),
                 )
 
+    @staticmethod
+    def _read_base(b) -> "KeyboardButton":
+        """Read a plain keyboardButton (with optional color/emoji)."""
+        return KeyboardButton(
+            text=b.text,
+            color=getattr(b, "color", None),
+            icon_custom_emoji_id=getattr(b, "icon_custom_emoji_id", None),
+        )
+
     def write(self):
         if self.request_contact:
-            return raw.types.KeyboardButtonRequestPhone(text=self.text)
+            return raw.functions.KeyboardButtonRequestPhone(text=self.text)
         elif self.request_location:
-            return raw.types.KeyboardButtonRequestGeoLocation(text=self.text)
+            return raw.functions.KeyboardButtonRequestGeoLocation(text=self.text)
         elif self.request_chat:
             user_privileges = self.request_chat.user_privileges
             bot_privileges = self.request_chat.bot_privileges
 
             user_admin_rights = (
-                raw.types.ChatAdminRights(
+                raw.functions.ChatAdminRights(
                     change_info=user_privileges.can_change_info,
                     post_messages=user_privileges.can_post_messages,
                     post_stories=user_privileges.can_post_stories,
@@ -159,7 +190,7 @@ class KeyboardButton(Object):
             )
 
             bot_admin_rights = (
-                raw.types.ChatAdminRights(
+                raw.functions.ChatAdminRights(
                     change_info=bot_privileges.can_change_info,
                     post_messages=bot_privileges.can_post_messages,
                     post_stories=bot_privileges.can_post_stories,
@@ -180,10 +211,10 @@ class KeyboardButton(Object):
             )
 
             if isinstance(self.request_chat, types.RequestPeerTypeChannel):
-                return raw.types.KeyboardButtonRequestPeer(
+                return raw.functions.KeyboardButtonRequestPeer(
                     text=self.text,
                     button_id=0,
-                    peer_type=raw.types.RequestPeerTypeBroadcast(
+                    peer_type=raw.functions.RequestPeerTypeBroadcast(
                         creator=self.request_chat.is_creator,
                         has_username=self.request_chat.is_username,
                         user_admin_rights=user_admin_rights,
@@ -191,10 +222,10 @@ class KeyboardButton(Object):
                     ),
                     max_quantity=self.request_chat.max,
                 )
-            return raw.types.KeyboardButtonRequestPeer(
+            return raw.functions.KeyboardButtonRequestPeer(
                 text=self.text,
                 button_id=0,
-                peer_type=raw.types.RequestPeerTypeChat(
+                peer_type=raw.functions.RequestPeerTypeChat(
                     creator=self.request_chat.is_creator,
                     bot_participant=self.request_chat.is_bot_participant,
                     has_username=self.request_chat.is_username,
@@ -205,17 +236,21 @@ class KeyboardButton(Object):
                 max_quantity=self.request_chat.max,
             )
         elif self.request_user:
-            return raw.types.KeyboardButtonRequestPeer(
+            return raw.functions.KeyboardButtonRequestPeer(
                 text=self.text,
                 button_id=0,
-                peer_type=raw.types.RequestPeerTypeUser(
+                peer_type=raw.functions.RequestPeerTypeUser(
                     bot=self.request_user.is_bot, premium=self.request_user.is_premium
                 ),
                 max_quantity=self.request_user.max,
             )
         elif self.web_app:
-            return raw.types.KeyboardButtonSimpleWebView(
+            return raw.functions.KeyboardButtonSimpleWebView(
                 text=self.text, url=self.web_app.url
             )
         else:
-            return raw.types.KeyboardButton(text=self.text)
+            return raw.functions.KeyboardButton(
+                text=self.text,
+                color=self.color,
+                icon_custom_emoji_id=self.icon_custom_emoji_id,
+            )

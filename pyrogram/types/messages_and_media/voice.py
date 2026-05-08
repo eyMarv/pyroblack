@@ -81,8 +81,8 @@ class Voice(Object):
     @staticmethod
     def _parse(
         client,
-        voice: "raw.types.Document",
-        attributes: "raw.types.DocumentAttributeAudio",
+        voice: "raw.functions.Document",
+        attributes: "raw.functions.DocumentAttributeAudio",
         ttl_seconds: int = None,
     ) -> "Voice":
         return Voice(

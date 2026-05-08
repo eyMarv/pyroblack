@@ -45,7 +45,7 @@ class TermsOfService(Object):
         self.entities = entities
 
     @staticmethod
-    def _parse(terms_of_service: "raw.types.help.TermsOfService") -> "TermsOfService":
+    def _parse(terms_of_service: "raw.functions.help.TermsOfService") -> "TermsOfService":
         return TermsOfService(
             id=terms_of_service.id.data,
             text=terms_of_service.text,

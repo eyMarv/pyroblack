@@ -48,4 +48,4 @@ class InputPrivacyRuleDisallowUsers(InputPrivacyRule):
         )
         users = await asyncio.gather(*[client.resolve_peer(i) for i in users])
 
-        return raw.types.InputPrivacyValueDisallowUsers(users=users)
+        return raw.functions.InputPrivacyValueDisallowUsers(users=users)

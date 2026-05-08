@@ -93,9 +93,9 @@ class PinChatMessage:
             if isinstance(
                 i,
                 (
-                    raw.types.UpdateNewMessage,
-                    raw.types.UpdateNewChannelMessage,
-                    raw.types.UpdateBotNewBusinessMessage,
+                    raw.functions.UpdateNewMessage,
+                    raw.functions.UpdateNewChannelMessage,
+                    raw.functions.UpdateBotNewBusinessMessage,
                 ),
             ):
                 return await types.Message._parse(

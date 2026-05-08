@@ -77,7 +77,7 @@ class Checklist(Object):
     @staticmethod
     def _parse(
         client: "pyrogram.Client",
-        checklist: "raw.types.MessageMediaToDo",
+        checklist: "raw.functions.MessageMediaToDo",
         users: Dict[int, "raw.base.User"],
     ) -> "Checklist":
         completions = {i.id: i for i in getattr(checklist, "completions", [])}

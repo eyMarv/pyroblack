@@ -74,14 +74,14 @@ class StorySkipped(Object, Update):
     async def _parse(
         client: "pyrogram.Client",
         stories: raw.base.StoryItem,
-        peer: Union["raw.types.PeerChannel", "raw.types.PeerUser"],
+        peer: Union["raw.functions.PeerChannel", "raw.functions.PeerUser"],
     ) -> "StorySkipped":
         from_user = None
         sender_chat = None
         try:
-            if isinstance(peer, raw.types.PeerChannel):
+            if isinstance(peer, raw.functions.PeerChannel):
                 sender_chat = await client.get_chat(peer.channel_id)
-            elif isinstance(peer, raw.types.InputPeerSelf):
+            elif isinstance(peer, raw.functions.InputPeerSelf):
                 from_user = client.me
             else:
                 from_user = await client.get_users(peer.user_id)

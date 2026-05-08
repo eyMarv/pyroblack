@@ -53,17 +53,17 @@ class ReactionType(Object):
     def _parse(
         update: "raw.types.Reaction",
     ) -> Optional["ReactionType"]:
-        if isinstance(update, raw.types.ReactionEmpty):
+        if isinstance(update, raw.functions.ReactionEmpty):
             return None
-        elif isinstance(update, raw.types.ReactionEmoji):
+        elif isinstance(update, raw.functions.ReactionEmoji):
             return ReactionType(type=enums.ReactionType.EMOJI, emoji=update.emoticon)
-        elif isinstance(update, raw.types.ReactionCustomEmoji):
+        elif isinstance(update, raw.functions.ReactionCustomEmoji):
             return ReactionType(
                 type=enums.ReactionType.CUSTOM_EMOJI, custom_emoji_id=update.document_id
             )
 
     def write(self):
         if self.type == enums.ReactionType.EMOJI:
-            return raw.types.ReactionEmoji(emoticon=self.emoji)
+            return raw.functions.ReactionEmoji(emoticon=self.emoji)
         if self.type == enums.ReactionType.CUSTOM_EMOJI:
-            return raw.types.ReactionCustomEmoji(document_id=self.custom_emoji_id)
+            return raw.functions.ReactionCustomEmoji(document_id=self.custom_emoji_id)

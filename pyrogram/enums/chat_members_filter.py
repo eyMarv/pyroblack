@@ -23,20 +23,20 @@ from .auto_name import AutoName
 class ChatMembersFilter(AutoName):
     """Chat members filter enumeration used in :meth:`~pyrogram.Client.get_chat_members`"""
 
-    SEARCH = raw.types.ChannelParticipantsSearch
+    SEARCH = raw.functions.ChannelParticipantsSearch
     "Search for members"
 
-    BANNED = raw.types.ChannelParticipantsKicked
+    BANNED = raw.functions.ChannelParticipantsKicked
     "Banned members"
 
-    RESTRICTED = raw.types.ChannelParticipantsBanned
+    RESTRICTED = raw.functions.ChannelParticipantsBanned
     "Restricted members"
 
-    BOTS = raw.types.ChannelParticipantsBots
+    BOTS = raw.functions.ChannelParticipantsBots
     "Bots"
 
-    RECENT = raw.types.ChannelParticipantsRecent
+    RECENT = raw.functions.ChannelParticipantsRecent
     "Recently active members"
 
-    ADMINISTRATORS = raw.types.ChannelParticipantsAdmins
+    ADMINISTRATORS = raw.functions.ChannelParticipantsAdmins
     "Administrators"

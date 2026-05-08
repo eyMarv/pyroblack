@@ -85,10 +85,10 @@ class ChatMemberUpdated(Object, Update):
     def _parse(
         client: "pyrogram.Client",
         update: Union[
-            "raw.types.UpdateChatParticipant", "raw.types.UpdateChannelParticipant"
+            "raw.functions.UpdateChatParticipant", "raw.functions.UpdateChannelParticipant"
         ],
-        users: Dict[int, "raw.types.User"],
-        chats: Dict[int, "raw.types.Chat"],
+        users: Dict[int, "raw.functions.User"],
+        chats: Dict[int, "raw.functions.Chat"],
     ) -> "ChatMemberUpdated":
         chat_id = getattr(update, "chat_id", None) or getattr(update, "channel_id")
 
@@ -110,7 +110,7 @@ class ChatMemberUpdated(Object, Update):
         if update.invite:
             invite_link = types.ChatInviteLink._parse(client, update.invite, users)
 
-            if isinstance(update.invite, raw.types.ChatInvitePublicJoinRequests):
+            if isinstance(update.invite, raw.functions.ChatInvitePublicJoinRequests):
                 via_join_request = True
 
         return ChatMemberUpdated(

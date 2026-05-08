@@ -42,7 +42,7 @@ class BusinessWeeklyOpen(Object):
 
     @staticmethod
     def _parse(
-        weekly_open: "raw.types.BusinessWeeklyOpen" = None,
+        weekly_open: "raw.functions.BusinessWeeklyOpen" = None,
     ) -> "BusinessWeeklyOpen":
         return BusinessWeeklyOpen(
             start_minute=weekly_open.start_minute,

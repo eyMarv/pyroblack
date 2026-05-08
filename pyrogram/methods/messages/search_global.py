@@ -77,7 +77,7 @@ class SearchGlobal:
         limit = min(100, total)
 
         offset_date = 0
-        offset_peer = raw.types.InputPeerEmpty()
+        offset_peer = raw.functions.InputPeerEmpty()
         offset_id = 0
 
         while True:

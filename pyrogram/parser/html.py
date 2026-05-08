@@ -48,36 +48,36 @@ class Parser(HTMLParser):
         extra = {}
 
         if tag in ["b", "strong"]:
-            entity = raw.types.MessageEntityBold
+            entity = raw.functions.MessageEntityBold
         elif tag in ["i", "em"]:
-            entity = raw.types.MessageEntityItalic
+            entity = raw.functions.MessageEntityItalic
         elif tag == "u":
-            entity = raw.types.MessageEntityUnderline
+            entity = raw.functions.MessageEntityUnderline
         elif tag in ["s", "del", "strike"]:
-            entity = raw.types.MessageEntityStrike
+            entity = raw.functions.MessageEntityStrike
         elif tag == "blockquote":
-            entity = raw.types.MessageEntityBlockquote
+            entity = raw.functions.MessageEntityBlockquote
             extra["collapsed"] = bool("expandable" in attrs.keys())
         elif tag == "code":
-            entity = raw.types.MessageEntityCode
+            entity = raw.functions.MessageEntityCode
         elif tag == "pre":
-            entity = raw.types.MessageEntityPre
+            entity = raw.functions.MessageEntityPre
             extra["language"] = attrs.get("language", "")
         elif tag == "spoiler":
-            entity = raw.types.MessageEntitySpoiler
+            entity = raw.functions.MessageEntitySpoiler
         elif tag == "a":
             url = attrs.get("href", "")
 
             mention = Parser.MENTION_RE.match(url)
 
             if mention:
-                entity = raw.types.InputMessageEntityMentionName
+                entity = raw.functions.InputMessageEntityMentionName
                 extra["user_id"] = int(mention.group(1))
             else:
-                entity = raw.types.MessageEntityTextUrl
+                entity = raw.functions.MessageEntityTextUrl
                 extra["url"] = url
         elif tag == "emoji":
-            entity = raw.types.MessageEntityCustomEmoji
+            entity = raw.functions.MessageEntityCustomEmoji
             custom_emoji_id = int(attrs.get("id"))
             extra["document_id"] = custom_emoji_id
         else:
@@ -137,7 +137,7 @@ class HTML:
         entities = []
 
         for entity in parser.entities:
-            if isinstance(entity, raw.types.InputMessageEntityMentionName):
+            if isinstance(entity, raw.functions.InputMessageEntityMentionName):
                 try:
                     if self.client is not None:
                         entity.user_id = await self.client.resolve_peer(entity.user_id)

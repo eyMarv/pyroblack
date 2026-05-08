@@ -74,7 +74,7 @@ class MessageInvoice(Object):
         self.receipt_message_id = receipt_message_id
 
     @staticmethod
-    def _parse(message_invoice: "raw.types.MessageMediaInvoice") -> "MessageInvoice":
+    def _parse(message_invoice: "raw.functions.MessageMediaInvoice") -> "MessageInvoice":
         return MessageInvoice(
             title=message_invoice.title,
             description=message_invoice.description,

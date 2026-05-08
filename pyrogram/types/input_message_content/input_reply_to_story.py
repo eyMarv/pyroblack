@@ -40,6 +40,6 @@ class InputReplyToStory(Object):
         self.story_id = story_id
 
     def write(self):
-        return raw.types.InputReplyToStory(
+        return raw.functions.InputReplyToStory(
             peer=self.peer, story_id=self.story_id
         ).write()

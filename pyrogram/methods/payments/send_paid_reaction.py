@@ -71,5 +71,5 @@ class SendPaidReaction:
         chats = {i.id: i for i in r.chats}
 
         for i in r.updates:
-            if isinstance(i, raw.types.UpdateMessageReactions):
+            if isinstance(i, raw.functions.UpdateMessageReactions):
                 return types.MessageReactions._parse(self, i.reactions, users, chats)

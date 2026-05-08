@@ -88,9 +88,9 @@ class Giveaway(Object):
 
     @staticmethod
     async def _parse(
-        client, message: "raw.types.Message", chats: Dict[int, "raw.types.Chat"] = None
+        client, message: "raw.functions.Message", chats: Dict[int, "raw.functions.Chat"] = None
     ) -> "Giveaway":
-        giveaway: "raw.types.MessageMediaGiveaway" = message.media
+        giveaway: "raw.functions.MessageMediaGiveaway" = message.media
         chats = types.List(
             [
                 types.Chat._parse_channel_chat(client, chats.get(i))

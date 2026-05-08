@@ -66,25 +66,25 @@ class GetChat:
                 raw.functions.messages.CheckChatInvite(hash=match.group(1))
             )
 
-            if isinstance(r, raw.types.ChatInvite):
+            if isinstance(r, raw.functions.ChatInvite):
                 return types.ChatPreview._parse(self, r)
 
             await self.fetch_peers([r.chat])
 
-            if isinstance(r.chat, raw.types.Chat):
+            if isinstance(r.chat, raw.functions.Chat):
                 chat_id = -r.chat.id
 
-            if isinstance(r.chat, raw.types.Channel):
+            if isinstance(r.chat, raw.functions.Channel):
                 chat_id = utils.get_channel_id(r.chat.id)
 
         peer = await self.resolve_peer(chat_id)
 
         if force_full:
-            if isinstance(peer, raw.types.InputPeerChannel):
+            if isinstance(peer, raw.functions.InputPeerChannel):
                 r = await self.invoke(
                     raw.functions.channels.GetFullChannel(channel=peer)
                 )
-            elif isinstance(peer, (raw.types.InputPeerUser, raw.types.InputPeerSelf)):
+            elif isinstance(peer, (raw.functions.InputPeerUser, raw.functions.InputPeerSelf)):
                 r = await self.invoke(raw.functions.users.GetFullUser(id=peer))
             else:
                 r = await self.invoke(
@@ -93,9 +93,9 @@ class GetChat:
 
             return await types.Chat._parse_full(self, r)
         else:
-            if isinstance(peer, raw.types.InputPeerChannel):
+            if isinstance(peer, raw.functions.InputPeerChannel):
                 r = await self.invoke(raw.functions.channels.GetChannels(id=[peer]))
-            elif isinstance(peer, (raw.types.InputPeerUser, raw.types.InputPeerSelf)):
+            elif isinstance(peer, (raw.functions.InputPeerUser, raw.functions.InputPeerSelf)):
                 r = await self.invoke(raw.functions.users.GetUsers(id=[peer]))
             else:
                 r = await self.invoke(
@@ -103,5 +103,5 @@ class GetChat:
                 )
 
             return types.Chat._parse_chat(
-                self, r.chats[0] if isinstance(r, raw.types.messages.Chats) else r[0]
+                self, r.chats[0] if isinstance(r, raw.functions.messages.Chats) else r[0]
             )

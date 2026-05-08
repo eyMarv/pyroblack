@@ -65,8 +65,8 @@ class BusinessRecipients(Object):
     @staticmethod
     def _parse(
         client,
-        recipients: "raw.types.BusinessRecipients",
-        users: Dict[int, "raw.types.User"] = None,
+        recipients: "raw.functions.BusinessRecipients",
+        users: Dict[int, "raw.functions.User"] = None,
     ) -> "BusinessRecipients":
         return BusinessRecipients(
             existing_chats=getattr(recipients, "existing_chats", None),

@@ -73,8 +73,8 @@ class InputVenueMessageContent(InputMessageContent):
         self.google_place_type = google_place_type
 
     async def write(self, client: "pyrogram.Client", reply_markup):
-        return raw.types.InputBotInlineMessageMediaVenue(
-            geo_point=raw.types.InputGeoPoint(lat=self.latitude, long=self.longitude),
+        return raw.functions.InputBotInlineMessageMediaVenue(
+            geo_point=raw.functions.InputGeoPoint(lat=self.latitude, long=self.longitude),
             title=self.title,
             address=self.address,
             provider="",  # TODO

@@ -53,25 +53,25 @@ class PaidMedia(Object):
         self.extended_media = extended_media
 
     @staticmethod
-    def _parse(client, media: "raw.types.MessageMediaPaidMedia") -> "PaidMedia":
+    def _parse(client, media: "raw.functions.MessageMediaPaidMedia") -> "PaidMedia":
         extended_media = []
         for m in media.extended_media:
-            if isinstance(m, raw.types.MessageExtendedMediaPreview):
+            if isinstance(m, raw.functions.MessageExtendedMediaPreview):
                 extended_media.append(types.ExtendedMediaPreview._parse(client, m))
-            elif isinstance(m.media, raw.types.MessageMediaPhoto):
+            elif isinstance(m.media, raw.functions.MessageMediaPhoto):
                 extended_media.append(
                     types.Photo._parse(client, m.media.photo, m.media.ttl_seconds)
                 )
-            elif isinstance(m.media, raw.types.MessageMediaDocument):
+            elif isinstance(m.media, raw.functions.MessageMediaDocument):
                 attributes = {type(i): i for i in m.media.document.attributes}
                 file_name = getattr(
-                    attributes.get(raw.types.DocumentAttributeFilename, None),
+                    attributes.get(raw.functions.DocumentAttributeFilename, None),
                     "file_name",
                     None,
                 )
-                if raw.types.DocumentAttributeAnimated in attributes:
+                if raw.functions.DocumentAttributeAnimated in attributes:
                     video_attributes = attributes.get(
-                        raw.types.DocumentAttributeVideo, None
+                        raw.functions.DocumentAttributeVideo, None
                     )
                     extended_media.append(
                         types.Animation._parse(
@@ -79,7 +79,7 @@ class PaidMedia(Object):
                         )
                     )
                 else:
-                    video_attributes = attributes[raw.types.DocumentAttributeVideo]
+                    video_attributes = attributes[raw.functions.DocumentAttributeVideo]
                     extended_media.append(
                         types.Video._parse(
                             client,

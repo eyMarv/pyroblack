@@ -97,7 +97,7 @@ class SendCode:
                         phone_number=phone_number,
                         api_id=self.api_id,
                         api_hash=self.api_hash,
-                        settings=raw.types.CodeSettings(
+                        settings=raw.functions.CodeSettings(
                             allow_flashcall=allow_flashcall,
                             current_number=current_number,
                             allow_app_hash=allow_app_hash,

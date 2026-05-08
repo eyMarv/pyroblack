@@ -166,8 +166,8 @@ class SendVenue:
 
         rpc = raw.functions.messages.SendMedia(
             peer=await self.resolve_peer(chat_id),
-            media=raw.types.InputMediaVenue(
-                geo_point=raw.types.InputGeoPoint(lat=latitude, long=longitude),
+            media=raw.functions.InputMediaVenue(
+                geo_point=raw.functions.InputGeoPoint(lat=latitude, long=longitude),
                 title=title,
                 address=address,
                 provider="",  # TODO
@@ -197,10 +197,10 @@ class SendVenue:
             if isinstance(
                 i,
                 (
-                    raw.types.UpdateNewMessage,
-                    raw.types.UpdateNewChannelMessage,
-                    raw.types.UpdateNewScheduledMessage,
-                    raw.types.UpdateBotNewBusinessMessage,
+                    raw.functions.UpdateNewMessage,
+                    raw.functions.UpdateNewChannelMessage,
+                    raw.functions.UpdateNewScheduledMessage,
+                    raw.functions.UpdateBotNewBusinessMessage,
                 ),
             ):
                 return await types.Message._parse(
@@ -208,6 +208,6 @@ class SendVenue:
                     i.message,
                     {i.id: i for i in r.users},
                     {i.id: i for i in r.chats},
-                    is_scheduled=isinstance(i, raw.types.UpdateNewScheduledMessage),
+                    is_scheduled=isinstance(i, raw.functions.UpdateNewScheduledMessage),
                     business_connection_id=business_connection_id,
                 )

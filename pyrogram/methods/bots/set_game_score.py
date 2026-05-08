@@ -91,7 +91,7 @@ class SetGameScore:
 
         for i in r.updates:
             if isinstance(
-                i, (raw.types.UpdateEditMessage, raw.types.UpdateEditChannelMessage)
+                i, (raw.functions.UpdateEditMessage, raw.functions.UpdateEditChannelMessage)
             ):
                 return await types.Message._parse(
                     self,

@@ -60,8 +60,8 @@ class BusinessInfo(Object):
     @staticmethod
     def _parse(
         client,
-        user: "raw.types.UserFull" = None,
-        users: Dict[int, "raw.types.User"] = None,
+        user: "raw.functions.UserFull" = None,
+        users: Dict[int, "raw.functions.User"] = None,
     ) -> Optional["BusinessInfo"]:
         working_hours = getattr(user, "business_work_hours", None)
         location = getattr(user, "business_location", None)

@@ -132,7 +132,7 @@ class ActiveSession(Object):
         self.is_official_application = is_official_application
 
     @staticmethod
-    def _parse(session: "raw.types.Authorization") -> "ActiveSession":
+    def _parse(session: "raw.functions.Authorization") -> "ActiveSession":
         return ActiveSession(
             id=session.hash,
             device_model=session.device_model,

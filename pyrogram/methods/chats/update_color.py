@@ -57,7 +57,7 @@ class UpdateColor:
         """
         peer = await self.resolve_peer(chat_id)
 
-        if isinstance(peer, raw.types.InputPeerSelf):
+        if isinstance(peer, raw.functions.InputPeerSelf):
             r = await self.invoke(
                 raw.functions.account.UpdateColor(
                     for_profile=isinstance(color, enums.ProfileColor),

@@ -42,7 +42,7 @@ class TranslatedText(Object):
 
     @staticmethod
     def _parse(
-        client, translate_result: "raw.types.TextWithEntities"
+        client, translate_result: "raw.functions.TextWithEntities"
     ) -> "TranslatedText":
         entities = [
             types.MessageEntity._parse(client, entity, {})

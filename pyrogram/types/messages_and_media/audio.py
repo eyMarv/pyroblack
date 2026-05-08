@@ -93,8 +93,8 @@ class Audio(Object):
     @staticmethod
     def _parse(
         client,
-        audio: "raw.types.Document",
-        audio_attributes: "raw.types.DocumentAttributeAudio",
+        audio: "raw.functions.Document",
+        audio_attributes: "raw.functions.DocumentAttributeAudio",
         file_name: str,
     ) -> "Audio":
         return Audio(

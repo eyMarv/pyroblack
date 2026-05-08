@@ -48,7 +48,7 @@ class ReactionCount(Object):
 
     @staticmethod
     def _parse(
-        update: "raw.types.ReactionCount",
+        update: "raw.functions.ReactionCount",
     ) -> Optional["ReactionCount"]:
         return ReactionCount(
             type=ReactionType._parse(update.reaction),

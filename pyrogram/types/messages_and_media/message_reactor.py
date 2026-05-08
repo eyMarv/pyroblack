@@ -71,8 +71,8 @@ class MessageReactor(Object):
     def _parse(
         client: "pyrogram.Client",
         message_reactor: Optional["raw.base.MessageReactor"] = None,
-        users: Dict[int, "raw.types.User"] = None,
-        chats: Dict[int, "raw.types.Chat"] = None,
+        users: Dict[int, "raw.functions.User"] = None,
+        chats: Dict[int, "raw.functions.Chat"] = None,
     ) -> Optional["MessageReactor"]:
         if not message_reactor:
             return None
@@ -81,11 +81,11 @@ class MessageReactor(Object):
         from_user = None
         sender_chat = None
         if not is_anonymous:
-            if isinstance(message_reactor.peer_id, raw.types.PeerUser):
+            if isinstance(message_reactor.peer_id, raw.functions.PeerUser):
                 from_user = types.User._parse(
                     client, users.get(message_reactor.peer_id.user_id)
                 )
-            elif isinstance(message_reactor.peer_id, raw.types.PeerChannel):
+            elif isinstance(message_reactor.peer_id, raw.functions.PeerChannel):
                 sender_chat = types.Chat._parse_channel_chat(
                     client, chats.get(message_reactor.peer_id.channel_id)
                 )

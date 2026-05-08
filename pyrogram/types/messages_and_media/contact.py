@@ -61,7 +61,7 @@ class Contact(Object):
 
     @staticmethod
     def _parse(
-        client: "pyrogram.Client", contact: "raw.types.MessageMediaContact"
+        client: "pyrogram.Client", contact: "raw.functions.MessageMediaContact"
     ) -> "Contact":
         return Contact(
             phone_number=contact.phone_number,

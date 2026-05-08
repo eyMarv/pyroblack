@@ -124,7 +124,7 @@ class Sticker(Object):
 
             name_ = await invoke(
                 raw.functions.messages.GetStickerSet(
-                    stickerset=raw.types.InputStickerSetID(
+                    stickerset=raw.functions.InputStickerSetID(
                         id=set_id, access_hash=set_access_hash
                     ),
                     hash=0,
@@ -147,32 +147,32 @@ class Sticker(Object):
     @staticmethod
     async def _parse(
         client,
-        sticker: "raw.types.Document",
+        sticker: "raw.functions.Document",
         document_attributes: Dict[
             Type["raw.base.DocumentAttribute"], "raw.base.DocumentAttribute"
         ],
     ) -> "Sticker":
         sticker_attributes = (
-            document_attributes[raw.types.DocumentAttributeSticker]
-            if raw.types.DocumentAttributeSticker in document_attributes
-            else document_attributes[raw.types.DocumentAttributeCustomEmoji]
+            document_attributes[raw.functions.DocumentAttributeSticker]
+            if raw.functions.DocumentAttributeSticker in document_attributes
+            else document_attributes[raw.functions.DocumentAttributeCustomEmoji]
         )
 
         image_size_attributes = document_attributes.get(
-            raw.types.DocumentAttributeImageSize, None
+            raw.functions.DocumentAttributeImageSize, None
         )
         file_name = getattr(
-            document_attributes.get(raw.types.DocumentAttributeFilename, None),
+            document_attributes.get(raw.functions.DocumentAttributeFilename, None),
             "file_name",
             None,
         )
         video_attributes = document_attributes.get(
-            raw.types.DocumentAttributeVideo, None
+            raw.functions.DocumentAttributeVideo, None
         )
 
         sticker_set = sticker_attributes.stickerset
 
-        if isinstance(sticker_set, raw.types.InputStickerSetID):
+        if isinstance(sticker_set, raw.functions.InputStickerSetID):
             input_sticker_set_id = (sticker_set.id, sticker_set.access_hash)
             set_name = await Sticker._get_sticker_set_name(
                 client.invoke, input_sticker_set_id

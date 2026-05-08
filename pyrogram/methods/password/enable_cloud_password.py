@@ -72,8 +72,8 @@ class EnableCloudPassword:
 
         await self.invoke(
             raw.functions.account.UpdatePasswordSettings(
-                password=raw.types.InputCheckPasswordEmpty(),
-                new_settings=raw.types.account.PasswordInputSettings(
+                password=raw.functions.InputCheckPasswordEmpty(),
+                new_settings=raw.functions.account.PasswordInputSettings(
                     new_algo=r.new_algo,
                     new_password_hash=new_hash,
                     hint=hint,

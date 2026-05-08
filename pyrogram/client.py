@@ -220,7 +220,14 @@ class Client(Methods):
             A value that is too high may result in network related issues.
             Defaults to 1000.
 
-        init_params (``raw.types.JsonObject``, *optional*):
+        max_download_workers (``int``, *optional*):
+            Number of parallel chunk requests per single download.
+            Each chunk is 2 MB so the effective pipeline bandwidth is
+            ``max_download_workers × 2 MB`` worth of in-flight data.
+            Higher values give more speed on fast connections but consume more memory.
+            Defaults to 4.
+
+        init_params (``raw.functions.JsonObject``, *optional*):
             Additional initConnection parameters.
             Defaults to None.
 
@@ -254,6 +261,8 @@ class Client(Methods):
 
     MAX_CONCURRENT_TRANSMISSIONS = 1000
     MAX_MESSAGE_CACHE_SIZE = 10000
+    # Number of chunks fetched in parallel per download (each chunk is 2 MB)
+    MAX_DOWNLOAD_WORKERS = 4
 
     mimetypes = MimeTypes()
     mimetypes.readfp(StringIO(mime_types))
@@ -292,8 +301,9 @@ class Client(Methods):
         sleep_threshold: int = Session.SLEEP_THRESHOLD,
         hide_password: bool = False,
         max_concurrent_transmissions: int = MAX_CONCURRENT_TRANSMISSIONS,
-        init_params: raw.types.JsonObject = None,
+        init_params: raw.functions.JsonObject = None,
         max_message_cache_size: int = MAX_MESSAGE_CACHE_SIZE,
+        max_download_workers: int = MAX_DOWNLOAD_WORKERS,
         client_platform: "enums.ClientPlatform" = enums.ClientPlatform.OTHER,
         connection_factory: Type[Connection] = Connection,
         protocol_factory: Type[TCP] = TCPAbridged,
@@ -333,6 +343,7 @@ class Client(Methods):
         self.max_concurrent_transmissions = max_concurrent_transmissions
         self.init_params = init_params
         self.max_message_cache_size = max_message_cache_size
+        self.max_download_workers = max_download_workers
         self.client_platform = client_platform
         self.connection_factory = connection_factory
         self.protocol_factory = protocol_factory
@@ -363,6 +374,8 @@ class Client(Methods):
 
         self.save_file_semaphore = asyncio.Semaphore(self.max_concurrent_transmissions)
         self.get_file_semaphore = asyncio.Semaphore(self.max_concurrent_transmissions)
+        # Semaphore protecting media_sessions dict mutations
+        self._media_sessions_lock = asyncio.Lock()
 
         self.is_connected = None
         self.is_initialized = None
@@ -429,7 +442,7 @@ class Client(Methods):
         """
         while True:
             update, _, _ = await self.dispatcher.updates_queue.get()
-            if isinstance(update, raw.types.UpdateLoginToken):
+            if isinstance(update, raw.functions.UpdateLoginToken):
                 break
 
     async def authorize(self) -> User:
@@ -485,7 +498,7 @@ class Client(Methods):
 
                     await self.invoke(
                         raw.functions.account.SendVerifyEmailCode(
-                            purpose=raw.types.EmailVerifyPurposeLoginSetup(
+                            purpose=raw.functions.EmailVerifyPurposeLoginSetup(
                                 phone_number=self.phone_number,
                                 phone_code_hash=sent_code.phone_code_hash,
                             ),
@@ -500,11 +513,11 @@ class Client(Methods):
                     try:
                         await self.invoke(
                             raw.functions.account.VerifyEmail(
-                                purpose=raw.types.EmailVerifyPurposeLoginSetup(
+                                purpose=raw.functions.EmailVerifyPurposeLoginSetup(
                                     phone_number=self.phone_number,
                                     phone_code_hash=sent_code.phone_code_hash,
                                 ),
-                                verification=raw.types.EmailVerificationCode(
+                                verification=raw.functions.EmailVerificationCode(
                                     code=email_code
                                 ),
                             )
@@ -660,7 +673,7 @@ class Client(Methods):
         self.parse_mode = parse_mode
 
     async def fetch_peers(
-        self, peers: List[Union[raw.types.User, raw.types.Chat, raw.types.Channel]]
+        self, peers: List[Union[raw.functions.User, raw.functions.Chat, raw.functions.Channel]]
     ) -> bool:
         is_min = False
         parsed_peers = []
@@ -674,7 +687,7 @@ class Client(Methods):
             username = None
             phone_number = None
 
-            if isinstance(peer, raw.types.User):
+            if isinstance(peer, raw.functions.User):
                 peer_id = peer.id
                 access_hash = peer.access_hash
                 username = (
@@ -687,11 +700,11 @@ class Client(Methods):
                         usernames.append((peer_id, uname.username.lower()))
                 phone_number = peer.phone
                 peer_type = "bot" if peer.bot else "user"
-            elif isinstance(peer, (raw.types.Chat, raw.types.ChatForbidden)):
+            elif isinstance(peer, (raw.functions.Chat, raw.functions.ChatForbidden)):
                 peer_id = -peer.id
                 access_hash = 0
                 peer_type = "group"
-            elif isinstance(peer, raw.types.Channel):
+            elif isinstance(peer, raw.functions.Channel):
                 peer_id = utils.get_channel_id(peer.id)
                 access_hash = peer.access_hash
                 username = (
@@ -703,7 +716,7 @@ class Client(Methods):
                     for uname in peer.usernames:
                         usernames.append((peer_id, uname.username.lower()))
                 peer_type = "channel" if peer.broadcast else "supergroup"
-            elif isinstance(peer, raw.types.ChannelForbidden):
+            elif isinstance(peer, raw.functions.ChannelForbidden):
                 peer_id = utils.get_channel_id(peer.id)
                 access_hash = peer.access_hash
                 peer_type = "channel" if peer.broadcast else "supergroup"
@@ -722,7 +735,7 @@ class Client(Methods):
     async def handle_updates(self, updates):
         self.last_update_time = datetime.now()
 
-        if isinstance(updates, (raw.types.Updates, raw.types.UpdatesCombined)):
+        if isinstance(updates, (raw.functions.Updates, raw.functions.UpdatesCombined)):
             is_min = any(
                 (
                     await self.fetch_peers(updates.users),
@@ -754,22 +767,22 @@ class Client(Methods):
                         )
                     )
 
-                if isinstance(update, raw.types.UpdateChannelTooLong):
+                if isinstance(update, raw.functions.UpdateChannelTooLong):
                     log.info(update)
 
-                if isinstance(update, raw.types.UpdateNewChannelMessage) and is_min:
+                if isinstance(update, raw.functions.UpdateNewChannelMessage) and is_min:
                     message = update.message
 
-                    if not isinstance(message, raw.types.MessageEmpty):
+                    if not isinstance(message, raw.functions.MessageEmpty):
                         try:
                             diff = await self.invoke(
                                 raw.functions.updates.GetChannelDifference(
                                     channel=await self.resolve_peer(
                                         utils.get_channel_id(channel_id)
                                     ),
-                                    filter=raw.types.ChannelMessagesFilter(
+                                    filter=raw.functions.ChannelMessagesFilter(
                                         ranges=[
-                                            raw.types.MessageRange(
+                                            raw.functions.MessageRange(
                                                 min_id=update.message.id,
                                                 max_id=update.message.id,
                                             )
@@ -788,7 +801,7 @@ class Client(Methods):
                             pass
                         else:
                             if not isinstance(
-                                diff, raw.types.updates.ChannelDifferenceEmpty
+                                diff, raw.functions.updates.ChannelDifferenceEmpty
                             ):
                                 if diff:
                                     users.update({u.id: u for u in diff.users})
@@ -796,7 +809,7 @@ class Client(Methods):
 
                 self.dispatcher.updates_queue.put_nowait((update, users, chats))
         elif isinstance(
-            updates, (raw.types.UpdateShortMessage, raw.types.UpdateShortChatMessage)
+            updates, (raw.functions.UpdateShortMessage, raw.functions.UpdateShortChatMessage)
         ):
             if not self.skip_updates:
                 await self.storage.update_state(
@@ -812,7 +825,7 @@ class Client(Methods):
             if diff.new_messages:
                 self.dispatcher.updates_queue.put_nowait(
                     (
-                        raw.types.UpdateNewMessage(
+                        raw.functions.UpdateNewMessage(
                             message=diff.new_messages[0],
                             pts=updates.pts,
                             pts_count=updates.pts_count,
@@ -826,9 +839,9 @@ class Client(Methods):
                     self.dispatcher.updates_queue.put_nowait(
                         (diff.other_updates[0], {}, {})
                     )
-        elif isinstance(updates, raw.types.UpdateShort):
+        elif isinstance(updates, raw.functions.UpdateShort):
             self.dispatcher.updates_queue.put_nowait((updates.update, {}, {}))
-        elif isinstance(updates, raw.types.UpdatesTooLong):
+        elif isinstance(updates, raw.functions.UpdatesTooLong):
             log.info(updates)
 
     async def load_session(self):
@@ -1188,7 +1201,10 @@ class Client(Methods):
             async for chunk in self.get_file(
                 file_id, file_size, 0, 0, progress, progress_args
             ):
-                await run_sync(file.write, chunk)
+                if in_memory:
+                    file.write(chunk)  # BytesIO.write is pure-Python, no need for executor
+                else:
+                    await run_sync(file.write, chunk)
         except BaseException as e:
             if not in_memory:
                 file.close()
@@ -1211,6 +1227,74 @@ class Client(Methods):
                 await run_sync(shutil.move, temp_file_path, file_path)
                 return file_path
 
+    # ------------------------------------------------------------------
+    # Internal: multi-connection media-session pool (per DC)
+    # ------------------------------------------------------------------
+    # KEY INSIGHT (why Nekozee hits 40 MB/s):
+    #   A single MTProto Session = a single TCP socket.
+    #   session.send() sends one packet and blocks waiting for the reply
+    #   on that socket.  Firing multiple asyncio tasks against ONE session
+    #   doesn't help — they all queue on the same TCP pipe.
+    #
+    #   The fix: open N independent Sessions (N TCP connections) to the
+    #   same media DC.  Each connection can independently saturate its
+    #   share of bandwidth.  With 4-8 connections the effective throughput
+    #   multiplies almost linearly until the server or your NIC is the cap.
+
+    async def _make_media_session(self, dc_id: int) -> "Session":
+        """Create, start, and auth a fresh media Session for *dc_id*."""
+        auth_key = (
+            await self.storage.auth_key()
+            if dc_id == await self.storage.dc_id()
+            else await Auth(self, dc_id, await self.storage.test_mode()).create()
+        )
+        session = Session(
+            self,
+            dc_id,
+            auth_key,
+            await self.storage.test_mode(),
+            is_media=True,
+        )
+        await session.start()
+
+        if dc_id != await self.storage.dc_id():
+            try:
+                exported_auth = await self.invoke(
+                    raw.functions.auth.ExportAuthorization(dc_id=dc_id)
+                )
+                await session.invoke(
+                    raw.functions.auth.ImportAuthorization(
+                        id=exported_auth.id, bytes=exported_auth.bytes
+                    )
+                )
+            except Exception:
+                await session.stop()
+                raise
+
+        return session
+
+    async def _get_media_session_pool(self, dc_id: int, n: int) -> "list":
+        """Return (or grow) a pool of *n* live media Sessions for *dc_id*.
+
+        Sessions are cached in ``self.media_sessions`` as a list keyed by dc_id.
+        Already-alive sessions are reused; new ones are spun up as needed.
+        """
+        async with self._media_sessions_lock:
+            pool = self.media_sessions.get(dc_id, [])
+            if not isinstance(pool, list):
+                pool = [pool] if pool is not None else []
+
+            # Prune dead sessions
+            pool = [s for s in pool if s.is_connected]
+
+            # Grow pool to n connections if needed
+            while len(pool) < n:
+                session = await self._make_media_session(dc_id)
+                pool.append(session)
+
+            self.media_sessions[dc_id] = pool
+            return list(pool)  # snapshot for iteration
+
     async def get_file(
         self,
         file_id: FileId,
@@ -1225,215 +1309,132 @@ class Client(Methods):
 
             if file_type == FileType.CHAT_PHOTO:
                 if file_id.chat_id > 0:
-                    peer = raw.types.InputPeerUser(
+                    peer = raw.functions.InputPeerUser(
                         user_id=file_id.chat_id, access_hash=file_id.chat_access_hash
                     )
                 else:
                     if file_id.chat_access_hash == 0:
-                        peer = raw.types.InputPeerChat(chat_id=-file_id.chat_id)
+                        peer = raw.functions.InputPeerChat(chat_id=-file_id.chat_id)
                     else:
-                        peer = raw.types.InputPeerChannel(
+                        peer = raw.functions.InputPeerChannel(
                             channel_id=utils.get_channel_id(file_id.chat_id),
                             access_hash=file_id.chat_access_hash,
                         )
 
-                location = raw.types.InputPeerPhotoFileLocation(
+                location = raw.functions.InputPeerPhotoFileLocation(
                     peer=peer,
                     photo_id=file_id.media_id,
                     big=file_id.thumbnail_source == ThumbnailSource.CHAT_PHOTO_BIG,
                 )
             elif file_type == FileType.PHOTO:
-                location = raw.types.InputPhotoFileLocation(
+                location = raw.functions.InputPhotoFileLocation(
                     id=file_id.media_id,
                     access_hash=file_id.access_hash,
                     file_reference=file_id.file_reference,
                     thumb_size=file_id.thumbnail_size,
                 )
             else:
-                location = raw.types.InputDocumentFileLocation(
+                location = raw.functions.InputDocumentFileLocation(
                     id=file_id.media_id,
                     access_hash=file_id.access_hash,
                     file_reference=file_id.file_reference,
                     thumb_size=file_id.thumbnail_size,
                 )
 
-            current = 0
-            total = abs(limit) or (1 << 31) - 1
-            chunk_size = 1024 * 1024
-            offset_bytes = abs(offset) * chunk_size
+        # ---------------------------------------------------------------
+        # Multi-connection parallel download pipeline
+        # ---------------------------------------------------------------
+        # Telegram maximum GetFile chunk = 2 MB.
+        # We open max_download_workers independent TCP connections to the DC.
+        # Tasks are dispatched round-robin across sessions; results are
+        # collected in-order using indexed futures for correct reassembly.
+        # ---------------------------------------------------------------
+        CHUNK_SIZE   = 1024 * 1024 * 2   # 2 MB hard cap
+        n_workers    = self.max_download_workers
+        dc_id        = file_id.dc_id
+        total_chunks = abs(limit) or (1 << 31) - 1
+        offset_bytes = abs(offset) * CHUNK_SIZE
 
-            dc_id = file_id.dc_id
+        try:
+            pool = await self._get_media_session_pool(dc_id, n_workers)
 
-            session = Session(
-                self,
-                dc_id,
-                (
-                    await Auth(self, dc_id, await self.storage.test_mode()).create()
-                    if dc_id != await self.storage.dc_id()
-                    else await self.storage.auth_key()
-                ),
-                await self.storage.test_mode(),
-                is_media=True,
-            )
+            next_chunk_idx = 0
+            next_yield_idx = 0
+            in_flight: dict = {}
+            done = False
 
-            try:
-                await session.start()
-
-                if dc_id != await self.storage.dc_id():
-                    exported_auth = await self.invoke(
-                        raw.functions.auth.ExportAuthorization(dc_id=dc_id)
-                    )
-
-                    await session.invoke(
-                        raw.functions.auth.ImportAuthorization(
-                            id=exported_auth.id, bytes=exported_auth.bytes
-                        )
-                    )
-
+            async def _dispatch(chunk_idx: int):
+                off     = offset_bytes + chunk_idx * CHUNK_SIZE
+                session = pool[chunk_idx % n_workers]   # round-robin
                 r = await session.invoke(
                     raw.functions.upload.GetFile(
-                        location=location, offset=offset_bytes, limit=chunk_size
+                        location=location, offset=off, limit=CHUNK_SIZE
                     ),
                     sleep_threshold=30,
                 )
+                if isinstance(r, raw.functions.upload.File):
+                    return r.bytes
+                return b""
 
-                if isinstance(r, raw.types.upload.File):
-                    while True:
-                        chunk = r.bytes
+            # Prime: launch up to n_workers requests immediately
+            while next_chunk_idx < min(n_workers, total_chunks):
+                in_flight[next_chunk_idx] = asyncio.ensure_future(
+                    _dispatch(next_chunk_idx)
+                )
+                next_chunk_idx += 1
 
-                        yield chunk
+            # Consume in strict order, refilling as we go
+            while next_yield_idx < total_chunks and not done:
+                if next_yield_idx not in in_flight:
+                    break
 
-                        current += 1
-                        offset_bytes += chunk_size
+                chunk = await in_flight.pop(next_yield_idx)
 
-                        if progress:
-                            func = functools.partial(
-                                progress,
-                                (
-                                    min(offset_bytes, file_size)
-                                    if file_size != 0
-                                    else offset_bytes
-                                ),
-                                file_size,
-                                *progress_args,
-                            )
+                if not chunk:
+                    done = True
+                    break
 
-                            if inspect.iscoroutinefunction(progress):
-                                await func()
-                            else:
-                                await self.loop.run_in_executor(self.executor, func)
+                yield chunk
 
-                        if len(chunk) < chunk_size or current >= total:
-                            break
-
-                        r = await session.invoke(
-                            raw.functions.upload.GetFile(
-                                location=location, offset=offset_bytes, limit=chunk_size
-                            ),
-                            sleep_threshold=30,
-                        )
-
-                elif isinstance(r, raw.types.upload.FileCdnRedirect):
-                    cdn_session = Session(
-                        self,
-                        r.dc_id,
-                        await Auth(
-                            self, r.dc_id, await self.storage.test_mode()
-                        ).create(),
-                        await self.storage.test_mode(),
-                        is_media=True,
-                        is_cdn=True,
+                if progress:
+                    delivered = next_yield_idx + 1
+                    bytes_done = (
+                        min(offset_bytes + delivered * CHUNK_SIZE, file_size)
+                        if file_size != 0
+                        else offset_bytes + delivered * CHUNK_SIZE
                     )
+                    func = functools.partial(
+                        progress, bytes_done, file_size, *progress_args
+                    )
+                    if inspect.iscoroutinefunction(progress):
+                        await func()
+                    else:
+                        await self.loop.run_in_executor(self.executor, func)
 
-                    try:
-                        await cdn_session.start()
+                next_yield_idx += 1
 
-                        while True:
-                            r2 = await cdn_session.invoke(
-                                raw.functions.upload.GetCdnFile(
-                                    file_token=r.file_token,
-                                    offset=offset_bytes,
-                                    limit=chunk_size,
-                                )
-                            )
+                if len(chunk) < CHUNK_SIZE:
+                    done = True
+                    break
 
-                            if isinstance(r2, raw.types.upload.CdnFileReuploadNeeded):
-                                try:
-                                    await session.invoke(
-                                        raw.functions.upload.ReuploadCdnFile(
-                                            file_token=r.file_token,
-                                            request_token=r2.request_token,
-                                        )
-                                    )
-                                except VolumeLocNotFound:
-                                    break
-                                else:
-                                    continue
+                # Keep the pipeline full
+                if next_chunk_idx < total_chunks:
+                    in_flight[next_chunk_idx] = asyncio.ensure_future(
+                        _dispatch(next_chunk_idx)
+                    )
+                    next_chunk_idx += 1
 
-                            chunk = r2.bytes
+            # Cancel remaining in-flight tasks
+            for fut in in_flight.values():
+                fut.cancel()
 
-                            # https://core.telegram.org/cdn#decrypting-files
-                            decrypted_chunk = aes.ctr256_decrypt(
-                                chunk,
-                                r.encryption_key,
-                                bytearray(
-                                    r.encryption_iv[:-4]
-                                    + (offset_bytes // 16).to_bytes(4, "big")
-                                ),
-                            )
+        except pyrogram.StopTransmission:
+            raise
+        except (FloodWait, FloodPremiumWait):
+            raise
+        except Exception as e:
+            log.exception(e)
 
-                            hashes = await session.invoke(
-                                raw.functions.upload.GetCdnFileHashes(
-                                    file_token=r.file_token, offset=offset_bytes
-                                )
-                            )
-
-                            # https://core.telegram.org/cdn#verifying-files
-                            for i, h in enumerate(hashes):
-                                cdn_chunk = decrypted_chunk[
-                                    h.limit * i : h.limit * (i + 1)
-                                ]
-                                CDNFileHashMismatch.check(
-                                    h.hash == sha256(cdn_chunk).digest(),
-                                    "h.hash == sha256(cdn_chunk).digest()",
-                                )
-
-                            yield decrypted_chunk
-
-                            current += 1
-                            offset_bytes += chunk_size
-
-                            if progress:
-                                func = functools.partial(
-                                    progress,
-                                    (
-                                        min(offset_bytes, file_size)
-                                        if file_size != 0
-                                        else offset_bytes
-                                    ),
-                                    file_size,
-                                    *progress_args,
-                                )
-
-                                if inspect.iscoroutinefunction(progress):
-                                    await func()
-                                else:
-                                    await self.loop.run_in_executor(self.executor, func)
-
-                            if len(chunk) < chunk_size or current >= total:
-                                break
-                    except Exception as e:
-                        raise e
-                    finally:
-                        await cdn_session.stop()
-            except pyrogram.StopTransmission:
-                raise
-            except (FloodWait, FloodPremiumWait):
-                raise
-            except Exception as e:
-                log.exception(e)
-            finally:
-                await session.stop()
 
     @lru_cache(maxsize=128)
     def guess_mime_type(self, filename: str) -> Optional[str]:

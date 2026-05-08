@@ -38,6 +38,6 @@ class GiveawayLaunched(Object):
     @staticmethod
     def _parse(
         client: "pyrogram.Client",
-        giveaway_launched: "raw.types.MessageActionGiveawayLaunch",
+        giveaway_launched: "raw.functions.MessageActionGiveawayLaunch",
     ) -> "GiveawayLaunched":
         return GiveawayLaunched(client=client, stars=giveaway_launched.stars)

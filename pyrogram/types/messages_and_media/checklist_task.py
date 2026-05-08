@@ -68,12 +68,12 @@ class ChecklistTask(Object):
     @staticmethod
     def _parse(
         client: "pyrogram.Client",
-        item: "raw.types.TodoItem",
-        completion: "raw.types.TodoCompletion",
+        item: "raw.functions.TodoItem",
+        completion: "raw.functions.TodoCompletion",
         users: Dict[int, "raw.base.User"],
     ) -> "ChecklistTask":
-        raw.types.TodoItem
-        raw.types.TodoCompletion
+        raw.functions.TodoItem
+        raw.functions.TodoCompletion
 
         text, entities = (
             utils.parse_text_with_entities(client, item.title, users)

@@ -53,8 +53,8 @@ class ChecklistTasksDone(Object):
         self.marked_as_not_done_task_ids = marked_as_not_done_task_ids
 
     @staticmethod
-    def _parse(message: "raw.types.MessageService") -> "ChecklistTasksDone":
-        action: "raw.types.MessageActionTodoCompletions" = message.action
+    def _parse(message: "raw.functions.MessageService") -> "ChecklistTasksDone":
+        action: "raw.functions.MessageActionTodoCompletions" = message.action
 
         return ChecklistTasksDone(
             checklist_message_id=getattr(message.reply_to, "reply_to_msg_id", None),

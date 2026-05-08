@@ -104,8 +104,8 @@ class GiveawayResult(Object):
     async def _parse(
         client,
         giveaway_result: Union[
-            "raw.types.MessageActionGiveawayResults",
-            "raw.types.MessageMediaGiveawayResults",
+            "raw.functions.MessageActionGiveawayResults",
+            "raw.functions.MessageMediaGiveawayResults",
         ],
         hide_winners: bool = False,
     ) -> "GiveawayResult":
@@ -145,7 +145,7 @@ class GiveawayResult(Object):
             months=getattr(giveaway_result, "months", None),
             stars=(
                 stars
-                if isinstance(giveaway_result, raw.types.MessageMediaGiveawayResults)
+                if isinstance(giveaway_result, raw.functions.MessageMediaGiveawayResults)
                 else None
             ),
             expire_date=expired_date,

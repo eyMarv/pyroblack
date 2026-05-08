@@ -30,4 +30,4 @@ class InputPrivacyRuleAllowContacts(InputPrivacyRule):
         super().__init__()
 
     async def write(self, client: "pyrogram.Client"):
-        return raw.types.InputPrivacyValueAllowContacts()
+        return raw.functions.InputPrivacyValueAllowContacts()

@@ -57,7 +57,7 @@ class ArchiveChats:
 
         for chat in chat_ids:
             folder_peers.append(
-                raw.types.InputFolderPeer(
+                raw.functions.InputFolderPeer(
                     peer=await self.resolve_peer(chat), folder_id=1
                 )
             )

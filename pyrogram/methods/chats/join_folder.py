@@ -61,7 +61,7 @@ class JoinFolder:
 
         r = await self.invoke(raw.functions.chatlists.CheckChatlistInvite(slug=slug))
 
-        if isinstance(r, raw.types.chatlists.ChatlistInviteAlready):
+        if isinstance(r, raw.functions.chatlists.ChatlistInviteAlready):
             peers = r.already_peers + r.missing_peers
         else:
             peers = r.peers

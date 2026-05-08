@@ -39,8 +39,8 @@ class VideoChatMembersInvited(Object):
     @staticmethod
     def _parse(
         client,
-        action: "raw.types.MessageActionInviteToGroupCall",
-        users: Dict[int, "raw.types.User"],
+        action: "raw.functions.MessageActionInviteToGroupCall",
+        users: Dict[int, "raw.functions.User"],
     ) -> "VideoChatMembersInvited":
         users = [types.User._parse(client, users[i]) for i in action.users]
 

@@ -57,11 +57,11 @@ class SetChatTitle:
         """
         peer = await self.resolve_peer(chat_id)
 
-        if isinstance(peer, raw.types.InputPeerChat):
+        if isinstance(peer, raw.functions.InputPeerChat):
             await self.invoke(
                 raw.functions.messages.EditChatTitle(chat_id=peer.chat_id, title=title)
             )
-        elif isinstance(peer, raw.types.InputPeerChannel):
+        elif isinstance(peer, raw.functions.InputPeerChannel):
             await self.invoke(
                 raw.functions.channels.EditTitle(channel=peer, title=title)
             )

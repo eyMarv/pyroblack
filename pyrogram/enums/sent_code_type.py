@@ -23,35 +23,35 @@ from .auto_name import AutoName
 class SentCodeType(AutoName):
     """Sent code type enumeration used in :obj:`~pyrogram.types.SentCode`."""
 
-    APP = raw.types.auth.SentCodeTypeApp
+    APP = raw.functions.auth.SentCodeTypeApp
     "The code was sent through the telegram app."
 
-    CALL = raw.types.auth.SentCodeTypeCall
+    CALL = raw.functions.auth.SentCodeTypeCall
     "The code will be sent via a phone call. A synthesized voice will tell the user which verification code to input."
 
-    FLASH_CALL = raw.types.auth.SentCodeTypeFlashCall
+    FLASH_CALL = raw.functions.auth.SentCodeTypeFlashCall
     "The code will be sent via a flash phone call, that will be closed immediately."
 
-    MISSED_CALL = raw.types.auth.SentCodeTypeMissedCall
+    MISSED_CALL = raw.functions.auth.SentCodeTypeMissedCall
     "Missed call."
 
-    SMS = raw.types.auth.SentCodeTypeSms
+    SMS = raw.functions.auth.SentCodeTypeSms
     "The code was sent via SMS."
 
-    FRAGMENT_SMS = raw.types.auth.SentCodeTypeFragmentSms
+    FRAGMENT_SMS = raw.functions.auth.SentCodeTypeFragmentSms
     "The code was sent via Fragment SMS."
 
-    EMAIL_CODE = raw.types.auth.SentCodeTypeEmailCode
+    EMAIL_CODE = raw.functions.auth.SentCodeTypeEmailCode
     "The code was sent via email."
 
-    FIREBASE_SMS = raw.types.auth.SentCodeTypeFirebaseSms
+    FIREBASE_SMS = raw.functions.auth.SentCodeTypeFirebaseSms
     "The code should be delivered via SMS after Firebase attestation."
 
-    SETUP_EMAIL_REQUIRED = raw.types.auth.SentCodeTypeSetUpEmailRequired
+    SETUP_EMAIL_REQUIRED = raw.functions.auth.SentCodeTypeSetUpEmailRequired
     "The user should add and verify an email address in order to login."
 
-    SMS_PHRASE = raw.types.auth.SentCodeTypeSmsPhrase
+    SMS_PHRASE = raw.functions.auth.SentCodeTypeSmsPhrase
     "The code was sent via SMS with a phrase."
 
-    SMS_WORD = raw.types.auth.SentCodeTypeSmsWord
+    SMS_WORD = raw.functions.auth.SentCodeTypeSmsWord
     "The code was sent via SMS with a word."

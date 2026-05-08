@@ -63,7 +63,7 @@ class StickerSet(Object):
         self.emojis = emojis
 
     @staticmethod
-    def _parse(stickerset: "raw.types.StickerSet") -> "StickerSet":
+    def _parse(stickerset: "raw.functions.StickerSet") -> "StickerSet":
         return StickerSet(
             id=getattr(stickerset, "id", None),
             title=getattr(stickerset, "title", None),

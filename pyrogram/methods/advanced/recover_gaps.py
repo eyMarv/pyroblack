@@ -70,7 +70,7 @@ class RecoverGaps:
                     diff = await self.invoke(
                         raw.functions.updates.GetChannelDifference(
                             channel=await self.resolve_peer(id),
-                            filter=raw.types.ChannelMessagesFilterEmpty(),
+                            filter=raw.functions.ChannelMessagesFilterEmpty(),
                             pts=local_pts,
                             limit=10000,
                             force=False,
@@ -86,22 +86,22 @@ class RecoverGaps:
                 except (PersistentTimestampOutdated, PersistentTimestampInvalid):
                     continue
 
-                if isinstance(diff, raw.types.updates.DifferenceEmpty):
+                if isinstance(diff, raw.functions.updates.DifferenceEmpty):
                     await self.storage.update_state(
                         (id, local_pts, None, diff.date, diff.seq)
                     )
                     break
-                elif isinstance(diff, raw.types.updates.DifferenceTooLong):
+                elif isinstance(diff, raw.functions.updates.DifferenceTooLong):
                     local_pts = diff.pts
                     await self.storage.update_state(
                         (id, local_pts, None, local_date, local_seq)
                     )
                     continue
-                elif isinstance(diff, raw.types.updates.Difference):
+                elif isinstance(diff, raw.functions.updates.Difference):
                     local_pts = diff.state.pts
                     local_date = diff.state.date
                     local_seq = diff.state.seq
-                elif isinstance(diff, raw.types.updates.DifferenceSlice):
+                elif isinstance(diff, raw.functions.updates.DifferenceSlice):
                     local_pts = diff.intermediate_state.pts
                     local_date = diff.intermediate_state.date
                     local_seq = diff.intermediate_state.seq
@@ -110,18 +110,18 @@ class RecoverGaps:
                         break
 
                     prev_pts = local_pts
-                elif isinstance(diff, raw.types.updates.ChannelDifferenceEmpty):
+                elif isinstance(diff, raw.functions.updates.ChannelDifferenceEmpty):
                     await self.storage.update_state(
                         (id, diff.pts, None, local_date, local_seq)
                     )
                     break
-                elif isinstance(diff, raw.types.updates.ChannelDifferenceTooLong):
+                elif isinstance(diff, raw.functions.updates.ChannelDifferenceTooLong):
                     local_pts = diff.dialog.pts
                     await self.storage.update_state(
                         (id, local_pts, None, local_date, local_seq)
                     )
                     continue
-                elif isinstance(diff, raw.types.updates.ChannelDifference):
+                elif isinstance(diff, raw.functions.updates.ChannelDifference):
                     local_pts = diff.pts
 
                 users = {i.id: i for i in diff.users}
@@ -131,7 +131,7 @@ class RecoverGaps:
                     message_updates_counter += 1
                     self.dispatcher.updates_queue.put_nowait(
                         (
-                            raw.types.UpdateNewMessage(
+                            raw.functions.UpdateNewMessage(
                                 message=message, pts=local_pts, pts_count=-1
                             ),
                             users,
@@ -145,7 +145,7 @@ class RecoverGaps:
 
                 if isinstance(
                     diff,
-                    (raw.types.updates.Difference, raw.types.updates.ChannelDifference),
+                    (raw.functions.updates.Difference, raw.functions.updates.ChannelDifference),
                 ):
                     break
 

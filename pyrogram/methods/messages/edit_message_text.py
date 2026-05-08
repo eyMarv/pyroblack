@@ -120,7 +120,7 @@ class EditMessageText:
 
         for i in r.updates:
             if isinstance(
-                i, (raw.types.UpdateEditMessage, raw.types.UpdateEditChannelMessage)
+                i, (raw.functions.UpdateEditMessage, raw.functions.UpdateEditChannelMessage)
             ):
                 return await types.Message._parse(
                     self,
@@ -128,7 +128,7 @@ class EditMessageText:
                     {i.id: i for i in r.users},
                     {i.id: i for i in r.chats},
                 )
-            elif isinstance(i, (raw.types.UpdateBotEditBusinessMessage)):
+            elif isinstance(i, (raw.functions.UpdateBotEditBusinessMessage)):
                 return await types.Message._parse(
                     self,
                     i.message,

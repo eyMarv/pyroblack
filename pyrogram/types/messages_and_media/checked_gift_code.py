@@ -71,7 +71,7 @@ class CheckedGiftCode(Object):
 
     @staticmethod
     def _parse(
-        client, checked_gift_code: "raw.types.payments.CheckedGiftCode", users, chats
+        client, checked_gift_code: "raw.functions.payments.CheckedGiftCode", users, chats
     ):
         from_chat = None
         winner = None

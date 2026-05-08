@@ -246,26 +246,26 @@ class SendAnimation:
                     file = await self.save_file(
                         animation, progress=progress, progress_args=progress_args
                     )
-                    media = raw.types.InputMediaUploadedDocument(
+                    media = raw.functions.InputMediaUploadedDocument(
                         mime_type=self.guess_mime_type(animation) or "video/mp4",
                         file=file,
                         thumb=thumb,
                         spoiler=has_spoiler,
                         attributes=[
-                            raw.types.DocumentAttributeVideo(
+                            raw.functions.DocumentAttributeVideo(
                                 supports_streaming=True,
                                 duration=duration,
                                 w=width,
                                 h=height,
                             ),
-                            raw.types.DocumentAttributeFilename(
+                            raw.functions.DocumentAttributeFilename(
                                 file_name=file_name or os.path.basename(animation)
                             ),
-                            raw.types.DocumentAttributeAnimated(),
+                            raw.functions.DocumentAttributeAnimated(),
                         ],
                     )
                 elif re.match("^https?://", animation):
-                    media = raw.types.InputMediaDocumentExternal(
+                    media = raw.functions.InputMediaDocumentExternal(
                         url=animation, spoiler=has_spoiler
                     )
                 else:
@@ -278,23 +278,23 @@ class SendAnimation:
                 file = await self.save_file(
                     animation, progress=progress, progress_args=progress_args
                 )
-                media = raw.types.InputMediaUploadedDocument(
+                media = raw.functions.InputMediaUploadedDocument(
                     mime_type=self.guess_mime_type(file_name or animation.name)
                     or "video/mp4",
                     file=file,
                     thumb=thumb,
                     spoiler=has_spoiler,
                     attributes=[
-                        raw.types.DocumentAttributeVideo(
+                        raw.functions.DocumentAttributeVideo(
                             supports_streaming=True,
                             duration=duration,
                             w=width,
                             h=height,
                         ),
-                        raw.types.DocumentAttributeFilename(
+                        raw.functions.DocumentAttributeFilename(
                             file_name=file_name or animation.name
                         ),
-                        raw.types.DocumentAttributeAnimated(),
+                        raw.functions.DocumentAttributeAnimated(),
                     ],
                 )
 
@@ -333,10 +333,10 @@ class SendAnimation:
                         if isinstance(
                             i,
                             (
-                                raw.types.UpdateNewMessage,
-                                raw.types.UpdateNewChannelMessage,
-                                raw.types.UpdateNewScheduledMessage,
-                                raw.types.UpdateBotNewBusinessMessage,
+                                raw.functions.UpdateNewMessage,
+                                raw.functions.UpdateNewChannelMessage,
+                                raw.functions.UpdateNewScheduledMessage,
+                                raw.functions.UpdateBotNewBusinessMessage,
                             ),
                         ):
                             message = await types.Message._parse(
@@ -345,7 +345,7 @@ class SendAnimation:
                                 {i.id: i for i in r.users},
                                 {i.id: i for i in r.chats},
                                 is_scheduled=isinstance(
-                                    i, raw.types.UpdateNewScheduledMessage
+                                    i, raw.functions.UpdateNewScheduledMessage
                                 ),
                                 business_connection_id=business_connection_id,
                             )

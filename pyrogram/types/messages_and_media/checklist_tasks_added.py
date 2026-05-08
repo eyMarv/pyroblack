@@ -47,9 +47,9 @@ class ChecklistTasksAdded(Object):
 
     @staticmethod
     def _parse(
-        client: "pyrogram.Client", message: "raw.types.MessageService"
+        client: "pyrogram.Client", message: "raw.functions.MessageService"
     ) -> "ChecklistTasksAdded":
-        action: "raw.types.MessageActionTodoAppendTasks" = message.action
+        action: "raw.functions.MessageActionTodoAppendTasks" = message.action
 
         return ChecklistTasksAdded(
             checklist_message_id=getattr(message.reply_to, "reply_to_msg_id", None),

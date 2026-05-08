@@ -57,7 +57,7 @@ class GiftCode(Object):
         self.slug = slug
 
     @staticmethod
-    def _parse(client, giftcode: "raw.types.MessageActionGiftCode", chats):
+    def _parse(client, giftcode: "raw.functions.MessageActionGiftCode", chats):
         peer = chats.get(utils.get_raw_peer_id(getattr(giftcode, "boost_peer")))
 
         return GiftCode(

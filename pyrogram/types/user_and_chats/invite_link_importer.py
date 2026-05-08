@@ -41,7 +41,7 @@ class InviteLinkImporter(Object):
         self.user = user
 
     @staticmethod
-    def _parse(client, invite_importers: "raw.types.messages.ChatInviteImporters"):
+    def _parse(client, invite_importers: "raw.functions.messages.ChatInviteImporters"):
         importers = types.List()
 
         d = {i.id: i for i in invite_importers.users}

@@ -66,13 +66,13 @@ class Reaction(Object):
 
     @staticmethod
     def _parse(client: "pyrogram.Client", reaction: "raw.base.Reaction") -> "Reaction":
-        if isinstance(reaction, raw.types.ReactionEmoji):
+        if isinstance(reaction, raw.functions.ReactionEmoji):
             return Reaction(client=client, emoji=reaction.emoticon)
 
-        if isinstance(reaction, raw.types.ReactionCustomEmoji):
+        if isinstance(reaction, raw.functions.ReactionCustomEmoji):
             return Reaction(client=client, custom_emoji_id=reaction.document_id)
 
-        if isinstance(reaction, raw.types.ReactionPaid):
+        if isinstance(reaction, raw.functions.ReactionPaid):
             return Reaction(client=client, is_paid=True)
 
     @staticmethod

@@ -60,7 +60,7 @@ class RevokeChatInviteLink:
 
         chat_invite = (
             r.new_invite
-            if isinstance(r, raw.types.messages.ExportedChatInviteReplaced)
+            if isinstance(r, raw.functions.messages.ExportedChatInviteReplaced)
             else r.invite
         )
 

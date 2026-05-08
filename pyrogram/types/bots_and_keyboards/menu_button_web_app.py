@@ -40,5 +40,5 @@ class MenuButtonWebApp(MenuButton):
         self.text = text
         self.web_app = web_app
 
-    async def write(self, client: "pyrogram.Client") -> "raw.types.BotMenuButton":
-        return raw.types.BotMenuButton(text=self.text, url=self.web_app.url)
+    async def write(self, client: "pyrogram.Client") -> "raw.functions.BotMenuButton":
+        return raw.functions.BotMenuButton(text=self.text, url=self.web_app.url)

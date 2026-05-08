@@ -58,7 +58,7 @@ class SignInQrcode:
                 api_id=self.api_id, api_hash=self.api_hash, except_ids=[]
             )
         )
-        if isinstance(r, raw.types.auth.LoginToken):
+        if isinstance(r, raw.functions.auth.LoginToken):
             base64_token = b64encode(r.token).decode("utf-8")
             login_url = f"tg://login?token={base64_token}"
             qr = qrcode.QRCode(
@@ -74,12 +74,12 @@ class SignInQrcode:
             qr.print_ascii()
 
             return types.LoginToken._parse(r)
-        if isinstance(r, raw.types.auth.LoginTokenSuccess):
+        if isinstance(r, raw.functions.auth.LoginTokenSuccess):
             await self.storage.user_id(r.authorization.user.id)
             await self.storage.is_bot(False)
 
             return types.User._parse(self, r.authorization.user)
-        if isinstance(r, raw.types.auth.LoginTokenMigrateTo):
+        if isinstance(r, raw.functions.auth.LoginTokenMigrateTo):
             # pylint: disable=access-member-before-definition
             await self.session.stop()
 
@@ -100,7 +100,7 @@ class SignInQrcode:
             r = await self.session.invoke(
                 raw.functions.auth.ImportLoginToken(token=r.token)
             )
-            if isinstance(r, raw.types.auth.LoginTokenSuccess):
+            if isinstance(r, raw.functions.auth.LoginTokenSuccess):
                 await self.storage.user_id(r.authorization.user.id)
                 await self.storage.is_bot(False)
 

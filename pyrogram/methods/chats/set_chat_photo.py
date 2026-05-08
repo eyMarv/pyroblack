@@ -99,29 +99,29 @@ class SetChatPhoto:
         if photo is not None:
             if isinstance(photo, str):
                 if os.path.isfile(photo):
-                    photo = raw.types.InputChatUploadedPhoto(
+                    photo = raw.functions.InputChatUploadedPhoto(
                         file=await self.save_file(photo),
                         video_start_ts=video_start_ts,
                     )
                 else:
                     photo = utils.get_input_media_from_file_id(photo, FileType.PHOTO)
-                    photo = raw.types.InputChatPhoto(id=photo.id)
+                    photo = raw.functions.InputChatPhoto(id=photo.id)
             else:
-                photo = raw.types.InputChatUploadedPhoto(
+                photo = raw.functions.InputChatUploadedPhoto(
                     file=await self.save_file(photo),
                     video_start_ts=video_start_ts,
                 )
         elif video is not None:
             if isinstance(video, str):
                 if os.path.isfile(video):
-                    photo = raw.types.InputChatUploadedPhoto(
+                    photo = raw.functions.InputChatUploadedPhoto(
                         video=await self.save_file(video),
                         video_start_ts=video_start_ts,
                     )
                 else:
                     raise ValueError("You must provide a valid file path for the video")
             else:
-                photo = raw.types.InputChatUploadedPhoto(
+                photo = raw.functions.InputChatUploadedPhoto(
                     video=await self.save_file(video), video_start_ts=video_start_ts
                 )
         elif emoji is not None:
@@ -130,22 +130,22 @@ class SetChatPhoto:
             )
             if isinstance(background_colors, int):
                 background_colors = [background_colors]
-            photo = raw.types.InputChatUploadedPhoto(
-                video_emoji_markup=raw.types.VideoSizeEmojiMarkup(
+            photo = raw.functions.InputChatUploadedPhoto(
+                video_emoji_markup=raw.functions.VideoSizeEmojiMarkup(
                     emoji_id=emoji, background_colors=background_colors
                 )
             )
         else:
             raise ValueError("You must provide either a photo, a video or an emoji")
 
-        if isinstance(peer, raw.types.InputPeerChat):
+        if isinstance(peer, raw.functions.InputPeerChat):
             r = await self.invoke(
                 raw.functions.messages.EditChatPhoto(
                     chat_id=peer.chat_id,
                     photo=photo,
                 )
             )
-        elif isinstance(peer, raw.types.InputPeerChannel):
+        elif isinstance(peer, raw.functions.InputPeerChannel):
             r = await self.invoke(
                 raw.functions.channels.EditPhoto(channel=peer, photo=photo)
             )
@@ -154,7 +154,7 @@ class SetChatPhoto:
 
         for i in r.updates:
             if isinstance(
-                i, (raw.types.UpdateNewMessage, raw.types.UpdateNewChannelMessage)
+                i, (raw.functions.UpdateNewMessage, raw.functions.UpdateNewChannelMessage)
             ):
                 return await types.Message._parse(
                     self,

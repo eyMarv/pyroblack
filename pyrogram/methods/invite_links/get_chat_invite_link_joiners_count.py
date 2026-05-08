@@ -48,7 +48,7 @@ class GetChatInviteLinkJoinersCount:
                 link=invite_link,
                 limit=1,
                 offset_date=0,
-                offset_user=raw.types.InputUserEmpty(),
+                offset_user=raw.functions.InputUserEmpty(),
             )
         )
 

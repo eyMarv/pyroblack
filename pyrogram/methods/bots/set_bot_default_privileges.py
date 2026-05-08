@@ -65,7 +65,7 @@ class SetBotDefaultPrivileges:
         )
 
         admin_rights = (
-            raw.types.ChatAdminRights(
+            raw.functions.ChatAdminRights(
                 change_info=privileges.can_change_info,
                 post_messages=privileges.can_post_messages,
                 edit_messages=privileges.can_edit_messages,
@@ -79,7 +79,7 @@ class SetBotDefaultPrivileges:
                 other=privileges.can_manage_chat,
             )
             if privileges
-            else raw.types.ChatAdminRights()
+            else raw.functions.ChatAdminRights()
         )
 
         return await self.invoke(function(admin_rights=admin_rights))

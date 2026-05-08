@@ -61,8 +61,8 @@ class PollOption(Object):
                 client, self.text, None, self.entities
             )
         ).values()
-        return pyrogram.raw.types.PollAnswer(
-            text=pyrogram.raw.types.TextWithEntities(
+        return pyrogram.raw.functions.PollAnswer(
+            text=pyrogram.raw.functions.TextWithEntities(
                 text=option, entities=entities or []
             ),
             option=bytes([i]),

@@ -99,13 +99,13 @@ END;
 
 def get_input_peer(peer_id: int, access_hash: int, peer_type: str):
     if peer_type in ["user", "bot"]:
-        return raw.types.InputPeerUser(user_id=peer_id, access_hash=access_hash)
+        return raw.functions.InputPeerUser(user_id=peer_id, access_hash=access_hash)
 
     if peer_type == "group":
-        return raw.types.InputPeerChat(chat_id=-peer_id)
+        return raw.functions.InputPeerChat(chat_id=-peer_id)
 
     if peer_type in ["channel", "supergroup"]:
-        return raw.types.InputPeerChannel(
+        return raw.functions.InputPeerChannel(
             channel_id=utils.get_channel_id(peer_id), access_hash=access_hash
         )
 

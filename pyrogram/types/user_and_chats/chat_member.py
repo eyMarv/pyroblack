@@ -119,7 +119,7 @@ class ChatMember(Object):
         chats: Dict[int, "raw.base.Chat"],
     ) -> "ChatMember":
         # Chat participants
-        if isinstance(member, raw.types.ChatParticipant):
+        if isinstance(member, raw.functions.ChatParticipant):
             return ChatMember(
                 status=enums.ChatMemberStatus.MEMBER,
                 user=types.User._parse(client, users[member.user_id]),
@@ -127,7 +127,7 @@ class ChatMember(Object):
                 invited_by=types.User._parse(client, users[member.inviter_id]),
                 client=client,
             )
-        elif isinstance(member, raw.types.ChatParticipantAdmin):
+        elif isinstance(member, raw.functions.ChatParticipantAdmin):
             return ChatMember(
                 status=enums.ChatMemberStatus.ADMINISTRATOR,
                 user=types.User._parse(client, users[member.user_id]),
@@ -135,7 +135,7 @@ class ChatMember(Object):
                 invited_by=types.User._parse(client, users[member.inviter_id]),
                 client=client,
             )
-        elif isinstance(member, raw.types.ChatParticipantCreator):
+        elif isinstance(member, raw.functions.ChatParticipantCreator):
             return ChatMember(
                 status=enums.ChatMemberStatus.OWNER,
                 user=types.User._parse(client, users[member.user_id]),
@@ -143,7 +143,7 @@ class ChatMember(Object):
             )
 
         # Channel participants
-        if isinstance(member, raw.types.ChannelParticipant):
+        if isinstance(member, raw.functions.ChannelParticipant):
             return ChatMember(
                 status=enums.ChatMemberStatus.MEMBER,
                 user=types.User._parse(client, users[member.user_id]),
@@ -153,7 +153,7 @@ class ChatMember(Object):
                 ),
                 client=client,
             )
-        elif isinstance(member, raw.types.ChannelParticipantAdmin):
+        elif isinstance(member, raw.functions.ChannelParticipantAdmin):
             return ChatMember(
                 status=enums.ChatMemberStatus.ADMINISTRATOR,
                 user=types.User._parse(client, users[member.user_id]),
@@ -169,19 +169,19 @@ class ChatMember(Object):
                 privileges=types.ChatPrivileges._parse(member.admin_rights),
                 client=client,
             )
-        elif isinstance(member, raw.types.ChannelParticipantBanned):
+        elif isinstance(member, raw.functions.ChannelParticipantBanned):
             peer = member.peer
             peer_id = utils.get_raw_peer_id(peer)
 
             user = (
                 types.User._parse(client, users[peer_id])
-                if isinstance(peer, raw.types.PeerUser)
+                if isinstance(peer, raw.functions.PeerUser)
                 else None
             )
 
             chat = (
                 types.Chat._parse_chat(client, chats[peer_id])
-                if not isinstance(peer, raw.types.PeerUser)
+                if not isinstance(peer, raw.functions.PeerUser)
                 else None
             )
 
@@ -200,7 +200,7 @@ class ChatMember(Object):
                 permissions=types.ChatPermissions._parse(member.banned_rights),
                 client=client,
             )
-        elif isinstance(member, raw.types.ChannelParticipantCreator):
+        elif isinstance(member, raw.functions.ChannelParticipantCreator):
             return ChatMember(
                 status=enums.ChatMemberStatus.OWNER,
                 user=types.User._parse(client, users[member.user_id]),
@@ -208,26 +208,26 @@ class ChatMember(Object):
                 privileges=types.ChatPrivileges._parse(member.admin_rights),
                 client=client,
             )
-        elif isinstance(member, raw.types.ChannelParticipantLeft):
+        elif isinstance(member, raw.functions.ChannelParticipantLeft):
             peer = member.peer
             peer_id = utils.get_raw_peer_id(peer)
 
             user = (
                 types.User._parse(client, users[peer_id])
-                if isinstance(peer, raw.types.PeerUser)
+                if isinstance(peer, raw.functions.PeerUser)
                 else None
             )
 
             chat = (
                 types.Chat._parse_chat(client, chats[peer_id])
-                if not isinstance(peer, raw.types.PeerUser)
+                if not isinstance(peer, raw.functions.PeerUser)
                 else None
             )
 
             return ChatMember(
                 status=enums.ChatMemberStatus.LEFT, user=user, chat=chat, client=client
             )
-        elif isinstance(member, raw.types.ChannelParticipantSelf):
+        elif isinstance(member, raw.functions.ChannelParticipantSelf):
             return ChatMember(
                 status=enums.ChatMemberStatus.MEMBER,
                 user=types.User._parse(client, users[member.user_id]),

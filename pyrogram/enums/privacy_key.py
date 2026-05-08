@@ -23,35 +23,35 @@ from .auto_name import AutoName
 class PrivacyKey(AutoName):
     """Privacy key enumeration used in :meth:`~pyrogram.Client.set_privacy`."""
 
-    ABOUT = raw.types.InputPrivacyKeyAbout
+    ABOUT = raw.functions.InputPrivacyKeyAbout
     "Whether people can see your bio"
 
-    ADDED_BY_PHONE = raw.types.InputPrivacyKeyAddedByPhone
+    ADDED_BY_PHONE = raw.functions.InputPrivacyKeyAddedByPhone
     "Whether people can add you to their contact list by your phone number"
 
-    BIRTHDAY = raw.types.InputPrivacyKeyBirthday
+    BIRTHDAY = raw.functions.InputPrivacyKeyBirthday
     "Whether the user can see our birthday."
 
-    CHAT_INVITE = raw.types.InputPrivacyKeyChatInvite
+    CHAT_INVITE = raw.functions.InputPrivacyKeyChatInvite
     "Whether people will be able to invite you to chats"
 
-    FORWARDS = raw.types.InputPrivacyKeyForwards
+    FORWARDS = raw.functions.InputPrivacyKeyForwards
     "Whether messages forwarded from you will be anonymous"
 
-    PHONE_CALL = raw.types.InputPrivacyKeyPhoneCall
+    PHONE_CALL = raw.functions.InputPrivacyKeyPhoneCall
     "Whether you will accept phone calls"
 
-    PHONE_NUMBER = raw.types.InputPrivacyKeyPhoneNumber
+    PHONE_NUMBER = raw.functions.InputPrivacyKeyPhoneNumber
     "Whether people will be able to see your phone number"
 
-    PHONE_P2P = raw.types.InputPrivacyKeyPhoneP2P
+    PHONE_P2P = raw.functions.InputPrivacyKeyPhoneP2P
     "Whether to allow P2P communication during VoIP calls"
 
-    PROFILE_PHOTO = raw.types.InputPrivacyKeyProfilePhoto
+    PROFILE_PHOTO = raw.functions.InputPrivacyKeyProfilePhoto
     "Whether people will be able to see your profile picture"
 
-    STATUS = raw.types.InputPrivacyKeyStatusTimestamp
+    STATUS = raw.functions.InputPrivacyKeyStatusTimestamp
     "Whether people will be able to see our exact last online timestamp."
 
-    VOICE_MESSAGES = raw.types.InputPrivacyKeyVoiceMessages
+    VOICE_MESSAGES = raw.functions.InputPrivacyKeyVoiceMessages
     "Whether people can send you voice messages or round videos (Premium users only)."

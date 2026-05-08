@@ -49,7 +49,7 @@ class SetEmojiStatus:
                 emoji_status=(
                     emoji_status.write()
                     if emoji_status
-                    else raw.types.EmojiStatusEmpty()
+                    else raw.functions.EmojiStatusEmpty()
                 )
             )
         )

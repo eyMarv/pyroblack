@@ -46,7 +46,7 @@ class GetBotDefaultPrivileges:
         """
 
         bot_info = await self.invoke(
-            raw.functions.users.GetFullUser(id=raw.types.InputUserSelf())
+            raw.functions.users.GetFullUser(id=raw.functions.InputUserSelf())
         )
 
         field = (

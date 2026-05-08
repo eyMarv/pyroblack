@@ -76,7 +76,7 @@ class PrivacyRule(Object):
 
         if isinstance(
             rule,
-            (raw.types.PrivacyValueAllowUsers, raw.types.PrivacyValueDisallowUsers),
+            (raw.functions.PrivacyValueAllowUsers, raw.functions.PrivacyValueDisallowUsers),
         ):
             parsed_users = types.List(
                 types.User._parse(client, users.get(i)) for i in rule.users
@@ -85,8 +85,8 @@ class PrivacyRule(Object):
         if isinstance(
             rule,
             (
-                raw.types.PrivacyValueAllowChatParticipants,
-                raw.types.PrivacyValueDisallowChatParticipants,
+                raw.functions.PrivacyValueAllowChatParticipants,
+                raw.functions.PrivacyValueDisallowChatParticipants,
             ),
         ):
             parsed_chats = types.List(
@@ -96,40 +96,40 @@ class PrivacyRule(Object):
         return PrivacyRule(
             allow_all=(
                 True
-                if isinstance(rule, raw.types.PrivacyValueAllowAll)
+                if isinstance(rule, raw.functions.PrivacyValueAllowAll)
                 else (
                     False
-                    if isinstance(rule, raw.types.PrivacyValueDisallowAll)
+                    if isinstance(rule, raw.functions.PrivacyValueDisallowAll)
                     else None
                 )
             ),
             allow_chats=(
                 True
-                if isinstance(rule, raw.types.PrivacyValueAllowChatParticipants)
+                if isinstance(rule, raw.functions.PrivacyValueAllowChatParticipants)
                 else (
                     False
-                    if isinstance(rule, raw.types.PrivacyValueDisallowChatParticipants)
+                    if isinstance(rule, raw.functions.PrivacyValueDisallowChatParticipants)
                     else None
                 )
             ),
             allow_contacts=(
                 True
-                if isinstance(rule, raw.types.PrivacyValueAllowContacts)
+                if isinstance(rule, raw.functions.PrivacyValueAllowContacts)
                 else (
                     False
-                    if isinstance(rule, raw.types.PrivacyValueDisallowContacts)
+                    if isinstance(rule, raw.functions.PrivacyValueDisallowContacts)
                     else None
                 )
             ),
             allow_premium=(
-                True if isinstance(rule, raw.types.PrivacyValueAllowPremium) else None
+                True if isinstance(rule, raw.functions.PrivacyValueAllowPremium) else None
             ),
             allow_users=(
                 True
-                if isinstance(rule, raw.types.PrivacyValueAllowUsers)
+                if isinstance(rule, raw.functions.PrivacyValueAllowUsers)
                 else (
                     False
-                    if isinstance(rule, raw.types.PrivacyValueDisallowUsers)
+                    if isinstance(rule, raw.functions.PrivacyValueDisallowUsers)
                     else None
                 )
             ),

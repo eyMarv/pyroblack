@@ -76,10 +76,10 @@ class DeleteChatHistory:
         """
         peer = await self.resolve_peer(chat_id)
 
-        if isinstance(peer, raw.types.InputPeerChannel):
+        if isinstance(peer, raw.functions.InputPeerChannel):
             r = await self.invoke(
                 raw.functions.channels.DeleteHistory(
-                    channel=raw.types.InputChannel(
+                    channel=raw.functions.InputChannel(
                         channel_id=peer.channel_id, access_hash=peer.access_hash
                     ),
                     max_id=max_id,
@@ -100,6 +100,6 @@ class DeleteChatHistory:
 
         return (
             len(r.updates[0].messages)
-            if isinstance(peer, raw.types.InputPeerChannel)
+            if isinstance(peer, raw.functions.InputPeerChannel)
             else r.pts_count
         )

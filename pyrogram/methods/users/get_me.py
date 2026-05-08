@@ -37,7 +37,7 @@ class GetMe:
                 print(me)
         """
         r = await self.invoke(
-            raw.functions.users.GetFullUser(id=raw.types.InputUserSelf())
+            raw.functions.users.GetFullUser(id=raw.functions.InputUserSelf())
         )
 
         users = {u.id: u for u in r.users}

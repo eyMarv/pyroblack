@@ -174,19 +174,19 @@ class SendInvoice:
         r = await self.invoke(
             raw.functions.messages.SendMedia(
                 peer=await self.resolve_peer(chat_id),
-                media=raw.types.InputMediaInvoice(
+                media=raw.functions.InputMediaInvoice(
                     title=title,
                     description=description,
-                    invoice=raw.types.Invoice(
+                    invoice=raw.functions.Invoice(
                         currency=currency, prices=[price.write() for price in prices]
                     ),
                     payload=encoded_payload,
                     provider=provider,
-                    provider_data=raw.types.DataJSON(
+                    provider_data=raw.functions.DataJSON(
                         data=provider_data if provider_data else "{}"
                     ),
                     photo=(
-                        raw.types.InputWebDocument(
+                        raw.functions.InputWebDocument(
                             url=photo_url,
                             size=photo_size or 0,
                             mime_type=photo_mime_type or "image/jpeg",
@@ -211,7 +211,7 @@ class SendInvoice:
 
         for i in r.updates:
             if isinstance(
-                i, (raw.types.UpdateNewMessage, raw.types.UpdateNewChannelMessage)
+                i, (raw.functions.UpdateNewMessage, raw.functions.UpdateNewChannelMessage)
             ):
                 return await types.Message._parse(
                     self,

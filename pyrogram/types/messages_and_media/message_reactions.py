@@ -50,8 +50,8 @@ class MessageReactions(Object):
     def _parse(
         client: "pyrogram.Client",
         message_reactions: Optional["raw.base.MessageReactions"] = None,
-        users: Optional[Dict[int, "raw.types.User"]] = None,
-        chats: Dict[int, "raw.types.Chat"] = None,
+        users: Optional[Dict[int, "raw.functions.User"]] = None,
+        chats: Dict[int, "raw.functions.Chat"] = None,
     ) -> Optional["MessageReactions"]:
         if not message_reactions:
             return None

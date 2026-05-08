@@ -41,7 +41,7 @@ class StoryViews(Object):
         self.recent_viewers = recent_viewers
 
     @staticmethod
-    def _parse(storyviews: "raw.types.StoryViews") -> "StoryViews":
+    def _parse(storyviews: "raw.functions.StoryViews") -> "StoryViews":
         return StoryViews(
             view_count=getattr(storyviews, "view_count", None),
             recent_viewers=getattr(storyviews, "recent_viewers", None),

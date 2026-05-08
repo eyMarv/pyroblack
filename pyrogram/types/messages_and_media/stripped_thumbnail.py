@@ -36,6 +36,6 @@ class StrippedThumbnail(Object):
 
     @staticmethod
     def _parse(
-        client, stripped_thumbnail: "raw.types.PhotoStrippedSize"
+        client, stripped_thumbnail: "raw.functions.PhotoStrippedSize"
     ) -> "StrippedThumbnail":
         return StrippedThumbnail(data=stripped_thumbnail.bytes, client=client)

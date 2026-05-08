@@ -23,53 +23,53 @@ from .auto_name import AutoName
 class MessagesFilter(AutoName):
     """Messages filter enumeration used in :meth:`~pyrogram.Client.search_messages` and :meth:`~pyrogram.Client.search_global`"""
 
-    EMPTY = raw.types.InputMessagesFilterEmpty
+    EMPTY = raw.functions.InputMessagesFilterEmpty
     "Empty filter (any kind of messages)"
 
-    PHOTO = raw.types.InputMessagesFilterPhotos
+    PHOTO = raw.functions.InputMessagesFilterPhotos
     "Photo messages"
 
-    VIDEO = raw.types.InputMessagesFilterVideo
+    VIDEO = raw.functions.InputMessagesFilterVideo
     "Video messages"
 
-    PHOTO_VIDEO = raw.types.InputMessagesFilterPhotoVideo
+    PHOTO_VIDEO = raw.functions.InputMessagesFilterPhotoVideo
     "Photo and video messages"
 
-    DOCUMENT = raw.types.InputMessagesFilterDocument
+    DOCUMENT = raw.functions.InputMessagesFilterDocument
     "Document messages"
 
-    URL = raw.types.InputMessagesFilterUrl
+    URL = raw.functions.InputMessagesFilterUrl
     "Messages containing URLs"
 
-    ANIMATION = raw.types.InputMessagesFilterGif
+    ANIMATION = raw.functions.InputMessagesFilterGif
     "Animation messages"
 
-    VOICE_NOTE = raw.types.InputMessagesFilterVoice
+    VOICE_NOTE = raw.functions.InputMessagesFilterVoice
     "Voice note messages"
 
-    VIDEO_NOTE = raw.types.InputMessagesFilterRoundVideo
+    VIDEO_NOTE = raw.functions.InputMessagesFilterRoundVideo
     "Video note messages"
 
-    AUDIO_VIDEO_NOTE = raw.types.InputMessagesFilterRoundVideo
+    AUDIO_VIDEO_NOTE = raw.functions.InputMessagesFilterRoundVideo
     "Audio and video note messages"
 
-    AUDIO = raw.types.InputMessagesFilterMusic
+    AUDIO = raw.functions.InputMessagesFilterMusic
     "Audio messages (music)"
 
-    CHAT_PHOTO = raw.types.InputMessagesFilterChatPhotos
+    CHAT_PHOTO = raw.functions.InputMessagesFilterChatPhotos
     "Chat photo messages"
 
-    PHONE_CALL = raw.types.InputMessagesFilterPhoneCalls
+    PHONE_CALL = raw.functions.InputMessagesFilterPhoneCalls
     "Phone call messages"
 
-    MENTION = raw.types.InputMessagesFilterMyMentions
+    MENTION = raw.functions.InputMessagesFilterMyMentions
     "Messages containing mentions"
 
-    LOCATION = raw.types.InputMessagesFilterGeo
+    LOCATION = raw.functions.InputMessagesFilterGeo
     "Location messages"
 
-    CONTACT = raw.types.InputMessagesFilterContacts
+    CONTACT = raw.functions.InputMessagesFilterContacts
     "Contact messages"
 
-    PINNED = raw.types.InputMessagesFilterPinned
+    PINNED = raw.functions.InputMessagesFilterPinned
     "Pinned messages"

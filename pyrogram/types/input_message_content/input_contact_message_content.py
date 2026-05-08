@@ -59,7 +59,7 @@ class InputContactMessageContent(InputMessageContent):
         self.vcard = vcard
 
     async def write(self, client: "pyrogram.Client", reply_markup):
-        return raw.types.InputBotInlineMessageMediaContact(
+        return raw.functions.InputBotInlineMessageMediaContact(
             phone_number=self.phone_number,
             first_name=self.first_name,
             last_name=self.last_name,
