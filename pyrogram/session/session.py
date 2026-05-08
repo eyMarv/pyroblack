@@ -57,16 +57,16 @@ class Result:
 
 
 class Session:
-    START_TIMEOUT = 10
+    START_TIMEOUT = 5
     WAIT_TIMEOUT = 15
     RECONN_TIMEOUT = 5
     SLEEP_THRESHOLD = 10
-    MAX_RETRIES = 50
+    MAX_RETRIES = 20
     ACKS_THRESHOLD = 10
     PING_INTERVAL = 5
     STORED_MSG_IDS_MAX_SIZE = 1000 * 2
-    RECONNECT_THRESHOLD = 5
-    RE_START_RANGE = (1, 2, 3, 4, 5, 6)
+    RECONNECT_THRESHOLD = 13
+    RE_START_RANGE = range(4)
 
     TRANSPORT_ERRORS = {
         404: "auth key not found",
@@ -201,9 +201,11 @@ class Session:
             self.is_started.set()
             log.info("Session started")
 
-    async def stop(self):
+    async def stop(self, restart: bool = False):
         if self.instant_stop:
-            return  # stop doing anything instantly, force stop
+            if restart:
+                return  # stop doing anything instantly, client is manually handling
+            return
 
         if self.stop_lock.locked():
             log.info(
@@ -263,7 +265,7 @@ class Session:
             finally:
                 self.instant_stop = False  # reset
 
-    async def restart(self, stop: bool):
+    async def restart(self, stop: bool = True):
         if self.instant_stop:
             return  # stop instantly
 
@@ -294,26 +296,18 @@ class Session:
                 to_wait = self.RECONNECT_THRESHOLD + int(
                     self.RECONNECT_THRESHOLD - (now - self.last_reconnect_attempt)
                 )
-                log.info(
+                log.warning(
                     f"[pyroblack] Client [{self.client.name}] is reconnecting too frequently, sleeping for {to_wait} seconds"
                 )
                 await asyncio.sleep(to_wait)
 
             self.last_reconnect_attempt = time()
             if stop:
-                try:
-                    await self.stop()
-                except Exception as e:
-                    log.warning(
-                        f"[pyroblack] Client [{self.client.name}] failed stopping; restarting anyways, exc: %s %s",
-                        type(e).__name__,
-                        e,
-                    )
                 self.skip_updates_ori = self.client.skip_updates
                 self.client.skip_updates = False  # get "missed" updates after restart
+                await self.stop(restart=True)
 
             for try_ in self.RE_START_RANGE:
-                try_ += 1
                 try:
                     await self.start()
                     break
@@ -333,10 +327,15 @@ class Session:
                             type(e).__name__,
                             e,
                         )
+                except Exception as e:
+                    log.warning(
+                        f"[pyroblack] Client [{self.client.name}] failed re-starting, try %s; exc: %s %s",
+                        try_,
+                        type(e).__name__,
+                        e,
+                    )
             if stop:
-                self.client.skip_updates = (
-                    self.skip_updates_ori
-                )  # revert to original setting
+                self.client.skip_updates = self.skip_updates_ori
                 self.skip_updates_ori = None
 
     async def handle_packet(self, packet):
@@ -354,7 +353,7 @@ class Session:
             )
         except ValueError:
             # unknown constructor
-            self.loop.create_task(self.restart(stop=True))
+            self.loop.create_task(self.restart())
             return
 
         messages = data.body.messages if isinstance(data.body, MsgContainer) else [data]
@@ -465,7 +464,7 @@ class Session:
                 )
             except OSError:
                 if (not self.start_lock.locked()) and (not self.restart_lock.locked()):
-                    self.loop.create_task(self.restart(stop=self.is_started.is_set()))
+                    self.loop.create_task(self.restart())
                 break
             except RPCError:
                 pass
@@ -499,7 +498,7 @@ class Session:
                     )
 
                 if (not self.start_lock.locked()) and (not self.restart_lock.locked()):
-                    self.loop.create_task(self.restart(stop=self.is_started.is_set()))
+                    self.loop.create_task(self.restart())
                 break
 
             self.loop.create_task(self.handle_packet(packet))
@@ -646,6 +645,7 @@ class Session:
             ) as e:
                 retries -= 1
                 if retries == 0:
+                    self.client.updates_invoke_error = e
                     if callable(self.client.invoke_err_handler):
                         try:
                             await self.client.invoke_err_handler(self.client, e)
@@ -668,7 +668,7 @@ class Session:
                         query_name,
                         str(e) or repr(e),
                     )
-                    self.loop.create_task(self.restart(stop=True))
+                    self.loop.create_task(self.restart())
                 else:
                     (log.warning if retries < 2 else log.info)(
                         '[%s] [%s] Retrying "%s" due to: %s',
@@ -680,6 +680,7 @@ class Session:
 
                 await asyncio.sleep(1)
             except Exception as e:
+                self.client.updates_invoke_error = e
                 if callable(self.client.invoke_err_handler):
                     try:
                         await self.client.invoke_err_handler(self.client, e)
