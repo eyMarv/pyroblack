@@ -47,10 +47,22 @@ class Terminate:
         await self.storage.save()
         await self.dispatcher.stop()
 
-        for media_session in self.media_sessions.values():
-            await media_session.stop()
-
+        # Snapshot and tear down the media session pool
+        sessions_snapshot = [
+            (dc_id, list(sessions))
+            for dc_id, sessions in self.media_sessions.items()
+        ]
         self.media_sessions.clear()
+        self._media_sessions_locks.clear()
+
+        for dc_id, sessions in sessions_snapshot:
+            for session in sessions:
+                try:
+                    await session.stop()
+                except Exception as e:
+                    log.warning(
+                        f"Error stopping media session for DC {dc_id}: {e}"
+                    )
 
         self.updates_watchdog_event.set()
 
