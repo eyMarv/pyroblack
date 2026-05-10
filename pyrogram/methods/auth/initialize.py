@@ -48,4 +48,14 @@ class Initialize:
 
         self.updates_watchdog_task = asyncio.create_task(self.updates_watchdog())
 
+        # Pre-warm media session pool for home DC
+        if self.max_download_workers > 1:
+            try:
+                await self._get_media_session_pool(
+                    await self.storage.dc_id(),
+                    self.max_download_workers,
+                )
+            except Exception as e:
+                log.warning(f"Failed to pre-warm media sessions: {e}")
+
         self.is_initialized = True
