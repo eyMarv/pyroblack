@@ -391,9 +391,7 @@ class Client(Methods):
 
         self.message_cache = Cache(self.max_message_cache_size)
 
-        # Sometimes, for some reason, the server will stop sending updates and will only respond to pings.
-        # This watchdog will invoke updates.GetState in order to wake up the server and enable it sending updates again
-        # after some idle time has been detected.
+        # Wake up the server if it stops sending updates and only responds to pings
         self.updates_watchdog_task = None
         self.updates_watchdog_event = asyncio.Event()
         self.last_update_time = datetime.now()
@@ -1319,7 +1317,6 @@ class Client(Methods):
                     thumb_size=file_id.thumbnail_size,
                 )
 
-            # Multi-connection parallel download pipeline
             CHUNK_SIZE = 1024 * 1024  # 1 MB — Telegram's non-precise limit
             n_workers = self.max_download_workers
             dc_id = file_id.dc_id
@@ -1346,7 +1343,7 @@ class Client(Methods):
                         return r.bytes
                     return b""
 
-                # First request — try single-session first (CDN may return)
+                # First request — try single-session first
                 r = await pool[0].invoke(
                     raw.functions.upload.GetFile(
                         location=location, offset=offset_bytes, limit=CHUNK_SIZE
@@ -1355,14 +1352,14 @@ class Client(Methods):
                 )
 
                 if isinstance(r, raw.types.upload.File):
-                    # Yield first chunk (already fetched), then pipeline the rest
+                    # Yield first chunk, then pipeline the rest
                     first_chunk = r.bytes
                     yield first_chunk
 
                     if len(first_chunk) < CHUNK_SIZE:
                         return
 
-                    # Prime the pipeline with remaining chunks
+                    # Pipeline remaining chunks
                     next_chunk_idx = 1
                     while next_chunk_idx < min(n_workers, total_chunks):
                         task = asyncio.ensure_future(_dispatch(next_chunk_idx))
@@ -1398,7 +1395,6 @@ class Client(Methods):
                         if len(chunk) < CHUNK_SIZE:
                             break
 
-                        # Refill pipeline
                         if next_chunk_idx < total_chunks:
                             in_flight[next_chunk_idx] = asyncio.ensure_future(
                                 _dispatch(next_chunk_idx)
@@ -1406,7 +1402,6 @@ class Client(Methods):
                             next_chunk_idx += 1
 
                 elif isinstance(r, raw.types.upload.FileCdnRedirect):
-                    # CDN path: single-session, not pooled
                     current = 0
                     cdn_session = Session(
                         self,

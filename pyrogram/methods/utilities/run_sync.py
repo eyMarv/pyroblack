@@ -27,20 +27,4 @@ class RunSync:
     async def run_sync(
         func: Callable[..., Result], *args: Any, **kwargs: Any
     ) -> Result:
-        """Runs the given sync function (optionally with arguments) on a separate thread.
-
-        Parameters:
-            func (``Callable``):
-                Sync function to run.
-
-            \\*args (``any``, *optional*):
-                Function argument.
-
-            \\*\\*kwargs (``any``, *optional*):
-                Function extras arguments.
-
-        Returns:
-                ``any``: The function result.
-        """
-
         return await utils.run_sync(func, *args, **kwargs)

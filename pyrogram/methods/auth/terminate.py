@@ -47,7 +47,7 @@ class Terminate:
         await self.storage.save()
         await self.dispatcher.stop()
 
-        # Snapshot and tear down the media session pool
+        # Tear down the media session pool
         sessions_snapshot = [
             (dc_id, list(sessions))
             for dc_id, sessions in self.media_sessions.items()

@@ -143,7 +143,7 @@ class Auth:
                 data_with_hash = sha + data + padding
                 encrypted_data = rsa.encrypt(data_with_hash, public_key_fingerprint)
 
-                log.debug("Done encrypt data with RSA")
+                log.debug("Done encryption with RSA")
 
                 # Step 5. TODO: Handle "server_DH_params_fail". Code assumes response is ok
                 log.debug("Send req_DH_params")

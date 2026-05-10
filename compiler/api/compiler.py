@@ -26,9 +26,6 @@ from functools import partial
 from pathlib import Path
 from typing import NamedTuple, List, Tuple
 
-# from autoflake import fix_code
-# from black import format_str, FileMode
-
 HOME_PATH = Path("compiler/api")
 DESTINATION_PATH = Path("pyrogram/raw")
 NOTICE_PATH = "NOTICE"

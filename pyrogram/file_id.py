@@ -29,41 +29,14 @@ log = logging.getLogger(__name__)
 
 
 def b64_encode(s: bytes) -> str:
-    """Encode bytes into a URL-safe Base64 string without padding
-
-    Parameters:
-        s (``bytes``):
-            Bytes to encode
-
-    Returns:
-        ``str``: The encoded bytes
-    """
     return base64.urlsafe_b64encode(s).decode().strip("=")
 
 
 def b64_decode(s: str) -> bytes:
-    """Decode a URL-safe Base64 string without padding to bytes
-
-    Parameters:
-        s (``str``):
-            String to decode
-
-    Returns:
-        ``bytes``: The decoded string
-    """
     return base64.urlsafe_b64decode(s + "=" * (-len(s) % 4))
 
 
 def rle_encode(s: bytes) -> bytes:
-    """Zero-value RLE encoder
-
-    Parameters:
-        s (``bytes``):
-            Bytes to encode
-
-    Returns:
-        ``bytes``: The encoded bytes
-    """
     r: List[int] = []
     n: int = 0
 
@@ -84,15 +57,6 @@ def rle_encode(s: bytes) -> bytes:
 
 
 def rle_decode(s: bytes) -> bytes:
-    """Zero-value RLE decoder
-
-    Parameters:
-        s (``bytes``):
-            Bytes to decode
-
-    Returns:
-        ``bytes``: The decoded bytes
-    """
     r: List[int] = []
     z: bool = False
 
@@ -111,12 +75,10 @@ def rle_decode(s: bytes) -> bytes:
 
 
 class FileType(IntEnum):
-    """Known file types"""
-
     THUMBNAIL = 0
-    CHAT_PHOTO = 1  # ProfilePhoto
+    CHAT_PHOTO = 1
     PHOTO = 2
-    VOICE = 3  # VoiceNote
+    VOICE = 3
     VIDEO = 4
     DOCUMENT = 5
     ENCRYPTED = 6
@@ -134,16 +96,13 @@ class FileType(IntEnum):
 
 
 class ThumbnailSource(IntEnum):
-    """Known thumbnail sources"""
-
     LEGACY = 0
     THUMBNAIL = 1
-    CHAT_PHOTO_SMALL = 2  # DialogPhotoSmall
-    CHAT_PHOTO_BIG = 3  # DialogPhotoBig
+    CHAT_PHOTO_SMALL = 2
+    CHAT_PHOTO_BIG = 3
     STICKER_SET_THUMBNAIL = 4
 
 
-# Photo-like file ids are longer and contain extra info, the rest are all documents
 PHOTO_TYPES = {
     FileType.THUMBNAIL,
     FileType.CHAT_PHOTO,
@@ -153,8 +112,6 @@ PHOTO_TYPES = {
 }
 DOCUMENT_TYPES = set(FileType) - PHOTO_TYPES
 
-# Since the file type values are small enough to fit them in few bits, Telegram thought it would be a good idea to
-# encode extra information about web url and file reference existence as flag inside the 4 bytes allocated for the field
 WEB_LOCATION_FLAG = 1 << 24
 FILE_REFERENCE_FLAG = 1 << 25
 
@@ -208,7 +165,6 @@ class FileId:
     def decode(file_id: str):
         decoded = rle_decode(b64_decode(file_id))
 
-        # region read version
         # File id versioning. Major versions lower than 4 don't have a minor version
         major = decoded[-1]
 
@@ -218,19 +174,13 @@ class FileId:
         else:
             minor = decoded[-2]
             buffer = BytesIO(decoded[:-2])
-        # endregion
 
         file_type, dc_id = struct.unpack("<ii", buffer.read(8))
 
-        # region media type flags
-        # Check for flags existence
         has_web_location = bool(file_type & WEB_LOCATION_FLAG)
         has_file_reference = bool(file_type & FILE_REFERENCE_FLAG)
-
-        # Remove flags to restore the actual type id value
         file_type &= ~WEB_LOCATION_FLAG
         file_type &= ~FILE_REFERENCE_FLAG
-        # endregion
 
         try:
             file_type = FileType(file_type)

@@ -123,18 +123,18 @@ class Session:
 
     async def start(self):
         if self.instant_stop:
-            return  # stop instantly
+            return
 
         if self.start_lock.locked():
             log.info(
                 f"[pyroblack] Client [{self.client.name}] called start while already starting"
             )
-            return  # don't start 2 times at once
+            return
 
         async with self.start_lock:
             while True:
                 if self.instant_stop:
-                    return  # stop instantly
+                    return
 
                 self.connection = self.client.connection_factory(
                     dc_id=self.dc_id,
@@ -191,7 +191,6 @@ class Session:
                     raise e
                 except (OSError, RPCError):
                     await self.stop()
-                    # next try
                 except Exception as e:
                     await self.stop()
                     raise e
@@ -204,7 +203,7 @@ class Session:
     async def stop(self, restart: bool = False):
         if self.instant_stop:
             if restart:
-                return  # stop doing anything instantly, client is manually handling
+                return
             return
 
         if self.stop_lock.locked():
@@ -267,25 +266,25 @@ class Session:
 
     async def restart(self, stop: bool = True):
         if self.instant_stop:
-            return  # stop instantly
+            return
 
         if self.start_lock.locked():
             log.info(
                 f"[pyroblack] Client [{self.client.name}] called restart while starting"
             )
-            return  # don't restart while starting
+            return
 
         if self.restart_lock.locked():
             log.info(
                 f"[pyroblack] Client [{self.client.name}] called restart while already restarting"
             )
-            return  # don't restart 2 times at once
+            return
 
         if not self.is_started.is_set():
             log.info(
                 f"[pyroblack] Client [{self.client.name}] called restart while not being already started"
             )
-            return  # don't restart when supposed to be stopped
+            return
 
         async with self.restart_lock:
             now = time()
@@ -304,7 +303,7 @@ class Session:
             self.last_reconnect_attempt = time()
             if stop:
                 self.skip_updates_ori = self.client.skip_updates
-                self.client.skip_updates = False  # get "missed" updates after restart
+                self.client.skip_updates = False
                 await self.stop(restart=True)
 
             for try_ in self.RE_START_RANGE:
@@ -340,7 +339,7 @@ class Session:
 
     async def handle_packet(self, packet):
         if self.instant_stop:
-            return  # stop instantly
+            return
 
         try:
             data = await self.loop.run_in_executor(
@@ -513,7 +512,7 @@ class Session:
         retry: int = 0,
     ):
         if self.instant_stop:
-            return  # stop instantly
+            return
 
         message = self.msg_factory(data)
         msg_id = message.msg_id
