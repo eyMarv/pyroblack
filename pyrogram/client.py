@@ -221,12 +221,16 @@ class Client(Methods):
             Defaults to 1000.
 
         max_download_workers (``int``, *optional*):
-            Number of parallel chunk requests per download or upload.
-            Each chunk is 1 MB (download) or 512 KB (upload), so effective
-            pipeline bandwidth ≈ max_download_workers × chunk size.
+            Number of parallel TCP sessions used for media transfers
+            (uploads and downloads). Each session can host multiple in-flight
+            RPCs via MTProto msg_id multiplexing, so the effective pipeline
+            depth for a single-file upload is
+            ``max_download_workers × WORKERS_PER_SESSION (4) = 16`` by default.
+            For downloads, each session handles one chunk at a time, so
+            in-flight depth equals ``max_download_workers``.
             Higher values give more speed on fast connections but consume
-            more memory and risk hitting Telegram's per-DC connection cap.
-            Maximum recommended value is 4. Defaults to 4.
+            more memory and risk hitting Telegram's per-DC connection cap
+            (max 4 media sessions per DC). Defaults to 4.
 
         init_params (``raw.types.JsonObject``, *optional*):
             Additional initConnection parameters.

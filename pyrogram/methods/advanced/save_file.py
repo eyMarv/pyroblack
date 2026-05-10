@@ -36,6 +36,12 @@ log = getLogger(__name__)
 
 PART_SIZE = 512 * 1024          # 512 KB — Telegram's hard limit per part
 READ_BUFFER = 4 * 1024 * 1024   # 4 MB read buffer for fast disk I/O
+WORKERS_PER_SESSION = 4         # Concurrent in-flight RPCs per TCP session.
+                                # MTProto multiplexes RPCs by msg_id over a single socket;
+                                # 4 is pyrofork 2.3.11's empirically-proven sweet spot.
+                                # Going higher (e.g. nekozee's 10) risks -429 transport flood.
+                                # Total in-flight = max_download_workers * WORKERS_PER_SESSION
+                                # Default: 4 sessions * 4 = 16 RPCs in flight per upload.
 
 
 class SaveFile:
@@ -101,11 +107,16 @@ class SaveFile:
             if path is None:
                 return None
 
-            n_workers = self.max_download_workers
+            n_sessions = self.max_download_workers
             dc_id = await self.storage.dc_id()
-            pool = await self._get_media_session_pool(dc_id, n_workers)
+            pool = await self._get_media_session_pool(dc_id, n_sessions)
 
-            queue = asyncio.Queue(n_workers * 2)
+            # n_workers is the TOTAL number of parallel uploaders across ALL sessions.
+            # Each session hosts WORKERS_PER_SESSION coroutines that share one TCP socket
+            # via MTProto msg_id multiplexing — this is how pyrofork 2.3.11 achieves
+            # its single-file upload speed.
+            n_workers = n_sessions * WORKERS_PER_SESSION
+            queue = asyncio.Queue(n_workers)
 
             async def worker(session):
                 while True:
@@ -190,9 +201,12 @@ class SaveFile:
                 file_id = file_id or self.rnd_id()
                 md5_sum = md5() if not is_big and not is_missing_part else None
 
-                # Validation passed — now safe to spawn workers
+                # Validation passed — now safe to spawn workers.
+                # Round-robin assignment: workers 0,4,8,12 → session 0;
+                # workers 1,5,9,13 → session 1; etc. Each session ends up
+                # with WORKERS_PER_SESSION coroutines sharing its TCP socket.
                 worker_tasks = [
-                    self.loop.create_task(worker(pool[i]))
+                    self.loop.create_task(worker(pool[i % n_sessions]))
                     for i in range(n_workers)
                 ]
 
