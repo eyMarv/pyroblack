@@ -1320,7 +1320,11 @@ class Client(Methods):
             CHUNK_SIZE = 1024 * 1024  # 1 MB — Telegram's non-precise limit
             n_workers = self.max_download_workers
             dc_id = file_id.dc_id
-            total_chunks = abs(limit) or (1 << 31) - 1
+            total_chunks = abs(limit) or (
+                (file_size + CHUNK_SIZE - 1) // CHUNK_SIZE
+                if file_size
+                else (1 << 31) - 1
+            )
             offset_bytes = abs(offset) * CHUNK_SIZE
 
             in_flight: Dict[int, asyncio.Task] = {}
