@@ -799,6 +799,8 @@ class Message(Object, Update):
             checklist_tasks_done = None
             checklist_tasks_added = None
 
+            from_user = None
+            sender_chat = None
             service_type = None
             chat_join_type = None
 
