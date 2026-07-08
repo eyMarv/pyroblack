@@ -38,6 +38,12 @@ class MessageServiceType(AutoName):
     LEFT_CHAT_MEMBERS = auto()
     "Left chat members"
 
+    CHAT_OWNER_LEFT = auto()
+    "Chat owner left"
+
+    CHAT_OWNER_CHANGED = auto()
+    "Chat owner changed"
+
     NEW_CHAT_TITLE = auto()
     "New chat title"
 
@@ -110,8 +116,20 @@ class MessageServiceType(AutoName):
     GIVEAWAY_RESULT = auto()
     "Giveaway Result"
 
+    GIVEAWAY_CREATED = auto()
+    "Giveaway created"
+
+    GIVEAWAY_COMPLETED = auto()
+    "Giveaway completed"
+
+    GIVEAWAY_PRIZE_STARS = auto()
+    "Giveaway prize stars"
+
     GIFT_CODE = auto()
     "Gift code"
+
+    PREMIUM_GIFT_CODE = auto()
+    "Premium gift code"
 
     REQUESTED_CHAT = auto()
     "Requested chat"
@@ -121,6 +139,9 @@ class MessageServiceType(AutoName):
 
     BOOST_APPLY = auto()
     "Boost apply"
+
+    CHAT_BOOST = auto()
+    "Chat boost"
 
     JOIN_REQUEST_APPROVED = auto()
     "Join request approved"
@@ -133,6 +154,72 @@ class MessageServiceType(AutoName):
 
     BOT_ALLOWED = auto()
     "Bot allowed"
+
+    CONNECTED_WEBSITE = auto()
+    "Connected website"
+
+    WRITE_ACCESS_ALLOWED = auto()
+    "Write access allowed"
+
+    GIFTED_TON = auto()
+    "Gifted ton"
+
+    GIFTED_PREMIUM = auto()
+    "Gifted premium"
+
+    GIFTED_STARS = auto()
+    "Gifted stars"
+
+    MANAGED_BOT_CREATED = auto()
+    "Managed bot created"
+
+    CHAT_SET_THEME = auto()
+    "Chat set theme"
+
+    CHAT_HAS_PROTECTED_CONTENT_TOGGLED = auto()
+    "Chat has protected content toggled"
+
+    CHAT_HAS_PROTECTED_CONTENT_DISABLE_REQUESTED = auto()
+    "Chat has protected content disable requested"
+
+    PROXIMITY_ALERT_TRIGGERED = auto()
+    "Proximity alert triggered"
+
+    SCREENSHOT_TAKEN = auto()
+    "Screenshot taken"
+
+    CONTACT_REGISTERED = auto()
+    "Contact registered"
+
+    PAID_MESSAGES_REFUNDED = auto()
+    "Paid messages refunded"
+
+    PAID_MESSAGES_PRICE_CHANGED = auto()
+    "Paid messages price changed"
+
+    DIRECT_MESSAGE_PRICE_CHANGED = auto()
+    "Direct message price changed"
+
+    POLL_OPTION_ADDED = auto()
+    "Poll option added"
+
+    POLL_OPTION_DELETED = auto()
+    "Poll option deleted"
+
+    SUGGESTED_POST_APPROVAL_FAILED = auto()
+    "Suggested post approval failed"
+
+    SUGGESTED_POST_APPROVED = auto()
+    "Suggested post approved"
+
+    SUGGESTED_POST_DECLINED = auto()
+    "Suggested post declined"
+
+    SUGGESTED_POST_PAID = auto()
+    "Suggested post paid"
+
+    SUGGESTED_POST_REFUNDED = auto()
+    "Suggested post refunded"
 
     CHECKLIST_TASKS_DONE = auto()
     "Checklist tasks done"

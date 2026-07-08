@@ -17,42 +17,38 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-import logging
-from typing import AsyncGenerator, Optional
+from typing import List
 
 import pyrogram
-from pyrogram import raw
-from pyrogram import types
-
-log = logging.getLogger(__name__)
+from pyrogram import raw, types
 
 
-class GetAllStories:
-    async def get_all_stories(
+class GetFolderInviteLinks:
+    async def get_folder_invite_links(
         self: "pyrogram.Client",
-    ) -> Optional[AsyncGenerator["types.Story", None]]:
-        """Get all active stories.
+        chat_folder_id: int
+    ) -> List["types.FolderInviteLink"]:
+        """Returns invite links created by the current user for a shareable chat folder.
 
         .. include:: /_includes/usable-by/users.rst
 
+        Parameters:
+            chat_folder_id (``int``):
+                Unique identifier (int) of the target folder.
+
         Returns:
-            ``Generator``: On success, a generator yielding :obj:`~pyrogram.types.Story` objects is returned.
+            List of :obj:`~pyrogram.types.FolderInviteLink`: On success, information about the invite links is returned.
 
         Example:
             .. code-block:: python
 
-                # Get all active story
-                async for story in app.get_all_stories():
-                    print(story)
-
-        Raises:
-            ValueError: In case of invalid arguments.
+                # Get all folder links
+                await app.get_folder_invite_links(folder_id)
         """
+        r = await self.invoke(
+            raw.functions.chatlists.GetExportedInvites(
+                chatlist=raw.types.InputChatlistDialogFilter(filter_id=chat_folder_id)
+            )
+        )
 
-        rpc = raw.functions.stories.GetAllStories()
-
-        r = await self.invoke(rpc, sleep_threshold=-1)
-
-        for peer_story in r.peer_stories:
-            for story in peer_story.stories:
-                yield await types.Story._parse(self, story, peer_story.peer)
+        return types.List([types.FolderInviteLink._parse(invite) for invite in r.invites])

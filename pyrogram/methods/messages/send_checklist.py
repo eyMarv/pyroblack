@@ -130,8 +130,10 @@ class SendChecklist:
                 ),
                 message="",
                 silent=disable_notification,
-                reply_to=await utils.get_reply_to(
-                    self, reply_parameters, message_thread_id
+                reply_to=await utils._get_reply_message_parameters(
+                    self,
+                    message_thread_id,
+                    reply_parameters
                 ),
                 random_id=self.rnd_id(),
                 schedule_date=utils.datetime_to_timestamp(schedule_date),

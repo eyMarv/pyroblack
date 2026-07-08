@@ -39,3 +39,6 @@ class StoriesPrivacyRules(AutoName):
 
     NO_CONTACTS = auto()
     "Hide stories from contacts"
+
+    SELECTED_USERS = auto()
+    "Selected users only stories"

@@ -294,7 +294,7 @@ class ExternalReplyInfo(Object):
                 dice = types.Dice._parse(client, media)
                 media_type = enums.MessageMediaType.DICE
             elif isinstance(media, raw.types.MessageMediaPaidMedia):
-                paid_media = types.PaidMedia._parse(client, media)
+                paid_media = types.PaidMediaInfo._parse(client, media)
                 media_type = enums.MessageMediaType.PAID_MEDIA
             else:
                 media = None

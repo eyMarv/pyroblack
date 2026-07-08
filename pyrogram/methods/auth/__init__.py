@@ -21,6 +21,7 @@ from .check_password import CheckPassword
 from .connect import Connect
 from .disconnect import Disconnect
 from .get_active_sessions import GetActiveSessions
+from .get_option import GetOption
 from .get_password_hint import GetPasswordHint
 from .initialize import Initialize
 from .log_out import LogOut
@@ -35,6 +36,7 @@ from .sign_in_bot import SignInBot
 from .sign_in_qrcode import SignInQrcode
 from .sign_up import SignUp
 from .terminate import Terminate
+from .terminate_all_other_sessions import TerminateAllOtherSessions
 
 
 class Auth(
@@ -43,6 +45,7 @@ class Auth(
     Connect,
     Disconnect,
     GetActiveSessions,
+    GetOption,
     GetPasswordHint,
     Initialize,
     LogOut,
@@ -57,5 +60,6 @@ class Auth(
     SignInQrcode,
     SignUp,
     Terminate,
+    TerminateAllOtherSessions,
 ):
     pass

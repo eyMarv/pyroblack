@@ -22,6 +22,8 @@ from .get_contacts import GetContacts
 from .get_contacts_count import GetContactsCount
 from .import_contacts import ImportContacts
 from .search_contacts import SearchContacts
+from .get_blocked_message_senders import GetBlockedMessageSenders
+from .set_contact_note import SetContactNote
 
 
 class Contacts(
@@ -31,5 +33,7 @@ class Contacts(
     GetContactsCount,
     AddContact,
     SearchContacts,
+    GetBlockedMessageSenders,
+    SetContactNote,
 ):
     pass

@@ -43,11 +43,16 @@ from pyrogram.handlers import (
     InlineQueryHandler,
     PollHandler,
     PreCheckoutQueryHandler,
+    PurchasedPaidMediaHandler,
+    ShippingQueryHandler,
     ConversationHandler,
     ChosenInlineResultHandler,
     ChatMemberUpdatedHandler,
+    ChatBoostHandler,
     ChatJoinRequestHandler,
     StoryHandler,
+    ManagedBotUpdateHandler,
+    GuestMessageHandler,
 )
 from pyrogram.raw.types import (
     UpdateNewMessage,
@@ -64,6 +69,7 @@ from pyrogram.raw.types import (
     UpdateBotCallbackQuery,
     UpdateInlineBotCallbackQuery,
     UpdateBotPrecheckoutQuery,
+    UpdateBotShippingQuery,
     UpdateUserStatus,
     UpdateBotInlineQuery,
     UpdateMessagePoll,
@@ -74,6 +80,10 @@ from pyrogram.raw.types import (
     UpdateStory,
     UpdateBotMessageReaction,
     UpdateBotMessageReactions,
+    UpdateBotPurchasedPaidMedia,
+    UpdateManagedBot,
+    UpdateBotChatBoost,
+    UpdateBotGuestChatQuery,
 )
 
 log = logging.getLogger(__name__)
@@ -102,6 +112,11 @@ class Dispatcher:
     MESSAGE_BOT_A_REACTION_UPDATES = (UpdateBotMessageReactions,)
     BOT_BUSINESS_CONNECT_UPDATES = (UpdateBotBusinessConnect,)
     PRE_CHECKOUT_QUERY_UPDATES = (UpdateBotPrecheckoutQuery,)
+    SHIPPING_QUERY_UPDATES = (UpdateBotShippingQuery,)
+    PURCHASED_PAID_MEDIA_UPDATES = (UpdateBotPurchasedPaidMedia,)
+    MANAGED_BOT_UPDATES = (UpdateManagedBot,)
+    CHAT_BOOST_UPDATES = (UpdateBotChatBoost,)
+    GUEST_MESSAGE_UPDATES = (UpdateBotGuestChatQuery,)
 
     def __init__(self, client: "pyrogram.Client"):
         self.client = client
@@ -225,6 +240,50 @@ class Dispatcher:
                 PreCheckoutQueryHandler,
             )
 
+        async def shipping_query_parser(update, users, chats):
+            return (
+                await pyrogram.types.ShippingQuery._parse(
+                    self.client, update, users
+                ),
+                ShippingQueryHandler,
+            )
+
+        async def purchased_paid_media_parser(update, users, chats):
+            return (
+                pyrogram.types.PaidMediaPurchased._parse(
+                    self.client, update, users
+                ),
+                PurchasedPaidMediaHandler,
+            )
+
+        async def managed_bot_update_parser(update, users, chats):
+            return (
+                pyrogram.types.ManagedBotUpdated._parse(
+                    self.client, update, users
+                ),
+                ManagedBotUpdateHandler,
+            )
+
+        async def chat_boost_parser(update, users, chats):
+            return (
+                pyrogram.types.ChatBoostUpdated._parse(
+                    self.client, update, users, chats
+                ),
+                ChatBoostHandler,
+            )
+
+        async def guest_message_parser(update, users, chats):
+            # Guest messages are parsed the same way as new messages, but the handler is different
+            # Pre-parse referenced messages so they get cached before the main message
+            for ref in update.reference_messages or []:
+                await pyrogram.types.Message._parse(self.client, ref, users, chats)
+            parsed, _ = await message_parser(update, users, chats)
+
+            return (
+                parsed,
+                GuestMessageHandler,
+            )
+
         async def message_bot_na_reaction_parser(update, users, chats):
             return (
                 pyrogram.types.MessageReactionUpdated._parse(
@@ -265,9 +324,14 @@ class Dispatcher:
             Dispatcher.CHAT_JOIN_REQUEST_UPDATES: chat_join_request_parser,
             Dispatcher.NEW_STORY_UPDATES: story_parser,
             Dispatcher.PRE_CHECKOUT_QUERY_UPDATES: pre_checkout_query_parser,
+            Dispatcher.SHIPPING_QUERY_UPDATES: shipping_query_parser,
             Dispatcher.MESSAGE_BOT_NA_REACTION_UPDATES: message_bot_na_reaction_parser,
             Dispatcher.MESSAGE_BOT_A_REACTION_UPDATES: message_bot_a_reaction_parser,
             Dispatcher.BOT_BUSINESS_CONNECT_UPDATES: bot_business_connect_parser,
+            Dispatcher.PURCHASED_PAID_MEDIA_UPDATES: purchased_paid_media_parser,
+            Dispatcher.MANAGED_BOT_UPDATES: managed_bot_update_parser,
+            Dispatcher.CHAT_BOOST_UPDATES: chat_boost_parser,
+            Dispatcher.GUEST_MESSAGE_UPDATES: guest_message_parser,
         }
 
         self.update_parsers = {

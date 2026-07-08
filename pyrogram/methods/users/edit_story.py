@@ -38,8 +38,8 @@ class EditStory:
         privacy: "enums.StoriesPrivacyRules" = None,
         allowed_users: List[int] = None,
         denied_users: List[int] = None,
-        # allowed_chats: List[int] = None,
-        # denied_chats: List[int] = None,
+        allowed_chats: List[int] = None,
+        denied_chats: List[int] = None,
         animation: str = None,
         photo: str = None,
         video: str = None,
@@ -209,14 +209,16 @@ class EditStory:
                 )
             )
 
-        """
         if allowed_chats and len(allowed_chats) > 0:
-            chats = [int(str(chat_id)[3:]) if str(chat_id).startswith("-100") else chat_id for chat_id in allowed_chats]
-            privacy_rules.append(raw.types.InputPrivacyValueAllowChatParticipants(chats=chats))
+            chats = [await self.resolve_peer(chat_id) for chat_id in allowed_chats]
+            privacy_rules.append(
+                raw.types.InputPrivacyValueAllowChatParticipants(chats=chats)
+            )
         if denied_chats and len(denied_chats) > 0:
-            chats = [int(str(chat_id)[3:]) if str(chat_id).startswith("-100") else chat_id for chat_id in denied_chats]
-            privacy_rules.append(raw.types.InputPrivacyValueDisallowChatParticipants(chats=chats))
-        """
+            chats = [await self.resolve_peer(chat_id) for chat_id in denied_chats]
+            privacy_rules.append(
+                raw.types.InputPrivacyValueDisallowChatParticipants(chats=chats)
+            )
         if allowed_users and len(allowed_users) > 0:
             users = [await self.resolve_peer(user_id) for user_id in allowed_users]
             privacy_rules.append(raw.types.InputPrivacyValueAllowUsers(users=users))

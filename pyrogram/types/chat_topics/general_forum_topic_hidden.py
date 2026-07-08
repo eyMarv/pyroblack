@@ -1,0 +1,1 @@
+from ..user_and_chats.general_forum_topic_hidden import GeneralTopicHidden as GeneralForumTopicHidden

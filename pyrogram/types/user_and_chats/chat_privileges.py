@@ -101,6 +101,8 @@ class ChatPrivileges(Object):
         can_post_stories: bool = False,  # Channels only
         can_edit_stories: bool = False,  # Channels only
         can_delete_stories: bool = False,  # Channels only
+        can_manage_direct_messages: bool = False,  # Channels only
+        can_manage_tags: bool = False,  # Groups and supergroups only
         is_anonymous: bool = False,
     ):
         super().__init__(None)
@@ -119,6 +121,8 @@ class ChatPrivileges(Object):
         self.can_post_stories: bool = can_post_stories
         self.can_edit_stories: bool = can_edit_stories
         self.can_delete_stories: bool = can_delete_stories
+        self.can_manage_direct_messages: bool = can_manage_direct_messages
+        self.can_manage_tags: bool = can_manage_tags
         self.is_anonymous: bool = is_anonymous
 
     @staticmethod
@@ -138,5 +142,10 @@ class ChatPrivileges(Object):
             can_post_stories=admin_rights.post_stories,
             can_edit_stories=admin_rights.edit_stories,
             can_delete_stories=admin_rights.delete_stories,
+            can_manage_direct_messages=getattr(admin_rights, "manage_direct_messages", False),
+            can_manage_tags=getattr(admin_rights, "manage_ranks", False),
             is_anonymous=admin_rights.anonymous,
         )
+
+
+ChatAdministratorRights = ChatPrivileges

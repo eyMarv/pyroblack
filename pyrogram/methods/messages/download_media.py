@@ -17,12 +17,14 @@
 #  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
 
 import asyncio
+import io
 import os
+import re
 from datetime import datetime
 from typing import Union, Optional, Callable, BinaryIO
 
 import pyrogram
-from pyrogram import types
+from pyrogram import types, utils
 from pyrogram.file_id import FileId, FileType, PHOTO_TYPES
 
 DEFAULT_DOWNLOAD_DIR = "downloads/"
@@ -31,13 +33,24 @@ DEFAULT_DOWNLOAD_DIR = "downloads/"
 class DownloadMedia:
     async def download_media(
         self: "pyrogram.Client",
-        message: Union["types.Message", "types.Story", str],
+        message: Union[
+            "types.Message",
+            "types.Story",
+            "types.PaidMediaInfo",
+            "types.PaidMediaPhoto",
+            "types.PaidMediaVideo",
+            "types.PaidMediaPreview",
+            "types.Thumbnail",
+            "types.StrippedThumbnail",
+            str,
+        ],
         file_name: str = DEFAULT_DOWNLOAD_DIR,
         in_memory: bool = False,
         block: bool = True,
+        idx: int = None,
         progress: Callable = None,
         progress_args: tuple = (),
-    ) -> Optional[Union[str, BinaryIO]]:
+    ) -> Optional[Union[str, BinaryIO, list[str], list["io.BytesIO"]]]:
         """Download the media from a message.
 
         .. include:: /_includes/usable-by/users-bots.rst
@@ -134,76 +147,162 @@ class DownloadMedia:
             "new_chat_photo",
         )
 
-        if isinstance(message, types.Message) or isinstance(message, types.Story):
-            for kind in available_media:
-                media = getattr(message, kind, None)
+        media_items = [message]
 
+        if isinstance(message, types.Message):
+            if message.new_chat_photo:
+                media_items = [message.new_chat_photo]
+            elif message.paid_media:
+                media_items = []
+                for paid_media in message.paid_media.paid_media:
+                    if isinstance(paid_media, types.PaidMediaPhoto):
+                        media_items.append(paid_media.photo)
+                    elif isinstance(paid_media, types.PaidMediaVideo):
+                        media_items.append(paid_media.video)
+                    elif isinstance(paid_media, types.PaidMediaPreview) and paid_media.minithumbnail:
+                        media_items.append(paid_media.minithumbnail.data)
+            else:
+                media_items = []
+                for kind in available_media:
+                    media = getattr(message, kind, None)
+                    if media is not None:
+                        media_items = [media]
+                        break
+        elif isinstance(message, types.Story):
+            media_items = []
+            for kind in ("photo", "video"):
+                media = getattr(message, kind, None)
                 if media is not None:
+                    media_items = [media]
                     break
+        elif isinstance(message, types.PaidMediaInfo):
+            media_items = []
+            for paid_media in message.paid_media:
+                if isinstance(paid_media, types.PaidMediaPhoto):
+                    media_items.append(paid_media.photo)
+                elif isinstance(paid_media, types.PaidMediaVideo):
+                    media_items.append(paid_media.video)
+                elif isinstance(paid_media, types.PaidMediaPreview) and paid_media.minithumbnail:
+                    media_items.append(paid_media.minithumbnail.data)
+        elif isinstance(message, types.PaidMediaPhoto):
+            media_items = [message.photo]
+        elif isinstance(message, types.PaidMediaVideo):
+            media_items = [message.video]
+        elif isinstance(message, types.PaidMediaPreview):
+            media_items = [message.minithumbnail.data] if message.minithumbnail else []
+        elif isinstance(message, types.StrippedThumbnail):
+            media_items = [message.data]
+        elif isinstance(message, types.Thumbnail):
+            media_items = [message]
+        elif hasattr(message, "file_id"):
+            media_items = [message]
+        else:
+            media_items = [message]
+
+        media_items = types.List(filter(lambda item: item is not None, media_items))
+
+        if not media_items:
+            if isinstance(message, str):
+                media_items = [message]
             else:
                 raise ValueError("This message doesn't contain any downloadable media")
-        elif hasattr(message, "file_id"):
-            media = getattr(message, "file_id")
-        else:
-            media = message
 
-        if isinstance(media, str):
-            file_id_str = media
-        else:
-            file_id_str = media.file_id
+        if idx is not None:
+            media_items = [media_items[idx]]
 
-        file_id_obj = FileId.decode(file_id_str)
+        downloads = []
 
-        file_type = file_id_obj.file_type
-        media_file_name = getattr(media, "file_name", "")
-        file_size = getattr(media, "file_size", 0)
-        mime_type = getattr(media, "mime_type", "")
-        date = getattr(media, "date", None)
+        for media in media_items:
+            if isinstance(media, bytes):
+                thumbnail = utils.from_inline_bytes(
+                    utils.expand_inline_bytes(media)
+                )
 
-        directory, file_name = os.path.split(file_name)
-        file_name = file_name or media_file_name or ""
+                if in_memory:
+                    downloads.append(thumbnail)
+                    continue
 
-        if not os.path.isabs(file_name):
-            directory = self.PARENT_DIR / (directory or DEFAULT_DOWNLOAD_DIR)
+                directory, current_file_name = os.path.split(file_name)
+                current_file_name = current_file_name or thumbnail.name
 
-        if not file_name:
-            guessed_extension = self.guess_extension(mime_type)
+                if not os.path.isabs(current_file_name):
+                    directory = self.PARENT_DIR / (directory or DEFAULT_DOWNLOAD_DIR)
 
-            if file_type in PHOTO_TYPES:
-                extension = ".jpg"
-            elif file_type == FileType.VOICE:
-                extension = guessed_extension or ".ogg"
-            elif file_type in (FileType.VIDEO, FileType.ANIMATION, FileType.VIDEO_NOTE):
-                extension = guessed_extension or ".mp4"
-            elif file_type == FileType.DOCUMENT:
-                extension = guessed_extension or ".zip"
-            elif file_type == FileType.STICKER:
-                extension = guessed_extension or ".webp"
-            elif file_type == FileType.AUDIO:
-                extension = guessed_extension or ".mp3"
+                os.makedirs(directory, exist_ok=True)
+                absolute_path = os.path.abspath(
+                    re.sub("\\\\", "/", os.path.join(directory, current_file_name))
+                )
+
+                with open(absolute_path, "wb") as file:
+                    file.write(thumbnail.getbuffer())
+
+                downloads.append(absolute_path)
+                continue
+
+            if isinstance(media, str):
+                file_id_str = media
             else:
-                extension = ".unknown"
+                file_id_str = media.file_id
 
-            file_name = "{}_{}_{}{}".format(
-                FileType(file_id_obj.file_type).name.lower(),
-                (date or datetime.now()).strftime("%Y-%m-%d_%H-%M-%S"),
-                self.rnd_id(),
-                extension,
+            file_id_obj = FileId.decode(file_id_str)
+            file_type = file_id_obj.file_type
+            media_file_name = getattr(media, "file_name", "")
+            file_size = getattr(media, "file_size", 0)
+            mime_type = getattr(media, "mime_type", "")
+            date = getattr(media, "date", None)
+
+            directory, current_file_name = os.path.split(file_name)
+            current_file_name = current_file_name or media_file_name or ""
+
+            if not os.path.isabs(current_file_name):
+                directory = self.PARENT_DIR / (directory or DEFAULT_DOWNLOAD_DIR)
+
+            if not current_file_name:
+                guessed_extension = self.guess_extension(mime_type)
+
+                if file_type in PHOTO_TYPES:
+                    extension = ".jpg"
+                elif file_type == FileType.VOICE:
+                    extension = guessed_extension or ".ogg"
+                elif file_type in (FileType.VIDEO, FileType.ANIMATION, FileType.VIDEO_NOTE):
+                    extension = guessed_extension or ".mp4"
+                elif file_type == FileType.DOCUMENT:
+                    extension = guessed_extension or ".zip"
+                elif file_type == FileType.STICKER:
+                    extension = guessed_extension or ".webp"
+                elif file_type == FileType.AUDIO:
+                    extension = guessed_extension or ".mp3"
+                else:
+                    extension = ".unknown"
+
+                current_file_name = "{}_{}_{}{}".format(
+                    FileType(file_id_obj.file_type).name.lower(),
+                    (date or datetime.now()).strftime("%Y-%m-%d_%H-%M-%S"),
+                    self.rnd_id(),
+                    extension,
+                )
+
+            downloader = self.handle_download(
+                (
+                    file_id_obj,
+                    directory,
+                    current_file_name,
+                    in_memory,
+                    file_size,
+                    progress,
+                    progress_args,
+                )
             )
 
-        downloader = self.handle_download(
-            (
-                file_id_obj,
-                directory,
-                file_name,
-                in_memory,
-                file_size,
-                progress,
-                progress_args,
-            )
-        )
+            if block:
+                downloads.append(await downloader)
+            else:
+                asyncio.get_event_loop().create_task(downloader)
 
-        if block:
-            return await downloader
-        else:
-            asyncio.get_event_loop().create_task(downloader)
+        if not block:
+            return None
+
+        if len(downloads) == 1:
+            return downloads[0]
+
+        return types.List(downloads)

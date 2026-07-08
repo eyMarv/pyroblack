@@ -19,50 +19,31 @@
 from datetime import datetime
 
 from pyrogram import raw, types, utils
+
 from ..object import Object
 
 
 class CheckedGiftCode(Object):
-    """Contains checked gift code data.
-
-    Parameters:
-        date (:py:obj:`~datetime.datetime`):
-            Date when the giveaway was launched.
-
-        months (``int``):
-            Number of months of subscription.
-
-        via_giveaway (``bool``, *optional*):
-            True if the gift code is received via giveaway.
-
-        from_chat (:obj:`~pyrogram.types.Chat`, *optional*):
-            The channel where the gift code was won.
-
-        winner (:obj:`~pyrogram.types.User`, *optional*):
-            The user who won the giveaway.
-
-        giveaway_message_id (``int``, *optional*):
-            Identifier of the message from chat where the giveaway was launched.
-
-        used_date (:py:obj:`~datetime.datetime`, *optional*):
-            Date when the gift code was used.
-    """
+    """Contains checked gift code data."""
 
     def __init__(
         self,
         *,
         date: datetime,
-        months: int,
+        month_count: int,
+        day_count: int,
         via_giveaway: bool = None,
         from_chat: "types.Chat" = None,
         winner: "types.User" = None,
         giveaway_message_id: int = None,
-        used_date: datetime = None,
+        used_date: datetime = None
     ):
         super().__init__()
 
         self.date = date
-        self.months = months
+        self.month_count = month_count
+        self.day_count = day_count
+        self.months = month_count
         self.via_giveaway = via_giveaway
         self.from_chat = from_chat
         self.winner = winner
@@ -85,7 +66,8 @@ class CheckedGiftCode(Object):
 
         return CheckedGiftCode(
             date=utils.timestamp_to_datetime(checked_gift_code.date),
-            months=checked_gift_code.months,
+            month_count=utils.get_premium_duration_month_count(checked_gift_code.days),
+            day_count=checked_gift_code.days,
             via_giveaway=getattr(checked_gift_code, "via_giveaway", None),
             from_chat=from_chat,
             winner=winner,

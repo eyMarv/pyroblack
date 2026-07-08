@@ -50,10 +50,28 @@ from .internals import MsgId, MsgFactory
 log = logging.getLogger(__name__)
 
 
+class TransportError(Exception):
+    pass
+
+
+class AuthKeyNotFound(TransportError):
+    pass
+
+
+class TransportFlood(TransportError):
+    pass
+
+
+class InvalidDC(TransportError):
+    pass
+
+
 class Result:
+    __slots__ = ("value", "event")
+
     def __init__(self):
-        self.value = None
-        self.event = asyncio.Event()
+        self.value: Any = None
+        self.event: asyncio.Event = asyncio.Event()
 
 
 class Session:

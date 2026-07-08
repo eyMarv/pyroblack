@@ -79,6 +79,23 @@ from .unpin_all_chat_messages import UnpinAllChatMessages
 from .unpin_chat_message import UnpinChatMessage
 from .update_color import UpdateColor
 from .update_folder import UpdateFolder
+from .create_folder import CreateFolder
+from .edit_folder import EditFolder
+from .delete_all_message_reactions import DeleteAllMessageReactions
+from .delete_message_reaction import DeleteMessageReaction
+from .get_chat_settings import GetChatSettings
+from .get_personal_channels import GetPersonalChannels
+from .get_similar_channels import GetSimilarChannels
+from .get_suitable_discussion_chats import GetSuitableDiscussionChats
+from .get_top_chats import GetTopChats
+from .process_chat_has_protected_content_disable_request import ProcessChatHasProtectedContentDisableRequest
+from .set_chat_discussion_group import SetChatDiscussionGroup
+from .set_chat_member_tag import SetChatMemberTag
+from .set_chat_ttl import SetChatTTL
+from .set_main_profile_tab import SetMainProfileTab
+from .set_upgraded_gift_colors import SetUpgradedGiftColors
+from .transfer_chat_ownership import TransferChatOwnership
+from .update_chat_notifications import UpdateChatNotifications
 
 
 class Chats(
@@ -143,5 +160,22 @@ class Chats(
     SetChatProtectedContent,
     UpdateColor,
     UpdateFolder,
+    CreateFolder,
+    EditFolder,
+    DeleteAllMessageReactions,
+    DeleteMessageReaction,
+    GetChatSettings,
+    GetPersonalChannels,
+    GetSimilarChannels,
+    GetSuitableDiscussionChats,
+    GetTopChats,
+    ProcessChatHasProtectedContentDisableRequest,
+    SetChatDiscussionGroup,
+    SetChatMemberTag,
+    SetChatTTL,
+    SetMainProfileTab,
+    SetUpgradedGiftColors,
+    TransferChatOwnership,
+    UpdateChatNotifications,
 ):
     pass

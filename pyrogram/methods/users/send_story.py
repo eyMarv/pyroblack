@@ -51,8 +51,8 @@ class SendStory:
         privacy: "enums.StoriesPrivacyRules" = None,
         allowed_users: List[int] = None,
         denied_users: List[int] = None,
-        # allowed_chats: List[int] = None,
-        # denied_chats: List[int] = None,
+        allowed_chats: List[int] = None,
+        denied_chats: List[int] = None,
         photo: Union[str, BinaryIO] = None,
         video: Union[str, BinaryIO] = None,
         file_name: str = None,
@@ -208,14 +208,16 @@ class SendStory:
             )
         )
 
-        """
         if allowed_chats and len(allowed_chats) > 0:
             chats = [await self.resolve_peer(chat_id) for chat_id in allowed_chats]
-            privacy_rules.append(raw.types.InputPrivacyValueAllowChatParticipants(chats=chats))
+            privacy_rules.append(
+                raw.types.InputPrivacyValueAllowChatParticipants(chats=chats)
+            )
         if denied_chats and len(denied_chats) > 0:
             chats = [await self.resolve_peer(chat_id) for chat_id in denied_chats]
-            privacy_rules.append(raw.types.InputPrivacyValueDisallowChatParticipants(chats=chats))
-        """
+            privacy_rules.append(
+                raw.types.InputPrivacyValueDisallowChatParticipants(chats=chats)
+            )
         if allowed_users and len(allowed_users) > 0:
             users = [await self.resolve_peer(user_id) for user_id in allowed_users]
             privacy_rules.append(raw.types.InputPrivacyValueAllowUsers(users=users))
@@ -259,4 +261,8 @@ class SendStory:
                 ),
             )
         )
-        return await types.Story._parse(self, r.updates[0].story, r.updates[0].peer)
+        users = {i.id: i for i in r.users}
+        chats = {i.id: i for i in r.chats}
+        for i in r.updates:
+            if isinstance(i, raw.types.UpdateStory):
+                return await types.Story._parse(self, i.story, i.peer, users, chats)

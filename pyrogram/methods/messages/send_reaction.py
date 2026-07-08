@@ -18,10 +18,10 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union, List
+from typing import List, Union
 
 import pyrogram
-from pyrogram import raw, types
+from pyrogram import raw
 
 
 class SendReaction:
@@ -33,29 +33,15 @@ class SendReaction:
         emoji: Union[int, str, List[Union[int, str]]] = None,
         big: bool = False,
         add_to_recent: bool = False,
-    ) -> "types.MessageReactions":
-        """Use this method to send reactions on a message/stories.
-        Automatically forwarded messages from a channel to its discussion group have the same available reactions as messages in the channel.
-        Bots can't use paid reactions.
-
-        You must use exactly one of ``message_id`` OR ``story_id``.
-
-            If you specify, ``message_id``
-                .. include:: /_includes/usable-by/users-bots.rst
-
-            If you specify, ``story_id``
-                .. include:: /_includes/usable-by/users.rst
-
-            If you specify, ``story_id``
-                .. include:: /_includes/usable-by/users.rst
+    ) -> bool:
+        """Send a reaction to a message or story.
 
         Parameters:
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
-                You can also use chat public link in form of *t.me/<username>* (str).
 
             message_id (``int``, *optional*):
-                Identifier of the target message. If the message belongs to a media group, the reaction is set to the first non-deleted message in the group instead.
+                Identifier of the message.
 
             story_id (``int``, *optional*):
                 Identifier of the story.
@@ -63,54 +49,33 @@ class SendReaction:
             emoji (``int`` | ``str`` | List of ``int`` | ``str``, *optional*):
                 Reaction emoji.
                 Pass None as emoji (default) to retract the reaction.
-                Pass list of int or str to react multiple emojis.
+                Pass list of int or str to react with multiple emojis on messages.
 
             big (``bool``, *optional*):
-                Pass True to set the reaction with a big animation.
-                For message reactions only.
-                Defaults to False.
+                Pass True to show a bigger and longer reaction for messages.
 
             add_to_recent (``bool``, *optional*):
-                Pass True if the reaction should appear in the recently used reactions.
-                This option is applicable only for users.
+                Pass True to add the reaction to the recent reactions list.
 
         Returns:
-            :obj:`~pyrogram.types.MessageReactions`: On success, True is returned.
-
-        Example:
-            .. code-block:: python
-
-                # Send a reaction
-                await app.send_reaction(chat_id, message_id=message_id, emoji="🔥")
-                await app.send_reaction(chat_id, story_id=story_id, emoji="🔥")
-
-                # Send a multiple reactions
-                await app.send_reaction(chat_id, message_id=message_id, emoji=["🔥", "❤️"])
-
-                # Retract a reaction
-                await app.send_reaction(chat_id, message_id=message_id)
-                await app.send_reaction(chat_id, story_id=story_id)
+            ``bool``: On success, True is returned.
         """
         if isinstance(emoji, list):
-            reaction = (
-                [
-                    (
-                        raw.types.ReactionCustomEmoji(document_id=i)
-                        if isinstance(i, int)
-                        else raw.types.ReactionEmoji(emoticon=i)
-                    )
-                    for i in emoji
-                ]
-                if emoji
-                else None
-            )
+            reaction = [
+                raw.types.ReactionCustomEmoji(document_id=i)
+                if isinstance(i, int)
+                else raw.types.ReactionEmoji(emoticon=i)
+                for i in emoji
+            ] if emoji else None
         else:
-            if isinstance(emoji, int):
-                reaction = [raw.types.ReactionCustomEmoji(document_id=emoji)]
-            else:
-                reaction = [raw.types.ReactionEmoji(emoticon=emoji)] if emoji else None
+            reaction = (
+                [raw.types.ReactionCustomEmoji(document_id=emoji)]
+                if isinstance(emoji, int)
+                else ([raw.types.ReactionEmoji(emoticon=emoji)] if emoji else None)
+            )
+
         if message_id is not None:
-            r = await self.invoke(
+            await self.invoke(
                 raw.functions.messages.SendReaction(
                     peer=await self.resolve_peer(chat_id),
                     msg_id=message_id,
@@ -119,22 +84,17 @@ class SendReaction:
                     add_to_recent=add_to_recent,
                 )
             )
-            users = {i.id: i for i in r.users}
-            chats = {i.id: i for i in r.chats}
-            for i in r.updates:
-                if isinstance(i, raw.types.UpdateMessageReactions):
-                    return types.MessageReactions._parse(
-                        self, i.reactions, users, chats
-                    )
-        elif story_id is not None:
+            return True
+
+        if story_id is not None:
             await self.invoke(
                 raw.functions.stories.SendReaction(
                     peer=await self.resolve_peer(chat_id),
                     story_id=story_id,
-                    reaction=raw.types.ReactionEmoji(emoticon=emoji) if emoji else None,
+                    reaction=(reaction[0] if reaction else raw.types.ReactionEmpty()),
                     add_to_recent=add_to_recent,
                 )
             )
             return True
-        else:
-            raise ValueError("You need to pass one of message_id!")
+
+        raise ValueError("You need to pass one of message_id or story_id")
