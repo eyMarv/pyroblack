@@ -16,12 +16,10 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional
+from typing import List, Optional
 
 import pyrogram
-from pyrogram import raw, enums
-from pyrogram import types
-from pyrogram import utils
+from pyrogram import enums, raw, types, utils
 from .inline_session import get_session
 
 
@@ -31,7 +29,9 @@ class EditInlineText:
         inline_message_id: str,
         text: str,
         parse_mode: Optional["enums.ParseMode"] = None,
+        entities: Optional[List["types.MessageEntity"]] = None,
         disable_web_page_preview: bool = None,
+        link_preview_options: Optional["types.LinkPreviewOptions"] = None,
         reply_markup: "types.InlineKeyboardMarkup" = None,
         invert_media: bool = None,
     ) -> bool:
@@ -50,8 +50,16 @@ class EditInlineText:
                 By default, texts are parsed using both Markdown and HTML styles.
                 You can combine both syntaxes together.
 
+            entities (List of :obj:`~pyrogram.types.MessageEntity`, *optional*):
+                List of special entities that appear in message text, which can be specified
+                instead of *parse_mode*.
+
             disable_web_page_preview (``bool``, *optional*):
                 Disables link previews for links in this message.
+                Deprecated: use ``link_preview_options`` instead.
+
+            link_preview_options (:obj:`~pyrogram.types.LinkPreviewOptions`, *optional*):
+                Link preview generation options for the message.
 
             reply_markup (:obj:`~pyrogram.types.InlineKeyboardMarkup`, *optional*):
                 An InlineKeyboardMarkup object.
@@ -66,28 +74,34 @@ class EditInlineText:
         Example:
             .. code-block:: python
 
-                # Bots only
-
                 # Simple edit text
                 await app.edit_inline_text(inline_message_id, "new text")
 
-                # Take the same text message, remove the web page preview only
+                # Edit text with link preview options
                 await app.edit_inline_text(
-                    inline_message_id, message.text,
-                    disable_web_page_preview=True)
+                    inline_message_id, "check this out",
+                    link_preview_options=types.LinkPreviewOptions(is_disabled=True))
         """
+        if disable_web_page_preview and link_preview_options is None:
+            link_preview_options = types.LinkPreviewOptions(
+                is_disabled=disable_web_page_preview
+            )
+
+        message, entities = (
+            await utils.parse_text_entities(self, text, parse_mode, entities)
+        ).values()
 
         unpacked = utils.unpack_inline_message_id(inline_message_id)
         dc_id = unpacked.dc_id
-
         session = await get_session(self, dc_id)
 
         return await session.invoke(
             raw.functions.messages.EditInlineBotMessage(
                 id=unpacked,
-                no_webpage=disable_web_page_preview or None,
+                no_webpage=link_preview_options.is_disabled if link_preview_options else None,
                 reply_markup=await reply_markup.write(self) if reply_markup else None,
-                **await self.parser.parse(text, parse_mode),
+                message=message,
+                entities=entities,
                 invert_media=invert_media,
             ),
             sleep_threshold=self.sleep_threshold,

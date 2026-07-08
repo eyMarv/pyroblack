@@ -25,7 +25,7 @@ import os
 from time import time
 from hashlib import sha1
 from io import BytesIO
-from typing import Optional
+from typing import Any, Optional
 
 from pyrogram.raw.all import layer
 

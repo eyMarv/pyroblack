@@ -297,7 +297,7 @@ class DownloadMedia:
             if block:
                 downloads.append(await downloader)
             else:
-                asyncio.get_event_loop().create_task(downloader)
+                self.loop.create_task(downloader)
 
         if not block:
             return None

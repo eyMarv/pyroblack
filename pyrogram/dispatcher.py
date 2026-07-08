@@ -31,28 +31,29 @@ from pyrogram.handlers import (
     BotBusinessConnectHandler,
     BotBusinessMessageHandler,
     CallbackQueryHandler,
-    MessageHandler,
-    EditedMessageHandler,
-    EditedBotBusinessMessageHandler,
-    DeletedMessagesHandler,
+    ChatBoostHandler,
+    ChatJoinRequestHandler,
+    ChatMemberUpdatedHandler,
+    ChosenInlineResultHandler,
+    ConversationHandler,
     DeletedBotBusinessMessagesHandler,
-    MessageReactionUpdatedHandler,
-    MessageReactionCountUpdatedHandler,
-    UserStatusHandler,
-    RawUpdateHandler,
+    DeletedMessagesHandler,
+    EditedBotBusinessMessageHandler,
+    EditedMessageHandler,
+    ErrorHandler,
+    GuestMessageHandler,
     InlineQueryHandler,
+    ManagedBotUpdateHandler,
+    MessageHandler,
+    MessageReactionCountUpdatedHandler,
+    MessageReactionUpdatedHandler,
     PollHandler,
     PreCheckoutQueryHandler,
     PurchasedPaidMediaHandler,
+    RawUpdateHandler,
     ShippingQueryHandler,
-    ConversationHandler,
-    ChosenInlineResultHandler,
-    ChatMemberUpdatedHandler,
-    ChatBoostHandler,
-    ChatJoinRequestHandler,
     StoryHandler,
-    ManagedBotUpdateHandler,
-    GuestMessageHandler,
+    UserStatusHandler,
 )
 from pyrogram.raw.types import (
     UpdateNewMessage,
@@ -428,6 +429,9 @@ class Dispatcher:
                         for handler in group:
                             args = None
 
+                            if isinstance(handler, ErrorHandler):
+                                continue
+
                             if isinstance(handler, handler_type):
                                 try:
                                     if await handler.check(self.client, parsed_update):
@@ -461,8 +465,10 @@ class Dispatcher:
                                 raise
                             except pyrogram.ContinuePropagation:
                                 continue
-                            except Exception as e:
-                                log.exception(e)
+                            except Exception as exc:
+                                await self._handle_error(
+                                    exc, handler, update, users, chats
+                                )
 
                             break
             except pyrogram.StopPropagation:
@@ -471,3 +477,33 @@ class Dispatcher:
                 log.exception(e)
             finally:
                 self.updates_queue.task_done()
+
+    async def _handle_error(self, exc, handler, update, users, chats):
+        """Route handler exceptions to registered ErrorHandlers."""
+        try:
+            for group in self.groups.values():
+                for error_handler in group:
+                    if not isinstance(error_handler, ErrorHandler):
+                        continue
+                    if not isinstance(exc, error_handler.exceptions):
+                        continue
+                    try:
+                        if await error_handler.check(
+                            self.client, update, users, chats
+                        ):
+                            await error_handler.callback(
+                                self.client, update, users, chats, exc
+                            )
+                            break
+                    except pyrogram.StopPropagation:
+                        raise
+                    except pyrogram.ContinuePropagation:
+                        continue
+                    except Exception:
+                        log.exception("Error handler raised an exception:")
+        except pyrogram.StopPropagation:
+            pass
+        except Exception as e:
+            log.error(
+                "Unexpected exception in error handler dispatch: %s", e
+            )
