@@ -58,8 +58,12 @@ class OnError:
 
                 func.handlers.append(
                     (
-                        pyrogram.handlers.ErrorHandler(func, self, exceptions),
-                        group if filters is None else filters,
+                        pyrogram.handlers.ErrorHandler(
+                            func,
+                            exceptions=exceptions,
+                            filters=filters if filters is not None else self,
+                        ),
+                        group,
                     )
                 )
 

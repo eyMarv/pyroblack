@@ -16,11 +16,14 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
 from typing import List, Optional
 
 import pyrogram
 from pyrogram import enums, raw, types, utils
 from .inline_session import get_session
+
+log = logging.getLogger(__name__)
 
 
 class EditInlineText:
@@ -30,10 +33,9 @@ class EditInlineText:
         text: str,
         parse_mode: Optional["enums.ParseMode"] = None,
         entities: Optional[List["types.MessageEntity"]] = None,
-        disable_web_page_preview: bool = None,
         link_preview_options: Optional["types.LinkPreviewOptions"] = None,
         reply_markup: "types.InlineKeyboardMarkup" = None,
-        invert_media: bool = None,
+        disable_web_page_preview: bool = None,
     ) -> bool:
         """Edit the text of inline messages.
 
@@ -51,22 +53,14 @@ class EditInlineText:
                 You can combine both syntaxes together.
 
             entities (List of :obj:`~pyrogram.types.MessageEntity`, *optional*):
-                List of special entities that appear in message text, which can be specified
-                instead of *parse_mode*.
-
-            disable_web_page_preview (``bool``, *optional*):
-                Disables link previews for links in this message.
-                Deprecated: use ``link_preview_options`` instead.
+                List of special entities that appear in message text, which can be
+                specified instead of *parse_mode*.
 
             link_preview_options (:obj:`~pyrogram.types.LinkPreviewOptions`, *optional*):
                 Link preview generation options for the message.
 
             reply_markup (:obj:`~pyrogram.types.InlineKeyboardMarkup`, *optional*):
                 An InlineKeyboardMarkup object.
-
-            invert_media (``bool``, *optional*):
-                True, If the media position is inverted.
-                only animation, photo, video, and webpage preview messages.
 
         Returns:
             ``bool``: On success, True is returned.
@@ -82,14 +76,22 @@ class EditInlineText:
                     inline_message_id, "check this out",
                     link_preview_options=types.LinkPreviewOptions(is_disabled=True))
         """
-        if disable_web_page_preview and link_preview_options is None:
+        if disable_web_page_preview and link_preview_options:
+            raise ValueError(
+                "`disable_web_page_preview` and `link_preview_options` are mutually "
+                "exclusive."
+            )
+
+        if disable_web_page_preview is not None:
+            log.warning(
+                "This property is deprecated. "
+                "Please use link_preview_options instead"
+            )
             link_preview_options = types.LinkPreviewOptions(
                 is_disabled=disable_web_page_preview
             )
 
-        message, entities = (
-            await utils.parse_text_entities(self, text, parse_mode, entities)
-        ).values()
+        link_preview_options = link_preview_options or self.link_preview_options
 
         unpacked = utils.unpack_inline_message_id(inline_message_id)
         dc_id = unpacked.dc_id
@@ -98,11 +100,14 @@ class EditInlineText:
         return await session.invoke(
             raw.functions.messages.EditInlineBotMessage(
                 id=unpacked,
-                no_webpage=link_preview_options.is_disabled if link_preview_options else None,
+                no_webpage=link_preview_options.is_disabled
+                if link_preview_options
+                else None,
+                invert_media=link_preview_options.show_above_text
+                if link_preview_options
+                else None,
                 reply_markup=await reply_markup.write(self) if reply_markup else None,
-                message=message,
-                entities=entities,
-                invert_media=invert_media,
+                **await utils.parse_text_entities(self, text, parse_mode, entities),
             ),
             sleep_threshold=self.sleep_threshold,
         )

@@ -38,7 +38,8 @@ class ErrorHandler(Handler):
     Parameters:
         callback (``Callable``):
             A function that will be called whenever an unexpected error is raised.
-            It takes the following positional arguments: *(client, update, users, chats, exception)*.
+            It takes the following positional arguments:
+            *(client, update, users, chats, exception, handler)*.
 
         exceptions (``Exception`` | List of ``Exception``, *optional*):
             An exception type or a sequence of exception types that this handler should handle.

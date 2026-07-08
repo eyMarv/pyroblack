@@ -26,10 +26,22 @@ def test_message_pickle_round_trip():
     """Verify that a Message object survives pickle round-trip with correct type and id."""
     expected = types.Message(
         id=7736885,
-        date=datetime.fromtimestamp(1647531900, tz=timezone.utc),
+        date=datetime(2022, 3, 17, 21, 15, tzinfo=timezone.utc),
     )
     serialized = pickle.dumps(expected)
     actual = pickle.loads(serialized)
 
     assert isinstance(actual, types.Message)
     assert actual.id == expected.id
+
+
+def test_error_handler_contract():
+    """Verify decorated ErrorHandler registration stores correct handler shape."""
+    from pyrogram.handlers import ErrorHandler
+
+    def _callback(*args):
+        pass
+
+    handler = ErrorHandler(_callback)
+    assert handler.callback is _callback
+    assert handler.exceptions == (Exception,)

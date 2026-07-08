@@ -492,7 +492,7 @@ class Dispatcher:
                             self.client, update, users, chats
                         ):
                             await error_handler.callback(
-                                self.client, update, users, chats, exc
+                                self.client, update, users, chats, exc, handler
                             )
                             break
                     except pyrogram.StopPropagation:
