@@ -75,11 +75,11 @@ class Result:
 
 
 class Session:
-    START_TIMEOUT = 5
+    START_TIMEOUT = 1
     WAIT_TIMEOUT = 15
     RECONN_TIMEOUT = 5
     SLEEP_THRESHOLD = 10
-    MAX_RETRIES = 20
+    MAX_RETRIES = 5
     ACKS_THRESHOLD = 10
     PING_INTERVAL = 5
     STORED_MSG_IDS_MAX_SIZE = 1000 * 2
@@ -238,39 +238,27 @@ class Session:
                 self.stored_msg_ids.clear()
 
                 self.ping_task_event.set()
-                try:
-                    if self.ping_task is not None:
-                        await asyncio.wait_for(
-                            self.ping_task, timeout=self.RECONN_TIMEOUT
-                        )
-                except TimeoutError:
-                    self.ping_task.cancel()
-                except asyncio.CancelledError:
-                    pass
-                except Exception:
-                    pass
+                if self.ping_task is not None:
+                    try:
+                        await self.ping_task
+                    except asyncio.CancelledError:
+                        pass
+                    except Exception:
+                        pass
                 self.ping_task_event.clear()
 
                 try:
-                    await asyncio.wait_for(
-                        self.connection.close(), timeout=self.RECONN_TIMEOUT
-                    )
-                except asyncio.CancelledError:
-                    pass
+                    self.connection.close()
                 except Exception:
                     pass
 
-                try:
-                    if self.recv_task:
-                        await asyncio.wait_for(
-                            self.recv_task, timeout=self.RECONN_TIMEOUT
-                        )
-                except TimeoutError:
-                    self.recv_task.cancel()
-                except asyncio.CancelledError:
-                    pass
-                except Exception:
-                    pass
+                if self.recv_task:
+                    try:
+                        await self.recv_task
+                    except asyncio.CancelledError:
+                        pass
+                    except Exception:
+                        pass
 
                 if not self.is_media and callable(self.client.disconnect_handler):
                     try:
@@ -414,7 +402,7 @@ class Session:
                         )
             except SecurityCheckMismatch as e:
                 log.info("Discarding packet: %s", e)
-                await self.connection.close()
+                self.connection.close()
                 return
             else:
                 bisect.insort(self.stored_msg_ids, msg.msg_id)

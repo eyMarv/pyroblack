@@ -50,10 +50,7 @@ from . import (
 from .client import Client  # pylint: disable=wrong-import-position
 from .sync import idle, compose  # pylint: disable=wrong-import-position
 
-crypto_executor = ThreadPoolExecutor(
-    max(1, min(4, os.cpu_count() or 1)),
-    thread_name_prefix="CryptoWorker"
-)
+crypto_executor = ThreadPoolExecutor(1, thread_name_prefix="CryptoWorker")
 
 __all__ = [
     "Client",

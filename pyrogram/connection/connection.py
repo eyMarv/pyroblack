@@ -76,8 +76,8 @@ class Connection:
             log.warning("Connection failed! Trying again...")
             raise ConnectionError
 
-    async def close(self) -> None:
-        await self.protocol.close()
+    def close(self) -> None:
+        self.protocol.close()
         log.info("Disconnected")
 
     async def send(self, data: bytes) -> None:
