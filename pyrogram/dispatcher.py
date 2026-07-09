@@ -349,47 +349,95 @@ class Dispatcher:
                 )
 
                 async with lock:
-                    for group in self.groups.values():
-                        for handler in group:
-                            args = None
+                    # ---- pyromod listener resolution ----
+                    # Before dispatching to registered handlers, check if
+                    # there is a waiting pyromod listener for this update.
+                    consumed = False
+                    if parsed_update is not None and self.client is not None:
+                        try:
+                            listener_type = None
+                            identifier = None
+                            if isinstance(parsed_update, pyrogram.types.Message):
+                                listener_type = pyrogram.enums.ListenerTypes.MESSAGE
+                                identifier = pyrogram.types.Identifier(
+                                    chat_id=parsed_update.chat.id,
+                                    message_id=parsed_update.id,
+                                    from_user_id=getattr(getattr(parsed_update, "from_user", None), "id", None),
+                                )
+                            elif isinstance(parsed_update, pyrogram.types.CallbackQuery):
+                                listener_type = pyrogram.enums.ListenerTypes.CALLBACK_QUERY
+                                msg = parsed_update.message
+                                identifier = pyrogram.types.Identifier(
+                                    chat_id=msg.chat.id if msg else None,
+                                    message_id=msg.id if msg else None,
+                                    from_user_id=parsed_update.from_user.id,
+                                    inline_message_id=parsed_update.inline_message_id,
+                                )
 
-                            if isinstance(handler, handler_type):
-                                try:
-                                    if await handler.check(self.client, parsed_update):
-                                        args = (parsed_update,)
-                                except Exception as e:
-                                    log.exception(e)
+                            if listener_type is not None and identifier is not None:
+                                listener = self.client.get_listener_matching_with_data(
+                                    identifier, listener_type
+                                )
+                                if listener is not None:
+                                    consumed = True
+                                    if listener.future and not listener.future.done():
+                                        listener.future.set_result(parsed_update)
+                                    elif callable(listener.callback):
+                                        if inspect.iscoroutinefunction(listener.callback):
+                                            await listener.callback(self.client, parsed_update)
+                                        else:
+                                            await self.client.loop.run_in_executor(
+                                                self.client.executor,
+                                                listener.callback,
+                                                self.client,
+                                                parsed_update,
+                                            )
+                        except Exception as e:
+                            log.debug("Pyromod listener resolution error: %s", e)
+
+                    # ---- standard handler dispatch ----
+                    if not consumed:
+                        for group in self.groups.values():
+                            for handler in group:
+                                args = None
+
+                                if isinstance(handler, handler_type):
+                                    try:
+                                        if await handler.check(self.client, parsed_update):
+                                            args = (parsed_update,)
+                                    except Exception as e:
+                                        log.exception(e)
+                                        continue
+
+                                elif isinstance(handler, RawUpdateHandler):
+                                    try:
+                                        if await handler.check(self.client, update):
+                                            args = (update, users, chats)
+                                    except Exception as e:
+                                        log.exception(e)
+                                        continue
+
+                                if args is None:
                                     continue
 
-                            elif isinstance(handler, RawUpdateHandler):
                                 try:
-                                    if await handler.check(self.client, update):
-                                        args = (update, users, chats)
+                                    if inspect.iscoroutinefunction(handler.callback):
+                                        await handler.callback(self.client, *args)
+                                    else:
+                                        await self.client.loop.run_in_executor(
+                                            self.client.executor,
+                                            handler.callback,
+                                            self.client,
+                                            *args
+                                        )
+                                except pyrogram.StopPropagation:
+                                    raise
+                                except pyrogram.ContinuePropagation:
+                                    continue
                                 except Exception as e:
                                     log.exception(e)
-                                    continue
 
-                            if args is None:
-                                continue
-
-                            try:
-                                if inspect.iscoroutinefunction(handler.callback):
-                                    await handler.callback(self.client, *args)
-                                else:
-                                    await self.client.loop.run_in_executor(
-                                        self.client.executor,
-                                        handler.callback,
-                                        self.client,
-                                        *args
-                                    )
-                            except pyrogram.StopPropagation:
-                                raise
-                            except pyrogram.ContinuePropagation:
-                                continue
-                            except Exception as e:
-                                log.exception(e)
-
-                            break
+                                break
             except pyrogram.StopPropagation:
                 pass
             except Exception as e:
