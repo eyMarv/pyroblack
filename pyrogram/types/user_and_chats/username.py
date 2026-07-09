@@ -1,52 +1,53 @@
-#  pyroblack - Telegram MTProto API Client Library for Python
-#  Copyright (C) 2022-present Mayuri-Chan <https://github.com/Mayuri-Chan>
-#  Copyright (C) 2024-present eyMarv <https://github.com/eyMarv>
+#  Pyrogram - Telegram MTProto API Client Library for Python
+#  Copyright (C) 2017-present Dan <https://github.com/delivrance>
 #
-#  This file is part of pyroblack.
+#  This file is part of Pyrogram.
 #
-#  pyroblack is free software: you can redistribute it and/or modify
+#  Pyrogram is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU Lesser General Public License as published
 #  by the Free Software Foundation, either version 3 of the License, or
 #  (at your option) any later version.
 #
-#  pyroblack is distributed in the hope that it will be useful,
+#  Pyrogram is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU Lesser General Public License for more details.
 #
 #  You should have received a copy of the GNU Lesser General Public License
-#  along with pyroblack.  If not, see <http://www.gnu.org/licenses/>.
+#  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
 
 from pyrogram import raw
 from ..object import Object
 
 
 class Username(Object):
-    """A Username.
-
+    """Describes usernames assigned to a user, a supergroup, or a channel.
 
     Parameters:
-        username (``String``):
-            The channel/user username.
-
-        editable (``bool``, *optional*):
-            Can the username edited.
-
-        active (``bool``, *optional*)
-            Is the username active.
+        username (``str``):
+            User's or chat's username.
+        is_editable (``bool``, *optional*):
+            True, if the username is editable.
+        is_active (``bool``, *optional*):
+            True, if the username is active.
     """
 
-    def __init__(self, *, username: str, editable: bool = None, active: bool = None):
+    def __init__(
+        self, *,
+        username: str,
+        is_editable: bool = None,
+        is_active: bool = None
+    ):
         super().__init__()
 
         self.username = username
-        self.editable = editable
-        self.active = active
+        self.is_editable = is_editable
+        self.is_active = is_active
 
     @staticmethod
-    def _parse(action: "raw.types.Username") -> "Username":
+    def _parse(username: "raw.types.Username") -> "Username":
         return Username(
-            username=getattr(action, "username", None),
-            editable=getattr(action, "editable", None),
-            active=getattr(action, "active", None),
+            username=username.username,
+            is_editable=username.editable,
+            is_active=username.active
         )

@@ -16,8 +16,10 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
 
+from asyncio import sleep
+import io
 import math
-from typing import Union, Optional, BinaryIO
+from typing import Union, Optional
 
 import pyrogram
 from pyrogram import types
@@ -29,8 +31,8 @@ class StreamMedia:
         self: "pyrogram.Client",
         message: Union["types.Message", str],
         limit: int = 0,
-        offset: int = 0,
-    ) -> Optional[Union[str, BinaryIO]]:
+        offset: int = 0
+    ) -> Optional[Union[str, "io.BytesIO"]]:
         """Stream the media from a message chunk by chunk.
 
         You can use this method to partially download a file into memory or to selectively download chunks of file.
@@ -73,17 +75,8 @@ class StreamMedia:
                 async for chunk in app.stream_media(message, offset=-3):
                     print(len(chunk))
         """
-        available_media = (
-            "audio",
-            "document",
-            "photo",
-            "sticker",
-            "animation",
-            "video",
-            "voice",
-            "video_note",
-            "new_chat_photo",
-        )
+        available_media = ("audio", "document", "photo", "sticker", "animation", "video", "voice", "video_note",
+                           "new_chat_photo")
 
         if isinstance(message, types.Message):
             for kind in available_media:
@@ -95,7 +88,7 @@ class StreamMedia:
                 raise ValueError("This message doesn't contain any downloadable media")
         else:
             media = message
-
+        # TODO
         if isinstance(media, str):
             file_id_str = media
         else:
@@ -106,12 +99,11 @@ class StreamMedia:
 
         if offset < 0:
             if file_size == 0:
-                raise ValueError(
-                    "Negative offsets are not supported for file ids, pass a Message object instead"
-                )
+                raise ValueError("Negative offsets are not supported for file ids, pass a Message object instead")
 
             chunks = math.ceil(file_size / 1024 / 1024)
             offset += chunks
 
         async for chunk in self.get_file(file_id_obj, file_size, limit, offset):
+            await sleep(0)
             yield chunk

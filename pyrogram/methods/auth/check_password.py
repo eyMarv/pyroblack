@@ -27,7 +27,10 @@ log = logging.getLogger(__name__)
 
 
 class CheckPassword:
-    async def check_password(self: "pyrogram.Client", password: str) -> "types.User":
+    async def check_password(
+        self: "pyrogram.Client",
+        password: str
+    ) -> "types.User":
         """Check your Two-Step Verification password and log in.
 
         .. include:: /_includes/usable-by/users.rst
@@ -41,11 +44,14 @@ class CheckPassword:
 
         Raises:
             BadRequest: In case the password is invalid.
+            :obj:`~pyrogram.errors.RPCError`: In case of a Telegram RPC error.
+
         """
         r = await self.invoke(
             raw.functions.auth.CheckPassword(
                 password=compute_password_check(
-                    await self.invoke(raw.functions.account.GetPassword()), password
+                    await self.invoke(raw.functions.account.GetPassword()),
+                    password
                 )
             )
         )

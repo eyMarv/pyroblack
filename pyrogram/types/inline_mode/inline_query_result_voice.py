@@ -16,7 +16,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import List, Optional
+from typing import Optional
 
 import pyrogram
 from pyrogram import raw, types, utils, enums
@@ -25,40 +25,50 @@ from .inline_query_result import InlineQueryResult
 
 class InlineQueryResultVoice(InlineQueryResult):
     """Link to a voice recording in an .OGG container encoded with OPUS.
-
+    
     By default, this voice recording will be sent by the user.
     Alternatively, you can use *input_message_content* to send a message with the specified content instead of the
     voice message.
-
+    
     Parameters:
         voice_url (``str``):
             A valid URL for the voice recording.
-
+            
         title (``str``):
-            Title for the result.
-
+            Recording title.
+            
         id (``str``, *optional*):
             Unique identifier for this result, 1-64 bytes.
             Defaults to a randomly generated UUID4.
-
+            
         voice_duration (``int``, *optional*):
             Recording duration in seconds.
 
         caption (``str``, *optional*):
             Caption of the audio to be sent, 0-1024 characters.
-
+            
         parse_mode (:obj:`~pyrogram.enums.ParseMode`, *optional*):
             By default, texts are parsed using both Markdown and HTML styles.
             You can combine both syntaxes together.
 
         caption_entities (List of :obj:`~pyrogram.types.MessageEntity`):
             List of special entities that appear in the caption, which can be specified instead of *parse_mode*.
-
+            
         reply_markup (:obj:`~pyrogram.types.InlineKeyboardMarkup`, *optional*):
             Inline keyboard attached to the message.
-
+            
         input_message_content (:obj:`~pyrogram.types.InputMessageContent`, *optional*):
             Content of the message to be sent instead of the audio.
+        
+        thumbnail_url (``str``, *optional*):
+            Url of the thumbnail for the result.
+
+        thumbnail_width (``int``, *optional*):
+            Thumbnail width.
+
+        thumbnail_height (``int``, *optional*):
+            Thumbnail height.
+
     """
 
     def __init__(
@@ -69,9 +79,12 @@ class InlineQueryResultVoice(InlineQueryResult):
         voice_duration: int = 0,
         caption: str = "",
         parse_mode: Optional["enums.ParseMode"] = None,
-        caption_entities: List["types.MessageEntity"] = None,
+        caption_entities: list["types.MessageEntity"] = None,
         reply_markup: "types.InlineKeyboardMarkup" = None,
         input_message_content: "types.InputMessageContent" = None,
+        thumbnail_url: str = None,
+        thumbnail_width: int = 0,
+        thumbnail_height: int = 0
     ):
         super().__init__("voice", id, input_message_content, reply_markup)
 
@@ -81,25 +94,24 @@ class InlineQueryResultVoice(InlineQueryResult):
         self.caption = caption
         self.parse_mode = parse_mode
         self.caption_entities = caption_entities
+        self.thumbnail_url = thumbnail_url
+        self.thumbnail_width = thumbnail_width
+        self.thumbnail_height = thumbnail_height
 
     async def write(self, client: "pyrogram.Client"):
         audio = raw.types.InputWebDocument(
             url=self.voice_url,
             size=0,
             mime_type="audio/mpeg",
-            attributes=[
-                raw.types.DocumentAttributeAudio(
-                    duration=self.voice_duration,
-                    title=self.title,
-                )
-            ],
+            attributes=[raw.types.DocumentAttributeAudio(
+                duration=self.voice_duration,
+                title=self.title,
+            )]
         )
 
-        message, entities = (
-            await utils.parse_text_entities(
-                client, self.caption, self.parse_mode, self.caption_entities
-            )
-        ).values()
+        message, entities = (await utils.parse_text_entities(
+            client, self.caption, self.parse_mode, self.caption_entities
+        )).values()
 
         return raw.types.InputBotInlineResult(
             id=self.id,
@@ -110,13 +122,20 @@ class InlineQueryResultVoice(InlineQueryResult):
                 await self.input_message_content.write(client, self.reply_markup)
                 if self.input_message_content
                 else raw.types.InputBotInlineMessageMediaAuto(
-                    reply_markup=(
-                        await self.reply_markup.write(client)
-                        if self.reply_markup
-                        else None
-                    ),
+                    reply_markup=await self.reply_markup.write(client) if self.reply_markup else None,
                     message=message,
-                    entities=entities,
+                    entities=entities
                 )
             ),
+            thumb=raw.types.InputWebDocument(
+                url=self.thumbnail_url,
+                size=0,
+                mime_type="image/jpeg",
+                attributes=[
+                    raw.types.DocumentAttributeImageSize(
+                        w=self.thumbnail_width,
+                        h=self.thumbnail_height
+                    )
+                ]
+            ) if self.thumbnail_url else None
         )

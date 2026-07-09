@@ -16,15 +16,10 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
 
-EXCEPTION_AVAIL = False
-try:
-    from .exceptions import *
-except ImportError:
-    pass
-else:
-    EXCEPTION_AVAIL = True
-from .pyromod import *
-from .rpc_error import RPCError, UnknownError
+from .exceptions import *
+from .rpc_error import UnknownError
+from .pyromod.listener_stopped import ListenerStopped
+from .pyromod.listener_timeout import ListenerTimeout
 
 
 class BadMsgNotification(Exception):
@@ -32,7 +27,7 @@ class BadMsgNotification(Exception):
         16: "The msg_id is too low, the client time has to be synchronized.",
         17: "The msg_id is too high, the client time has to be synchronized.",
         18: "Incorrect two lower order of the msg_id bits, the server expects the client message "
-        "msg_id to be divisible by 4.",
+            "msg_id to be divisible by 4.",
         19: "The container msg_id is the same as the msg_id of a previously received message.",
         20: "The message is too old, it cannot be verified by the server.",
         32: "The msg_seqno is too low.",
@@ -40,7 +35,7 @@ class BadMsgNotification(Exception):
         34: "An even msg_seqno was expected, but an odd one was received.",
         35: "An odd msg_seqno was expected, but an even one was received.",
         48: "Incorrect server salt.",
-        64: "Invalid container.",
+        64: "Invalid container."
     }
 
     def __init__(self, code):
@@ -62,28 +57,11 @@ class SecurityCheckMismatch(SecurityError):
     """Raised when a security check mismatch occurs."""
 
     def __init__(self, msg: str = None):
-        super().__init__(
-            "A security check mismatch has occurred." if msg is None else msg
-        )
+        super().__init__("A security check mismatch has occurred." if msg is None else msg)
 
 
 class CDNFileHashMismatch(SecurityError):
     """Raised when a CDN file hash mismatch occurs."""
 
     def __init__(self, msg: str = None):
-        super().__init__(
-            "A CDN file hash mismatch has occurred." if msg is None else msg
-        )
-
-
-__all__ = [
-    "BadMsgNotification",
-    "SecurityError",
-    "SecurityCheckMismatch",
-    "CDNFileHashMismatch",
-    "RPCError",
-    "UnknownError",
-]
-if EXCEPTION_AVAIL:
-    __all__.extend(exceptions.__all__)
-__all__.extend(pyromod.__all__)
+        super().__init__("A CDN file hash mismatch has occurred." if msg is None else msg)

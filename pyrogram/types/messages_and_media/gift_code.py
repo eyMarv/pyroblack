@@ -18,6 +18,7 @@
 
 from pyrogram import raw, types, utils
 from ..object import Object
+from .message import Str
 
 
 class GiftCode(Object):
@@ -27,13 +28,14 @@ class GiftCode(Object):
         via_giveaway (``bool``):
             True if the gift code is received via giveaway.
 
-        unclaimed (``bool``):
-            True if the winner for the corresponding Telegram Premium subscription wasn't chosen.
+        is_unclaimed (``bool``):
+            True, if the winner for the corresponding Telegram Premium subscription wasn't chosen.
+            `The code is received by creator of a chat, which started the giveaway that had less winners than planned. <https://telegram.org/tos/in#7-8-giveaways-in-channels>`_
 
-        boost_peer (:obj:`~pyrogram.types.Chat`):
+        boosted_chat (:obj:`~pyrogram.types.Chat`):
             The channel where the gift code was won.
 
-        months (``int``):
+        premium_subscription_month_count (``int``):
             Number of months of subscription.
 
         slug (``str``):
@@ -41,31 +43,91 @@ class GiftCode(Object):
             You can combine it with `t.me/giftcode/{slug}`
             to get link for this gift.
 
+        currency (``str``):
+            Currency for the paid amount
+
+        amount (``int``):
+            The paid amount, in the smallest units of the currency
+
+        cryptocurrency (``str``):
+            Cryptocurrency used to pay for the gift; may be empty if none
+
+        cryptocurrency_amount (``int``):
+            The paid amount, in the smallest units of the cryptocurrency; 0 if none
+
+        caption (``str``, *optional*):
+            Text message chosen by the sender.
+
+        caption_entities (List of :obj:`~pyrogram.types.MessageEntity`, *optional*):
+            Entities of the text message.
+
         link (``str``, *property*):
             Generate a link to this gift code.
     """
 
     def __init__(
-        self, *, via_giveaway: bool, unclaimed: bool, boost_peer, months: int, slug: str
+        self,
+        *,
+        via_giveaway: bool,
+        is_unclaimed: bool,
+        boosted_chat: "types.Chat",
+        premium_subscription_month_count: int,
+        slug: str,
+        currency: str = None,
+        amount: int = None,
+        cryptocurrency: str = None,
+        cryptocurrency_amount: int = None,
+        caption: Str = None,
+        caption_entities: list["types.MessageEntity"] = None
     ):
         super().__init__()
 
         self.via_giveaway = via_giveaway
-        self.unclaimed = unclaimed
-        self.boost_peer = boost_peer
-        self.months = months
+        self.is_unclaimed = is_unclaimed
+        self.boosted_chat = boosted_chat
+        self.premium_subscription_month_count = premium_subscription_month_count
         self.slug = slug
+        self.currency = currency
+        self.amount = amount
+        self.cryptocurrency = cryptocurrency
+        self.cryptocurrency_amount = cryptocurrency_amount
+        self.caption = caption
+        self.caption_entities = caption_entities
 
     @staticmethod
-    def _parse(client, giftcode: "raw.types.MessageActionGiftCode", chats):
-        peer = chats.get(utils.get_raw_peer_id(getattr(giftcode, "boost_peer")))
+    def _parse(
+        client,
+        giftcode: "raw.types.MessageActionGiftCode",
+        chats: dict
+    ):
+        peer = chats.get(
+            utils.get_raw_peer_id(giftcode.boost_peer)
+        )
+
+        caption = None
+        caption_entities = []
+        if giftcode.message:
+            caption_entities = [
+                types.MessageEntity._parse(client, entity, {})
+                for entity in giftcode.message.entities
+            ]
+            caption_entities = types.List(filter(lambda x: x is not None, caption_entities))
+            caption = Str(giftcode.message.text).init(caption_entities) or None
 
         return GiftCode(
             via_giveaway=giftcode.via_giveaway,
-            unclaimed=giftcode.unclaimed,
-            boost_peer=types.Chat._parse_chat(client, peer) if peer else None,
-            months=giftcode.months,
+            is_unclaimed=giftcode.unclaimed,
+            boosted_chat=types.Chat._parse_chat(
+                client, peer
+            ) if peer else None,
+            premium_subscription_month_count=giftcode.months,
             slug=giftcode.slug,
+            currency=giftcode.currency,
+            amount=giftcode.amount,
+            cryptocurrency=getattr(giftcode, "crypto_currency", None),
+            cryptocurrency_amount=getattr(giftcode, "crypto_amount", None),
+            caption=caption,
+            caption_entities=caption_entities
         )
 
     @property

@@ -1,5 +1,5 @@
 #  Pyrogram - Telegram MTProto API Client Library for Python
-#  Copyright (C) 2017-present Dan <https://github.com/delivrance>
+#  Copyright (C) 2017-present <https://github.com/TelegramPlayGround>
 #
 #  This file is part of Pyrogram.
 #
@@ -17,12 +17,13 @@
 #  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
 
 from datetime import datetime
-from typing import Dict, List, Optional
+from typing import Dict, Optional
 
 import pyrogram
 from pyrogram import raw, types, utils
 
 from ..object import Object
+from .message import Str
 
 
 class ChecklistTask(Object):
@@ -35,17 +36,22 @@ class ChecklistTask(Object):
         text (``str``):
             Text of the task.
 
-        entities (List of :obj:`~pyrogram.types.MessageEntity`, *optional*):
-            Entities in the text of the task.
+        text_entities (List of :obj:`~pyrogram.types.MessageEntity`, *optional*):
+            Special entities that appear in the task text.
             May contain only Bold, Italic, Underline, Strikethrough, Spoiler, CustomEmoji, Url, EmailAddress, Mention, Hashtag, Cashtag and PhoneNumber entities.
 
         completed_by_user (:obj:`~pyrogram.types.User`, *optional*):
-            The user that completed the task.
-            None if the task isn't completed.
+            User that completed the task.
+            omitted if the task wasn't completed by a user.
+
+        completed_by_chat (:obj:`~pyrogram.types.Chat`, *optional*):
+            Chat that completed the task.
+            omitted if the task wasn't completed by a chat.
 
         completion_date (:py:obj:`~datetime.datetime`, *optional*):
             Date when the task was completed.
             None if the task isn't completed.
+
     """
 
     def __init__(
@@ -53,16 +59,18 @@ class ChecklistTask(Object):
         *,
         id: int,
         text: str,
-        entities: Optional[List["types.MessageEntity"]] = None,
+        text_entities: Optional[list["types.MessageEntity"]] = None,
         completed_by_user: Optional["types.User"] = None,
+        completed_by_chat: Optional["types.Chat"] = None,
         completion_date: Optional[datetime] = None,
     ):
         super().__init__()
 
         self.id = id
         self.text = text
-        self.entities = entities
+        self.text_entities = text_entities
         self.completed_by_user = completed_by_user
+        self.completed_by_chat = completed_by_chat
         self.completion_date = completion_date
 
     @staticmethod
@@ -71,22 +79,30 @@ class ChecklistTask(Object):
         item: "raw.types.TodoItem",
         completion: "raw.types.TodoCompletion",
         users: Dict[int, "raw.base.User"],
+        chats: Dict[int, "raw.base.Chat"],
     ) -> "ChecklistTask":
-        raw.types.TodoItem
-        raw.types.TodoCompletion
+        text_entities = [
+            types.MessageEntity._parse(client, entity, users)
+            for entity in item.title.entities
+        ]
+        text_entities = types.List(filter(lambda x: x is not None, text_entities))
+        text = Str(item.title.text).init(text_entities) or None
 
-        text, entities = (
-            utils.parse_text_with_entities(client, item.title, users)
-        ).values()
+        completed_by_peer = getattr(completion, "completed_by", None)
+        completed_by_user = None
+        completed_by_chat = None
+        if completed_by_peer:
+            completed_by_peer_id = utils.get_raw_peer_id(completed_by_peer)
+            if isinstance(completed_by_peer, raw.types.PeerUser):
+                completed_by_user = types.User._parse(client, users.get(completed_by_peer_id))
+            else:
+                completed_by_chat = types.Chat._parse_chat(client, chats.get(completed_by_peer_id))
 
         return ChecklistTask(
             id=item.id,
             text=text,
-            entities=entities,
-            completed_by_user=types.User._parse(
-                client, users.get(getattr(completion, "completed_by", None))
-            ),
-            completion_date=utils.timestamp_to_datetime(
-                getattr(completion, "date", None)
-            ),
+            text_entities=text_entities,
+            completed_by_user=completed_by_user,
+            completed_by_chat=completed_by_chat,
+            completion_date=utils.timestamp_to_datetime(getattr(completion, "date", None))
         )

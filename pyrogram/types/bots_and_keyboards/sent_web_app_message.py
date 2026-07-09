@@ -30,8 +30,7 @@ class SentWebAppMessage(Object):
     """
 
     def __init__(
-        self,
-        *,
+        self, *,
         inline_message_id: str,
     ):
         super().__init__()
@@ -42,4 +41,4 @@ class SentWebAppMessage(Object):
     def _parse(obj: "raw.types.WebViewMessageSent"):
         return SentWebAppMessage(
             inline_message_id=utils.pack_inline_message_id(obj.msg_id)
-        )
+        ) if obj.msg_id else None

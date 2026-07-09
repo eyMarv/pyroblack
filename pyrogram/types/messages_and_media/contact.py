@@ -26,19 +26,20 @@ class Contact(Object):
 
     Parameters:
         phone_number (``str``):
-            Contact's phone number.
+            Phone number of the user.
 
         first_name (``str``):
-            Contact's first name.
+            First name of the user; 1-64 characters.
 
         last_name (``str``, *optional*):
-            Contact's last name.
+            Last name of the user; 0-64 characters.
 
         user_id (``int``, *optional*):
             Contact's user identifier in Telegram.
 
         vcard (``str``, *optional*):
-            Additional data about the contact in the form of a vCard.
+            Additional data about the user in a form of `vCard <https://en.wikipedia.org/wiki/VCard>`_; 0-2048 bytes in length.
+
     """
 
     def __init__(
@@ -49,7 +50,7 @@ class Contact(Object):
         first_name: str,
         last_name: str = None,
         user_id: int = None,
-        vcard: str = None,
+        vcard: str = None
     ):
         super().__init__(client)
 
@@ -60,14 +61,12 @@ class Contact(Object):
         self.vcard = vcard
 
     @staticmethod
-    def _parse(
-        client: "pyrogram.Client", contact: "raw.types.MessageMediaContact"
-    ) -> "Contact":
+    def _parse(client: "pyrogram.Client", contact: "raw.types.MessageMediaContact") -> "Contact":
         return Contact(
             phone_number=contact.phone_number,
             first_name=contact.first_name,
             last_name=contact.last_name or None,
             vcard=contact.vcard or None,
             user_id=contact.user_id or None,
-            client=client,
+            client=client
         )

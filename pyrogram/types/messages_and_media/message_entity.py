@@ -16,17 +16,17 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional, Dict
+from typing import Optional
 
 import pyrogram
-from pyrogram import raw, enums
-from pyrogram import types
+from pyrogram import raw, enums, types
+from pyrogram.parser import utils as parserutils
 from ..object import Object
 
 
 class MessageEntity(Object):
     """One special entity in a text message.
-
+    
     For example, hashtags, usernames, URLs, etc.
 
     Parameters:
@@ -46,14 +46,18 @@ class MessageEntity(Object):
             For :obj:`~pyrogram.enums.MessageEntityType.TEXT_MENTION` only, the mentioned user.
 
         language (``str``, *optional*):
-            For "pre" only, the programming language of the entity text.
+            For :obj:`~pyrogram.enums.MessageEntityType.PRE` only, the programming language of the entity text.
 
-        custom_emoji_id (``int``, *optional*):
+        custom_emoji_id (``str``, *optional*):
             For :obj:`~pyrogram.enums.MessageEntityType.CUSTOM_EMOJI` only, unique identifier of the custom emoji.
             Use :meth:`~pyrogram.Client.get_custom_emoji_stickers` to get full information about the sticker.
 
-        collapsed (``bool``, *optional*):
-            For :obj:`~pyrogram.enums.MessageEntityType.BLOCKQUOTE` only, whether the blockquote is expandable or not.
+        unix_time (``int``, *optional*):
+            For :obj:`~pyrogram.enums.MessageEntityType.DATE_TIME` only, the Unix time associated with the entity.
+
+        date_time_format (``str``, *optional*):
+            For :obj:`~pyrogram.enums.MessageEntityType.DATE_TIME` only, the string that defines the formatting of the date and time.
+
     """
 
     def __init__(
@@ -66,8 +70,9 @@ class MessageEntity(Object):
         url: str = None,
         user: "types.User" = None,
         language: str = None,
-        custom_emoji_id: int = None,
-        collapsed: bool = None,
+        custom_emoji_id: str = None,
+        unix_time: int = None,
+        date_time_format: str = None,
     ):
         super().__init__(client)
 
@@ -78,22 +83,55 @@ class MessageEntity(Object):
         self.user = user
         self.language = language
         self.custom_emoji_id = custom_emoji_id
-        self.collapsed = collapsed
+        self.unix_time = unix_time
+        self.date_time_format = date_time_format
 
     @staticmethod
-    def _parse(
-        client,
-        entity: "raw.base.MessageEntity",
-        users: Dict[int, "raw.types.User"] = None,
-    ) -> Optional["MessageEntity"]:
+    def _parse(client, entity: "raw.base.MessageEntity", users: dict) -> Optional["MessageEntity"]:
+        user_id = None
+        unix_time = None
+        date_time_format = None
+
         # Special case for InputMessageEntityMentionName -> MessageEntityType.TEXT_MENTION
         # This happens in case of UpdateShortSentMessage inside send_message() where entities are parsed from the input
         if isinstance(entity, raw.types.InputMessageEntityMentionName):
             entity_type = enums.MessageEntityType.TEXT_MENTION
             user_id = entity.user_id.user_id
+
+        elif isinstance(entity, raw.types.MessageEntityBlockquote):
+            if entity.collapsed:
+                entity_type = enums.MessageEntityType.EXPANDABLE_BLOCKQUOTE
+            else:
+                entity_type = enums.MessageEntityType.BLOCKQUOTE
+
+        elif isinstance(entity, raw.types.MessageEntityFormattedDate):
+            entity_type = enums.MessageEntityType.DATE_TIME
+            unix_time = entity.date
+            date_time_format = ""
+            if entity.relative:
+                date_time_format = "r"
+            else:
+                if entity.day_of_week:
+                    date_time_format += "w"
+                if entity.short_date or entity.long_date:
+                    if entity.short_date:
+                        date_time_format += "d"
+                    if entity.long_date:
+                        date_time_format += "D"
+                if entity.short_time or entity.long_time:
+                    if entity.short_time:
+                        date_time_format += "t"
+                    if entity.long_time:
+                        date_time_format += "T"
+
         else:
-            entity_type = enums.MessageEntityType(entity.__class__)
+            try:
+                entity_type = enums.MessageEntityType(entity.__class__)
+            except ValueError:
+                entity_type = enums.MessageEntityType.UNKNOWN
             user_id = getattr(entity, "user_id", None)
+
+        custom_emoji_id = getattr(entity, "document_id", None)
 
         return MessageEntity(
             type=entity_type,
@@ -102,9 +140,10 @@ class MessageEntity(Object):
             url=getattr(entity, "url", None),
             user=types.User._parse(client, users.get(user_id, None)),
             language=getattr(entity, "language", None),
-            custom_emoji_id=getattr(entity, "document_id", None),
-            collapsed=getattr(entity, "collapsed", None),
-            client=client,
+            custom_emoji_id=str(custom_emoji_id) if custom_emoji_id else None,
+            unix_time=unix_time,
+            date_time_format=date_time_format,
+            client=client
         )
 
     async def write(self):
@@ -112,6 +151,9 @@ class MessageEntity(Object):
 
         for arg in ("_client", "type", "user"):
             args.pop(arg)
+
+        unix_time = args.pop("unix_time")
+        date_time_format = args.pop("date_time_format")
 
         if self.user:
             args["user_id"] = await self._client.resolve_peer(self.user.id)
@@ -124,17 +166,23 @@ class MessageEntity(Object):
 
         args.pop("custom_emoji_id")
         if self.custom_emoji_id is not None:
-            args["document_id"] = self.custom_emoji_id
+            args["document_id"] = int(self.custom_emoji_id)
 
-        if self.type not in [
-            enums.MessageEntityType.BLOCKQUOTE,
-            enums.MessageEntityType.EXPANDABLE_BLOCKQUOTE,
-        ]:
-            args.pop("collapsed")
+        if self.type == enums.MessageEntityType.EXPANDABLE_BLOCKQUOTE:
+            args["collapsed"] = True
 
         entity = self.type.value
 
         if entity is raw.types.MessageEntityMentionName:
             entity = raw.types.InputMessageEntityMentionName
+        elif self.type in (
+            enums.MessageEntityType.BLOCKQUOTE,
+            enums.MessageEntityType.EXPANDABLE_BLOCKQUOTE,
+        ):
+            entity = raw.types.MessageEntityBlockquote
+        elif self.type == enums.MessageEntityType.DATE_TIME:
+            entity = raw.types.MessageEntityFormattedDate
+            args["date"] = unix_time
+            args = parserutils.parse_date_time_format_tl(args, date_time_format)
 
         return entity(**args)

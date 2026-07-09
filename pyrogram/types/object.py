@@ -16,7 +16,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
 
-import typing
+import re
 from datetime import datetime
 from enum import Enum
 from json import dumps
@@ -46,12 +46,15 @@ class Object:
 
     @staticmethod
     def default(obj: "Object"):
+        if hasattr(obj, "__custom__"):
+            _custom_ = obj.__custom__()
+            if _custom_ is not None:
+                return _custom_
+
         if isinstance(obj, bytes):
             return repr(obj)
 
-        # https://t.me/pyrogramchat/167281
-        # Instead of re.Match, which breaks for python <=3.6
-        if isinstance(obj, typing.Match):
+        if isinstance(obj, re.Match):
             return repr(obj)
 
         if isinstance(obj, Enum):
@@ -60,18 +63,21 @@ class Object:
         if isinstance(obj, datetime):
             return str(obj)
 
-        attributes_to_hide = ["raw"]
+        # TODO: #20
+        if not hasattr(obj, "__dict__"):
+            return obj.__class__.__name__
 
-        filtered_attributes = {
-            attr: ("*" * 9 if attr == "phone_number" else getattr(obj, attr))
-            for attr in filter(
-                lambda x: not x.startswith("_") and x not in attributes_to_hide,
-                obj.__dict__,
-            )
-            if getattr(obj, attr) is not None
+        return {
+            "_": obj.__class__.__name__,
+            **{
+                attr: (
+                    "*" * 9 if attr == "phone_number" else
+                    getattr(obj, attr)
+                )
+                for attr in filter(lambda x: not x.startswith("_"), obj.__dict__)
+                if getattr(obj, attr) is not None
+            }
         }
-
-        return {"_": obj.__class__.__name__, **filtered_attributes}
 
     def __str__(self) -> str:
         return dumps(self, indent=4, default=Object.default, ensure_ascii=False)
@@ -83,7 +89,7 @@ class Object:
                 f"{attr}={repr(getattr(self, attr))}"
                 for attr in filter(lambda x: not x.startswith("_"), self.__dict__)
                 if getattr(self, attr) is not None
-            ),
+            )
         )
 
     def __eq__(self, other: "Object") -> bool:
@@ -105,7 +111,7 @@ class Object:
 
             # Maybe a better alternative would be https://docs.python.org/3/library/inspect.html#inspect.signature
             if isinstance(obj, tuple) and len(obj) == 2 and obj[0] == "dt":
-                state[attr] = datetime.fromtimestamp(obj[1])
+                state[attr] = pyrogram.utils.timestamp_to_datetime(obj[1])
 
         self.__dict__ = state
 

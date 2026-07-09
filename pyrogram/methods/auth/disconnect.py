@@ -26,10 +26,9 @@ class Disconnect:
         """Disconnect the client from Telegram servers.
 
         Raises:
-            ConnectionError: In case you try to disconnect an already disconnected client or in case you try to
-                disconnect a client that needs to be terminated first.
+            ConnectionError: In case you try to disconnect an already disconnected client or in case you try to disconnect a client that needs to be terminated first.
+
         """
-        # pylint: disable=access-member-before-definition
         if not self.is_connected:
             raise ConnectionError("Client is already disconnected")
 

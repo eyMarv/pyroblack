@@ -33,18 +33,16 @@ class Connect:
 
         Raises:
             ConnectionError: In case you try to connect an already connected client.
+
         """
-        # pylint: disable=access-member-before-definition
         if self.is_connected:
             raise ConnectionError("Client is already connected")
 
         await self.load_session()
 
         self.session = Session(
-            self,
-            await self.storage.dc_id(),
-            await self.storage.auth_key(),
-            await self.storage.test_mode(),
+            self, await self.storage.dc_id(),
+            await self.storage.auth_key(), await self.storage.test_mode()
         )
 
         await self.session.start()

@@ -31,16 +31,10 @@ class ChatType(AutoName):
     "Chat is a private chat with a bot"
 
     GROUP = auto()
-    "Chat is a basic group"
+    "Chat is a group"
 
     SUPERGROUP = auto()
     "Chat is a supergroup"
 
     CHANNEL = auto()
     "Chat is a channel"
-
-    FORUM = auto()
-    "Chat is a forum"
-
-    MONOFORUM = auto()
-    "Chat is a monoforum"

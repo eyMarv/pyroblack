@@ -31,7 +31,7 @@ class SetGameScore:
         force: bool = None,
         disable_edit_message: bool = None,
         chat_id: Union[int, str] = None,
-        message_id: int = None,
+        message_id: int = None
     ) -> Union["types.Message", bool]:
         # inline_message_id: str = None):  TODO Add inline_message_id
         """Set the score of the specified user in a game.
@@ -43,7 +43,6 @@ class SetGameScore:
                 Unique identifier (int) or username (str) of the target chat.
                 For your personal cloud (Saved Messages) you can simply use "me" or "self".
                 For a contact that exists in your Telegram address book you can use his phone number (str).
-                You can also use user profile link in form of *t.me/<username>* (str).
 
             score (``int``):
                 New score, must be non-negative.
@@ -69,6 +68,9 @@ class SetGameScore:
             :obj:`~pyrogram.types.Message` | ``bool``: On success, if the message was sent by the bot, the edited
             message is returned, True otherwise.
 
+        Raises:
+            :obj:`~pyrogram.errors.RPCError`: In case of a Telegram RPC error.
+
         Example:
             .. code-block:: python
 
@@ -85,19 +87,18 @@ class SetGameScore:
                 id=message_id,
                 user_id=await self.resolve_peer(user_id),
                 force=force or None,
-                edit_message=not disable_edit_message or None,
+                edit_message=not disable_edit_message or None
             )
         )
 
         for i in r.updates:
-            if isinstance(
-                i, (raw.types.UpdateEditMessage, raw.types.UpdateEditChannelMessage)
-            ):
+            if isinstance(i, (raw.types.UpdateEditMessage,
+                              raw.types.UpdateEditChannelMessage)):
                 return await types.Message._parse(
-                    self,
-                    i.message,
+                    self, i.message,
                     {i.id: i for i in r.users},
                     {i.id: i for i in r.chats},
+                    replies=self.fetch_replies
                 )
 
         return True

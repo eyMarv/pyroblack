@@ -1,30 +1,27 @@
-#  pyroblack - Telegram MTProto API Client Library for Python
+#  Pyrogram - Telegram MTProto API Client Library for Python
 #  Copyright (C) 2017-present Dan <https://github.com/delivrance>
-#  Copyright (C) 2022-present Mayuri-Chan <https://github.com/Mayuri-Chan>
-#  Copyright (C) 2024-present eyMarv <https://github.com/eyMarv>
 #
-#  This file is part of pyroblack.
+#  This file is part of Pyrogram.
 #
-#  pyroblack is free software: you can redistribute it and/or modify
+#  Pyrogram is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU Lesser General Public License as published
 #  by the Free Software Foundation, either version 3 of the License, or
 #  (at your option) any later version.
 #
-#  pyroblack is distributed in the hope that it will be useful,
+#  Pyrogram is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU Lesser General Public License for more details.
 #
 #  You should have received a copy of the GNU Lesser General Public License
-#  along with pyroblack.  If not, see <http://www.gnu.org/licenses/>.
+#  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
 
+import io
 from datetime import datetime
-from typing import Union, List, Optional, AsyncGenerator, BinaryIO, Dict
+from typing import Union, Optional, AsyncGenerator
 
 import pyrogram
-from pyrogram import raw, enums
-from pyrogram import types
-from pyrogram import utils
+from pyrogram import enums, raw, types, utils
 from pyrogram.errors import MessageIdsEmpty
 from ..object import Object
 
@@ -33,11 +30,146 @@ class Chat(Object):
     """A chat.
 
     Parameters:
-        id (``int``):
+        id (``int``, *optional*):
             Unique identifier for this chat.
 
-        type (:obj:`~pyrogram.enums.ChatType`):
+        type (:obj:`~pyrogram.enums.ChatType`, *optional*):
             Type of chat.
+
+        title (``str``, *optional*):
+            Title, for supergroups, channels and basic group chats.
+
+        username (``str``, *optional*):
+            Username, for private chats, bots, supergroups and channels if available.
+
+        first_name (``str``, *optional*):
+            First name of the other party in a private chat, for private chats and bots.
+
+        last_name (``str``, *optional*):
+            Last name of the other party in a private chat, for private chats.
+
+        is_forum (``bool``, *optional*):
+            True, if the supergroup chat is a forum
+
+        is_direct_messages (``bool``, *optional*):
+            True, if the chat is the direct messages chat of a channel.
+
+        max_reaction_count (``int``):
+            The maximum number of reactions that can be set on a message in the chat
+
+        photo (:obj:`~pyrogram.types.ChatPhoto`, *optional*):
+            Chat photo. Suitable for downloads only.
+
+        active_usernames (List of :obj:`~pyrogram.types.Username`, *optional*):
+            If non-empty, the list of all `active chat usernames <https://telegram.org/blog/topics-in-groups-collectible-usernames#collectible-usernames>`_; for private chats, supergroups and channels.
+
+        birthdate (:obj:`~pyrogram.types.Birthdate`, *optional*):
+            For private chats, the date of birth of the user.
+
+        business_intro (:obj:`~pyrogram.types.BusinessIntro`, *optional*):
+            For private chats with business accounts, the intro of the business.
+
+        business_location (:obj:`~pyrogram.types.BusinessLocation`, *optional*):
+            For private chats with business accounts, the location of the business.
+
+        business_opening_hours (:obj:`~pyrogram.types.BusinessOpeningHours`, *optional*):
+            For private chats with business accounts, the opening hours of the business.
+
+        personal_chat (:obj:`~pyrogram.types.Chat`, *optional*):
+            For private chats, the personal channel of the user.
+
+        personal_chat_message (:obj:`~pyrogram.types.Message`, *optional*):
+            **TEMPORARY**: For private chats, the personal message_id in the ``personal_chat``.
+
+        parent_chat (:obj:`~pyrogram.types.Chat`, *optional*):
+            Information about the corresponding channel chat; for direct messages chats only.
+            Returned only in :meth:`~pyrogram.Client.get_chat`.
+
+        direct_messages_chat_id (``int``, *optional*):
+            Information about the corresponding Direct Messages chat; for channel chats only.
+
+        available_reactions (:obj:`~pyrogram.types.ChatReactions`, *optional*):
+            Available reactions in the chat.
+            Returned only in :meth:`~pyrogram.Client.get_chat`.
+
+        accent_color (:obj:`~pyrogram.types.ChatColor`, *optional*):
+            Chat accent color.
+
+        profile_color (:obj:`~pyrogram.types.ChatColor`, *optional*):
+            Chat profile color.
+
+        emoji_status (:obj:`~pyrogram.types.EmojiStatus`, *optional*):
+            Emoji status.
+
+        background (:obj:`~pyrogram.types.ChatBackground`, *optional*):
+            A chat background.
+
+        bio (``str``, *optional*):
+            Bio of the other party in a private chat.
+            Returned only in :meth:`~pyrogram.Client.get_chat`.
+
+        join_by_request (``bool``, *optional*):
+            True, if all users directly joining the supergroup need to be approved by supergroup administrators. Can be True only for non-broadcast supergroups with username, location, or a linked chat.
+
+        description (``str``, *optional*):
+            Description, for groups, supergroups and channel chats.
+            Returned only in :meth:`~pyrogram.Client.get_chat`.
+
+        invite_link (``str``, *optional*):
+            Chat invite link, for groups, supergroups and channels.
+            Returned only in :meth:`~pyrogram.Client.get_chat`.
+
+        pinned_message (:obj:`~pyrogram.types.Message`, *optional*):
+            Pinned message, for groups, supergroups channels and own chat.
+            Returned only in :meth:`~pyrogram.Client.get_chat`.
+
+        permissions (:obj:`~pyrogram.types.ChatPermissions` *optional*):
+            Default chat member permissions, for groups and supergroups.
+
+        admin_privileges (:obj:`~pyrogram.types.ChatPrivileges`, *optional*):
+            Administrator Privileges of the current logged in user in the current chat. Only for supergroups and channels. None if the current user is not an Administrator.
+
+        can_send_paid_media (``bool``, *optional*):
+            True, if paid media messages can be sent or forwarded to the channel chat. The field is available only for channel chats.
+
+        slowmode_next_send_date (:py:obj:`~datetime.datetime`, *optional*):
+            Indicates when the user will be allowed to send another message in the chat. For supergroups only.
+
+        slow_mode_delay (``int``, *optional*):
+            For supergroups, the minimum allowed delay between consecutive messages sent by each unpriviledged user; in seconds.
+
+        unrestrict_boost_count (``int``, *optional*):
+            For supergroups, the minimum number of boosts that a non-administrator user needs to add in order to ignore slow mode and chat permissions.
+
+        message_auto_delete_time (``int``, *optional*):
+            The time after which all messages sent to the chat will be automatically deleted; in seconds.
+
+        has_aggressive_anti_spam_enabled (``bool``, *optional*):
+            True, if aggressive anti-spam checks are enabled in the supergroup. The field is only available to chat administrators.
+
+        has_hidden_members (``bool``, *optional*):
+            True, if non-administrators can only get the list of bots and administrators in the chat.
+
+        has_protected_content (``bool``, *optional*):
+            True, if messages from the chat can't be forwarded to other chats.
+
+        has_visible_history (``bool``, *optional*):
+            True, if new chat members will have access to old messages; available only to chat administrators.
+
+        sticker_set_name (``str``, *optional*):
+            For supergroups, name of group sticker set.
+            Returned only in :meth:`~pyrogram.Client.get_chat`.
+
+        can_set_sticker_set (``bool``, *optional*):
+            True, if the group sticker set can be changed by you.
+            Returned only in :meth:`~pyrogram.Client.get_chat`.
+
+        custom_emoji_sticker_set_name (``str``, *optional*):
+            For supergroups, the name of the group's custom emoji sticker set. Custom emoji from this set can be used by all users and bots in the group.
+
+        linked_chat (:obj:`~pyrogram.types.Chat`, *optional*):
+            The linked discussion group (in case of channels) or the linked channel (in case of supergroups).
+            Returned only in :meth:`~pyrogram.Client.get_chat`.
 
         is_verified (``bool``, *optional*):
             True, if this chat has been verified by Telegram. Supergroups, channels and bots only.
@@ -55,60 +187,14 @@ class Chat(Object):
         is_fake (``bool``, *optional*):
             True, if this chat has been flagged for impersonation.
 
-        is_support (``bool``):
+        is_support (``bool``, *optional*):
             True, if this chat is part of the Telegram support team. Users and bots only.
 
-        is_participants_hidden (``bool``, *optional*):
-            True, if the chat members are hidden.
-            Returned only in :meth:`~pyrogram.Client.get_chat`.
+        is_public (``bool``, *optional*):
+            True, if this chat is public.
 
-        is_join_request (``bool``, *optional*):
-            True, if the admin need to approve member(s) join request.
-
-        is_join_to_send (``bool``, *optional*):
-            True, if only chat members allowed to send message in chat.
-
-        is_slowmode_enabled (``bool``, *optional*):
-            True, if slowmode is enabled in chat.
-
-        is_antispam (``bool``, *optional*):
-            True, if Aggressive Anti-Spam is enabled in chat.
-            Returned only in :meth:`~pyrogram.Client.get_chat`.
-
-        is_paid_reactions_available (``bool``, *optional*):
-            True, if paid reactions enabled in this chat.
-
-        is_auto_translation_enabled (``bool``, *optional*):
-            True, if automatic translation is enabled in chat.
-
-        title (``str``, *optional*):
-            Title, for supergroups, channels and basic group chats.
-
-        username (``str``, *optional*):
-            Username, for private chats, bots, supergroups and channels if available.
-
-        first_name (``str``, *optional*):
-            First name of the other party in a private chat, for private chats and bots.
-
-        last_name (``str``, *optional*):
-            Last name of the other party in a private chat, for private chats.
-
-        photo (:obj:`~pyrogram.types.ChatPhoto`, *optional*):
-            Chat photo. Suitable for downloads only.
-
-        stories (List of :obj:`~pyrogram.types.Story`, *optional*):
-            The list of chat's stories if available.
-
-        wallpaper (:obj:`~pyrogram.types.Document`, *optional*):
-            Chat wallpaper.
-
-        bio (``str``, *optional*):
-            Bio of the other party in a private chat.
-            Returned only in :meth:`~pyrogram.Client.get_chat`.
-
-        description (``str``, *optional*):
-            Description, for groups, supergroups and channel chats.
-            Returned only in :meth:`~pyrogram.Client.get_chat`.
+        is_banned (``bool``, *optional*):
+            True, if you are banned in this chat.
 
         dc_id (``int``, *optional*):
             The chat assigned DC (data center). Available only in case the chat has a photo.
@@ -116,146 +202,150 @@ class Chat(Object):
             It is accurate only in case the owner has set the chat photo, otherwise the dc_id will be the one assigned
             to the administrator who set the current chat photo.
 
-        folder_id (``int``, *optional*):
-            The folder identifier where the chat is located.
-
-        has_protected_content (``bool``, *optional*):
-            True, if messages from the chat can't be forwarded to other chats.
-
-        invite_link (``str``, *optional*):
-            Chat invite link, for groups, supergroups and channels.
-            Returned only in :meth:`~pyrogram.Client.get_chat`.
-
-        pinned_message (:obj:`~pyrogram.types.Message`, *optional*):
-            Pinned message, for groups, supergroups channels and own chat.
-            Returned only in :meth:`~pyrogram.Client.get_chat`.
-
-        sticker_set_name (``str``, *optional*):
-            For supergroups, name of group sticker set.
-            Returned only in :meth:`~pyrogram.Client.get_chat`.
-
-        can_set_sticker_set (``bool``, *optional*):
-            True, if the group sticker set can be changed by you.
-            Returned only in :meth:`~pyrogram.Client.get_chat`.
+        members (List of :obj:`~pyrogram.types.User`, *optional*):
+            Preview of some of the chat members.
 
         members_count (``int``, *optional*):
             Chat members count, for groups, supergroups and channels only.
-            Returned only in :meth:`~pyrogram.Client.get_chat`.
-
-        slow_mode_delay (``int``, *optional*):
-            For supergroups, the minimum allowed delay between consecutive messages sent by each unpriviledged user in seconds.
             Returned only in :meth:`~pyrogram.Client.get_chat`.
 
         restrictions (List of :obj:`~pyrogram.types.Restriction`, *optional*):
             The list of reasons why this chat might be unavailable to some users.
             This field is available only in case *is_restricted* is True.
 
-        permissions (:obj:`~pyrogram.types.ChatPermissions` *optional*):
-            Default chat member permissions, for groups and supergroups.
-
         distance (``int``, *optional*):
             Distance in meters of this group chat from your location.
             Returned only in :meth:`~pyrogram.Client.get_nearby_chats`.
 
-        linked_chat (:obj:`~pyrogram.types.Chat`, *optional*):
-            The linked discussion group (in case of channels) or the linked channel (in case of supergroups).
-            Returned only in :meth:`~pyrogram.Client.get_chat`.
-
-        linked_forum (:obj:`~pyrogram.types.Chat`, *optional*):
-            The linked monoforum (in case of channels) or the linked channel (in case of monoforum).
-            Returned only in :meth:`~pyrogram.Client.get_chat`.
+        location (:obj:`~pyrogram.types.ChatLocation`, *optional*):
+            For supergroups, the location to which the supergroup is connected.
 
         send_as_chat (:obj:`~pyrogram.types.Chat`, *optional*):
             The default "send_as" chat.
             Returned only in :meth:`~pyrogram.Client.get_chat`.
 
-        available_reactions (:obj:`~pyrogram.types.ChatReactions`, *optional*):
-            Available reactions in the chat.
-            Returned only in :meth:`~pyrogram.Client.get_chat`.
+        is_peak_preview (``bool``, *optional*):
+            True, if this is a peak preview.
+
+        banned_until_date (:py:obj:`~datetime.datetime`, *optional*):
+            Date when the current user will be unbanned.
+
+        pending_join_request_count (``int``, *optional*):
+            Number of pending join requests in the current chat.
+
+        can_enable_paid_reaction (``bool``, *optional*):
+            True, if paid reaction can be enabled in the channel chat; for channels only.
+
+        gift_count (``int``, *optional*):
+            Number of saved to profile gifts for other users or the total number of received gifts for the current user.
+            Number of saved to profile gifts for channels without ``can_post_messages`` administrator right, otherwise, the total number of received gifts.
+
+        can_send_gift (``bool``, *optional*):
+            True, if gifts can be sent to the chat.
+
+        paid_message_star_count (``int``, *optional*):
+            The number of Telegram Stars a general user have to pay to send a message to the chat.
+
+        has_automatic_translation (``bool``, *optional*):
+            True, if automatic translation of messages is enabled in the channel.
+
+        first_profile_audio (:obj:`~pyrogram.types.Audio`, *optional*):
+            For private chats, the first audio added to the profile of the user.
+
+        note (:obj:`~pyrogram.types.FormattedText`, *optional*):
+            Note added to the user's contact.
+
+        uses_unofficial_app (``bool``, *optional*):
+            True, if the user uses an unofficial application that poses a security risk.
 
         full_name (``str``, *property*):
             Full name of the other party in a private chat, for private chats and bots.
+            OR, Title of the chat, for groups and channels.
 
-        usernames (List of :obj:`~pyrogram.types.Username`, *optional*):
-            List of all chat (fragment) usernames; for private chats, supergroups and channels.
-            Returned only in :meth:`~pyrogram.Client.get_chat`.
-
-        level (``int``, *optional*):
-            Channel boosts level.
-            For channel only.
-
-        reply_color (:obj:`~pyrogram.types.ChatColor`, *optional*):
-            Chat reply color.
-
-        profile_color (:obj:`~pyrogram.types.ChatColor`, *optional*):
-            Chat profile color.
-
-        business_info (:obj:`~pyrogram.types.BusinessInfo`, *optional*):
-            Business information of a chat.
-
-        birthday (:obj:`~pyrogram.types.Birthday`, *optional*):
-            User Date of birth.
-            Returned only in :meth:`~pyrogram.Client.get_chat`.
-
-        personal_chat (:obj:`~pyrogram.types.Chat`, *optional*):
-            For private chats, the personal channel of the user.
-            Returned only in :meth:`~pyrogram.Client.get_chat`.
-
-        subscription_until_date (:py:obj:`~datetime.datetime`, *optional*):
-            Date when the the subscription will end.
     """
 
     def __init__(
         self,
         *,
         client: "pyrogram.Client" = None,
-        id: int,
-        type: "enums.ChatType",
+        id: int = None,
+        type: "enums.ChatType" = None,
         is_verified: bool = None,
         is_restricted: bool = None,
         is_creator: bool = None,
         is_scam: bool = None,
         is_fake: bool = None,
         is_support: bool = None,
-        is_participants_hidden: bool = None,
-        is_join_request: bool = None,
-        is_join_to_send: bool = None,
-        is_antispam: bool = None,
-        is_slowmode_enabled: bool = None,
-        is_paid_reactions_available: bool = None,
-        is_auto_translation_enabled: bool = None,
+        is_public: bool = None,
+        is_banned: bool = None,
+        banned_until_date: datetime = None,
         title: str = None,
         username: str = None,
         first_name: str = None,
         last_name: str = None,
         photo: "types.ChatPhoto" = None,
-        stories: List["types.Story"] = None,
-        wallpaper: "types.Document" = None,
+        active_usernames: list["types.Username"] = None,
+        birthdate: "types.Birthdate" = None,
+        business_intro: "types.BusinessIntro" = None,
+        business_location: "types.BusinessLocation" = None,
+        business_opening_hours: "types.BusinessOpeningHours" = None,
         bio: str = None,
+        join_by_request: bool = None,
         description: str = None,
         dc_id: int = None,
-        folder_id: int = None,
         has_protected_content: bool = None,
         invite_link: str = None,
         pinned_message=None,
         sticker_set_name: str = None,
+        custom_emoji_sticker_set_name: str = None,
         can_set_sticker_set: bool = None,
+        members: list["types.User"] = None,
         members_count: int = None,
-        slow_mode_delay: int = None,
-        restrictions: List["types.Restriction"] = None,
+        restrictions: list["types.Restriction"] = None,
         permissions: "types.ChatPermissions" = None,
+        admin_privileges: "types.ChatPrivileges" = None,
         distance: int = None,
+        location: "types.ChatLocation" = None,
         linked_chat: "types.Chat" = None,
-        linked_forum: "types.Chat" = None,
         send_as_chat: "types.Chat" = None,
-        available_reactions: Optional["types.ChatReactions"] = None,
-        usernames: List["types.Username"] = None,
-        reply_color: "types.ChatColor" = None,
-        profile_color: "types.ChatColor" = None,
-        business_info: "types.BusinessInfo" = None,
-        birthday: "types.Birthday" = None,
         personal_chat: "types.Chat" = None,
-        subscription_until_date: datetime = None,
+        personal_chat_message: "types.Message" = None,
+        parent_chat: "types.Chat" = None,
+        direct_messages_chat_id: int = None,
+        available_reactions: Optional["types.ChatReactions"] = None,
+        accent_color: "types.ChatColor" = None,
+        profile_color: "types.ChatColor" = None,
+        emoji_status: "types.EmojiStatus" = None,
+        background: "types.ChatBackground" = None,
+        has_visible_history: bool = None,
+        has_hidden_members: bool = None,
+        has_aggressive_anti_spam_enabled: bool = None,
+        message_auto_delete_time: int = None,
+        slow_mode_delay: int = None,
+        slowmode_next_send_date: datetime = None,
+        unrestrict_boost_count: int = None,
+        is_forum: bool = None,
+        is_peak_preview: bool = None,
+        max_reaction_count: int = None,
+        can_send_paid_media: bool = None,
+        pending_join_request_count: int = None,
+        can_enable_paid_reaction: bool = None,
+        gift_count: int = None,
+        can_send_gift: bool = None,
+        paid_message_star_count: int = None,
+        has_automatic_translation: bool = None,
+        is_direct_messages: bool = None,
+        first_profile_audio: "types.Audio" = None,
+        note: "types.FormattedText" = None,
+        uses_unofficial_app: bool = None,
+        _raw: Union[
+            "raw.types.ChatInvite",
+            "raw.types.Channel",
+            "raw.types.Chat",
+            "raw.types.User",
+            "raw.types.messages.ChatFull",
+            "raw.types.users.UserFull"
+        ] = None
     ):
         super().__init__(client)
 
@@ -267,57 +357,100 @@ class Chat(Object):
         self.is_scam = is_scam
         self.is_fake = is_fake
         self.is_support = is_support
-        self.is_participants_hidden = is_participants_hidden
-        self.is_join_request = is_join_request
-        self.is_join_to_send = is_join_to_send
-        self.is_antispam = is_antispam
-        self.is_slowmode_enabled = is_slowmode_enabled
-        self.is_paid_reactions_available = is_paid_reactions_available
-        self.is_auto_translation_enabled = is_auto_translation_enabled
         self.title = title
         self.username = username
         self.first_name = first_name
         self.last_name = last_name
         self.photo = photo
-        self.stories = stories
-        self.wallpaper = wallpaper
         self.bio = bio
         self.description = description
         self.dc_id = dc_id
-        self.folder_id = folder_id
         self.has_protected_content = has_protected_content
         self.invite_link = invite_link
         self.pinned_message = pinned_message
         self.sticker_set_name = sticker_set_name
+        self.custom_emoji_sticker_set_name = custom_emoji_sticker_set_name
         self.can_set_sticker_set = can_set_sticker_set
+        self.members = members
         self.members_count = members_count
-        self.slow_mode_delay = slow_mode_delay
         self.restrictions = restrictions
         self.permissions = permissions
+        self.admin_privileges = admin_privileges
         self.distance = distance
+        self.location = location
         self.linked_chat = linked_chat
-        self.linked_forum = linked_forum
         self.send_as_chat = send_as_chat
         self.available_reactions = available_reactions
-        self.usernames = usernames
-        self.reply_color = reply_color
+        self.accent_color = accent_color
         self.profile_color = profile_color
-        self.business_info = business_info
-        self.birthday = birthday
+        self.emoji_status = emoji_status
+        self.background = background
+        self.has_visible_history = has_visible_history
+        self.has_hidden_members = has_hidden_members
+        self.has_aggressive_anti_spam_enabled = has_aggressive_anti_spam_enabled
+        self.message_auto_delete_time = message_auto_delete_time
+        self.slow_mode_delay = slow_mode_delay
+        self.slowmode_next_send_date = slowmode_next_send_date
+        self.is_forum = is_forum
+        self.unrestrict_boost_count = unrestrict_boost_count
+        self.is_public = is_public
+        self.is_banned = is_banned
+        self.banned_until_date = banned_until_date
+        self.join_by_request = join_by_request
+        self.is_peak_preview = is_peak_preview
         self.personal_chat = personal_chat
-        self.subscription_until_date = subscription_until_date
-
-    @property
-    def full_name(self) -> str:
-        return (
-            " ".join(filter(None, [self.first_name, self.last_name]))
-            or self.title
-            or None
-        )
+        self.personal_chat_message = personal_chat_message
+        self.parent_chat = parent_chat
+        self.direct_messages_chat_id = direct_messages_chat_id
+        self.birthdate = birthdate
+        self.business_intro = business_intro
+        self.business_location = business_location
+        self.business_opening_hours = business_opening_hours
+        self.active_usernames = active_usernames
+        self.max_reaction_count = max_reaction_count
+        self.can_send_paid_media = can_send_paid_media
+        self.pending_join_request_count = pending_join_request_count
+        self.can_enable_paid_reaction = can_enable_paid_reaction
+        self.gift_count = gift_count
+        self.can_send_gift = can_send_gift
+        self.paid_message_star_count = paid_message_star_count
+        self.has_automatic_translation = has_automatic_translation
+        self.is_direct_messages = is_direct_messages
+        self.first_profile_audio = first_profile_audio
+        self.note = note
+        self.uses_unofficial_app = uses_unofficial_app
+        self._raw = _raw
 
     @staticmethod
     def _parse_user_chat(client, user: raw.types.User) -> "Chat":
+        if isinstance(user, int):
+            return Chat(
+                id=user,
+                client=client,
+                _raw=None
+            )
+
         peer_id = user.id
+
+        if isinstance(user, raw.types.UserEmpty):
+            return Chat(
+                id=peer_id,
+                client=client,
+                _raw=user
+            )
+
+        active_usernames = types.List(
+            [
+                types.Username._parse(u)
+                for u in getattr(user, "usernames", [])
+            ]
+        ) or None
+        _tmp_username = None
+        if (
+            active_usernames and
+            len(active_usernames) > 0
+        ):
+            _tmp_username = active_usernames[0].username
 
         return Chat(
             id=peer_id,
@@ -327,124 +460,146 @@ class Chat(Object):
             is_scam=getattr(user, "scam", None),
             is_fake=getattr(user, "fake", None),
             is_support=getattr(user, "support", None),
-            username=user.username,
+            username=user.username or _tmp_username,
             first_name=user.first_name,
             last_name=user.last_name,
             photo=types.ChatPhoto._parse(client, user.photo, peer_id, user.access_hash),
-            restrictions=types.List(
-                [types.Restriction._parse(r) for r in user.restriction_reason]
-            )
-            or None,
+            restrictions=types.List([types.Restriction._parse(r) for r in user.restriction_reason]) or None,
             dc_id=getattr(getattr(user, "photo", None), "dc_id", None),
-            reply_color=types.ChatColor._parse(getattr(user, "color", None)),
-            profile_color=types.ChatColor._parse_profile_color(
-                getattr(user, "profile_color", None)
-            ),
             client=client,
+            active_usernames=active_usernames,
+            accent_color=types.ChatColor._parse(getattr(user, "color", None)),
+            profile_color=types.ChatColor._parse_profile_color(getattr(user, "profile_color", None)),
+            emoji_status=types.EmojiStatus._parse(client, user.emoji_status),
+            _raw=user
         )
 
     @staticmethod
     def _parse_chat_chat(client, chat: raw.types.Chat) -> "Chat":
+        if isinstance(chat, int):
+            return Chat(
+                id=-chat,
+                client=client,
+                _raw=None
+            )
+
         peer_id = -chat.id
-        active_usernames = getattr(chat, "usernames", [])
-        usernames = None
-        if len(active_usernames) >= 1:
-            usernames = []
-            for username in active_usernames:
-                usernames.append(types.Username._parse(username))
+
+        if isinstance(chat, raw.types.ChatEmpty):
+            return Chat(
+                id=peer_id,
+                type=enums.ChatType.GROUP,
+                client=client,
+                _raw=chat
+            )
+
+        if isinstance(chat, raw.types.ChatForbidden):
+            return Chat(
+                id=peer_id,
+                type=enums.ChatType.GROUP,
+                title=chat.title,
+                client=client,
+                is_banned=True,
+                _raw=chat
+            )
 
         return Chat(
             id=peer_id,
             type=enums.ChatType.GROUP,
             title=chat.title,
             is_creator=getattr(chat, "creator", None),
-            photo=types.ChatPhoto._parse(
-                client, getattr(chat, "photo", None), peer_id, 0
-            ),
-            permissions=types.ChatPermissions._parse(
-                getattr(chat, "default_banned_rights", None)
-            ),
-            members_count=getattr(chat, "participants_count", None),
+            photo=types.ChatPhoto._parse(client, getattr(chat, "photo", None), peer_id, 0),
+            permissions=types.ChatPermissions._parse(getattr(chat, "default_banned_rights", None)),
+            members_count=getattr(chat, "participants_count", 0),
             dc_id=getattr(getattr(chat, "photo", None), "dc_id", None),
             has_protected_content=getattr(chat, "noforwards", None),
-            usernames=usernames,
             client=client,
+            _raw=chat
         )
 
     @staticmethod
     def _parse_channel_chat(client, channel: raw.types.Channel) -> "Chat":
-        peer_id = utils.get_channel_id(
-            channel.id if not isinstance(channel, int) else channel
-        )
-        restriction_reason = getattr(channel, "restriction_reason", [])
-        user_name = getattr(channel, "username", None)
-        active_usernames = getattr(channel, "usernames", [])
-        if getattr(channel, "monoforum", None):
-            chat_type = enums.ChatType.MONOFORUM
-        elif getattr(channel, "forum", None):
-            chat_type = enums.ChatType.FORUM
-        elif getattr(channel, "megagroup", None):
-            chat_type = enums.ChatType.SUPERGROUP
-        elif getattr(channel, "broadcast", None):
-            chat_type = enums.ChatType.CHANNEL
-        else:
-            chat_type = enums.ChatType.GROUP
-        usernames = None
-        if len(active_usernames) >= 1:
-            usernames = []
-            for username in active_usernames:
-                if username.editable:
-                    user_name = username.username
-                else:
-                    usernames.append(types.Username._parse(username))
-        if user_name is None and usernames is not None and len(usernames) > 0:
-            user_name = usernames[0].username
-            usernames.pop(0)
+        if isinstance(channel, int):
+            return Chat(
+                id=utils.get_channel_id(channel),
+                client=client,
+                _raw=None
+            )
+
+        peer_id = utils.get_channel_id(channel.id)
+
+        if isinstance(channel, raw.types.ChannelForbidden):
+            return Chat(
+                id=peer_id,
+                type=enums.ChatType.SUPERGROUP if channel.megagroup else enums.ChatType.CHANNEL,
+                title=channel.title,
+                client=client,
+                is_banned=True,
+                banned_until_date=utils.timestamp_to_datetime(getattr(channel, "until_date", None)),
+                is_direct_messages=channel.monoforum,
+                _raw=channel
+            )
+
+        active_usernames = types.List(
+            [
+                types.Username._parse(u)
+                for u in getattr(channel, "usernames", [])
+            ]
+        ) or None
+        _tmp_username = None
+        if (
+            active_usernames and
+            len(active_usernames) > 0
+        ):
+            _tmp_username = active_usernames[0].username
 
         return Chat(
             id=peer_id,
-            type=chat_type,
-            is_verified=getattr(channel, "verified", None),
-            is_restricted=getattr(channel, "restricted", None),
-            is_creator=getattr(channel, "creator", None),
-            is_scam=getattr(channel, "scam", None),
-            is_fake=getattr(channel, "fake", None),
-            is_join_request=getattr(channel, "join_request", None),
-            is_join_to_send=getattr(channel, "join_to_send", None),
-            is_slowmode_enabled=getattr(channel, "slowmode_enabled", None),
+            type=enums.ChatType.SUPERGROUP if channel.megagroup else enums.ChatType.CHANNEL,
+            is_verified=channel.verified,
+            is_restricted=channel.restricted,
+            is_creator=channel.creator,
+            is_scam=channel.scam,
+            is_fake=channel.fake,
             title=channel.title,
-            username=user_name,
-            usernames=usernames,
+            username=channel.username or _tmp_username,
             photo=types.ChatPhoto._parse(
                 client,
                 getattr(channel, "photo", None),
                 peer_id,
-                getattr(channel, "access_hash", 0),
+                getattr(channel, "access_hash", 0)
             ),
             restrictions=types.List(
-                [types.Restriction._parse(r) for r in restriction_reason]
-            )
-            or None,
-            permissions=types.ChatPermissions._parse(
-                getattr(channel, "default_banned_rights", None)
-            ),
-            members_count=getattr(channel, "participants_count", None),
+                [
+                    types.Restriction._parse(r)
+                    for r in getattr(channel, "restriction_reason", None)
+                ]
+            ) or None,
+            permissions=types.ChatPermissions._parse(getattr(channel, "default_banned_rights", None)),
+            admin_privileges=types.ChatPrivileges._parse(getattr(channel, "admin_rights", None)),
+            members_count=getattr(channel, "participants_count", 0),
             dc_id=getattr(getattr(channel, "photo", None), "dc_id", None),
             has_protected_content=getattr(channel, "noforwards", None),
-            reply_color=types.ChatColor._parse(getattr(channel, "color", None)),
-            subscription_until_date=utils.timestamp_to_datetime(
-                getattr(channel, "subscription_until_date", None)
-            ),
+            is_forum=getattr(channel, "forum", None),
             client=client,
+            active_usernames=active_usernames,
+            accent_color=types.ChatColor._parse(getattr(channel, "color", None)),
+            profile_color=types.ChatColor._parse_profile_color(getattr(channel, "profile_color", None)),
+            emoji_status=types.EmojiStatus._parse(client, channel.emoji_status),
+            paid_message_star_count=channel.send_paid_messages_stars,
+            has_automatic_translation=channel.autotranslation,
+            is_direct_messages=channel.monoforum,
+            direct_messages_chat_id=utils.get_channel_id(channel.linked_monoforum_id) if channel.linked_monoforum_id else None,
+            _raw=channel
         )
 
     @staticmethod
     def _parse(
         client,
         message: Union[raw.types.Message, raw.types.MessageService],
-        users: Dict[int, "raw.types.User"],
-        chats: Dict[int, "raw.types.Chat"],
-        is_chat: bool,
+        users: dict,
+        chats: dict,
+        is_chat: bool
     ) -> "Chat":
         from_id = utils.get_raw_peer_id(message.from_id)
         peer_id = utils.get_raw_peer_id(message.peer_id)
@@ -459,12 +614,7 @@ class Chat(Object):
         return Chat._parse_channel_chat(client, chats[chat_id])
 
     @staticmethod
-    def _parse_dialog(
-        client,
-        peer: Union[raw.types.PeerUser, raw.types.PeerChat, raw.types.PeerChannel],
-        users: Dict[int, "raw.types.User"],
-        chats: Dict[int, "raw.types.Chat"],
-    ) -> "Chat":
+    def _parse_dialog(client, peer, users: dict, chats: dict):
         if isinstance(peer, raw.types.PeerUser):
             return Chat._parse_user_chat(client, users[peer.user_id])
         elif isinstance(peer, raw.types.PeerChat):
@@ -473,68 +623,85 @@ class Chat(Object):
             return Chat._parse_channel_chat(client, chats[peer.channel_id])
 
     @staticmethod
-    async def _parse_full(
-        client, chat_full: Union[raw.types.messages.ChatFull, raw.types.users.UserFull]
-    ) -> "Chat":
+    async def _parse_full(client, chat_full: Union[raw.types.messages.ChatFull, raw.types.users.UserFull]) -> "Chat":
         users = {u.id: u for u in chat_full.users}
         chats = {c.id: c for c in chat_full.chats}
+
+        personal_chat = None
+        personal_chat_message = None
 
         if isinstance(chat_full, raw.types.users.UserFull):
             full_user = chat_full.full_user
 
             parsed_chat = Chat._parse_user_chat(client, users[full_user.id])
             parsed_chat.bio = full_user.about
-            parsed_chat.folder_id = getattr(full_user, "folder_id", None)
-            parsed_chat.business_info = types.BusinessInfo._parse(
-                client, full_user, users
-            )
-            birthday = getattr(full_user, "birthday", None)
-            parsed_chat.birthday = (
-                types.Birthday._parse(birthday) if birthday is not None else None
-            )
-            personal_chat_id = getattr(full_user, "personal_channel_id", None)
-            if personal_chat_id is not None:
-                personal_chat = await client.invoke(
-                    raw.functions.channels.GetChannels(
-                        id=[
-                            await client.resolve_peer(
-                                utils.get_channel_id(personal_chat_id)
-                            )
-                        ]
-                    )
+
+            if getattr(full_user, "personal_channel_id", None):
+                personal_chat = Chat._parse_channel_chat(
+                    client,
+                    chats[full_user.personal_channel_id]
                 )
-                parsed_chat.personal_chat = Chat._parse_chat(
-                    client, personal_chat.chats[0]
+            # TODO:?|
+            if getattr(full_user, "personal_channel_message", None):
+                personal_chat_message = types.Message(
+                    client=client,
+                    id=full_user.personal_channel_message
                 )
 
             if full_user.pinned_msg_id:
                 try:
                     parsed_chat.pinned_message = await client.get_messages(
-                        chat_id=parsed_chat.id, message_ids=full_user.pinned_msg_id
+                        chat_id=parsed_chat.id,
+                        message_ids=full_user.pinned_msg_id
                     )
                 except MessageIdsEmpty:
                     parsed_chat.pinned_message = types.Message(
-                        id=full_user.pinned_msg_id, empty=True, client=client
+                        id=full_user.pinned_msg_id,
+                        empty=True,
+                        client=client
                     )
 
-            if getattr(full_user, "stories"):
-                peer_stories: raw.types.PeerStories = full_user.stories
-                parsed_chat.stories = (
-                    types.List(
-                        [
-                            await types.Story._parse(client, story, peer_stories.peer)
-                            for story in peer_stories.stories
-                        ]
-                    )
-                    or None
+            if getattr(full_user, "birthday", None):
+                parsed_chat.birthdate = types.Birthdate._parse(
+                    full_user.birthday
                 )
 
-            if getattr(full_user, "wallpaper") and isinstance(
-                full_user.wallpaper, raw.types.WallPaper
-            ):
-                parsed_chat.wallpaper = types.Document._parse(
-                    client, full_user.wallpaper.document, "wallpaper.jpg"
+            if getattr(full_user, "business_intro", None):
+                parsed_chat.business_intro = await types.BusinessIntro._parse(
+                    client,
+                    full_user.business_intro
                 )
+            if getattr(full_user, "business_location", None):
+                parsed_chat.business_location = types.BusinessLocation._parse(
+                    client,
+                    full_user.business_location
+                )
+            if getattr(full_user, "business_work_hours", None):
+                parsed_chat.business_opening_hours = types.BusinessOpeningHours._parse(
+                    client,
+                    full_user.business_work_hours
+                )
+
+            if getattr(full_user, "wallpaper", None):
+                parsed_chat.background = types.ChatBackground._parse(client, full_user.wallpaper)
+            parsed_chat.gift_count = full_user.stargifts_count
+            
+            if full_user.saved_music:
+                doc = full_user.saved_music
+                attributes = {type(i): i for i in doc.attributes}
+                file_name = getattr(
+                    attributes.get(
+                        raw.types.DocumentAttributeFilename, None
+                    ), "file_name", None
+                )
+                audio_attributes = attributes[raw.types.DocumentAttributeAudio]
+                parsed_chat.first_profile_audio = types.Audio._parse(
+                    client, doc, audio_attributes, file_name
+                )
+            if full_user.note:
+                parsed_chat.note = types.FormattedText._parse(client, full_user.note)
+            parsed_chat.uses_unofficial_app = bool(full_user.unofficial_security_risk) or None
+
         else:
             full_chat = chat_full.full_chat
             chat_raw = chats[full_chat.id]
@@ -548,43 +715,15 @@ class Chat(Object):
             else:
                 parsed_chat = Chat._parse_channel_chat(client, chat_raw)
                 parsed_chat.members_count = full_chat.participants_count
-                parsed_chat.join_requests_count = getattr(
-                    full_chat, "requests_pending", None
-                )
-                parsed_chat.slow_mode_delay = getattr(
-                    full_chat, "slowmode_seconds", None
-                )
                 parsed_chat.description = full_chat.about or None
                 # TODO: Add StickerSet type
                 parsed_chat.can_set_sticker_set = full_chat.can_set_stickers
-                parsed_chat.sticker_set_name = getattr(
-                    full_chat.stickerset, "short_name", None
-                )
-                parsed_chat.is_participants_hidden = full_chat.participants_hidden
-                parsed_chat.is_antispam = full_chat.antispam
-                parsed_chat.is_auto_translation_enabled = getattr(
-                    full_chat, "auto_translation", None
-                )
-                parsed_chat.folder_id = getattr(full_chat, "folder_id", None)
-                parsed_chat.is_paid_reactions_available = getattr(
-                    full_chat, "paid_reactions_available", None
-                )
+                parsed_chat.sticker_set_name = getattr(full_chat.stickerset, "short_name", None)
 
                 linked_chat_raw = chats.get(full_chat.linked_chat_id, None)
 
-                linked_forum_raw = chats.get(
-                    getattr(chat_raw, "linked_monoforum_id"), None
-                )
-
                 if linked_chat_raw:
-                    parsed_chat.linked_chat = Chat._parse_channel_chat(
-                        client, linked_chat_raw
-                    )
-
-                if linked_forum_raw:
-                    parsed_chat.linked_forum = Chat._parse_channel_chat(
-                        client, linked_forum_raw
-                    )
+                    parsed_chat.linked_chat = Chat._parse_channel_chat(client, linked_chat_raw)
 
                 default_send_as = full_chat.default_send_as
 
@@ -596,138 +735,127 @@ class Chat(Object):
 
                     parsed_chat.send_as_chat = Chat._parse_chat(client, send_as_raw)
 
-                if getattr(full_chat, "stories"):
-                    peer_stories: raw.types.PeerStories = full_chat.stories
-                    parsed_chat.stories = (
-                        types.List(
-                            [
-                                await types.Story._parse(
-                                    client, story, peer_stories.peer
-                                )
-                                for story in peer_stories.stories
-                            ]
-                        )
-                        or None
+                parsed_chat.members_count = getattr(full_chat, "participants_count", 0)                
+                parsed_chat.has_visible_history = not getattr(full_chat, "hidden_prehistory", False)
+                parsed_chat.has_hidden_members = not getattr(full_chat, "participants_hidden", True)
+                parsed_chat.has_aggressive_anti_spam_enabled = getattr(full_chat, "antispam", False)
+
+                parsed_chat.slow_mode_delay = getattr(full_chat, "slowmode_seconds")
+                parsed_chat.slowmode_next_send_date = utils.timestamp_to_datetime(
+                    getattr(full_chat, "slowmode_next_send_date")
+                )
+
+                parsed_chat.unrestrict_boost_count = getattr(full_chat, "boosts_unrestrict", None)
+                # TODO: Add EmojieStickerSet type
+                parsed_chat.custom_emoji_sticker_set_name = getattr(full_chat.emojiset, "short_name", None)
+
+                parsed_chat.can_send_paid_media = getattr(full_chat, "paid_media_allowed", None)
+                parsed_chat.can_enable_paid_reaction = full_chat.paid_reactions_available
+                parsed_chat.gift_count = full_chat.stargifts_count
+
+                parsed_chat.can_send_gift = full_chat.stargifts_available
+
+                parent_chat_raw = chats.get(chat_raw.linked_monoforum_id, None)
+                if parent_chat_raw:
+                    parsed_chat.parent_chat = Chat._parse_channel_chat(client, parent_chat_raw)
+
+                if full_chat.location:
+                    parsed_chat.location = types.ChatLocation(
+                        location=types.Location(
+                            latitude=full_chat.location.geo_point.lat,
+                            longitude=full_chat.location.geo_point.long
+                        ),
+                        address=full_chat.location.address
                     )
 
-                if getattr(full_chat, "wallpaper") and isinstance(
-                    full_chat.wallpaper, raw.types.WallPaper
-                ):
-                    parsed_chat.wallpaper = types.Document._parse(
-                        client, full_chat.wallpaper.document, "wallpaper.jpg"
-                    )
+            parsed_chat.message_auto_delete_time = getattr(full_chat, "ttl_period")
 
             if full_chat.pinned_msg_id:
-                parsed_chat.pinned_message = await client.get_messages(
-                    chat_id=parsed_chat.id, message_ids=full_chat.pinned_msg_id
-                )
+                try:
+                    parsed_chat.pinned_message = await client.get_messages(
+                        chat_id=parsed_chat.id,
+                        message_ids=full_chat.pinned_msg_id
+                    )
+                except MessageIdsEmpty:
+                    parsed_chat.pinned_message = types.Message(
+                        id=full_chat.pinned_msg_id,
+                        empty=True,
+                        client=client
+                    )
 
             if isinstance(full_chat.exported_invite, raw.types.ChatInviteExported):
                 parsed_chat.invite_link = full_chat.exported_invite.link
 
             parsed_chat.available_reactions = types.ChatReactions._parse(
-                client, full_chat.available_reactions
+                client,
+                full_chat.available_reactions,
+                reactions_limit=getattr(full_chat, "reactions_limit", None)
             )
+            parsed_chat.max_reaction_count = getattr(full_chat, "reactions_limit", 11)
+            parsed_chat.pending_join_request_count = getattr(full_chat, "requests_pending", None)
+
+            if getattr(full_chat, "wallpaper", None):
+                parsed_chat.background = types.ChatBackground._parse(client, full_chat.wallpaper)
+
+        parsed_chat.personal_chat = personal_chat
+        parsed_chat.personal_chat_message = personal_chat_message
+        parsed_chat._raw = chat_full
 
         return parsed_chat
 
     @staticmethod
-    def _parse_chat(
-        client, chat: Union[raw.types.Chat, raw.types.User, raw.types.Channel]
-    ) -> "Chat":
-        if isinstance(chat, (raw.types.Chat, raw.types.ChatForbidden)):
+    def _parse_chat(client, chat: Union[raw.types.Chat, raw.types.User, raw.types.Channel]) -> "Chat":
+        if (
+            isinstance(chat, raw.types.Chat) or
+            isinstance(chat, raw.types.ChatForbidden) or
+            isinstance(chat, raw.types.ChatEmpty)
+        ):
             return Chat._parse_chat_chat(client, chat)
-        elif isinstance(chat, raw.types.User):
+        elif (
+            isinstance(chat, raw.types.User) or
+            isinstance(chat, raw.types.UserEmpty)
+        ):
             return Chat._parse_user_chat(client, chat)
         else:
             return Chat._parse_channel_chat(client, chat)
 
-    def listen(self, *args, **kwargs):
-        """Bound method *listen* of :obj:`~pyrogram.types.Chat`.
+    @staticmethod
+    def _parse_chat_preview(client, chat_invite: "raw.types.ChatInvite") -> "Chat":
+        return Chat(
+            _raw=chat_invite,
+            title=chat_invite.title,
+            type=(
+                enums.ChatType.GROUP if not chat_invite.channel else
+                enums.ChatType.CHANNEL if chat_invite.broadcast else
+                enums.ChatType.SUPERGROUP
+            ),
+            members_count=chat_invite.participants_count,
+            photo=types.Photo._parse(client, chat_invite.photo),
+            members=[
+                types.User._parse(client, user)
+                for user in chat_invite.participants
+            ] or None,
+            description=getattr(chat_invite, "about", None),
+            is_verified=getattr(chat_invite, "verified", None),
+            is_scam=getattr(chat_invite, "scam", None),
+            is_fake=getattr(chat_invite, "fake", None),
+            is_public=getattr(chat_invite, "public", None),
+            join_by_request=getattr(chat_invite, "request_needed", None),
+            is_peak_preview=True,
+            client=client
+        )
 
-        Use as a shortcut for:
-
-        .. code-block:: python
-
-            client.wait_for_message(chat_id)
-
-        Parameters:
-            args (*optional*):
-                The arguments to pass to the :meth:`~pyrogram.Client.listen` method.
-
-            kwargs (*optional*):
-                The keyword arguments to pass to the :meth:`~pyrogram.Client.listen` method.
-
-        Example:
-            .. code-block:: python
-
-                chat.listen()
-
-        Returns:
-            :obj:`~pyrogram.types.Message`: On success, the reply message is returned.
-        Raises:
-            RPCError: In case of a Telegram RPC error.
-            asyncio.TimeoutError: In case reply not received within the timeout.
-        """
-        return self._client.listen(*args, chat_id=self.id, **kwargs)
-
-    def ask(self, text, *args, **kwargs):
-        """Bound method *ask* of :obj:`~pyrogram.types.Chat`.
-
-        Use as a shortcut for:
-
-        .. code-block:: python
-
-            client.send_message(chat_id, "What is your name?")
-
-            client.wait_for_message(chat_id)
-
-        Parameters:
-            text (``str``):
-                Text of the message to be sent.
-
-            args:
-                The arguments to pass to the :meth:`~pyrogram.Client.listen` method.
-
-            kwargs:
-                The keyword arguments to pass to the :meth:`~pyrogram.Client.listen` method.
-
-        Example:
-            .. code-block:: python
-
-                chat.ask("What is your name?")
-
-        Returns:
-            :obj:`~pyrogram.types.Message`: On success, the reply message is returned.
-        Raises:
-            RPCError: In case of a Telegram RPC error.
-            asyncio.TimeoutError: In case reply not received within the timeout.
-        """
-        return self._client.ask(self.id, text, *args, **kwargs)
-
-    def stop_listening(self, *args, **kwargs):
-        """Bound method *stop_listening* of :obj:`~pyrogram.types.Chat`.
-
-        Use as a shortcut for:
-
-        .. code-block:: python
-
-            client.stop_listening(chat_id=chat_id)
-
-        Parameters:
-            args (*optional*):
-                The arguments to pass to the :meth:`~pyrogram.Client.listen` method.
-
-            kwargs (*optional*):
-                The keyword arguments to pass to the :meth:`~pyrogram.Client.listen` method.
-
-        Example:
-            .. code-block:: python
-
-                chat.stop_listen()
-
-        """
-        return self._client.stop_listening(*args, chat_id=self.id, **kwargs)
+    @property
+    def full_name(self) -> str:
+        return " ".join(
+            filter(
+                None,
+                [
+                    self.first_name,
+                    self.last_name
+                ]
+            )
+        ) or self.title or None
 
     async def archive(self):
         """Bound method *archive* of :obj:`~pyrogram.types.Chat`.
@@ -747,7 +875,8 @@ class Chat(Object):
             True on success.
 
         Raises:
-            RPCError: In case of a Telegram RPC error.
+            :obj:`~pyrogram.errors.RPCError`: In case of a Telegram RPC error.
+
         """
 
         return await self._client.archive_chats(self.id)
@@ -770,7 +899,8 @@ class Chat(Object):
             True on success.
 
         Raises:
-            RPCError: In case of a Telegram RPC error.
+            :obj:`~pyrogram.errors.RPCError`: In case of a Telegram RPC error.
+
         """
 
         return await self._client.unarchive_chats(self.id)
@@ -805,11 +935,15 @@ class Chat(Object):
             ``bool``: True on success.
 
         Raises:
-            RPCError: In case of Telegram RPC error.
             ValueError: In case a chat_id belongs to user.
+            :obj:`~pyrogram.errors.RPCError`: In case of a Telegram RPC error.
+
         """
 
-        return await self._client.set_chat_title(chat_id=self.id, title=title)
+        return await self._client.set_chat_title(
+            chat_id=self.id,
+            title=title
+        )
 
     async def set_description(self, description: str) -> bool:
         """Bound method *set_description* of :obj:`~pyrogram.types.Chat`.
@@ -836,22 +970,22 @@ class Chat(Object):
             ``bool``: True on success.
 
         Raises:
-            RPCError: In case of Telegram RPC error.
             ValueError: If a chat_id doesn't belong to a supergroup or a channel.
+            :obj:`~pyrogram.errors.RPCError`: In case of a Telegram RPC error.
+
         """
 
         return await self._client.set_chat_description(
-            chat_id=self.id, description=description
+            chat_id=self.id,
+            description=description
         )
 
     async def set_photo(
         self,
         *,
-        photo: Union[str, BinaryIO] = None,
-        emoji: int = None,
-        emoji_background: Union[int, List[int]] = None,
-        video: Union[str, BinaryIO] = None,
-        video_start_ts: float = None,
+        photo: Union[str, "io.BytesIO"] = None,
+        video: Union[str, "io.BytesIO"] = None,
+        photo_frame_start_timestamp: float = None,
     ) -> Union["types.Message", bool]:
         """Bound method *set_photo* of :obj:`~pyrogram.types.Chat`.
 
@@ -873,55 +1007,79 @@ class Chat(Object):
                 # Set chat photo using an existing Photo file_id
                 await chat.set_photo(photo=photo.file_id)
 
-                # set chat photo with emoji
-                await chat.set_photo(photo="photo.jpg", emoji=5366316836101038579)
 
-                # set chat photo with emoji and emoji_background
-                await chat.set_photo(photo="photo.jpg", emoji=5366316836101038579, emoji_background=[0, 0, 0, 0])
-
-                # Set chat video
+                # Set chat video using a local file
                 await chat.set_photo(video="video.mp4")
 
+                # Set chat photo using an existing Video file_id
+                await chat.set_photo(video=video.file_id)
+
         Parameters:
-            photo (``str`` | ``BinaryIO``, *optional*):
+            photo (``str`` | :obj:`io.BytesIO`, *optional*):
                 New chat photo. You can pass a :obj:`~pyrogram.types.Photo` file_id, a file path to upload a new photo
                 from your local machine or a binary file-like object with its attribute
                 ".name" set for in-memory uploads.
 
-            emoji (``int``, *optional*):
-                Unique identifier (int) of the emoji to be used as the chat photo.
-
-            emoji_background (``int`` | List of ``int``, *optional*):
-                hexadecimal colors or List of hexadecimal colors to be used as the chat photo background.
-
-            video (``str`` | ``BinaryIO``, *optional*):
-                New chat video. You can pass a file path to upload a new video
+            video (``str`` | :obj:`io.BytesIO`, *optional*):
+                New chat video. You can pass a :obj:`~pyrogram.types.Video` file_id, a file path to upload a new video
                 from your local machine or a binary file-like object with its attribute
                 ".name" set for in-memory uploads.
 
-            video_start_ts (``float``, *optional*):
-                The timestamp in seconds of the video frame to use as photo profile preview.
+            photo_frame_start_timestamp (``float``, *optional*):
+                Floating point UNIX timestamp in seconds, indicating the frame of the video/sticker that should be used as static preview; can only be used if ``video`` is set.
 
         Returns:
             :obj:`~pyrogram.types.Message` | ``bool``: On success, a service message will be returned (when applicable),
             otherwise, in case a message object couldn't be returned, True is returned.
 
         Raises:
-            RPCError: In case of a Telegram RPC error.
             ValueError: if a chat_id belongs to user.
+            :obj:`~pyrogram.errors.RPCError`: In case of a Telegram RPC error.
+
         """
 
         return await self._client.set_chat_photo(
             chat_id=self.id,
             photo=photo,
-            emoji=emoji,
-            emoji_background=emoji_background,
             video=video,
-            video_start_ts=video_start_ts,
+            photo_frame_start_timestamp=photo_frame_start_timestamp
+        )
+
+    async def set_message_auto_delete_time(self, message_auto_delete_time: int) -> "types.Message":
+        """Bound method *set_message_auto_delete_time* of :obj:`~pyrogram.types.Chat`.
+
+        Use as a shortcut for:
+
+        .. code-block:: python
+
+            await client.set_chat_message_auto_delete_time(
+                chat_id=chat_id,
+                message_auto_delete_time=ttl_seconds
+            )
+
+        Parameters:
+            message_auto_delete_time (``int``):
+                New time value, in seconds; unless the chat is secret, it must be from 0 up to 365 * 86400 and be divisible by 86400. If 0, then messages aren't deleted automatically.
+
+        Example:
+            .. code-block:: python
+
+                await chat.set_message_auto_delete_time(86400)
+
+        Returns:
+            :obj:`~pyrogram.types.Message`: On success, the generated service message is returned.
+
+        """
+        return await self._client.set_chat_message_auto_delete_time(
+            chat_id=self.id,
+            message_auto_delete_time=message_auto_delete_time
         )
 
     async def ban_member(
-        self, user_id: Union[int, str], until_date: datetime = utils.zero_datetime()
+        self,
+        user_id: Union[int, str],
+        until_date: datetime = utils.zero_datetime(),
+        revoke_messages: bool = None
     ) -> Union["types.Message", bool]:
         """Bound method *ban_member* of :obj:`~pyrogram.types.Chat`.
 
@@ -954,19 +1112,30 @@ class Chat(Object):
                 If user is banned for more than 366 days or less than 30 seconds from the current time they are
                 considered to be banned forever. Defaults to epoch (ban forever).
 
+            revoke_messages (``bool``, *optional*):
+                Pass True to delete all messages from the chat for the user that is being removed. If False, the user will be able to see messages in the group that were sent before the user was removed.
+                Always True for supergroups and channels.
+
         Returns:
             :obj:`~pyrogram.types.Message` | ``bool``: On success, a service message will be returned (when applicable), otherwise, in
             case a message object couldn't be returned, True is returned.
 
         Raises:
-            RPCError: In case of a Telegram RPC error.
+            :obj:`~pyrogram.errors.RPCError`: In case of a Telegram RPC error.
+
         """
 
         return await self._client.ban_chat_member(
-            chat_id=self.id, user_id=user_id, until_date=until_date
+            chat_id=self.id,
+            user_id=user_id,
+            until_date=until_date,
+            revoke_messages=revoke_messages
         )
 
-    async def unban_member(self, user_id: Union[int, str]) -> bool:
+    async def unban_member(
+        self,
+        user_id: Union[int, str]
+    ) -> bool:
         """Bound method *unban_member* of :obj:`~pyrogram.types.Chat`.
 
         Use as a shortcut for:
@@ -992,7 +1161,8 @@ class Chat(Object):
             ``bool``: True on success.
 
         Raises:
-            RPCError: In case of a Telegram RPC error.
+            :obj:`~pyrogram.errors.RPCError`: In case of a Telegram RPC error.
+
         """
 
         return await self._client.unban_chat_member(
@@ -1004,6 +1174,7 @@ class Chat(Object):
         self,
         user_id: Union[int, str],
         permissions: "types.ChatPermissions",
+        use_independent_chat_permissions: bool = False,
         until_date: datetime = utils.zero_datetime(),
     ) -> "types.Chat":
         """Bound method *unban_member* of :obj:`~pyrogram.types.Chat`.
@@ -1031,6 +1202,9 @@ class Chat(Object):
             permissions (:obj:`~pyrogram.types.ChatPermissions`):
                 New user permissions.
 
+            use_independent_chat_permissions (``bool``, *optional*):
+                Pass True if chat permissions are set independently. Otherwise, the can_send_other_messages and can_add_web_page_previews permissions will imply the can_send_messages, can_send_audios, can_send_documents, can_send_photos, can_send_videos, can_send_video_notes, and can_send_voice_notes permissions; the can_send_polls permission will imply the can_send_messages permission.
+
             until_date (:py:obj:`~datetime.datetime`, *optional*):
                 Date when the user will be unbanned.
                 If user is banned for more than 366 days or less than 30 seconds from the current time they are
@@ -1040,13 +1214,15 @@ class Chat(Object):
             :obj:`~pyrogram.types.Chat`: On success, a chat object is returned.
 
         Raises:
-            RPCError: In case of a Telegram RPC error.
+            :obj:`~pyrogram.errors.RPCError`: In case of a Telegram RPC error.
+
         """
 
         return await self._client.restrict_chat_member(
             chat_id=self.id,
             user_id=user_id,
             permissions=permissions,
+            use_independent_chat_permissions=use_independent_chat_permissions,
             until_date=until_date,
         )
 
@@ -1055,7 +1231,7 @@ class Chat(Object):
     async def promote_member(
         self,
         user_id: Union[int, str],
-        privileges: "types.ChatPrivileges" = None,
+        privileges: "types.ChatPrivileges" = None
     ) -> bool:
         """Bound method *promote_member* of :obj:`~pyrogram.types.Chat`.
 
@@ -1086,11 +1262,14 @@ class Chat(Object):
             ``bool``: True on success.
 
         Raises:
-            RPCError: In case of a Telegram RPC error.
+            :obj:`~pyrogram.errors.RPCError`: In case of a Telegram RPC error.
+
         """
 
         return await self._client.promote_chat_member(
-            chat_id=self.id, user_id=user_id, privileges=privileges
+            chat_id=self.id,
+            user_id=user_id,
+            privileges=privileges
         )
 
     async def join(self):
@@ -1114,7 +1293,8 @@ class Chat(Object):
             :obj:`~pyrogram.types.Chat`: On success, a chat object is returned.
 
         Raises:
-            RPCError: In case of a Telegram RPC error.
+            :obj:`~pyrogram.errors.RPCError`: In case of a Telegram RPC error.
+
         """
 
         return await self._client.join_chat(self.username or self.id)
@@ -1134,14 +1314,13 @@ class Chat(Object):
                 await chat.leave()
 
         Raises:
-            RPCError: In case of a Telegram RPC error.
+            :obj:`~pyrogram.errors.RPCError`: In case of a Telegram RPC error.
+
         """
 
         return await self._client.leave_chat(self.id)
 
-    async def export_invite_link(
-        self, subscription_period: int = None, subscription_price: int = None
-    ):
+    async def export_invite_link(self):
         """Bound method *export_invite_link* of :obj:`~pyrogram.types.Chat`.
 
         Use as a shortcut for:
@@ -1155,14 +1334,6 @@ class Chat(Object):
 
                 chat.export_invite_link()
 
-        Parameters:
-            subscription_period (``int``, *optional*):
-                Channel members only. Date when the subscription expires.
-                for now, only 30 days is supported (30*24*60*60).
-
-            subscription_price (``int``, *optional*):
-                Channel members only. Price of the subscription in the smallest units of the currency.
-
         Returns:
             ``str``: On success, the exported invite link is returned.
 
@@ -1170,11 +1341,7 @@ class Chat(Object):
             ValueError: In case the chat_id belongs to a user.
         """
 
-        return await self._client.export_chat_invite_link(
-            self.id,
-            subscription_period=subscription_period,
-            subscription_price=subscription_price,
-        )
+        return await self._client.export_chat_invite_link(self.id)
 
     async def get_member(
         self,
@@ -1200,13 +1367,16 @@ class Chat(Object):
             :obj:`~pyrogram.types.ChatMember`: On success, a chat member is returned.
         """
 
-        return await self._client.get_chat_member(self.id, user_id=user_id)
+        return await self._client.get_chat_member(
+            self.id,
+            user_id=user_id
+        )
 
     def get_members(
         self,
         query: str = "",
         limit: int = 0,
-        filter: "enums.ChatMembersFilter" = enums.ChatMembersFilter.SEARCH,
+        filter: "enums.ChatMembersFilter" = enums.ChatMembersFilter.SEARCH
     ) -> Optional[AsyncGenerator["types.ChatMember", None]]:
         """Bound method *get_members* of :obj:`~pyrogram.types.Chat`.
 
@@ -1243,13 +1413,16 @@ class Chat(Object):
         """
 
         return self._client.get_chat_members(
-            self.id, query=query, limit=limit, filter=filter
+            self.id,
+            query=query,
+            limit=limit,
+            filter=filter
         )
 
     async def add_members(
         self,
-        user_ids: Union[Union[int, str], List[Union[int, str]]],
-        forward_limit: int = 100,
+        user_ids: Union[Union[int, str], list[Union[int, str]]],
+        forward_limit: int = 100
     ) -> bool:
         """Bound method *add_members* of :obj:`~pyrogram.types.Chat`.
 
@@ -1269,12 +1442,12 @@ class Chat(Object):
         """
 
         return await self._client.add_chat_members(
-            self.id, user_ids=user_ids, forward_limit=forward_limit
+            self.id,
+            user_ids=user_ids,
+            forward_limit=forward_limit
         )
 
-    async def mark_unread(
-        self,
-    ) -> bool:
+    async def mark_unread(self, ) -> bool:
         """Bound method *mark_unread* of :obj:`~pyrogram.types.Chat`.
 
         Use as a shortcut for:
@@ -1316,7 +1489,10 @@ class Chat(Object):
             ``bool``: On success, True is returned.
         """
 
-        return await self._client.set_chat_protected_content(self.id, enabled=enabled)
+        return await self._client.set_chat_protected_content(
+            self.id,
+            enabled=enabled
+        )
 
     async def unpin_all_messages(self) -> bool:
         """Bound method *unpin_all_messages* of :obj:`~pyrogram.types.Chat`.

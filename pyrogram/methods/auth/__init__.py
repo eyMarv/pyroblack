@@ -21,20 +21,20 @@ from .check_password import CheckPassword
 from .connect import Connect
 from .disconnect import Disconnect
 from .get_active_sessions import GetActiveSessions
+from .get_option import GetOption
 from .get_password_hint import GetPasswordHint
 from .initialize import Initialize
 from .log_out import LogOut
 from .recover_password import RecoverPassword
 from .resend_code import ResendCode
-from .reset_session import ResetSession
-from .reset_sessions import ResetSessions
 from .send_code import SendCode
 from .send_recovery_code import SendRecoveryCode
 from .sign_in import SignIn
 from .sign_in_bot import SignInBot
-from .sign_in_qrcode import SignInQrcode
 from .sign_up import SignUp
 from .terminate import Terminate
+from .terminate_all_other_sessions import TerminateAllOtherSessions
+from .terminate_session import TerminateSession
 
 
 class Auth(
@@ -43,19 +43,19 @@ class Auth(
     Connect,
     Disconnect,
     GetActiveSessions,
+    GetOption,
     GetPasswordHint,
     Initialize,
     LogOut,
     RecoverPassword,
     ResendCode,
-    ResetSession,
-    ResetSessions,
     SendCode,
     SendRecoveryCode,
     SignIn,
     SignInBot,
-    SignInQrcode,
     SignUp,
     Terminate,
+    TerminateAllOtherSessions,
+    TerminateSession,
 ):
     pass

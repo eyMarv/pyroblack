@@ -27,9 +27,13 @@ CURRENT_DH_PRIME = int(
     "FD17ED950D5965B4B9DD46582DB1178D169C6BC465B0D6FF9CA3928FEF5B9AE4"
     "E418FC15E83EBEA0F87FA9FF5EED70050DED2849F47BF959D956850CE929851F"
     "0D8115F635B105EE2E4E15D04B2454BF6F4FADF034B10403119CD8E3B92FCC5B",
-    16,
+    16
 )
 
+
+# Recursive variant
+# def gcd(cls, a: int, b: int) -> int:
+#     return cls.gcd(b, a % b) if b else a
 
 def gcd(a: int, b: int) -> int:
     while b:
@@ -39,6 +43,7 @@ def gcd(a: int, b: int) -> int:
 
 
 def decompose(pq: int) -> int:
+    # https://comeoncodeon.wordpress.com/2010/09/18/pollard-rho-brent-integer-factorization/
     if pq % 2 == 0:
         return 2
 
@@ -49,7 +54,7 @@ def decompose(pq: int) -> int:
     while g == 1:
         x = y
 
-        for _ in range(r):
+        for i in range(r):
             y = (pow(y, 2, pq) + c) % pq
 
         k = 0
@@ -57,7 +62,7 @@ def decompose(pq: int) -> int:
         while k < r and g == 1:
             ys = y
 
-            for _ in range(min(m, r - k)):
+            for i in range(min(m, r - k)):
                 y = (pow(y, 2, pq) + c) % pq
                 q = q * (abs(x - y)) % pq
 

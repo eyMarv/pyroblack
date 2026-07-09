@@ -41,16 +41,19 @@ asynchronous [MTProto API](https://eyMarv.github.io/pyroblack-docs/topics/mtprot
 framework. It enables you to easily interact with the main Telegram API through a user account (custom client) or a bot
 identity (bot API alternative) using Python.
 
+> **v2.8.0+**: Rebuilt on latest PyroTGFork base (Layer 227) for massive speed improvements — 3x faster than previous versions.
+
 ### Key Features
 
 - **Ready**: Install pyroblack with pip and start building your applications right away.
 - **Easy**: Makes the Telegram API simple and intuitive, while still allowing advanced usages.
 - **Elegant**: Low-level details are abstracted and re-presented in a more convenient way.
-- **Fast**: Boosted up by [TgCrypto](https://github.com/pyrogram/tgcrypto), a high-performance cryptography library
-  written in C.
+- **Fast**: Boosted by PyroTGFork's optimized core and [TgCrypto](https://github.com/pyrogram/tgcrypto), a high-performance C cryptography library.
 - **Type-hinted**: Types and methods are all type-hinted, enabling excellent editor support.
 - **Async**: Fully asynchronous (also usable synchronously if wanted, for convenience).
 - **Powerful**: Full access to Telegram's API to execute any official client action and more.
+- **Conversations**: Built-in pyromod support — listen, ask, and wait for messages/callbacks.
+- **Telethon compat**: Supports loading Telethon session strings via `is_telethon_string=True`.
 
 ### Installing
 

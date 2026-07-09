@@ -30,7 +30,7 @@ class PaymentForm(Object):
         id (``int``):
             Form id.
 
-        bot (``str``):
+        bot (``types.User``):
             Bot.
 
         title (``str``):
@@ -39,10 +39,10 @@ class PaymentForm(Object):
         description (``str``):
             Form description.
 
-        invoice (``str``):
+        invoice (``types.Invoice``):
             Invoice.
 
-        provider (``str``, *optional*):
+        provider (``types.User``, *optional*):
             Payment provider.
 
         url (``str``, *optional*):
@@ -59,30 +59,30 @@ class PaymentForm(Object):
         native_provider (``str``, *optional*):
             Payment provider name.
 
-        raw (:obj:`~raw.base.payments.PaymentForm`, *optional*):
+        _raw (:obj:`~raw.base.payments.PaymentForm`, *optional*):
             The raw object, as received from the Telegram API.
     """
 
     def __init__(
-        self,
-        *,
-        client: "pyrogram.Client" = None,
-        id: int,
-        bot: "types.User",
-        title: str,
-        description: str,
-        invoice: "types.Invoice",
-        provider: Optional["types.User"] = None,
-        url: Optional[str] = None,
-        can_save_credentials: Optional[bool] = None,
-        is_password_missing: Optional[bool] = None,
-        native_provider: Optional[str] = None,
-        raw: "raw.base.payments.PaymentForm" = None,
-        # TODO: Add support for other params:
-        # native_params
-        # additional_params
-        # saved_info
-        # saved_credentials
+            self,
+            *,
+            client: "pyrogram.Client" = None,
+            id: int,
+            bot: "types.User",
+            title: str,
+            description: str,
+            invoice: "types.Invoice",
+            provider: Optional["types.User"] = None,
+            url: Optional[str] = None,
+            can_save_credentials: Optional[bool] = None,
+            is_password_missing: Optional[bool] = None,
+            native_provider: Optional[str] = None,
+            _raw: "raw.base.payments.PaymentForm" = None,
+            # TODO: Add support for other params:
+            # native_params
+            # additional_params
+            # saved_info
+            # saved_credentials
     ):
         super().__init__(client)
 
@@ -96,7 +96,7 @@ class PaymentForm(Object):
         self.can_save_credentials = can_save_credentials
         self.is_password_missing = is_password_missing
         self.native_provider = native_provider
-        self.raw = raw
+        self._raw = _raw
 
     @staticmethod
     def _parse(client, payment_form: "raw.base.payments.PaymentForm") -> "PaymentForm":
@@ -108,12 +108,10 @@ class PaymentForm(Object):
             title=payment_form.title,
             description=payment_form.description,
             invoice=types.Invoice._parse(client, payment_form.invoice),
-            provider=types.User._parse(
-                client, users.get(getattr(payment_form, "provider_id", None))
-            ),
+            provider=types.User._parse(client, users.get(getattr(payment_form, "provider_id", None))),
             url=getattr(payment_form, "url", None),
             can_save_credentials=getattr(payment_form, "can_save_credentials", None),
             is_password_missing=getattr(payment_form, "password_missing", None),
             native_provider=getattr(payment_form, "native_provider", None),
-            raw=payment_form,
+            _raw=payment_form
         )

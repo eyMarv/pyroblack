@@ -32,7 +32,7 @@ class EditChatInviteLink:
         name: str = None,
         expire_date: datetime = None,
         member_limit: int = None,
-        creates_join_request: bool = None,
+        creates_join_request: bool = None
     ) -> "types.ChatInviteLink":
         """Edit a non-primary invite link.
 
@@ -44,7 +44,6 @@ class EditChatInviteLink:
             chat_id (``int`` | ``str``):
                 Unique identifier for the target chat or username of the target channel/supergroup
                 (in the format @username).
-                You can also use chat public link in form of *t.me/<username>* (str).
 
             invite_link (``str``):
                 The invite link to edit
@@ -84,7 +83,7 @@ class EditChatInviteLink:
                 expire_date=utils.datetime_to_timestamp(expire_date),
                 usage_limit=member_limit,
                 title=name,
-                request_needed=creates_join_request,
+                request_needed=creates_join_request
             )
         )
 

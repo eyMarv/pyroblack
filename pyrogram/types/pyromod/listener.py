@@ -20,9 +20,10 @@
 
 from asyncio import Future
 from dataclasses import dataclass
-from typing import Callable
+from typing import TYPE_CHECKING, Callable
 
-import pyrogram
+if TYPE_CHECKING:
+    import pyrogram
 from .identifier import Identifier
 
 
@@ -55,7 +56,7 @@ class Listener:
             The callback to call when the listener is fulfilled.
     """
 
-    listener_type: pyrogram.enums.ListenerTypes
+    listener_type: "pyrogram.enums.ListenerTypes"
     filters: "pyrogram.filters.Filter"
     unallowed_click_alert: bool
     identifier: Identifier

@@ -24,7 +24,9 @@ from pyrogram import raw
 
 class SetChatUsername:
     async def set_chat_username(
-        self: "pyrogram.Client", chat_id: Union[int, str], username: Optional[str]
+        self: "pyrogram.Client",
+        chat_id: Union[int, str],
+        username: Optional[str]
     ) -> bool:
         """Set a channel or a supergroup username.
 
@@ -35,7 +37,6 @@ class SetChatUsername:
         Parameters:
             chat_id (``int`` | ``str``)
                 Unique identifier (int) or username (str) of the target chat.
-                You can also use chat public link in form of *t.me/<username>* (str).
 
             username (``str`` | ``None``):
                 Username to set. Pass "" (empty string) or None to remove the username.
@@ -58,7 +59,8 @@ class SetChatUsername:
             return bool(
                 await self.invoke(
                     raw.functions.channels.UpdateUsername(
-                        channel=peer, username=username or ""
+                        channel=peer,
+                        username=username or ""
                     )
                 )
             )

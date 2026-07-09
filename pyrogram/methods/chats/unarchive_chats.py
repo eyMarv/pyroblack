@@ -16,7 +16,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union, List
+from typing import Union
 
 import pyrogram
 from pyrogram import raw
@@ -25,7 +25,7 @@ from pyrogram import raw
 class UnarchiveChats:
     async def unarchive_chats(
         self: "pyrogram.Client",
-        chat_ids: Union[int, str, List[Union[int, str]]],
+        chat_ids: Union[int, str, list[Union[int, str]]],
     ) -> bool:
         """Unarchive one or more chats.
 
@@ -35,7 +35,6 @@ class UnarchiveChats:
             chat_ids (``int`` | ``str`` | List[``int``, ``str``]):
                 Unique identifier (int) or username (str) of the target chat.
                 You can also pass a list of ids (int) or usernames (str).
-                You can also use chat public link in form of *t.me/<username>* (str).
 
         Returns:
             ``bool``: On success, True is returned.
@@ -58,12 +57,15 @@ class UnarchiveChats:
         for chat in chat_ids:
             folder_peers.append(
                 raw.types.InputFolderPeer(
-                    peer=await self.resolve_peer(chat), folder_id=0
+                    peer=await self.resolve_peer(chat),
+                    folder_id=0
                 )
             )
 
         await self.invoke(
-            raw.functions.folders.EditPeerFolders(folder_peers=folder_peers)
+            raw.functions.folders.EditPeerFolders(
+                folder_peers=folder_peers
+            )
         )
 
         return True

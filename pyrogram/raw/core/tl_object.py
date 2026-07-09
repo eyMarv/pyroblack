@@ -18,27 +18,27 @@
 
 from io import BytesIO
 from json import dumps
-from typing import cast, List, Any, Union, Dict
+from typing import cast, Any, Union, TypeVar, Generic
 
 from ..all import objects
 
+ReturnType = TypeVar("ReturnType")
 
-class TLObject:
-    __slots__: List[str] = []
+
+class TLObject(Generic[ReturnType]):
+    __slots__: list[str] = []
 
     QUALNAME = "Base"
 
     @classmethod
     def read(cls, b: BytesIO, *args: Any) -> Any:
-        return cast(TLObject, objects[int.from_bytes(b.read(4), "little")]).read(
-            b, *args
-        )
+        return cast(TLObject, objects[int.from_bytes(b.read(4), "little")]).read(b, *args)
 
     def write(self, *args: Any) -> bytes:
         pass
 
     @staticmethod
-    def default(obj: "TLObject") -> Union[str, Dict[str, str]]:
+    def default(obj: "TLObject") -> Union[str, dict[str, str]]:
         if isinstance(obj, bytes):
             return repr(obj)
 
@@ -48,7 +48,7 @@ class TLObject:
                 attr: getattr(obj, attr)
                 for attr in obj.__slots__
                 if getattr(obj, attr) is not None
-            },
+            }
         }
 
     def __str__(self) -> str:
@@ -64,7 +64,7 @@ class TLObject:
                 f"{attr}={repr(getattr(self, attr))}"
                 for attr in self.__slots__
                 if getattr(self, attr) is not None
-            ),
+            )
         )
 
     def __eq__(self, other: Any) -> bool:
@@ -80,5 +80,5 @@ class TLObject:
     def __len__(self) -> int:
         return len(self.write())
 
-    def __call__(self, *args: Any, **kwargs: Any) -> Any:
+    def __call__(self, *args: Any, **kwargs: Any) -> ReturnType:
         pass

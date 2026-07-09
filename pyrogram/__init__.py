@@ -19,11 +19,10 @@
 #  along with pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
 __fork_name__ = "pyroblack"
-__version__ = "2.7.6"
+__version__ = "2.8.0"
 __license__ = "GNU Lesser General Public License v3.0 (LGPL-3.0)"
 __copyright__ = "#  Copyright (C) 2024-present eyMarv <https://github.com/eyMarv>"
 
-import os
 from concurrent.futures.thread import ThreadPoolExecutor
 
 
@@ -39,34 +38,8 @@ class ContinuePropagation(StopAsyncIteration):
     pass
 
 
-from . import (
-    raw,
-    types,
-    filters,
-    handlers,
-    emoji,
-    enums,
-)  # pylint: disable=wrong-import-position
-from .client import Client  # pylint: disable=wrong-import-position
-from .sync import idle, compose  # pylint: disable=wrong-import-position
+from . import raw, types, filters, handlers, emoji, enums
+from .client import Client
+from .sync import idle, compose
 
-crypto_executor = ThreadPoolExecutor(
-    max(1, min(4, os.cpu_count() or 1)),
-    thread_name_prefix="CryptoWorker"
-)
-
-__all__ = [
-    "Client",
-    "idle",
-    "compose",
-    "crypto_executor",
-    "StopTransmission",
-    "StopPropagation",
-    "ContinuePropagation",
-    "raw",
-    "types",
-    "filters",
-    "handlers",
-    "emoji",
-    "enums",
-]
+crypto_executor = ThreadPoolExecutor(1, thread_name_prefix="CryptoWorker")

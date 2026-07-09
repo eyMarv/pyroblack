@@ -16,9 +16,21 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Callable
+from typing import Any, Callable
 
+import pyrogram
+from pyrogram.filters import Filter
 from .handler import Handler
+
+CallbackFunc: Callable = Callable[
+    [
+        "pyrogram.Client",
+        pyrogram.types.Update,
+        Any,
+        Any
+    ],
+    Any
+]
 
 
 class RawUpdateHandler(Handler):
@@ -33,7 +45,7 @@ class RawUpdateHandler(Handler):
             A function that will be called when a new update is received from the server. It takes
             *(client, update, users, chats)* as positional arguments (look at the section below for
             a detailed description).
-
+        
         filters (:obj:`Filters`):
             Pass one or more filters to allow only a subset of callback queries to be passed
             in your callback function.
@@ -42,17 +54,17 @@ class RawUpdateHandler(Handler):
         client (:obj:`~pyrogram.Client`):
             The Client itself, useful when you want to call other API methods inside the update handler.
 
-        update (``Update``):
+        update (:obj:`~pyrogram.raw.base.Update`):
             The received update, which can be one of the many single Updates listed in the
             :obj:`~pyrogram.raw.base.Update` base type.
 
         users (``dict``):
-            Dictionary of all :obj:`~pyrogram.types.User` mentioned in the update.
+            Dictionary of all :obj:`~pyrogram.raw.base.User` mentioned in the update.
             You can access extra info about the user (such as *first_name*, *last_name*, etc...) by using
             the IDs you find in the *update* argument (e.g.: *users[1768841572]*).
 
         chats (``dict``):
-            Dictionary of all :obj:`~pyrogram.types.Chat` and
+            Dictionary of all :obj:`~pyrogram.raw.base.Chat` and
             :obj:`~pyrogram.raw.types.Channel` mentioned in the update.
             You can access extra info about the chat (such as *title*, *participants_count*, etc...)
             by using the IDs you find in the *update* argument (e.g.: *chats[1701277281]*).
@@ -67,5 +79,5 @@ class RawUpdateHandler(Handler):
         - :obj:`~pyrogram.raw.types.ChannelForbidden`
     """
 
-    def __init__(self, callback: Callable, filters=None):
+    def __init__(self, callback: CallbackFunc, filters: Filter = None):
         super().__init__(callback, filters)

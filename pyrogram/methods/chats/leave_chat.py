@@ -24,7 +24,9 @@ from pyrogram import raw
 
 class LeaveChat:
     async def leave_chat(
-        self: "pyrogram.Client", chat_id: Union[int, str], delete: bool = False
+        self: "pyrogram.Client",
+        chat_id: Union[int, str],
+        delete: bool = False
     ):
         """Leave a group chat or channel.
 
@@ -34,7 +36,6 @@ class LeaveChat:
             chat_id (``int`` | ``str``):
                 Unique identifier for the target chat or username of the target channel/supergroup
                 (in the format @username).
-                You can also use chat public link in form of *t.me/<username>* (str).
 
             delete (``bool``, *optional*):
                 Deletes the group chat dialog after leaving (for simple group chats, not supergroups).
@@ -60,13 +61,17 @@ class LeaveChat:
         elif isinstance(peer, raw.types.InputPeerChat):
             r = await self.invoke(
                 raw.functions.messages.DeleteChatUser(
-                    chat_id=peer.chat_id, user_id=raw.types.InputUserSelf()
+                    chat_id=peer.chat_id,
+                    user_id=raw.types.InputUserSelf()
                 )
             )
 
             if delete:
                 await self.invoke(
-                    raw.functions.messages.DeleteHistory(peer=peer, max_id=0)
+                    raw.functions.messages.DeleteHistory(
+                        peer=peer,
+                        max_id=0
+                    )
                 )
 
             return r

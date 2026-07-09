@@ -17,6 +17,7 @@
 #  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
+from asyncio import sleep
 from typing import Union, Optional, AsyncGenerator
 
 import pyrogram
@@ -33,11 +34,9 @@ async def get_chunk(
     limit: int,
     query: str,
 ):
-    is_queryable = filter in [
-        enums.ChatMembersFilter.SEARCH,
-        enums.ChatMembersFilter.BANNED,
-        enums.ChatMembersFilter.RESTRICTED,
-    ]
+    is_queryable = filter in [enums.ChatMembersFilter.SEARCH,
+                              enums.ChatMembersFilter.BANNED,
+                              enums.ChatMembersFilter.RESTRICTED]
 
     filter = filter.value(q=query) if is_queryable else filter.value()
 
@@ -47,9 +46,9 @@ async def get_chunk(
             filter=filter,
             offset=offset,
             limit=limit,
-            hash=0,
+            hash=0
         ),
-        sleep_threshold=60,
+        sleep_threshold=60
     )
 
     members = r.participants
@@ -65,7 +64,7 @@ class GetChatMembers:
         chat_id: Union[int, str],
         query: str = "",
         limit: int = 0,
-        filter: "enums.ChatMembersFilter" = enums.ChatMembersFilter.SEARCH,
+        filter: "enums.ChatMembersFilter" = enums.ChatMembersFilter.SEARCH
     ) -> Optional[AsyncGenerator["types.ChatMember", None]]:
         """Get the members list of a chat.
 
@@ -77,7 +76,6 @@ class GetChatMembers:
         Parameters:
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
-                You can also use chat public link in form of *t.me/<username>* (str).
 
             query (``str``, *optional*):
                 Query string to filter members based on their display names and usernames.
@@ -119,13 +117,16 @@ class GetChatMembers:
 
         if isinstance(peer, raw.types.InputPeerChat):
             r = await self.invoke(
-                raw.functions.messages.GetFullChat(chat_id=peer.chat_id)
+                raw.functions.messages.GetFullChat(
+                    chat_id=peer.chat_id
+                )
             )
 
             members = getattr(r.full_chat.participants, "participants", [])
             users = {i.id: i for i in r.users}
 
             for member in members:
+                await sleep(0)
                 yield types.ChatMember._parse(self, member, users, {})
 
             return
@@ -142,7 +143,7 @@ class GetChatMembers:
                 offset=offset,
                 filter=filter,
                 limit=limit,
-                query=query,
+                query=query
             )
 
             if not members:
@@ -151,6 +152,7 @@ class GetChatMembers:
             offset += len(members)
 
             for member in members:
+                await sleep(0)
                 yield member
 
                 current += 1

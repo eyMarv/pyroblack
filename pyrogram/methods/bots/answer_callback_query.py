@@ -27,7 +27,7 @@ class AnswerCallbackQuery:
         text: str = None,
         show_alert: bool = None,
         url: str = None,
-        cache_time: int = 0,
+        cache_time: int = 0
     ):
         """Send answers to callback queries sent from inline keyboards.
         The answer will be displayed to the user as a notification at the top of the chat screen or as an alert.
@@ -48,7 +48,7 @@ class AnswerCallbackQuery:
             url (``str``, *optional*):
                 URL that will be opened by the user's client.
                 If you have created a Game and accepted the conditions via @Botfather, specify the URL that opens your
-                game – note that this will only work if the query comes from a callback_game button.
+                game - note that this will only work if the query comes from a callback_game button.
                 Otherwise, you may use links like t.me/your_bot?start=XXXX that open your bot with a parameter.
 
             cache_time (``int``, *optional*):
@@ -57,6 +57,9 @@ class AnswerCallbackQuery:
 
         Returns:
             ``bool``: True, on success.
+
+        Raises:
+            :obj:`~pyrogram.errors.RPCError`: In case of a Telegram RPC error.
 
         Example:
             .. code-block:: python
@@ -76,6 +79,6 @@ class AnswerCallbackQuery:
                 cache_time=cache_time,
                 alert=show_alert or None,
                 message=text or None,
-                url=url or None,
+                url=url or None
             )
         )

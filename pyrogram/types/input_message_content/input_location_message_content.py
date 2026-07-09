@@ -57,7 +57,7 @@ class InputLocationMessageContent(InputMessageContent):
         horizontal_accuracy: Optional[float] = None,
         live_period: Optional[int] = None,
         heading: Optional[int] = None,
-        proximity_alert_radius: Optional[int] = None,
+        proximity_alert_radius: Optional[int] = None
     ):
         super().__init__()
 
@@ -73,10 +73,10 @@ class InputLocationMessageContent(InputMessageContent):
             geo_point=raw.types.InputGeoPoint(
                 lat=self.latitude,
                 long=self.longitude,
-                accuracy_radius=self.horizontal_accuracy,
+                accuracy_radius=self.horizontal_accuracy
             ),
             heading=self.heading,
             period=self.live_period,
             proximity_notification_radius=self.proximity_alert_radius,
-            reply_markup=await reply_markup.write(client) if reply_markup else None,
+            reply_markup=await reply_markup.write(client) if reply_markup else None
         )

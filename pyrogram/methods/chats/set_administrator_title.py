@@ -39,12 +39,10 @@ class SetAdministratorTitle:
         Parameters:
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
-                You can also use chat public link in form of *t.me/<username>* (str).
 
             user_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target user.
                 For a contact that exists in your Telegram address book you can use his phone number (str).
-                You can also use user profile link in form of *t.me/<username>* (str).
 
             title (``str``, *optional*):
                 A custom title that will be shown to all members instead of "Owner" or "Admin".
@@ -57,30 +55,79 @@ class SetAdministratorTitle:
             .. code-block:: python
 
                 await app.set_administrator_title(chat_id, user_id, "Admin Title")
+
         """
         chat_id = await self.resolve_peer(chat_id)
         user_id = await self.resolve_peer(user_id)
 
-        r = (
-            await self.invoke(
-                raw.functions.channels.GetParticipant(
-                    channel=chat_id, participant=user_id
-                )
+        r = (await self.invoke(
+            raw.functions.channels.GetParticipant(
+                channel=chat_id,
+                participant=user_id
             )
-        ).participant
+        )).participant
 
         if isinstance(r, raw.types.ChannelParticipantCreator):
             admin_rights = raw.types.ChatAdminRights()
         elif isinstance(r, raw.types.ChannelParticipantAdmin):
             admin_rights = r.admin_rights
         else:
-            raise ValueError(
-                "Custom titles can only be applied to owners or administrators of supergroups"
-            )
+            raise ValueError("Custom titles can only be applied to owners or administrators of supergroups")
 
         await self.invoke(
             raw.functions.channels.EditAdmin(
-                channel=chat_id, user_id=user_id, admin_rights=admin_rights, rank=title
+                channel=chat_id,
+                user_id=user_id,
+                admin_rights=admin_rights,
+                rank=title
+            )
+        )
+
+        return True
+
+
+    async def set_chat_member_tag(
+        self: "pyrogram.Client",
+        chat_id: Union[int, str],
+        user_id: Union[int, str],
+        tag: str,
+    ) -> bool:
+        """Set a tag or custom title for a regular member in a group or a supergroup.
+
+        .. include:: /_includes/usable-by/users-bots.rst
+
+        The client must be an administrator in the chat (for basic groups and supergroups only) for this to work and must have the ``can_manage_tags`` administrator right.
+
+        Parameters:
+            chat_id (``int`` | ``str``):
+                Unique identifier (int) or username (str) of the target chat.
+
+            user_id (``int`` | ``str``):
+                Unique identifier (int) or username (str) of the target user.
+                For a contact that exists in your Telegram address book you can use his phone number (str).
+
+            tag (``str``, *optional*):
+                The new tag of the member in the chat.
+                0-16 characters without emoji.
+                Pass None or "" (empty string) to remove the custom title.
+
+        Returns:
+            ``bool``: True on success.
+
+        Example:
+            .. code-block:: python
+
+                await app.set_chat_member_tag(chat_id, user_id, "Member Tag")
+
+        """
+        chat_id = await self.resolve_peer(chat_id)
+        user_id = await self.resolve_peer(user_id)
+
+        await self.invoke(
+            raw.functions.messages.EditChatParticipantRank(
+                peer=chat_id,
+                participant=user_id,
+                rank=tag
             )
         )
 

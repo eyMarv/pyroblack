@@ -1,24 +1,22 @@
-#  pyroblack - Telegram MTProto API Client Library for Python
+#  Pyrogram - Telegram MTProto API Client Library for Python
 #  Copyright (C) 2017-present Dan <https://github.com/delivrance>
-#  Copyright (C) 2022-present Mayuri-Chan <https://github.com/Mayuri-Chan>
-#  Copyright (C) 2024-present eyMarv <https://github.com/eyMarv>
 #
-#  This file is part of pyroblack.
+#  This file is part of Pyrogram.
 #
-#  pyroblack is free software: you can redistribute it and/or modify
+#  Pyrogram is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU Lesser General Public License as published
 #  by the Free Software Foundation, either version 3 of the License, or
 #  (at your option) any later version.
 #
-#  pyroblack is distributed in the hope that it will be useful,
+#  Pyrogram is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU Lesser General Public License for more details.
 #
 #  You should have received a copy of the GNU Lesser General Public License
-#  along with pyroblack.  If not, see <http://www.gnu.org/licenses/>.
+#  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union, Optional
+from typing import Union
 
 import pyrogram
 from pyrogram import raw, types, errors
@@ -30,8 +28,7 @@ class PromoteChatMember:
         chat_id: Union[int, str],
         user_id: Union[int, str],
         privileges: "types.ChatPrivileges" = None,
-        title: Optional[str] = None,
-    ) -> bool:
+    ) -> Union["types.Message", bool]:
         """Promote or demote a user in a supergroup or a channel.
 
         You must be an administrator in the chat for this to work and must have the appropriate admin rights.
@@ -42,24 +39,17 @@ class PromoteChatMember:
         Parameters:
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
-                You can also use chat public link in form of *t.me/<username>* (str).
 
             user_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target user.
                 For a contact that exists in your Telegram address book you can use his phone number (str).
-                You can also use user profile link in form of *t.me/<username>* (str).
 
             privileges (:obj:`~pyrogram.types.ChatPrivileges`, *optional*):
                 New user privileges.
 
-            title: (``str``, *optional*):
-                A custom title that will be shown to all members instead of "Owner" or "Admin".
-                Pass None or "" (empty string) will keep the current title.
-                If you want to delete the custom title, use :meth:`~pyrogram.Client.set_administrator_title()` method.
-
-
         Returns:
-            ``bool``: True on success.
+            :obj:`~pyrogram.types.Message` | ``bool``: On success, a service message will be returned (when applicable),
+            otherwise, in case a message object couldn't be returned, True is returned.
 
         Example:
             .. code-block:: python
@@ -75,44 +65,41 @@ class PromoteChatMember:
             privileges = types.ChatPrivileges()
 
         try:
-            raw_chat_member = (
-                await self.invoke(
-                    raw.functions.channels.GetParticipant(
-                        channel=chat_id, participant=user_id
-                    )
+            raw_chat_member = (await self.invoke(
+                raw.functions.channels.GetParticipant(
+                    channel=chat_id,
+                    participant=user_id
                 )
-            ).participant
+            )).participant
         except errors.RPCError:
             raw_chat_member = None
 
-        if not title and isinstance(raw_chat_member, raw.types.ChannelParticipantAdmin):
+        rank = None
+        if isinstance(raw_chat_member, raw.types.ChannelParticipantAdmin):
             rank = raw_chat_member.rank
-        else:
-            rank = title
 
-        await self.invoke(
+        r = await self.invoke(
             raw.functions.channels.EditAdmin(
                 channel=chat_id,
                 user_id=user_id,
-                admin_rights=raw.types.ChatAdminRights(
-                    anonymous=privileges.is_anonymous,
-                    change_info=privileges.can_change_info,
-                    post_messages=privileges.can_post_messages,
-                    edit_messages=privileges.can_edit_messages,
-                    delete_messages=privileges.can_delete_messages,
-                    ban_users=privileges.can_restrict_members,
-                    invite_users=privileges.can_invite_users,
-                    pin_messages=privileges.can_pin_messages,
-                    add_admins=privileges.can_promote_members,
-                    manage_call=privileges.can_manage_video_chats,
-                    manage_topics=privileges.can_manage_topics,
-                    post_stories=privileges.can_post_stories,
-                    edit_stories=privileges.can_edit_stories,
-                    delete_stories=privileges.can_delete_stories,
-                    other=privileges.can_manage_chat,
-                ),
-                rank=rank or "",
+                admin_rights=privileges.write(),
+                rank=rank or ""
             )
         )
 
-        return True
+        for i in r.updates:
+            if isinstance(
+                i,
+                (
+                    raw.types.UpdateNewMessage,
+                    raw.types.UpdateNewChannelMessage
+                )
+            ):
+                return await types.Message._parse(
+                    self, i.message,
+                    {i.id: i for i in r.users},
+                    {i.id: i for i in r.chats},
+                    replies=self.fetch_replies
+                )
+        else:
+            return True

@@ -17,7 +17,7 @@
 #  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
-from typing import Optional, List, Union
+from typing import Optional, Union
 
 import pyrogram
 from pyrogram import raw, types
@@ -98,10 +98,10 @@ class InputInvoiceMessageContent(InputMessageContent):
         description: str,
         payload: Union[str, bytes],
         currency: str,
-        prices: List["types.LabeledPrice"],
+        prices: list["types.LabeledPrice"],
         provider_token: Optional[str] = None,
         max_tip_amount: Optional[int] = None,
-        suggested_tip_amounts: List[int] = None,
+        suggested_tip_amounts: list[int] = None,
         provider_data: Optional[str] = None,
         photo_url: Optional[str] = None,
         photo_size: Optional[int] = None,
@@ -113,7 +113,7 @@ class InputInvoiceMessageContent(InputMessageContent):
         need_shipping_address: Optional[bool] = None,
         send_phone_number_to_provider: Optional[bool] = None,
         send_email_to_provider: Optional[bool] = None,
-        is_flexible: Optional[bool] = None,
+        is_flexible: Optional[bool] = None
     ):
         super().__init__()
 
@@ -142,20 +142,17 @@ class InputInvoiceMessageContent(InputMessageContent):
         return raw.types.InputBotInlineMessageMediaInvoice(
             title=self.title,
             description=self.description,
-            photo=(
-                raw.types.InputWebDocument(
-                    url=self.photo_url,
-                    mime_type="image/jpg",
-                    size=self.photo_size,
-                    attributes=[
-                        raw.types.DocumentAttributeImageSize(
-                            w=self.photo_width, h=self.photo_height
-                        )
-                    ],
-                )
-                if self.photo_url
-                else None
-            ),
+            photo=raw.types.InputWebDocument(
+                url=self.photo_url,
+                mime_type="image/jpg",
+                size=self.photo_size,
+                attributes=[
+                    raw.types.DocumentAttributeImageSize(
+                        w=self.photo_width,
+                        h=self.photo_height
+                    )
+                ]
+            ) if self.photo_url else None,
             invoice=raw.types.Invoice(
                 currency=self.currency,
                 prices=[i.write() for i in self.prices],
@@ -166,14 +163,12 @@ class InputInvoiceMessageContent(InputMessageContent):
                 shipping_address_requested=self.need_shipping_address,
                 flexible=self.is_flexible,
                 phone_to_provider=self.send_phone_number_to_provider,
-                email_to_provider=self.send_email_to_provider,
+                email_to_provider=self.send_email_to_provider
             ),
-            payload=(
-                self.payload.encode() if isinstance(self.payload, str) else self.payload
-            ),
+            payload=self.payload.encode() if isinstance(self.payload, str) else self.payload,
             provider=self.provider_token,
             provider_data=raw.types.DataJSON(
                 data=self.provider_data if self.provider_data else "{}"
             ),
-            reply_markup=await reply_markup.write(client) if reply_markup else None,
+            reply_markup=await reply_markup.write(client) if reply_markup else None
         )

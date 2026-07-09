@@ -27,7 +27,7 @@ class SetChatMenuButton:
     async def set_chat_menu_button(
         self: "pyrogram.Client",
         chat_id: Union[int, str] = None,
-        menu_button: "types.MenuButton" = None,
+        menu_button: "types.MenuButton" = None
     ) -> bool:
         """Change the bot's menu button in a private chat, or the default menu button.
 
@@ -41,16 +41,19 @@ class SetChatMenuButton:
             menu_button (:obj:`~pyrogram.types.MenuButton`, *optional*):
                 The new bot's menu button.
                 Defaults to :obj:`~pyrogram.types.MenuButtonDefault`.
+
+        Raises:
+            :obj:`~pyrogram.errors.RPCError`: In case of a Telegram RPC error.
+
         """
 
         await self.invoke(
             raw.functions.bots.SetBotMenuButton(
                 user_id=await self.resolve_peer(chat_id or "me"),
                 button=(
-                    (await menu_button.write(self))
-                    if menu_button
+                    (await menu_button.write(self)) if menu_button
                     else (await types.MenuButtonDefault().write(self))
-                ),
+                )
             )
         )
 

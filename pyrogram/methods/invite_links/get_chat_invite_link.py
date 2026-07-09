@@ -31,13 +31,12 @@ class GetChatInviteLink:
     ) -> "types.ChatInviteLink":
         """Get detailed information about a chat invite link.
 
-        .. include:: /_includes/usable-by/users-bots.rst
+        .. include:: /_includes/usable-by/users.rst
 
         Parameters:
             chat_id (``int`` | ``str``):
                 Unique identifier for the target chat or username of the target channel/supergroup
                 (in the format @username).
-                You can also use chat public link in form of *t.me/<username>* (str).
 
             invite_link (str):
                 The invite link.
@@ -47,7 +46,8 @@ class GetChatInviteLink:
         """
         r = await self.invoke(
             raw.functions.messages.GetExportedChatInvite(
-                peer=await self.resolve_peer(chat_id), link=invite_link
+                peer=await self.resolve_peer(chat_id),
+                link=invite_link
             )
         )
 

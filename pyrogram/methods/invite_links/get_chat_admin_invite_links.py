@@ -16,6 +16,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
 
+from asyncio import sleep
 from typing import Union, Optional, AsyncGenerator
 
 import pyrogram
@@ -44,13 +45,11 @@ class GetChatAdminInviteLinks:
             chat_id (``int`` | ``str``):
                 Unique identifier for the target chat or username of the target channel/supergroup
                 (in the format @username).
-                You can also use chat public link in form of *t.me/<username>* (str).
 
             admin_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target user.
                 For you yourself you can simply use "me" or "self".
                 For a contact that exists in your Telegram address book you can use his phone number (str).
-                You can also use user profile link in form of *t.me/<username>* (str).
 
             revoked (``bool``, *optional*):
                 True, if you want to get revoked links instead.
@@ -81,7 +80,7 @@ class GetChatAdminInviteLinks:
                     limit=limit,
                     revoked=revoked,
                     offset_date=offset_date,
-                    offset_link=offset_link,
+                    offset_link=offset_link
                 )
             )
 
@@ -94,6 +93,7 @@ class GetChatAdminInviteLinks:
             offset_link = r.invites[-1].link
 
             for i in r.invites:
+                await sleep(0)
                 yield types.ChatInviteLink._parse(self, i, users)
 
                 current += 1

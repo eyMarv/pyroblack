@@ -24,7 +24,9 @@ from pyrogram import raw
 
 class SetSlowMode:
     async def set_slow_mode(
-        self: "pyrogram.Client", chat_id: Union[int, str], seconds: Optional[int]
+        self: "pyrogram.Client",
+        chat_id: Union[int, str],
+        seconds: Optional[int]
     ) -> bool:
         """Set the slow mode interval for a chat.
 
@@ -33,11 +35,9 @@ class SetSlowMode:
         Parameters:
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
-                You can also use chat public link in form of *t.me/<username>* (str).
 
             seconds (``int`` | ``None``):
-                Seconds in which members will be able to send only one message per this interval.
-                Valid values are: 0 or None (off), 10, 30, 60 (1m), 300 (5m), 900 (15m) or 3600 (1h).
+                New slow mode delay for the chat, in seconds; must be one of: 0 or None (off), 5, 10, 30, 60 (1 minute), 300 (5 minutes), 900 (15 minutes), 3600 (1 hour).
 
         Returns:
             ``bool``: True on success.
@@ -54,7 +54,8 @@ class SetSlowMode:
 
         await self.invoke(
             raw.functions.channels.ToggleSlowMode(
-                channel=await self.resolve_peer(chat_id), seconds=seconds or 0
+                channel=await self.resolve_peer(chat_id),
+                seconds=seconds or 0
             )
         )
 

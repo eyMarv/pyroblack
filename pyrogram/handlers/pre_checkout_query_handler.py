@@ -1,6 +1,5 @@
 #  Pyrogram - Telegram MTProto API Client Library for Python
 #  Copyright (C) 2017-present Dan <https://github.com/delivrance>
-#  Copyright (C) 2022-present Mayuri-Chan <https://github.com/Mayuri-Chan>
 #
 #  This file is part of Pyrogram.
 #
@@ -17,13 +16,24 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Callable
+from typing import Any, Callable
 
+import pyrogram
+from pyrogram.filters import Filter
 from .handler import Handler
+
+CallbackFunc: Callable = Callable[
+    [
+        "pyrogram.Client",
+        pyrogram.types.PreCheckoutQuery
+    ],
+    Any
+]
 
 
 class PreCheckoutQueryHandler(Handler):
-    """The PreCheckoutQueryHandler handler class. Used to handle pre-checkout queries coming from buy buttons.
+    """The PreCheckoutQueryHandler handler class. Used to handle pre-checkout queries coming from invoice buttons.
+
     It is intended to be used with :meth:`~pyrogram.Client.add_handler`
 
     For a nicer way to register this handler, have a look at the
@@ -43,8 +53,9 @@ class PreCheckoutQueryHandler(Handler):
             The Client itself, useful when you want to call other API methods inside the message handler.
 
         pre_checkout_query (:obj:`~pyrogram.types.PreCheckoutQuery`):
-            The received callback query.
+            New incoming pre-checkout query. Contains full information about checkout.
+
     """
 
-    def __init__(self, callback: Callable, filters=None):
+    def __init__(self, callback: CallbackFunc, filters: Filter = None):
         super().__init__(callback, filters)

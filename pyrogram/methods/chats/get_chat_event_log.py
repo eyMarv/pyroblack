@@ -16,7 +16,8 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union, List, AsyncGenerator, Optional
+from asyncio import sleep
+from typing import Union, AsyncGenerator, Optional
 
 import pyrogram
 from pyrogram import raw
@@ -31,7 +32,7 @@ class GetChatEventLog:
         offset_id: int = 0,
         limit: int = 0,
         filters: "types.ChatEventFilter" = None,
-        user_ids: List[Union[int, str]] = None,
+        user_ids: list[Union[int, str]] = None
     ) -> Optional[AsyncGenerator["types.ChatEvent", None]]:
         """Get the actions taken by chat members and administrators in the last 48h.
 
@@ -43,7 +44,6 @@ class GetChatEventLog:
         Parameters:
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
-                You can also use chat public link in form of *t.me/<username>* (str).
 
             query (``str``, *optional*):
                 Search query to filter events based on text.
@@ -91,7 +91,7 @@ class GetChatEventLog:
                         [await self.resolve_peer(i) for i in user_ids]
                         if user_ids is not None
                         else user_ids
-                    ),
+                    )
                 )
             )
 
@@ -102,6 +102,7 @@ class GetChatEventLog:
             offset_id = last.id
 
             for event in r.events:
+                await sleep(0)
                 yield await types.ChatEvent._parse(self, event, r.users, r.chats)
 
                 current += 1

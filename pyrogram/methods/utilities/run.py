@@ -24,7 +24,10 @@ from pyrogram.methods.utilities.idle import idle
 
 
 class Run:
-    def run(self: "pyrogram.Client", coroutine=None):
+    def run(
+        self: "pyrogram.Client",
+        coroutine=None
+    ):
         """Start the client, idle the main script and finally stop the client.
 
         When calling this method without any argument it acts as a convenience method that calls

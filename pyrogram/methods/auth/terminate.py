@@ -35,8 +35,8 @@ class Terminate:
 
         Raises:
             ConnectionError: In case you try to terminate a client that is already terminated.
+
         """
-        # pylint: disable=access-member-before-definition
         if not self.is_initialized:
             raise ConnectionError("Client is already terminated")
 
@@ -47,22 +47,10 @@ class Terminate:
         await self.storage.save()
         await self.dispatcher.stop()
 
-        # Tear down the media session pool
-        sessions_snapshot = [
-            (dc_id, list(sessions))
-            for dc_id, sessions in self.media_sessions.items()
-        ]
-        self.media_sessions.clear()
-        self._media_sessions_locks.clear()
+        for media_session in self.media_sessions.values():
+            await media_session.stop()
 
-        for dc_id, sessions in sessions_snapshot:
-            for session in sessions:
-                try:
-                    await session.stop()
-                except Exception as e:
-                    log.warning(
-                        f"Error stopping media session for DC {dc_id}: {e}"
-                    )
+        self.media_sessions.clear()
 
         self.updates_watchdog_event.set()
 
