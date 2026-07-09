@@ -25,7 +25,8 @@ from pyrogram import types
 
 class JoinChat:
     async def join_chat(
-        self: "pyrogram.Client", chat_id: Union[int, str]
+        self: "pyrogram.Client",
+        chat_id: Union[int, str]
     ) -> "types.Chat":
         """Join a group chat or channel.
 
@@ -33,8 +34,8 @@ class JoinChat:
 
         Parameters:
             chat_id (``int`` | ``str``):
-                Unique identifier for the target chat in form of a *t.me/joinchat/* or *t.me/<username>* link,
-                a username of the target channel/supergroup (in the format @username) or a chat id of a linked chat (channel or supergroup).
+                Unique identifier for the target chat in form of a *t.me/joinchat/* link, a username of the target
+                channel/supergroup (in the format @username) or a chat id of a linked chat (channel or supergroup).
 
         Returns:
             :obj:`~pyrogram.types.Chat`: On success, a chat object is returned.
@@ -48,6 +49,9 @@ class JoinChat:
                 # Join chat via username
                 await app.join_chat("pyrogram")
 
+                # Join chat via Telegram Public Link
+                await app.join_chat("https://t.me/pyrogram")
+
                 # Join a linked chat
                 await app.join_chat(app.get_chat("pyrogram").linked_chat.id)
         """
@@ -55,13 +59,19 @@ class JoinChat:
 
         if match:
             chat = await self.invoke(
-                raw.functions.messages.ImportChatInvite(hash=match.group(1))
+                raw.functions.messages.ImportChatInvite(
+                    hash=match.group(1)
+                )
             )
             if isinstance(chat.chats[0], raw.types.Chat):
                 return types.Chat._parse_chat_chat(self, chat.chats[0])
             elif isinstance(chat.chats[0], raw.types.Channel):
                 return types.Chat._parse_channel_chat(self, chat.chats[0])
+
         else:
+            match2 = self.TME_PUBLIC_LINK_RE.match(str(chat_id))
+            if match2:
+                chat_id = match2.group(1) or match2.group(2) or chat_id
             chat = await self.invoke(
                 raw.functions.channels.JoinChannel(
                     channel=await self.resolve_peer(chat_id)

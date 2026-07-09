@@ -3,10 +3,10 @@ name = "pyroblack"
 dynamic = ["version"]
 description = "Pyrogram, but black. Elegant, modern and asynchronous Telegram MTProto API framework in Python for users and bots"
 authors = [{ name = "eyMarv", email = "eyMarv07@gmail.com" }]
-dependencies = ["aiosqlite-black>=0.21.0", "pyaes==1.6.1", "pysocks==1.7.1", "pymediainfo-pyroblack>=6.1.1,<7.0.0"]
+dependencies = ["pyaes==1.6.1", "pysocks==1.7.1"]
 readme = "README.md"
 license = "LGPL-3.0-or-later"
-requires-python = "~=3.9"
+requires-python = ">=3.9"
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
@@ -20,6 +20,7 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Programming Language :: Python :: Implementation",
     "Programming Language :: Python :: Implementation :: CPython",
     "Programming Language :: Python :: Implementation :: PyPy",
@@ -30,7 +31,7 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
     "Topic :: Software Development :: Libraries :: Application Frameworks",
 ]
-keywords = ["black bsxcs telegram chat messenger mtproto api client library python"]
+keywords = ["pyroblack black telegram chat messenger mtproto api client library python"]
 
 [tool.hatch.version]
 path = "pyrogram/__init__.py"
@@ -48,32 +49,18 @@ Documentation = "https://eyMarv.github.io/pyroblack-docs"
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
-[project.optional-dependencies]
-dev = [
-    "hatch>=1.7.0",
-    "pytest>=7.4.3",
-    "pytest-asyncio>=0.21.1",
-    "pytest-cov>=4.1.0",
-    "twine>=4.0.2"
-]
-
-docs = [
-    "sphinx==8.0.2",
-    "sphinx-immaterial==0.11.11",
-    "sphinx_copybutton==0.5.2",
-    "sphinx-autobuild==2024.9.19",
-    "tornado==6.4.1"
-]
-
-speedup = [
-    "tgcrypto-pyroblack>=1.2.6",
-    "uvloop>=0.19.0"
-]
-
 [tool.hatch.metadata]
 allow-direct-references = true
 
+[tool.hatch.build]
+include = ["pyrogram/py.typed"]
+exclude = ["tests", "docs", "requirements.lock", "requirements-dev.lock", ".github", ".gitignore"]
+
 [tool.hatch.build.targets.sdist]
+include = [
+    "compiler",
+    "pyrogram",
+]
 exclude = [
     ".github/",
     "docs/",
@@ -85,8 +72,33 @@ exclude = [
     "CONTRIBUTING.rst",
     "requirements.lock",
     "requirements-dev.lock",
+    ".gitignore",
 ]
 
 [tool.hatch.build.targets.wheel]
 ignore-vcs = true
 packages = ["pyrogram"]
+
+[project.optional-dependencies]
+dev = [
+    "keyring<=25.1.0",
+    "hatch<=1.7.0",
+    "pytest<=7.4.3",
+    "pytest-asyncio<=0.21.1",
+    "pytest-cov<=4.1.0",
+    "twine<=4.0.2"
+]
+
+docs = [
+    "Sphinx<=7.2.6",
+    "furo<=2023.9.10",
+    "sphinx-autobuild<=2021.3.14",
+    "sphinx-copybutton<=0.5.2",
+    "pygments<=2.17.2",
+    "sphinx-llms-txt==0.7.1"
+]
+
+fast = [
+    "PyTgCrypto>1.2.9.2,<=1.4",
+    "uvloop>0.18.0,<=0.19.0"
+]

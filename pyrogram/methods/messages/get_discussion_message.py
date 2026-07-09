@@ -39,7 +39,6 @@ class GetDiscussionMessage:
         Parameters:
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
-                You can also use chat public link in form of *t.me/<username>* (str).
 
             message_id (``int``):
                 Message id.
@@ -55,11 +54,18 @@ class GetDiscussionMessage:
         """
         r = await self.invoke(
             raw.functions.messages.GetDiscussionMessage(
-                peer=await self.resolve_peer(chat_id), msg_id=message_id
+                peer=await self.resolve_peer(chat_id),
+                msg_id=message_id
             )
         )
 
         users = {u.id: u for u in r.users}
         chats = {c.id: c for c in r.chats}
 
-        return await types.Message._parse(self, r.messages[0], users, chats)
+        return await types.Message._parse(
+            self,
+            r.messages[0],
+            users,
+            chats,
+            replies=self.fetch_replies
+        )

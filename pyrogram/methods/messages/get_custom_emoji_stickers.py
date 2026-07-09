@@ -16,33 +16,31 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import List
-
 import pyrogram
-from pyrogram import raw
-from pyrogram import types
+from pyrogram import raw, types
 
 
 class GetCustomEmojiStickers:
     async def get_custom_emoji_stickers(
         self: "pyrogram.Client",
-        custom_emoji_ids: List[int],
-    ) -> List["types.Sticker"]:
+        custom_emoji_ids: list[str],
+    ) -> list["types.Sticker"]:
         """Get information about custom emoji stickers by their identifiers.
 
         .. include:: /_includes/usable-by/users-bots.rst
 
         Parameters:
-            custom_emoji_ids (:obj:`int` | :obj:`List[int]`):
-                Custom emoji ID.
+            custom_emoji_ids (List of ``str``):
+                List of custom emoji identifiers.
                 At most 200 custom emoji identifiers can be specified.
 
         Returns:
-            :obj: `~pyrogram.types.Sticker` | List of :obj:`~pyrogram.types.Sticker`: In case *custom_emoji_ids* was not
-             a list, a single sticker is returned, otherwise a list of stickers is returned.
+            List of :obj:`~pyrogram.types.Sticker`: On success, a list of sticker objects is returned.
         """
         result = await self.invoke(
-            raw.functions.messages.GetCustomEmojiDocuments(document_id=custom_emoji_ids)
+            raw.functions.messages.GetCustomEmojiDocuments(
+                document_id=[int(document_id) for document_id in custom_emoji_ids]
+            )
         )
 
         stickers = []
@@ -51,4 +49,4 @@ class GetCustomEmojiStickers:
             sticker = await types.Sticker._parse(self, item, attributes)
             stickers.append(sticker)
 
-        return pyrogram.types.List(stickers)
+        return types.List(stickers)

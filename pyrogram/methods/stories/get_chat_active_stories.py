@@ -68,8 +68,9 @@ class GetChatActiveStories:
             await sleep(0)
             yield await types.Story._parse(
                 self,
-                story,
-                peer,
                 users,
-                chats
+                chats,
+                None, None, None,
+                story,
+                peer
             )

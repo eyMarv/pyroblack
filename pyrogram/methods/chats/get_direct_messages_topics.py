@@ -1,22 +1,22 @@
-#  pyroblack - Telegram MTProto API Client Library for Python
-#  Copyright (C) 2022-present Mayuri-Chan <https://github.com/Mayuri-Chan>
-#  Copyright (C) 2024-present eyMarv <https://github.com/eyMarv>
+#  Pyrogram - Telegram MTProto API Client Library for Python
+#  Copyright (C) 2017-present <https://github.com/KurimuzonAkuma>
 #
-#  This file is part of pyroblack.
+#  This file is part of Pyrogram.
 #
-#  pyroblack is free software: you can redistribute it and/or modify
+#  Pyrogram is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU Lesser General Public License as published
 #  by the Free Software Foundation, either version 3 of the License, or
 #  (at your option) any later version.
 #
-#  pyroblack is distributed in the hope that it will be useful,
+#  Pyrogram is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU Lesser General Public License for more details.
 #
 #  You should have received a copy of the GNU Lesser General Public License
-#  along with pyroblack.  If not, see <http://www.gnu.org/licenses/>.
+#  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
 
+from asyncio import sleep
 from typing import AsyncGenerator, Optional, Union
 
 import pyrogram
@@ -27,8 +27,7 @@ class GetDirectMessagesTopics:
     async def get_direct_messages_topics(
         self: "pyrogram.Client",
         chat_id: Union[int, str],
-        limit: int = 0,
-        exclude_pinned: Optional[bool] = None
+        limit: int = 0
     ) -> AsyncGenerator["types.DirectMessagesTopic", None]:
         """Get one or more topic from a direct messages channel chat.
 
@@ -42,9 +41,6 @@ class GetDirectMessagesTopics:
                 Limits the number of topics to be retrieved.
                 By default, no limit is applied and all topics are returned.
 
-            exclude_pinned (``bool``, *optional*):
-                Exclude pinned topics.
-
         Returns:
             ``Generator``: A generator yielding :obj:`~pyrogram.types.DirectMessagesTopic` objects.
 
@@ -54,6 +50,7 @@ class GetDirectMessagesTopics:
                 # Iterate through all topics
                 async for topic in app.get_direct_messages_topics(chat_id):
                     print(topic)
+
         """
         current = 0
         total = limit or (1 << 31) - 1
@@ -71,7 +68,7 @@ class GetDirectMessagesTopics:
                     offset_peer=offset_peer,
                     limit=limit,
                     hash=0,
-                    exclude_pinned=exclude_pinned,
+                    exclude_pinned=None,
                     parent_peer=await self.resolve_peer(chat_id)
                 )
             )
@@ -85,12 +82,26 @@ class GetDirectMessagesTopics:
                 if isinstance(message, raw.types.MessageEmpty):
                     continue
 
-                messages[message.id] = await types.Message._parse(self, message, users, chats)
+                messages[message.id] = await types.Message._parse(
+                    self,
+                    message,
+                    users,
+                    chats,
+                    replies=self.fetch_replies
+                )
 
             topics = []
 
             for topic in r.dialogs:
-                topics.append(types.DirectMessagesTopic._parse(client=self, topic=topic, messages=messages, users=users, chats=chats))
+                topics.append(
+                    types.DirectMessagesTopic._parse_dialog(
+                        client=self,
+                        topic=topic,
+                        messages=messages,
+                        users=users,
+                        chats=chats
+                    )
+                )
 
             if not topics:
                 return
@@ -99,9 +110,11 @@ class GetDirectMessagesTopics:
 
             offset_id = last.last_message.id
             offset_date = utils.datetime_to_timestamp(last.last_message.date)
-            offset_peer = await self.resolve_peer(last.id)
+            offset_peer = await self.resolve_peer(last.topic_id)
 
             for topic in topics:
+                await sleep(0)
+
                 yield topic
 
                 current += 1

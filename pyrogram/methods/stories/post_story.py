@@ -128,7 +128,7 @@ class PostStory:
 
         """
         if business_connection_id:
-            business_connection = self.business_user_connection_cache.get(business_connection_id)
+            business_connection = self.business_user_connection_cache[business_connection_id]
             if not business_connection:
                 business_connection = await self.get_business_connection(business_connection_id)
 
@@ -243,17 +243,16 @@ class PostStory:
                 except FilePartMissing as e:
                     await self.save_file(media, file_id=file.id, file_part=e.value)
                 else:
-                    users = {i.id: i for i in r.users}
-                    chats = {i.id: i for i in r.chats}
-
                     for i in r.updates:
                         if isinstance(i, raw.types.UpdateStory):
                             return await types.Story._parse(
                                 self,
+                                {i.id: i for i in r.users},
+                                {i.id: i for i in r.chats},
+                                None, None,
+                                i,
                                 i.story,
-                                i.peer,
-                                users,
-                                chats
+                                i.peer
                             )
         except StopTransmission:
             return None

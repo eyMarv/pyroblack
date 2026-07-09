@@ -17,7 +17,6 @@
 #  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
 
 from datetime import datetime
-from typing import Dict
 from typing import Optional
 
 import pyrogram
@@ -66,21 +65,21 @@ class ChatInviteLink(Object):
             Number of users that joined via this link and are currently member of the chat.
 
         pending_join_request_count (``int``, *optional*):
-            Number of pending join requests created using this link
-
-        subscription_expired (``int``, *optional*):
-            Number of subscription which already expired.
+            Number of pending join requests created using this link.
+        
+        expired_member_count (``int``, *optional*):
+            Number of chat members, which joined the chat using the link, but have already left because of expired subscription; for subscription links only.
 
         subscription_period (``int``, *optional*):
-            The period of Subscription.
+            The number of seconds the subscription will be active for before the next payment.
 
         subscription_price (``int``, *optional*):
-            The price of Subscription (stars).
+            The amount of Telegram Stars a user must pay initially and after each subsequent subscription period to be a member of the chat using the link.
+
     """
 
     def __init__(
-        self,
-        *,
+        self, *,
         invite_link: str,
         date: datetime,
         is_primary: bool = None,
@@ -93,9 +92,9 @@ class ChatInviteLink(Object):
         member_limit: int = None,
         member_count: int = None,
         pending_join_request_count: int = None,
-        subscription_expired: int = None,
+        expired_member_count: int = None,
         subscription_period: int = None,
-        subscription_price: int = None,
+        subscription_price: int = None
     ):
         super().__init__()
 
@@ -111,7 +110,7 @@ class ChatInviteLink(Object):
         self.member_limit = member_limit
         self.member_count = member_count
         self.pending_join_request_count = pending_join_request_count
-        self.subscription_expired = subscription_expired
+        self.expired_member_count = expired_member_count
         self.subscription_period = subscription_period
         self.subscription_price = subscription_price
 
@@ -119,7 +118,7 @@ class ChatInviteLink(Object):
     def _parse(
         client: "pyrogram.Client",
         invite: "raw.base.ExportedChatInvite",
-        users: Dict[int, "raw.types.User"] = None,
+        users: dict[int, "raw.types.User"] = None
     ) -> Optional["ChatInviteLink"]:
         if not isinstance(invite, raw.types.ChatInviteExported):
             return None
@@ -129,9 +128,8 @@ class ChatInviteLink(Object):
             if users is not None
             else None
         )
-        subscription_pricing = getattr(invite, "subscription_pricing", None)
 
-        return ChatInviteLink(
+        chat_invite_link = ChatInviteLink(
             invite_link=invite.link,
             date=utils.timestamp_to_datetime(invite.date),
             is_primary=invite.permanent,
@@ -144,15 +142,9 @@ class ChatInviteLink(Object):
             member_limit=invite.usage_limit,
             member_count=invite.usage,
             pending_join_request_count=invite.requested,
-            subscription_expired=invite.subscription_expired,
-            subscription_period=(
-                subscription_pricing.period
-                if subscription_pricing is not None
-                else None
-            ),
-            subscription_price=(
-                subscription_pricing.amount
-                if subscription_pricing is not None
-                else None
-            ),
+            expired_member_count=invite.subscription_expired   
         )
+        if invite.subscription_pricing:
+            chat_invite_link.subscription_period = invite.subscription_pricing.period
+            chat_invite_link.subscription_price = invite.subscription_pricing.amount
+        return chat_invite_link

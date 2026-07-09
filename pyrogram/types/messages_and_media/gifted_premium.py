@@ -1,19 +1,69 @@
-import random
-from typing import Dict, List, Optional
+#  Pyrogram - Telegram MTProto API Client Library for Python
+#  Copyright (C) 2017-present Dan <https://github.com/delivrance>
+#
+#  This file is part of Pyrogram.
+#
+#  Pyrogram is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU Lesser General Public License as published
+#  by the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  Pyrogram is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU Lesser General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public License
+#  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
+
+from random import choice
+from typing import Optional
 
 from pyrogram import raw, types, utils
-
 from ..object import Object
+from .message import Str
 
 
 class GiftedPremium(Object):
-    """Telegram Premium was gifted to the user."""
+    """Telegram Premium was gifted to the user
+
+    Parameters:
+        gifter_user_id (``int``):
+            The identifier of a user that gifted Telegram Premium; 0 if the gift was anonymous
+
+        currency (``str``):
+            Currency for the paid amount
+
+        amount (``int``):
+            The paid amount, in the smallest units of the currency
+
+        cryptocurrency (``str``):
+            Cryptocurrency used to pay for the gift; may be empty if none
+
+        cryptocurrency_amount (``int``):
+            The paid amount, in the smallest units of the cryptocurrency; 0 if none
+
+        month_count (``int``):
+            Number of months the Telegram Premium subscription will be active.
+
+        day_count (``int``):
+            Number of days the Telegram Premium subscription will be active.
+
+        sticker (:obj:`~pyrogram.types.Sticker`):
+            A sticker to be shown in the transaction information; may be None if unknown
+
+        caption (``str``, *optional*):
+            Text message chosen by the sender.
+
+        caption_entities (List of :obj:`~pyrogram.types.MessageEntity`, *optional*):
+            Entities of the text message.
+
+    """
 
     def __init__(
         self,
         *,
-        gifter: Optional["types.User"] = None,
-        receiver: "types.User" = None,
+        gifter_user_id: Optional[int] = None,
         currency: Optional[str] = None,
         amount: Optional[int] = None,
         cryptocurrency: Optional[str] = None,
@@ -21,13 +71,12 @@ class GiftedPremium(Object):
         month_count: Optional[int] = None,
         day_count: Optional[int] = None,
         sticker: Optional["types.Sticker"] = None,
-        caption: Optional[str] = None,
-        caption_entities: Optional[List["types.MessageEntity"]] = None,
+        caption: Optional[Str] = None,
+        caption_entities: Optional[list["types.MessageEntity"]] = None
     ):
         super().__init__()
 
-        self.gifter = gifter
-        self.receiver = receiver
+        self.gifter_user_id = gifter_user_id
         self.currency = currency
         self.amount = amount
         self.cryptocurrency = cryptocurrency
@@ -37,41 +86,38 @@ class GiftedPremium(Object):
         self.sticker = sticker
         self.caption = caption
         self.caption_entities = caption_entities
-
+  
     @staticmethod
-    async def _parse(client, action, gifter, receiver, users: Dict[int, "raw.base.User"]) -> "GiftedPremium":
-        raw_stickers = await client.invoke(
-            raw.functions.messages.GetStickerSet(
-                stickerset=raw.types.InputStickerSetPremiumGifts(),
-                hash=0
-            )
+    async def _parse(
+        client,
+        gifted_premium: "raw.types.MessageActionGiftPremium",
+        gifter_user_id: int
+    ) -> "GiftedPremium":
+        sticker = None
+        stickers, _ = await client._get_raw_stickers(
+            raw.types.InputStickerSetPremiumGifts()
         )
+        sticker = choice(stickers)
 
-        caption, caption_entities = (
-            utils.parse_text_with_entities(client, getattr(action, "message", None), users)
-        ).values()
+        caption = None
+        caption_entities = []
+        if gifted_premium.message:
+            caption_entities = [
+                types.MessageEntity._parse(client, entity, {})
+                for entity in gifted_premium.message.entities
+            ]
+            caption_entities = types.List(filter(lambda x: x is not None, caption_entities))
+            caption = Str(gifted_premium.message.text).init(caption_entities) or None
 
         return GiftedPremium(
-            gifter=types.User._parse(client, gifter),
-            receiver=types.User._parse(client, receiver),
-            currency=action.currency,
-            amount=action.amount,
-            cryptocurrency=getattr(action, "crypto_currency", None),
-            cryptocurrency_amount=getattr(action, "crypto_amount", None),
-            day_count=action.days,
-            month_count=utils.get_premium_duration_month_count(action.days),
-            sticker=random.choice(
-                types.List(
-                    [
-                        await types.Sticker._parse(
-                            client,
-                            doc,
-                            {type(item): item for item in doc.attributes}
-                        )
-                        for doc in raw_stickers.documents
-                    ]
-                )
-            ),
+            gifter_user_id=gifter_user_id,
+            currency=gifted_premium.currency,
+            amount=gifted_premium.amount,
+            cryptocurrency=getattr(gifted_premium, "crypto_currency", None),
+            cryptocurrency_amount=getattr(gifted_premium, "crypto_amount", None),
+            day_count=gifted_premium.days,
+            month_count=utils.get_premium_duration_month_count(gifted_premium.days),
+            sticker=sticker,
             caption=caption,
-            caption_entities=caption_entities
+            caption_entities=caption_entities or None
         )

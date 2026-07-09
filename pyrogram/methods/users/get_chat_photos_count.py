@@ -24,9 +24,14 @@ from pyrogram import raw
 
 class GetChatPhotosCount:
     async def get_chat_photos_count(
-        self: "pyrogram.Client", chat_id: Union[int, str]
+        self: "pyrogram.Client",
+        chat_id: Union[int, str]
     ) -> int:
         """Get the total count of photos for a chat.
+
+        .. note::
+
+            This method works for bot Clients only in :obj:`~pyrogram.enums.ChatType.PRIVATE` and :obj:`~pyrogram.enums.ChatType.GROUP`
 
         .. include:: /_includes/usable-by/users-bots.rst
 
@@ -35,7 +40,6 @@ class GetChatPhotosCount:
                 Unique identifier (int) or username (str) of the target chat.
                 For your personal cloud (Saved Messages) you can simply use "me" or "self".
                 For a contact that exists in your Telegram address book you can use his phone number (str).
-                You can also use user profile/chat public link in form of *t.me/<username>* (str).
 
         Returns:
             ``int``: On success, the user profile photos count is returned.
@@ -61,7 +65,10 @@ class GetChatPhotosCount:
         else:
             r = await self.invoke(
                 raw.functions.photos.GetUserPhotos(
-                    user_id=peer_id, offset=0, max_id=0, limit=1
+                    user_id=peer_id,
+                    offset=0,
+                    max_id=0,
+                    limit=1
                 )
             )
 

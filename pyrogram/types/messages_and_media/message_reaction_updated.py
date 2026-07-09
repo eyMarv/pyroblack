@@ -1,24 +1,23 @@
-#  pyroblack - Telegram MTProto API Client Library for Python
-#  Copyright (C) 2022-present Mayuri-Chan <https://github.com/Mayuri-Chan>
-#  Copyright (C) 2024-present eyMarv <https://github.com/eyMarv>
+#  Pyrogram - Telegram MTProto API Client Library for Python
+#  Copyright (C) 2017-present Dan <https://github.com/delivrance>
 #
-#  This file is part of pyroblack.
+#  This file is part of Pyrogram.
 #
-#  pyroblack is free software: you can redistribute it and/or modify
+#  Pyrogram is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU Lesser General Public License as published
 #  by the Free Software Foundation, either version 3 of the License, or
 #  (at your option) any later version.
 #
-#  pyroblack is distributed in the hope that it will be useful,
+#  Pyrogram is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU Lesser General Public License for more details.
 #
 #  You should have received a copy of the GNU Lesser General Public License
-#  along with pyroblack.  If not, see <http://www.gnu.org/licenses/>.
+#  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
 
 from datetime import datetime
-from typing import Dict, List
+from typing import Optional
 
 import pyrogram
 from pyrogram import raw, types, utils
@@ -34,13 +33,13 @@ class MessageReactionUpdated(Object, Update):
     These updates are heavy and their changes may be delayed by a few minutes.
 
     Parameters:
-        id (``int``):
-            Unique identifier of the message inside the chat
-
         chat (:obj:`~pyrogram.types.Chat`):
             The chat containing the message the user reacted to
 
-        from_user (:obj:`~pyrogram.types.User`, *optional*):
+        message_id (``int``):
+            Unique identifier of the message inside the chat
+
+        user (:obj:`~pyrogram.types.User`, *optional*):
             The user that changed the reaction, if the user isn't anonymous
 
         actor_chat (:obj:`~pyrogram.types.Chat`, *optional*):
@@ -61,21 +60,21 @@ class MessageReactionUpdated(Object, Update):
         self,
         *,
         client: "pyrogram.Client" = None,
-        id: int,
-        from_user: "types.User",
+        chat: "types.Chat",
+        message_id: int,
+        user: "types.User",
         actor_chat: "types.Chat",
         date: datetime,
-        chat: "types.Chat",
-        old_reaction: List["types.ReactionType"],
-        new_reaction: List["types.ReactionType"],
+        old_reaction: list["types.ReactionType"],
+        new_reaction: list["types.ReactionType"]
     ):
         super().__init__(client)
 
-        self.id = id
-        self.from_user = from_user
+        self.chat = chat
+        self.message_id = message_id
+        self.user = user
         self.actor_chat = actor_chat
         self.date = date
-        self.chat = chat
         self.old_reaction = old_reaction
         self.new_reaction = new_reaction
 
@@ -83,37 +82,45 @@ class MessageReactionUpdated(Object, Update):
     def _parse(
         client: "pyrogram.Client",
         update: "raw.types.UpdateBotMessageReaction",
-        users: Dict[int, "raw.types.User"],
-        chats: Dict[int, "raw.types.Chat"],
+        users: dict[int, "raw.types.User"],
+        chats: dict[int, "raw.types.Chat"]
     ) -> "MessageReactionUpdated":
         chat = None
         peer_id = utils.get_peer_id(update.peer)
         raw_peer_id = utils.get_raw_peer_id(update.peer)
-        if peer_id > 0:
+        if isinstance(update.peer, raw.types.PeerUser):
             chat = types.Chat._parse_user_chat(client, users[raw_peer_id])
         else:
-            chat = types.Chat._parse_channel_chat(client, chats[raw_peer_id])
+            chat = types.Chat._parse_chat(client, chats[raw_peer_id])
 
-        from_user = None
+        user = None
         actor_chat = None
 
         raw_actor_peer_id = utils.get_raw_peer_id(update.actor)
         actor_peer_id = utils.get_peer_id(update.actor)
 
         if actor_peer_id > 0:
-            from_user = types.User._parse(client, users[raw_actor_peer_id])
+            user = types.User._parse(client, users[raw_actor_peer_id])
         else:
-            actor_chat = types.Chat._parse_channel_chat(
-                client, chats[raw_actor_peer_id]
-            )
+            actor_chat = types.Chat._parse_channel_chat(client, chats[raw_actor_peer_id])
 
         return MessageReactionUpdated(
             client=client,
-            id=update.msg_id,
-            from_user=from_user,
-            date=utils.timestamp_to_datetime(update.date),
             chat=chat,
+            message_id=update.msg_id,
+            user=user,
             actor_chat=actor_chat,
-            old_reaction=[types.ReactionType._parse(rt) for rt in update.old_reactions],
-            new_reaction=[types.ReactionType._parse(rt) for rt in update.new_reactions],
+            date=utils.timestamp_to_datetime(update.date),
+            old_reaction=[
+                types.ReactionType._parse(
+                    client,
+                    rt
+                ) for rt in update.old_reactions
+            ],
+            new_reaction=[
+                types.ReactionType._parse(
+                    client,
+                    rt
+                ) for rt in update.new_reactions
+            ]
         )

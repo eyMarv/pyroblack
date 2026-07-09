@@ -31,16 +31,16 @@ class InputContactMessageContent(InputMessageContent):
 
     Parameters:
         phone_number (``str``):
-            Contact's phone number.
+            Phone number of the user.
 
         first_name (``str``):
-            Contact's first name.
+            First name of the user; 1-64 characters.
 
         last_name (``str``, *optional*):
-            Contact's last name.
+            Last name of the user; 0-64 characters.
 
         vcard (``str``, *optional*):
-            Additional data about the contact in the form of a `vCard <https://en.wikipedia.org/wiki/VCard>`_, 0-2048 bytes.
+            Additional data about the user in a form of `vCard <https://en.wikipedia.org/wiki/VCard>`_; 0-2048 bytes in length.
 
     """
 
@@ -49,7 +49,7 @@ class InputContactMessageContent(InputMessageContent):
         phone_number: str,
         first_name: str,
         last_name: Optional[str] = None,
-        vcard: Optional[str] = None,
+        vcard: Optional[str] = None
     ):
         super().__init__()
 
@@ -64,5 +64,5 @@ class InputContactMessageContent(InputMessageContent):
             first_name=self.first_name,
             last_name=self.last_name,
             vcard=self.vcard,
-            reply_markup=await reply_markup.write(client) if reply_markup else None,
+            reply_markup=await reply_markup.write(client) if reply_markup else None
         )

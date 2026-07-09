@@ -20,7 +20,10 @@ import pyrogram
 
 
 class Stop:
-    async def stop(self: "pyrogram.Client", block: bool = True):
+    async def stop(
+        self: "pyrogram.Client",
+        block: bool = True
+    ):
         """Stop the Client.
 
         This method disconnects the client from Telegram and stops the underlying tasks.

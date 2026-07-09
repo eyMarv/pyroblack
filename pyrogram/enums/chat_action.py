@@ -23,6 +23,9 @@ from .auto_name import AutoName
 class ChatAction(AutoName):
     """Chat action enumeration used in :obj:`~pyrogram.types.ChatEvent`."""
 
+    CANCEL = raw.types.SendMessageCancelAction
+    "Cancel ongoing chat action"
+
     TYPING = raw.types.SendMessageTypingAction
     "Typing text message"
 
@@ -36,13 +39,16 @@ class ChatAction(AutoName):
     "Uploading video"
 
     RECORD_AUDIO = raw.types.SendMessageRecordAudioAction
-    "Recording audio"
+    "Recording voice"
 
     UPLOAD_AUDIO = raw.types.SendMessageUploadAudioAction
-    "Uploading audio"
+    "Uploading voice"
 
     UPLOAD_DOCUMENT = raw.types.SendMessageUploadDocumentAction
     "Uploading document"
+
+    CHOOSE_STICKER = raw.types.SendMessageChooseStickerAction
+    "Choosing sticker"
 
     FIND_LOCATION = raw.types.SendMessageGeoLocationAction
     "Finding location"
@@ -65,8 +71,8 @@ class ChatAction(AutoName):
     IMPORT_HISTORY = raw.types.SendMessageHistoryImportAction
     "Importing history"
 
-    CHOOSE_STICKER = raw.types.SendMessageChooseStickerAction
-    "Choosing sticker"
+    TRIGGER_EMOJI_ANIMATION = raw.types.SendMessageEmojiInteraction
+    "User has clicked on an animated emoji triggering a `reaction <https://core.telegram.org/api/animated-emojis#emoji-reactions>`_"
 
-    CANCEL = raw.types.SendMessageCancelAction
-    "Cancel ongoing chat action"
+    WATCH_EMOJI_ANIMATION = raw.types.SendMessageEmojiInteractionSeen
+    "The user is watching animations sent by the other party by clicking on an animated emoji"

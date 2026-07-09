@@ -1,22 +1,20 @@
-#  pyroblack - Telegram MTProto API Client Library for Python
+#  Pyrogram - Telegram MTProto API Client Library for Python
 #  Copyright (C) 2017-present Dan <https://github.com/delivrance>
-#  Copyright (C) 2022-present Mayuri-Chan <https://github.com/Mayuri-Chan>
-#  Copyright (C) 2024-present eyMarv <https://github.com/eyMarv>
 #
-#  This file is part of pyroblack.
+#  This file is part of Pyrogram.
 #
-#  pyroblack is free software: you can redistribute it and/or modify
+#  Pyrogram is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU Lesser General Public License as published
 #  by the Free Software Foundation, either version 3 of the License, or
 #  (at your option) any later version.
 #
-#  pyroblack is distributed in the hope that it will be useful,
+#  Pyrogram is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU Lesser General Public License for more details.
 #
 #  You should have received a copy of the GNU Lesser General Public License
-#  along with pyroblack.  If not, see <http://www.gnu.org/licenses/>.
+#  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
 
 from enum import auto
 
@@ -36,19 +34,22 @@ class ChatEventAction(AutoName):
     "The linked chat has been changed (see ``old_linked_chat`` and ``new_linked_chat``)"
 
     # LOCATION_CHANGED = auto()
-    # ""
+    ""
 
     PHOTO_CHANGED = auto()
     "The chat photo has been changed (see ``old_photo`` and ``new_photo``)"
 
     # STICKER_SET_CHANGED = auto()
-    # ""
+    ""
 
     TITLE_CHANGED = auto()
     "the chat title has been changed (see ``old_title`` and ``new_title``)"
 
     USERNAME_CHANGED = auto()
     "the chat username has been changed (see ``old_username`` and ``new_username``)"
+
+    USERNAMES_CHANGED = auto()
+    "the chat username has been changed (see ``old_usernames`` and ``new_usernames``)"
 
     CHAT_PERMISSIONS_CHANGED = auto()
     "the default chat permissions has been changed (see ``old_chat_permissions`` and ``new_chat_permissions``)"
@@ -57,7 +58,7 @@ class ChatEventAction(AutoName):
     "a message has been deleted (see ``deleted_message``)"
 
     # VOICE_CHAT_DISCARDED = auto()
-    # ""
+    ""
 
     MESSAGE_EDITED = auto()
     "a message has been edited (see ``old_message`` and ``new_message``)"
@@ -77,14 +78,17 @@ class ChatEventAction(AutoName):
     MEMBER_JOINED = auto()
     "a member joined by themselves. (see ``user``)"
 
-    # MEMBER_JOINED_BY_LINK = auto()
-    # ""
+    MEMBER_JOINED_BY_LINK = auto()
+    "a new member joined the chat via an invite link (see ``invite_link``)"
+
+    MEMBER_JOINED_BY_REQUEST = auto()
+    "a new member was accepted to the chat by an administrator (see ``invite_link`` and ``approver_user``)"
 
     MEMBER_LEFT = auto()
     "a member left by themselves. (see ``user``)"
 
     # MEMBER_MUTED = auto()
-    # ""
+    ""
 
     ADMINISTRATOR_PRIVILEGES_CHANGED = auto()
     "a chat member has been promoted/demoted or their administrator privileges has changed (see ``old_administrator_privileges`` and ``new_administrator_privileges``)"
@@ -93,19 +97,19 @@ class ChatEventAction(AutoName):
     "a chat member has been restricted/unrestricted or banned/unbanned, or their permissions has changed (see ``old_member_permissions`` and ``new_member_permissions``)"
 
     # MEMBER_UNMUTED = auto()
-    # ""
+    ""
 
     # MEMBER_VOLUME_CHANGED = auto()
-    # ""
+    ""
 
     # VIDEO_CHAT_STARTED = auto()
-    # ""
+    ""
 
     POLL_STOPPED = auto()
     "a poll has been stopped (see ``stopped_poll``)"
 
     # VOICE_CHAT_SETTINGS_CHANGED = auto()
-    # ""
+    ""
 
     INVITES_ENABLED = auto()
     "the chat invitation has been enabled or disabled (see ``invites_enabled``)"
@@ -125,18 +129,43 @@ class ChatEventAction(AutoName):
     MESSAGE_UNPINNED = auto()
     "a message has been unpinned (see ``unpinned_message``)"
 
-    MESSAGE_PIN_CHANGED = auto()
-    "a message has been pinned or unpinned but actual message is not received"
-    "should never be used in end-user code, only for correct parsing"
+    MEMBER_SUBSCRIPTION_EXTENDED = auto()
+    "A chat member extended their subscription to the chat (``old_chat_member`` and ``new_chat_member``)"
 
-    CREATED_FORUM_TOPIC = auto()
-    "a new forum topic has been created (see `created_forum_topic`)"
+    SHOW_MESSAGE_SENDER_ENABLED = auto()
+    "the show message senders have been enabled or disabled (see ``show_message_sender_enabled``)"
 
-    EDITED_FORUM_TOPIC = auto()
-    "a forum topic has been edited (see `old_forum_topic` and `new_forum_topic`)"
+    AGGRESSIVE_ANTI_SPAM_TOGGLED = auto()
+    "The ``has_aggressive_anti_spam_enabled`` setting of a supergroup was toggled. (see ``has_aggressive_anti_spam_enabled``)"
 
-    DELETED_FORUM_TOPIC = auto()
-    "a forum topic has been deleted (see `deleted_forum_topic`)"
+    PROTECTED_CONTENT_TOGGLED = auto()
+    "The ``has_protected_content`` setting of a channel was toggled (see ``has_protected_content``)"
+
+    CHAT_IS_FORUM_TOGGLED = auto()
+    "The ``is_forum`` setting of a channel was toggled. (see ``is_forum``)"
+
+    CHAT_FORUM_TOPIC_CREATED = auto()
+    """A new forum topic was created.
+    ``new_topic_info`` Information about the topic"""
+
+    CHAT_FORUM_TOPIC_EDITED = auto()
+    """A forum topic was edited.
+    ``old_topic_info`` Old information about the topic
+    ``new_topic_info`` New information about the topic"""
+
+    CHAT_FORUM_TOPIC_DELETED = auto()
+    """A forum topic was deleted.
+    ``new_topic_info`` Information about the topic"""
+
+    CHAT_FORUM_TOPIC_PINNED = auto()
+    """A pinned forum topic was changed.
+    ``old_topic_info`` Information about the old pinned topic; may be null
+    ``new_topic_info`` Information about the new pinned topic; may be null"""
+
+    CHAT_MEMBER_TAG_CHANGED = auto()
+    """A chat member tag has been changed.
+    ```old_member_tag``` - Information about the old chat member tag
+    ```new_member_tag``` - Information about the new chat member tag"""
 
     UNKNOWN = auto()
     "Unknown chat event action"

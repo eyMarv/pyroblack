@@ -25,7 +25,9 @@ log = logging.getLogger(__name__)
 
 
 class Start:
-    async def start(self: "pyrogram.Client"):
+    async def start(
+        self: "pyrogram.Client"
+    ):
         """Start the client.
 
         This method connects the client to Telegram and, in case of new sessions, automatically manages the
@@ -53,18 +55,14 @@ class Start:
 
                 app.run(main())
         """
-        self.load_plugins()
-
         is_authorized = await self.connect()
 
         try:
             if not is_authorized:
                 await self.authorize()
 
-            if not await self.storage.is_bot() and self.takeout:
-                self.takeout_id = (
-                    await self.invoke(raw.functions.account.InitTakeoutSession())
-                ).id
+            if self.takeout and not await self.storage.is_bot():
+                self.takeout_id = (await self.invoke(raw.functions.account.InitTakeoutSession())).id
                 log.info("Takeout session %s initiated", self.takeout_id)
 
             await self.invoke(raw.functions.updates.GetState())
@@ -72,7 +70,7 @@ class Start:
             await self.disconnect()
             raise
         else:
-            await self.get_me()
+            self.me = await self.get_me()
             await self.initialize()
 
             return self

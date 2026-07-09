@@ -31,7 +31,7 @@ class SignUp:
         phone_number: str,
         phone_code_hash: str,
         first_name: str,
-        last_name: str = "",
+        last_name: str = ""
     ) -> "types.User":
         """Register a new user in Telegram.
 
@@ -55,6 +55,8 @@ class SignUp:
 
         Raises:
             BadRequest: In case the arguments are invalid.
+            :obj:`~pyrogram.errors.RPCError`: In case of a Telegram RPC error.
+
         """
         phone_number = phone_number.strip(" +")
 
@@ -64,6 +66,7 @@ class SignUp:
                 first_name=first_name,
                 last_name=last_name,
                 phone_code_hash=phone_code_hash,
+                no_joined_notifications=self.no_joined_notifications
             )
         )
 

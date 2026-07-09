@@ -1,5 +1,6 @@
 #  Pyrogram - Telegram MTProto API Client Library for Python
-#  Copyright (C) 2017-present Dan <https://github.com/delivrance>
+#  Copyright (C) 2017-2024 Dan <https://github.com/delivrance>
+#  Copyright (C) 2026-present <https://github.com/TelegramPlayGround>
 #
 #  This file is part of Pyrogram.
 #
@@ -30,8 +31,8 @@ class Parser:
         self.html = HTML(client)
         self.markdown = Markdown(client)
 
-    async def parse(self, text: str, mode: Optional[enums.ParseMode] = None) -> dict:
-        text = str(text or "").strip()
+    async def parse(self, text: str, mode: Optional[enums.ParseMode] = None):
+        text = str(text if text else "").strip()
 
         if mode is None:
             if self.client:
@@ -54,7 +55,7 @@ class Parser:
         raise ValueError(f'Invalid parse mode "{mode}"')
 
     @staticmethod
-    def unparse(text: str, entities: list, is_html: bool) -> str:
+    def unparse(text: str, entities: list, is_html: bool):
         if is_html:
             return HTML.unparse(text, entities)
         else:

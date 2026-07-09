@@ -19,7 +19,8 @@
 from typing import Union
 
 import pyrogram
-from pyrogram import raw, utils
+from pyrogram import raw
+from pyrogram.utils import compute_password_check
 
 
 class TransferChatOwnership:
@@ -29,23 +30,19 @@ class TransferChatOwnership:
         user_id: Union[int, str],
         password: str,
     ) -> bool:
-        """Change the owner of a chat or channel.
-
-        .. note::
-
-            Requires owner privileges.
+        """Changes the owner of a chat.
+        
+        Requires owner privileges in the chat. Available only for supergroups and channel chats.
 
         .. include:: /_includes/usable-by/users.rst
 
         Parameters:
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
-                Unique identifier for the target chat in form of a *t.me/joinchat/* link, identifier (int) or username
-                of the target channel/supergroup (in the format @username).
 
             user_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the new owner.
-                For a contact that exists in your Telegram address book you can use his phone number (str).
+                The ownership can't be transferred to a bot or to a deleted user.
 
             password (``str``):
                 The 2-step verification password of the current user.
@@ -55,13 +52,14 @@ class TransferChatOwnership:
 
         Raises:
             ValueError: In case of invalid parameters.
-            RPCError: In case of a Telegram RPC error.
+            :obj:`~pyrogram.errors.RPCError`: In case of a Telegram RPC error.
 
         Example:
             .. code-block:: python
 
                 await app.transfer_chat_ownership(chat_id, user_id, "password")
         """
+
         peer_channel = await self.resolve_peer(chat_id)
         peer_user = await self.resolve_peer(user_id)
 
@@ -72,10 +70,10 @@ class TransferChatOwnership:
             raise ValueError("The user_id must belong to a user.")
 
         r = await self.invoke(
-            raw.functions.messages.EditChatCreator(
-                peer=peer_channel,
+            raw.functions.channels.EditCreator(
+                channel=peer_channel,
                 user_id=peer_user,
-                password=utils.compute_password_check(
+                password=compute_password_check(
                     await self.invoke(raw.functions.account.GetPassword()), password
                 ),
             )

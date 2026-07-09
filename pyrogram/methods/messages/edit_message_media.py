@@ -16,15 +16,14 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
 
+from datetime import datetime
 import io
 import os
 import re
 from typing import Union
 
 import pyrogram
-from pyrogram import raw
-from pyrogram import types
-from pyrogram import utils
+from pyrogram import raw, types, utils
 from pyrogram.file_id import FileType
 
 from .inline_session import get_session
@@ -37,14 +36,15 @@ class EditMessageMedia:
         message_id: int,
         media: "types.InputMedia",
         reply_markup: "types.InlineKeyboardMarkup" = None,
-        file_name: str = None,
-        invert_media: bool = False,
-        business_connection_id: str = None,
+        schedule_date: datetime = None,
+        business_connection_id: str = None
     ) -> "types.Message":
-        """Edit animation, audio, document, photo or video messages, or replace text with animation, audio, document, photo or video messages.
+        """Edit animation, audio, document, photo or video messages, or to add media to text messages.
 
-        If a message is a part of a message album, then it can be edited only to a photo or a video. Otherwise, the
+        If a message is part of a message album, then it can be edited only to an audio for audio albums, only to a document for document albums and to a photo or a video otherwise. Otherwise, the
         message type can be changed arbitrarily.
+
+        Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within 48 hours from the time they were sent.
 
         .. include:: /_includes/usable-by/users-bots.rst
 
@@ -53,7 +53,6 @@ class EditMessageMedia:
                 Unique identifier (int) or username (str) of the target chat.
                 For your personal cloud (Saved Messages) you can simply use "me" or "self".
                 For a contact that exists in your Telegram address book you can use his phone number (str).
-                You can also use chat public link in form of *t.me/<username>* (str).
 
             message_id (``int``):
                 Message identifier in the chat specified in chat_id.
@@ -64,16 +63,11 @@ class EditMessageMedia:
             reply_markup (:obj:`~pyrogram.types.InlineKeyboardMarkup`, *optional*):
                 An InlineKeyboardMarkup object.
 
-            file_name (``str``, *optional*):
-                File name of the media to be sent. Not applicable to photos.
-                Defaults to file's path basename.
-
-            invert_media (``bool``, *optional*):
-                Inverts the position of the media and caption.
+            schedule_date (:py:obj:`~datetime.datetime`, *optional*):
+                Date when the message will be automatically sent.
 
             business_connection_id (``str``, *optional*):
-                Unique identifier of the business connection.
-                for business bots only.
+                Unique identifier of the business connection on behalf of which the message to be edited was sent
 
         Returns:
             :obj:`~pyrogram.types.Message`: On success, the edited message is returned.
@@ -96,216 +90,57 @@ class EditMessageMedia:
                     InputMediaAudio("new_audio.mp3"))
         """
         caption = media.caption
-        caption_entities = media.caption_entities
         parse_mode = media.parse_mode
+        caption_entities = media.caption_entities
 
         message, entities = None, None
 
         if caption is not None:
-            message, entities = (
-                await utils.parse_text_entities(
-                    self, caption, parse_mode, caption_entities
-                )
-            ).values()
+            message, entities = (await utils.parse_text_entities(self, caption, parse_mode, caption_entities)).values()
 
-        if isinstance(media, types.InputMediaPhoto):
-            if isinstance(media.media, io.BytesIO) or os.path.isfile(media.media):
-                uploaded_media = await self.invoke(
-                    raw.functions.messages.UploadMedia(
-                        peer=await self.resolve_peer(chat_id),
-                        media=raw.types.InputMediaUploadedPhoto(
-                            file=await self.save_file(media.media),
-                            spoiler=media.has_spoiler,
-                        ),
-                    )
-                )
+        if media is not None and not isinstance(
+            media,
+            (
+                types.InputMediaPhoto,
+                types.InputMediaVideo,
+                types.InputMediaAudio,
+                types.InputMediaAnimation,
+                types.InputMediaDocument,
+            ),
+        ):
+            raise ValueError(f"Unsupported media type: {type(media)}")
 
-                media = raw.types.InputMediaPhoto(
-                    id=raw.types.InputPhoto(
-                        id=uploaded_media.photo.id,
-                        access_hash=uploaded_media.photo.access_hash,
-                        file_reference=uploaded_media.photo.file_reference,
-                    ),
-                    spoiler=media.has_spoiler,
-                )
-            elif re.match("^https?://", media.media):
-                media = raw.types.InputMediaPhotoExternal(
-                    url=media.media, spoiler=media.has_spoiler
-                )
-            else:
-                media = utils.get_input_media_from_file_id(media.media, FileType.PHOTO)
-        elif isinstance(media, types.InputMediaVideo):
-            if isinstance(media.media, io.BytesIO) or os.path.isfile(media.media):
-                uploaded_media = await self.invoke(
-                    raw.functions.messages.UploadMedia(
-                        peer=await self.resolve_peer(chat_id),
-                        media=raw.types.InputMediaUploadedDocument(
-                            mime_type=self.guess_mime_type(media.media) or "video/mp4",
-                            thumb=await self.save_file(media.thumb),
-                            spoiler=media.has_spoiler,
-                            file=await self.save_file(media.media),
-                            attributes=[
-                                raw.types.DocumentAttributeVideo(
-                                    supports_streaming=media.supports_streaming or None,
-                                    duration=media.duration,
-                                    w=media.width,
-                                    h=media.height,
-                                ),
-                                raw.types.DocumentAttributeFilename(
-                                    file_name=file_name or os.path.basename(media.media)
-                                ),
-                            ],
-                        ),
-                    )
-                )
-
-                media = raw.types.InputMediaDocument(
-                    id=raw.types.InputDocument(
-                        id=uploaded_media.document.id,
-                        access_hash=uploaded_media.document.access_hash,
-                        file_reference=uploaded_media.document.file_reference,
-                    ),
-                    spoiler=media.has_spoiler,
-                )
-            elif re.match("^https?://", media.media):
-                media = raw.types.InputMediaDocumentExternal(
-                    url=media.media, spoiler=media.has_spoiler
-                )
-            else:
-                media = utils.get_input_media_from_file_id(media.media, FileType.VIDEO)
-        elif isinstance(media, types.InputMediaAudio):
-            if isinstance(media.media, io.BytesIO) or os.path.isfile(media.media):
-                media = await self.invoke(
-                    raw.functions.messages.UploadMedia(
-                        peer=await self.resolve_peer(chat_id),
-                        media=raw.types.InputMediaUploadedDocument(
-                            mime_type=self.guess_mime_type(media.media) or "audio/mpeg",
-                            thumb=await self.save_file(media.thumb),
-                            file=await self.save_file(media.media),
-                            attributes=[
-                                raw.types.DocumentAttributeAudio(
-                                    duration=media.duration,
-                                    performer=media.performer,
-                                    title=media.title,
-                                ),
-                                raw.types.DocumentAttributeFilename(
-                                    file_name=file_name or os.path.basename(media.media)
-                                ),
-                            ],
-                        ),
-                    )
-                )
-
-                media = raw.types.InputMediaDocument(
-                    id=raw.types.InputDocument(
-                        id=media.document.id,
-                        access_hash=media.document.access_hash,
-                        file_reference=media.document.file_reference,
-                    )
-                )
-            elif re.match("^https?://", media.media):
-                media = raw.types.InputMediaDocumentExternal(url=media.media)
-            else:
-                media = utils.get_input_media_from_file_id(media.media, FileType.AUDIO)
-        elif isinstance(media, types.InputMediaAnimation):
-            if isinstance(media.media, io.BytesIO) or os.path.isfile(media.media):
-                uploaded_media = await self.invoke(
-                    raw.functions.messages.UploadMedia(
-                        peer=await self.resolve_peer(chat_id),
-                        media=raw.types.InputMediaUploadedDocument(
-                            mime_type=self.guess_mime_type(media.media) or "video/mp4",
-                            thumb=await self.save_file(media.thumb),
-                            spoiler=media.has_spoiler,
-                            file=await self.save_file(media.media),
-                            attributes=[
-                                raw.types.DocumentAttributeVideo(
-                                    supports_streaming=True,
-                                    duration=media.duration,
-                                    w=media.width,
-                                    h=media.height,
-                                ),
-                                raw.types.DocumentAttributeFilename(
-                                    file_name=file_name or os.path.basename(media.media)
-                                ),
-                                raw.types.DocumentAttributeAnimated(),
-                            ],
-                        ),
-                    )
-                )
-
-                media = raw.types.InputMediaDocument(
-                    id=raw.types.InputDocument(
-                        id=uploaded_media.document.id,
-                        access_hash=uploaded_media.document.access_hash,
-                        file_reference=uploaded_media.document.file_reference,
-                    ),
-                    spoiler=media.has_spoiler,
-                )
-            elif re.match("^https?://", media.media):
-                media = raw.types.InputMediaDocumentExternal(
-                    url=media.media, spoiler=media.has_spoiler
-                )
-            else:
-                media = utils.get_input_media_from_file_id(
-                    media.media, FileType.ANIMATION
-                )
-        elif isinstance(media, types.InputMediaDocument):
-            if isinstance(media.media, io.BytesIO) or os.path.isfile(media.media):
-                media = await self.invoke(
-                    raw.functions.messages.UploadMedia(
-                        peer=await self.resolve_peer(chat_id),
-                        media=raw.types.InputMediaUploadedDocument(
-                            mime_type=self.guess_mime_type(media.media)
-                            or "application/zip",
-                            thumb=await self.save_file(media.thumb),
-                            file=await self.save_file(media.media),
-                            attributes=[
-                                raw.types.DocumentAttributeFilename(
-                                    file_name=file_name or os.path.basename(media.media)
-                                )
-                            ],
-                        ),
-                    )
-                )
-
-                media = raw.types.InputMediaDocument(
-                    id=raw.types.InputDocument(
-                        id=media.document.id,
-                        access_hash=media.document.access_hash,
-                        file_reference=media.document.file_reference,
-                    )
-                )
-            elif re.match("^https?://", media.media):
-                media = raw.types.InputMediaDocumentExternal(url=media.media)
-            else:
-                media = utils.get_input_media_from_file_id(
-                    media.media, FileType.DOCUMENT
-                )
+        raw_media, _show_caption_above_media = await media.write(
+            client=self,
+            chat_id=chat_id,
+            business_connection_id=business_connection_id,
+        )
 
         rpc = raw.functions.messages.EditMessage(
             peer=await self.resolve_peer(chat_id),
             id=message_id,
-            media=media,
+            media=raw_media,
             reply_markup=await reply_markup.write(self) if reply_markup else None,
             message=message,
             entities=entities,
-            invert_media=invert_media,
+            invert_media=_show_caption_above_media,
+            schedule_date=utils.datetime_to_timestamp(schedule_date)
         )
         session = None
         business_connection = None
         if business_connection_id:
-            business_connection = self.business_user_connection_cache[
-                business_connection_id
-            ]
-            if not business_connection:
-                business_connection = await self.get_business_connection(
-                    business_connection_id
-                )
-            session = await get_session(self, business_connection._raw.connection.dc_id)
+            business_connection = self.business_user_connection_cache[business_connection_id]
+            if business_connection is None:
+                business_connection = await self.get_business_connection(business_connection_id)
+            session = await get_session(
+                self,
+                business_connection._raw.connection.dc_id
+            )
         if business_connection_id:
             r = await session.invoke(
                 raw.functions.InvokeWithBusinessConnection(
-                    query=rpc, connection_id=business_connection_id
+                    query=rpc,
+                    connection_id=business_connection_id
                 )
             )
             # await session.stop()
@@ -314,22 +149,32 @@ class EditMessageMedia:
 
         for i in r.updates:
             if isinstance(
-                i, (raw.types.UpdateEditMessage, raw.types.UpdateEditChannelMessage)
+                i,
+                (
+                    raw.types.UpdateEditMessage,
+                    raw.types.UpdateEditChannelMessage,
+                    raw.types.UpdateNewScheduledMessage
+                )
+            ):
+                return await types.Message._parse(
+                    self, i.message,
+                    {i.id: i for i in r.users},
+                    {i.id: i for i in r.chats},
+                    is_scheduled=isinstance(i, raw.types.UpdateNewScheduledMessage),
+                    replies=self.fetch_replies
+                )
+            elif isinstance(
+                i,
+                (
+                    raw.types.UpdateBotEditBusinessMessage
+                )
             ):
                 return await types.Message._parse(
                     self,
                     i.message,
                     {i.id: i for i in r.users},
                     {i.id: i for i in r.chats},
-                )
-            elif isinstance(i, (raw.types.UpdateBotEditBusinessMessage)):
-                return await types.Message._parse(
-                    self,
-                    i.message,
-                    {i.id: i for i in r.users},
-                    {i.id: i for i in r.chats},
-                    business_connection_id=getattr(
-                        i, "connection_id", business_connection_id
-                    ),
-                    replies=0,
+                    business_connection_id=getattr(i, "connection_id", business_connection_id),
+                    raw_reply_to_message=i.reply_to_message,
+                    replies=0
                 )

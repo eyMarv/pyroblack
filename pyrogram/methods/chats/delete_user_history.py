@@ -35,11 +35,9 @@ class DeleteUserHistory:
         Parameters:
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
-                You can also use chat public link in form of *t.me/<username>* (str).
 
             user_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the user whose messages will be deleted.
-                You can also use user profile link in form of *t.me/<username>* (str).
 
         Returns:
             ``bool``: True on success, False otherwise.
@@ -48,7 +46,7 @@ class DeleteUserHistory:
         r = await self.invoke(
             raw.functions.channels.DeleteParticipantHistory(
                 channel=await self.resolve_peer(chat_id),
-                participant=await self.resolve_peer(user_id),
+                participant=await self.resolve_peer(user_id)
             )
         )
 

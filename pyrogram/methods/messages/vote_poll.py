@@ -16,7 +16,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union, List
+from typing import Union
 
 import pyrogram
 from pyrogram import raw
@@ -27,8 +27,8 @@ class VotePoll:
     async def vote_poll(
         self: "pyrogram.Client",
         chat_id: Union[int, str],
-        message_id: id,
-        options: Union[int, List[int]],
+        message_id: int,
+        options: Union[int, list[int]]
     ) -> "types.Poll":
         """Vote a poll.
 
@@ -39,7 +39,6 @@ class VotePoll:
                 Unique identifier (int) or username (str) of the target chat.
                 For your personal cloud (Saved Messages) you can simply use "me" or "self".
                 For a contact that exists in your Telegram address book you can use his phone number (str).
-                You can also use chat public link in form of *t.me/<username>* (str).
 
             message_id (``int``):
                 Identifier of the original message with the poll.
@@ -56,15 +55,29 @@ class VotePoll:
                 await app.vote_poll(chat_id, message_id, 6)
         """
 
-        poll = (await self.get_messages(chat_id=chat_id, message_ids=message_id)).poll
+        poll = (await self.get_messages(
+            chat_id=chat_id,
+            message_ids=message_id
+        )).poll
         options = [options] if not isinstance(options, list) else options
-
         r = await self.invoke(
             raw.functions.messages.SendVote(
                 peer=await self.resolve_peer(chat_id),
                 msg_id=message_id,
-                options=[poll.options[option].data for option in options],
+                options=[poll.options[option].data for option in options]
             )
         )
-
-        return types.Poll._parse(self, r.updates[0])
+        for i in r.updates:
+            if isinstance(
+                i,
+                (
+                    raw.types.MessageMediaPoll,
+                    raw.types.UpdateMessagePoll
+                )
+            ):
+                return await types.Poll._parse(
+                    self,
+                    i,
+                    {i.id: i for i in r.users},
+                    {i.id: i for i in r.chats},
+                )

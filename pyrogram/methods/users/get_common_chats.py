@@ -16,7 +16,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union, List
+from typing import Union
 
 import pyrogram
 from pyrogram import raw
@@ -25,8 +25,9 @@ from pyrogram import types
 
 class GetCommonChats:
     async def get_common_chats(
-        self: "pyrogram.Client", user_id: Union[int, str]
-    ) -> List["types.Chat"]:
+        self: "pyrogram.Client",
+        user_id: Union[int, str]
+    ) -> list["types.Chat"]:
         """Get the common chats you have with a user.
 
         .. include:: /_includes/usable-by/users.rst
@@ -36,7 +37,6 @@ class GetCommonChats:
                 Unique identifier (int) or username (str) of the target chat.
                 For your personal cloud (Saved Messages) you can simply use "me" or "self".
                 For a contact that exists in your Telegram address book you can use his phone number (str).
-                You can also use user profile link in form of *t.me/<username>* (str).
 
         Returns:
             List of :obj:`~pyrogram.types.Chat`: On success, a list of the common chats is returned.

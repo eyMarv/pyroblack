@@ -25,16 +25,31 @@ class CountPublicMessagesByTag:
         self: "pyrogram.Client",
         tag: str = "",
     ) -> int:
+        """Get the count of messages with the provided hashtag or cashtag.
+
+        If you want to get the actual messages, see :meth:`~pyrogram.Client.search_public_messages_by_tag`.
+
+        .. include:: /_includes/usable-by/users.rst
+
+        Parameters:
+            hashtag (``str``, *optional*):
+                Hashtag or cashtag to search for.
+
+        Returns:
+            ``int``: On success, the messages count is returned.
+
+        """
         r = await self.invoke(
             raw.functions.channels.SearchPosts(
                 hashtag=tag,
                 offset_rate=0,
                 offset_peer=raw.types.InputPeerEmpty(),
                 offset_id=0,
-                limit=1,
+                limit=1
             )
         )
 
         if hasattr(r, "count"):
             return r.count
-        return len(r.messages)
+        else:
+            return len(r.messages)

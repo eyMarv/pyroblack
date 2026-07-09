@@ -17,17 +17,17 @@
 #  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
 
 import asyncio
-from typing import Union, List, Iterable
+from typing import Union, Iterable
 
 import pyrogram
-from pyrogram import raw
-from pyrogram import types
+from pyrogram import raw, types, utils
 
 
 class GetUsers:
     async def get_users(
-        self: "pyrogram.Client", user_ids: Union[int, str, Iterable[Union[int, str]]]
-    ) -> Union["types.User", List["types.User"]]:
+        self: "pyrogram.Client",
+        user_ids: Union[int, str, Iterable[Union[int, str]]]
+    ) -> Union["types.User", list["types.User"]]:
         """Get information about a user.
         You can retrieve up to 200 users at once.
 
@@ -37,7 +37,6 @@ class GetUsers:
             user_ids (``int`` | ``str`` | Iterable of ``int`` or ``str``):
                 A list of User identifiers (id or username) or a single user id/username.
                 For a contact that exists in your Telegram address book you can use his phone number (str).
-                You can also use user profile link in form of *t.me/<username>* (str).
 
         Returns:
             :obj:`~pyrogram.types.User` | List of :obj:`~pyrogram.types.User`: In case *user_ids* was not a list,
@@ -53,11 +52,15 @@ class GetUsers:
                 await app.get_users([user_id1, user_id2, user_id3])
         """
 
-        is_iterable = not isinstance(user_ids, (int, str))
+        is_iterable = utils.is_list_like(user_ids)
         user_ids = list(user_ids) if is_iterable else [user_ids]
         user_ids = await asyncio.gather(*[self.resolve_peer(i) for i in user_ids])
 
-        r = await self.invoke(raw.functions.users.GetUsers(id=user_ids))
+        r = await self.invoke(
+            raw.functions.users.GetUsers(
+                id=user_ids
+            )
+        )
 
         users = types.List()
 

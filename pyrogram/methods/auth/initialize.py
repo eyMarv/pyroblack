@@ -34,28 +34,19 @@ class Initialize:
         It will also load plugins and start the internal dispatcher.
 
         Raises:
-            ConnectionError: In case you try to initialize a disconnected client or in case you try to initialize an
-                already initialized client.
+            ConnectionError: In case you try to initialize a disconnected client or in case you try to initialize an already initialized client.
+
         """
         if not self.is_connected:
             raise ConnectionError("Can't initialize a disconnected client")
 
-        # pylint: disable=access-member-before-definition
         if self.is_initialized:
             raise ConnectionError("Client is already initialized")
+
+        self.load_plugins()
 
         await self.dispatcher.start()
 
         self.updates_watchdog_task = asyncio.create_task(self.updates_watchdog())
-
-        # Pre-warm media session pool for home DC
-        if self.max_download_workers > 1:
-            try:
-                await self._get_media_session_pool(
-                    await self.storage.dc_id(),
-                    self.max_download_workers,
-                )
-            except Exception as e:
-                log.warning(f"Failed to pre-warm media sessions: {e}")
 
         self.is_initialized = True

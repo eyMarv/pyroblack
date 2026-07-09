@@ -24,7 +24,7 @@ class GetBusinessConnection:
     async def get_business_connection(
         self: "pyrogram.Client",
         business_connection_id: str
-    ) -> "types.BusinessConnection":
+    ) -> "types.Message":
         """Use this method to get information about the connection of the bot with a business account.
 
         .. include:: /_includes/usable-by/bots.rst
@@ -34,7 +34,7 @@ class GetBusinessConnection:
                 Unique identifier of the business connection
 
         Returns:
-            :obj:`~pyrogram.types.BusinessConnection`: On success, the connection of the bot with a business account is returned.
+            :obj:`~pyrogram.types.BusinessConnection`: On success, the the connection of the bot with a business account is returned.
         """
 
         r = await self.invoke(
@@ -44,9 +44,13 @@ class GetBusinessConnection:
         )
         users = {i.id: i for i in r.users}
         chats = {i.id: i for i in r.chats}
-
         for i in r.updates:
-            if isinstance(i, raw.types.UpdateBotBusinessConnect):
+            if isinstance(
+                i,
+                (
+                    raw.types.UpdateBotBusinessConnect
+                )
+            ):
                 business_connection = types.BusinessConnection._parse(
                     self,
                     i,
@@ -57,5 +61,3 @@ class GetBusinessConnection:
                     business_connection_id
                 ] = business_connection
                 return business_connection
-
-        return None

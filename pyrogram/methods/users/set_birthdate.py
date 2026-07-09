@@ -25,23 +25,38 @@ from pyrogram import raw, types
 class SetBirthdate:
     async def set_birthdate(
         self: "pyrogram.Client",
-        birthday: Optional["types.Birthday"] = None,
+        birthdate: Optional["types.Birthdate"] = None
     ) -> bool:
-        """Change the birthdate of the current user.
+        """Changes the birthdate of the current user 
 
         .. include:: /_includes/usable-by/users.rst
 
         Parameters:
-            birthday (:obj:`~pyrogram.types.Birthday`, *optional*):
-                The new value of the current user's birthdate; pass None to remove it.
+            birthdate (:obj:`~pyrogram.types.Birthdate`, *optional*):
+                The new value of the current user's birthdate; pass None to remove the birthdate
 
         Returns:
             ``bool``: True on success.
+
+        Example:
+            .. code-block:: python
+
+                # Update your birthdate
+                await app.set_birthdate(birthdate=types.Birthdate(
+                    day=15,
+                    month=12,
+                    year=2017
+                ))
+
+                # Remove your birthdate
+                await app.set_birthdate()
+
         """
+
         return bool(
             await self.invoke(
                 raw.functions.account.UpdateBirthday(
-                    birthday=birthday.write() if birthday else None,
+                    birthday=birthdate.write() if birthdate else None
                 )
             )
         )

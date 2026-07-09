@@ -19,13 +19,15 @@
 from typing import Union
 
 import pyrogram
-from pyrogram import raw
+from pyrogram import raw, types
 
 
 class SetChatTitle:
     async def set_chat_title(
-        self: "pyrogram.Client", chat_id: Union[int, str], title: str
-    ) -> bool:
+        self: "pyrogram.Client",
+        chat_id: Union[int, str],
+        title: str
+    ) -> Union["types.Message", bool]:
         """Change the title of a chat.
         Titles can't be changed for private chats.
         You must be an administrator in the chat for this to work and must have the appropriate admin rights.
@@ -39,13 +41,13 @@ class SetChatTitle:
         Parameters:
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
-                You can also use chat public link in form of *t.me/<username>* (str).
 
             title (``str``):
                 New chat title, 1-255 characters.
 
         Returns:
-            ``bool``: True on success.
+            :obj:`~pyrogram.types.Message` | ``bool``: On success, a service message will be returned (when applicable),
+            otherwise, in case a message object couldn't be returned, True is returned.
 
         Raises:
             ValueError: In case a chat id belongs to user.
@@ -58,14 +60,29 @@ class SetChatTitle:
         peer = await self.resolve_peer(chat_id)
 
         if isinstance(peer, raw.types.InputPeerChat):
-            await self.invoke(
-                raw.functions.messages.EditChatTitle(chat_id=peer.chat_id, title=title)
+            r = await self.invoke(
+                raw.functions.messages.EditChatTitle(
+                    chat_id=peer.chat_id,
+                    title=title
+                )
             )
         elif isinstance(peer, raw.types.InputPeerChannel):
-            await self.invoke(
-                raw.functions.channels.EditTitle(channel=peer, title=title)
+            r = await self.invoke(
+                raw.functions.channels.EditTitle(
+                    channel=peer,
+                    title=title
+                )
             )
         else:
             raise ValueError(f'The chat_id "{chat_id}" belongs to a user')
 
+        for i in r.updates:
+            if isinstance(i, (raw.types.UpdateNewMessage, raw.types.UpdateNewChannelMessage)):
+                return await types.Message._parse(
+                    self,
+                    i.message,
+                    {i.id: i for i in r.users},
+                    {i.id: i for i in r.chats},
+                    replies=self.fetch_replies
+                )
         return True

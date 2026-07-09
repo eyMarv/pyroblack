@@ -34,5 +34,5 @@ class MsgFactory:
             body,
             MsgId(),
             self.seq_no(not isinstance(body, not_content_related)),
-            len(body),
+            len(body)
         )

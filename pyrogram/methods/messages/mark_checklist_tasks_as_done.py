@@ -1,5 +1,5 @@
 #  Pyrogram - Telegram MTProto API Client Library for Python
-#  Copyright (C) 2017-present Dan <https://github.com/delivrance>
+#  Copyright (C) 2017-present <https://github.com/TelegramPlayGround>
 #
 #  This file is part of Pyrogram.
 #
@@ -16,7 +16,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import List, Union
+from typing import Union
 
 import pyrogram
 from pyrogram import raw, types
@@ -27,9 +27,11 @@ class MarkChecklistTasksAsDone:
         self: "pyrogram.Client",
         chat_id: Union[int, str],
         message_id: int,
-        tasks: List["types.InputChecklistTask"],
-    ) -> int:
-        """Add tasks to a checklist in a message.
+        *,
+        done_task_ids: list[int] = None,
+        not_done_task_ids: list[int] = None,
+    ) -> Union["types.Message", bool]:
+        """Add tasks of a checklist in a message as done or not done.
 
         .. include:: /_includes/usable-by/users.rst
 
@@ -42,32 +44,43 @@ class MarkChecklistTasksAsDone:
             message_id (``int``):
                 Identifier of the message containing the checklist.
 
-            tasks (List of :obj:`~pyrogram.types.InputChecklistTask`):
-                List of tasks to add to the checklist.
+            done_task_ids (List of ``int``):
+                Identifiers of tasks that were marked as done.
+
+            not_done_task_ids (List of ``int``):
+                Identifiers of tasks that were marked as not done.
 
         Returns:
-            ``bool``: On success, True is returned.
+            :obj:`~pyrogram.types.Message` | ``bool``: On success, an edited message or a service message will be returned (when applicable),
+            otherwise, in case a message object couldn't be returned, True is returned.
 
         Example:
             .. code-block:: python
 
-                await app.add_checklist_tasks(
+                await app.mark_checklist_tasks_as_done(
                     chat_id,
                     message_id,
-                    tasks=[
-                        types.InputChecklistTask(
-                            id=2,
-                            text="Task 2"
-                        )
-                    ]
+                    done_task_ids=[1, 2, 3]
                 )
+
         """
-        await self.invoke(
-            raw.functions.messages.AppendTodoList(
+        r = await self.invoke(
+            raw.functions.messages.ToggleTodoCompleted(
                 peer=await self.resolve_peer(chat_id),
                 msg_id=message_id,
-                list=[await task.write(self) for task in tasks],
+                completed=done_task_ids or [],
+                incompleted=not_done_task_ids or [],
             )
         )
+
+        for i in r.updates:
+            if isinstance(i, (raw.types.UpdateNewMessage, raw.types.UpdateEditChannelMessage, raw.types.UpdateNewChannelMessage)):
+                return await types.Message._parse(
+                    self,
+                    i.message,
+                    {i.id: i for i in r.users},
+                    {i.id: i for i in r.chats},
+                    replies=self.fetch_replies
+                )
 
         return True

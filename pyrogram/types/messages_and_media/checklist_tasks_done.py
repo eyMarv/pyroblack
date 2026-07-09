@@ -1,5 +1,5 @@
 #  Pyrogram - Telegram MTProto API Client Library for Python
-#  Copyright (C) 2017-present Dan <https://github.com/delivrance>
+#  Copyright (C) 2017-present <https://github.com/TelegramPlayGround>
 #
 #  This file is part of Pyrogram.
 #
@@ -16,15 +16,13 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import List
-
 from pyrogram import raw
 
 from ..object import Object
 
 
 class ChecklistTasksDone(Object):
-    """Some tasks from a checklist were marked as done or not done.
+    """Describes a service message about checklist tasks marked as done or not done.
 
     Parameters:
         checklist_message_id (``int``):
@@ -32,18 +30,19 @@ class ChecklistTasksDone(Object):
             Can be None if the message was deleted.
 
         marked_as_done_task_ids (List of ``int``):
-            Identifiers of tasks that were marked as done
+            Identifiers of tasks that were marked as done.
 
         marked_as_not_done_task_ids (List of ``int``):
-            Identifiers of tasks that were marked as not done
+            Identifiers of tasks that were marked as not done.
+
     """
 
     def __init__(
         self,
         *,
         checklist_message_id: int,
-        marked_as_done_task_ids: List[int],
-        marked_as_not_done_task_ids: List[int],
+        marked_as_done_task_ids: list[int],
+        marked_as_not_done_task_ids: list[int]
     ):
 
         super().__init__()
@@ -53,11 +52,11 @@ class ChecklistTasksDone(Object):
         self.marked_as_not_done_task_ids = marked_as_not_done_task_ids
 
     @staticmethod
-    def _parse(message: "raw.types.MessageService") -> "ChecklistTasksDone":
+    def _parse(client: "pyrogram.Client", message: "raw.types.MessageService") -> "ChecklistTasksDone":
         action: "raw.types.MessageActionTodoCompletions" = message.action
 
         return ChecklistTasksDone(
             checklist_message_id=getattr(message.reply_to, "reply_to_msg_id", None),
             marked_as_done_task_ids=action.completed,
-            marked_as_not_done_task_ids=action.incompleted,
+            marked_as_not_done_task_ids=action.incompleted
         )

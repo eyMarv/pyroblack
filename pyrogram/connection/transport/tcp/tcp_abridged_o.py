@@ -18,11 +18,11 @@
 
 import logging
 import os
-from typing import Optional, Tuple
+from typing import Optional
 
 import pyrogram
 from pyrogram.crypto import aes
-from .tcp import TCP, Proxy
+from .tcp import TCP
 
 log = logging.getLogger(__name__)
 
@@ -30,24 +30,20 @@ log = logging.getLogger(__name__)
 class TCPAbridgedO(TCP):
     RESERVED = (b"HEAD", b"POST", b"GET ", b"OPTI", b"\xee" * 4)
 
-    def __init__(self, ipv6: bool, proxy: Proxy) -> None:
+    def __init__(self, ipv6: bool, proxy: dict):
         super().__init__(ipv6, proxy)
 
         self.encrypt = None
         self.decrypt = None
 
-    async def connect(self, address: Tuple[str, int]) -> None:
+    async def connect(self, address: tuple):
         await super().connect(address)
 
         while True:
             nonce = bytearray(os.urandom(64))
 
-            if (
-                bytes([nonce[0]]) != b"\xef"
-                and nonce[:4] not in self.RESERVED
-                and nonce[4:8] != b"\x00" * 4
-            ):
-                nonce[56] = nonce[57] = nonce[58] = nonce[59] = 0xEF
+            if nonce[0] != b"\xef" and nonce[:4] not in self.RESERVED and nonce[4:4] != b"\x00" * 4:
+                nonce[56] = nonce[57] = nonce[58] = nonce[59] = 0xef
                 break
 
         temp = bytearray(nonce[55:7:-1])
@@ -59,14 +55,10 @@ class TCPAbridgedO(TCP):
 
         await super().send(nonce)
 
-    async def send(self, data: bytes, *args) -> None:
+    async def send(self, data: bytes, *args):
         length = len(data) // 4
-        data = (
-            bytes([length]) if length <= 126 else b"\x7f" + length.to_bytes(3, "little")
-        ) + data
-        payload = await self.loop.run_in_executor(
-            pyrogram.crypto_executor, aes.ctr256_encrypt, data, *self.encrypt
-        )
+        data = (bytes([length]) if length <= 126 else b"\x7f" + length.to_bytes(3, "little")) + data
+        payload = await self.loop.run_in_executor(pyrogram.crypto_executor, aes.ctr256_encrypt, data, *self.encrypt)
 
         await super().send(payload)
 
@@ -91,6 +83,4 @@ class TCPAbridgedO(TCP):
         if data is None:
             return None
 
-        return await self.loop.run_in_executor(
-            pyrogram.crypto_executor, aes.ctr256_decrypt, data, *self.decrypt
-        )
+        return await self.loop.run_in_executor(pyrogram.crypto_executor, aes.ctr256_decrypt, data, *self.decrypt)

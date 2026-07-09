@@ -91,11 +91,7 @@ class BusinessConnection(Object):
                     business_connect_update.connection.user_id
                 ]
             ),
-            user_chat_id=getattr(
-                business_connect_update.connection,
-                "user_chat_id",
-                business_connect_update.connection.user_id,
-            ),
+            user_chat_id=business_connect_update.connection.user_id,
             date=utils.timestamp_to_datetime(business_connect_update.connection.date),
             rights=types.BusinessBotRights._parse(
                 client,

@@ -37,13 +37,11 @@ class GetChatAdminInviteLinksCount:
             chat_id (``int`` | ``str``):
                 Unique identifier for the target chat or username of the target channel/supergroup
                 (in the format @username).
-                You can also use chat public link in form of *t.me/<username>* (str).
 
             admin_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target user.
                 For you yourself you can simply use "me" or "self".
                 For a contact that exists in your Telegram address book you can use his phone number (str).
-                You can also use user profile link in form of *t.me/<username>* (str).
 
             revoked (``bool``, *optional*):
                 True, if you want to get revoked links instead.
@@ -57,7 +55,7 @@ class GetChatAdminInviteLinksCount:
                 peer=await self.resolve_peer(chat_id),
                 admin_id=await self.resolve_peer(admin_id),
                 limit=1,
-                revoked=revoked,
+                revoked=revoked
             )
         )
 

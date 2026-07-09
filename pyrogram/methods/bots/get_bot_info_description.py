@@ -29,29 +29,37 @@ class GetBotInfoDescription:
         for_my_bot: Union[int, str] = None,
     ) -> str:
         """Use this method to get the current / owned bot description for the given user language.
-
+        
         .. note::
 
-            If the current account is an User, can be called only if the ``for_my_bot`` has
-            ``can_be_edited`` property set to True.
+            If the current account is an User, can be called only if the ``for_my_bot`` has ``can_be_edited`` property set to True.
 
         .. include:: /_includes/usable-by/users-bots.rst
 
         Parameters:
             language_code (``str``, *optional*):
-                A two-letter ISO 639-1 language code or an empty string.
+                A two-letter ISO 639-1 language code or an empty string
 
             for_my_bot (``int`` | ``str``, *optional*):
-                Unique identifier (int) or username (str) of the bot for which the description
-                should be returned instead of the current bot.
+                Unique identifier (int) or username (str) of the bot for which profile photo has to be updated instead of the current user.
+                The bot should have ``can_be_edited`` property set to True.
 
         Returns:
-            ``str``: On success, returns the text shown in the chat with a bot if the chat is empty.
+            ``str``: On success, returns the text shown in the chat with a bot if the chat is empty in the given language.
+
+        Raises:
+            :obj:`~pyrogram.errors.RPCError`: In case of a Telegram RPC error.
+
+        Example:
+            .. code-block:: python
+
+                bot_description = await app.get_bot_info_description()
         """
+
         bot_info = await self.invoke(
             raw.functions.bots.GetBotInfo(
                 bot=await self.resolve_peer(for_my_bot) if for_my_bot else None,
-                lang_code=language_code,
+                lang_code=language_code
             )
         )
         return bot_info.description

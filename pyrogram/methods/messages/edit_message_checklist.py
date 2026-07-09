@@ -1,21 +1,20 @@
-#  pyroblack - Telegram MTProto API Client Library for Python
-#  Copyright (C) 2022-present Mayuri-Chan <https://github.com/Mayuri-Chan>
-#  Copyright (C) 2024-present eyMarv <https://github.com/eyMarv>
+#  Pyrogram - Telegram MTProto API Client Library for Python
+#  Copyright (C) 2017-present <https://github.com/TelegramPlayGround>
 #
-#  This file is part of pyroblack.
+#  This file is part of Pyrogram.
 #
-#  pyroblack is free software: you can redistribute it and/or modify
+#  Pyrogram is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU Lesser General Public License as published
 #  by the Free Software Foundation, either version 3 of the License, or
 #  (at your option) any later version.
 #
-#  pyroblack is distributed in the hope that it will be useful,
+#  Pyrogram is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU Lesser General Public License for more details.
 #
 #  You should have received a copy of the GNU Lesser General Public License
-#  along with pyroblack.  If not, see <http://www.gnu.org/licenses/>.
+#  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
 
 from typing import Optional, Union
 
@@ -29,8 +28,11 @@ class EditMessageChecklist:
         chat_id: Union[int, str],
         message_id: int,
         checklist: "types.InputChecklist",
-        business_connection_id: Optional[str] = None,
         reply_markup: Optional["types.InlineKeyboardMarkup"] = None,
+        business_connection_id: Optional[str] = None,
+        caption: str = "",
+        parse_mode: Optional["enums.ParseMode"] = None,
+        caption_entities: list["types.MessageEntity"] = None,
     ) -> "types.Message":
         """Use this method to edit a checklist.
 
@@ -40,18 +42,29 @@ class EditMessageChecklist:
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
                 For your personal cloud (Saved Messages) you can simply use "me" or "self".
+                For a contact that exists in your Telegram address book you can use his phone number (str).
 
             message_id (``int``):
-                Message identifier in the chat specified in chat_id.
+                Unique identifier for the target message.
 
             checklist (:obj:`~pyrogram.types.InputChecklist`):
                 New checklist.
 
+            reply_markup (:obj:`~pyrogram.types.InlineKeyboardMarkup`, *optional*):
+                An InlineKeyboardMarkup object.
+
             business_connection_id (``str``, *optional*):
                 Unique identifier of the business connection on behalf of which the message will be sent.
 
-            reply_markup (:obj:`~pyrogram.types.InlineKeyboardMarkup`, *optional*):
-                An InlineKeyboardMarkup object.
+            caption (``str``, *optional*):
+                Media caption, 0-1024 characters.
+
+            parse_mode (:obj:`~pyrogram.enums.ParseMode`, *optional*):
+                By default, texts are parsed using both Markdown and HTML styles.
+                You can combine both syntaxes together.
+
+            caption_entities (List of :obj:`~pyrogram.types.MessageEntity`):
+                List of special entities that appear in the caption, which can be specified instead of *parse_mode*.
 
         Returns:
             :obj:`~pyrogram.types.Message`: On success, the edited message is returned.
@@ -59,47 +72,55 @@ class EditMessageChecklist:
         Example:
             .. code-block:: python
 
+                # Replace the current checklist with a new one
                 await app.edit_message_checklist(
                     chat_id=chat_id,
                     message_id=message_id,
                     checklist=types.InputChecklist(
-                        title="Checklist",
+                        title="To Do",
                         tasks=[
-                            types.InputChecklistTask(id=1, text="Task 1"),
-                            types.InputChecklistTask(id=2, text="Task 2")
+                            types.InputChecklistTask(id=2, text="Task 2"),
+                            types.InputChecklistTask(id=3, text="Task 3"),
                         ]
                     )
                 )
         """
         title, entities = (await utils.parse_text_entities(
-            self, checklist.title, checklist.parse_mode, checklist.entities
+            self, checklist.title, checklist.parse_mode, checklist.title_entities
         )).values()
 
-        r = await self.invoke(
-            raw.functions.messages.EditMessage(
-                peer=await self.resolve_peer(chat_id),
-                id=message_id,
-                media=raw.types.InputMediaTodo(
-                    todo=raw.types.TodoList(
-                        title=raw.types.TextWithEntities(
-                            text=title,
-                            entities=entities or []
-                        ),
-                        list=[await task.write(self) for task in checklist.tasks],
-                        others_can_append=checklist.others_can_add_tasks,
-                        others_can_complete=checklist.others_can_mark_tasks_as_done
-                    )
-                ),
-                reply_markup=await reply_markup.write(self) if reply_markup else None,
-                entities=entities
+        rpc = raw.functions.messages.EditMessage(
+            peer=await self.resolve_peer(chat_id),
+            id=message_id,
+            media=raw.types.InputMediaTodo(
+                todo=raw.types.TodoList(
+                    title=raw.types.TextWithEntities(
+                        text=title,
+                        entities=entities or []
+                    ),
+                    list=[await task.write(self) for task in checklist.tasks],
+                    others_can_append=checklist.others_can_add_tasks,
+                    others_can_complete=checklist.others_can_mark_tasks_as_done
+                )
             ),
-            business_connection_id=business_connection_id
+            reply_markup=await reply_markup.write(self) if reply_markup else None,
+            **await utils.parse_text_entities(self, caption, parse_mode, caption_entities)
         )
+        if business_connection_id:
+            r = await self.invoke(
+                raw.functions.InvokeWithBusinessConnection(
+                    query=rpc,
+                    connection_id=business_connection_id
+                )
+            )
+        else:
+            r = await self.invoke(rpc)
 
         for i in r.updates:
             if isinstance(i, (raw.types.UpdateEditMessage, raw.types.UpdateEditChannelMessage)):
                 return await types.Message._parse(
                     self, i.message,
                     {i.id: i for i in r.users},
-                    {i.id: i for i in r.chats}
+                    {i.id: i for i in r.chats},
+                    replies=self.fetch_replies
                 )

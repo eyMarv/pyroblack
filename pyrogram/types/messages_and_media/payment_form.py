@@ -19,22 +19,19 @@
 from typing import Optional
 
 import pyrogram
-from pyrogram import enums, raw, types
+from pyrogram import types, raw
 from ..object import Object
 
 
 class PaymentForm(Object):
-    """This object contains information about a payment form.
+    """This object contains basic information about an payment form.
 
     Parameters:
         id (``int``):
             Form id.
 
-        type (:obj:`~pyrogram.enums.PaymentFormType`):
-            Type of the payment form.
-
-        bot (``str``, *optional*):
-            Seller bot.
+        bot (``types.User``):
+            Bot.
 
         title (``str``):
             Form title.
@@ -42,10 +39,10 @@ class PaymentForm(Object):
         description (``str``):
             Form description.
 
-        invoice (``str``):
+        invoice (``types.Invoice``):
             Invoice.
 
-        provider (``str``, *optional*):
+        provider (``types.User``, *optional*):
             Payment provider.
 
         url (``str``, *optional*):
@@ -62,36 +59,34 @@ class PaymentForm(Object):
         native_provider (``str``, *optional*):
             Payment provider name.
 
-        additional_payment_options (List of :obj:`~pyrogram.types.PaymentOption`, *optional*):
-            Additional payment options.
-
-        saved_credentials (List of :obj:`~pyrogram.types.SavedCredentials`, *optional*):
-            Saved payment credentials.
+        _raw (:obj:`~raw.base.payments.PaymentForm`, *optional*):
+            The raw object, as received from the Telegram API.
     """
 
     def __init__(
-        self,
-        *,
-        client: "pyrogram.Client" = None,
-        id: int,
-        type: "enums.PaymentFormType",
-        bot: "types.User" = None,
-        title: str = None,
-        description: str = None,
-        invoice: "types.Invoice" = None,
-        provider: Optional["types.User"] = None,
-        url: Optional[str] = None,
-        can_save_credentials: Optional[bool] = None,
-        is_password_missing: Optional[bool] = None,
-        native_provider: Optional[str] = None,
-        additional_payment_options=None,
-        saved_credentials=None,
-        raw: "raw.base.payments.PaymentForm" = None,
+            self,
+            *,
+            client: "pyrogram.Client" = None,
+            id: int,
+            bot: "types.User",
+            title: str,
+            description: str,
+            invoice: "types.Invoice",
+            provider: Optional["types.User"] = None,
+            url: Optional[str] = None,
+            can_save_credentials: Optional[bool] = None,
+            is_password_missing: Optional[bool] = None,
+            native_provider: Optional[str] = None,
+            _raw: "raw.base.payments.PaymentForm" = None,
+            # TODO: Add support for other params:
+            # native_params
+            # additional_params
+            # saved_info
+            # saved_credentials
     ):
         super().__init__(client)
 
         self.id = id
-        self.type = type
         self.bot = bot
         self.title = title
         self.description = description
@@ -101,55 +96,22 @@ class PaymentForm(Object):
         self.can_save_credentials = can_save_credentials
         self.is_password_missing = is_password_missing
         self.native_provider = native_provider
-        self.additional_payment_options = additional_payment_options
-        self.saved_credentials = saved_credentials
-        self.raw = raw
+        self._raw = _raw
 
     @staticmethod
     def _parse(client, payment_form: "raw.base.payments.PaymentForm") -> "PaymentForm":
-        users = {i.id: i for i in getattr(payment_form, "users", [])}
+        users = {i.id: i for i in payment_form.users}
 
-        if isinstance(payment_form, raw.types.payments.PaymentForm):
-            return PaymentForm(
-                id=payment_form.form_id,
-                type=enums.PaymentFormType.REGULAR,
-                bot=types.User._parse(client, users.get(payment_form.bot_id)),
-                title=payment_form.title,
-                description=payment_form.description,
-                invoice=types.Invoice._parse(client, payment_form.invoice),
-                provider=types.User._parse(client, users.get(getattr(payment_form, "provider_id", None))),
-                url=getattr(payment_form, "url", None),
-                can_save_credentials=getattr(payment_form, "can_save_credentials", None),
-                is_password_missing=getattr(payment_form, "password_missing", None),
-                native_provider=getattr(payment_form, "native_provider", None),
-                additional_payment_options=types.List([
-                    types.PaymentOption._parse(option)
-                    for option in getattr(payment_form, "additional_methods", [])
-                ]) or None,
-                saved_credentials=types.List([
-                    types.SavedCredentials._parse(credential)
-                    for credential in getattr(payment_form, "saved_credentials", [])
-                ]) or None,
-                raw=payment_form,
-            )
-
-        if isinstance(payment_form, raw.types.payments.PaymentFormStarGift):
-            return PaymentForm(
-                id=payment_form.form_id,
-                type=enums.PaymentFormType.STAR_SUBSCRIPTION,
-                invoice=types.Invoice._parse(client, payment_form.invoice),
-                raw=payment_form,
-            )
-
-        if isinstance(payment_form, raw.types.payments.PaymentFormStars):
-            return PaymentForm(
-                id=payment_form.form_id,
-                type=enums.PaymentFormType.STARS,
-                bot=types.User._parse(client, users.get(payment_form.bot_id)),
-                title=payment_form.title,
-                description=payment_form.description,
-                invoice=types.Invoice._parse(client, payment_form.invoice),
-                raw=payment_form,
-            )
-
-        return None
+        return PaymentForm(
+            id=payment_form.form_id,
+            bot=types.User._parse(client, users.get(payment_form.bot_id)),
+            title=payment_form.title,
+            description=payment_form.description,
+            invoice=types.Invoice._parse(client, payment_form.invoice),
+            provider=types.User._parse(client, users.get(getattr(payment_form, "provider_id", None))),
+            url=getattr(payment_form, "url", None),
+            can_save_credentials=getattr(payment_form, "can_save_credentials", None),
+            is_password_missing=getattr(payment_form, "password_missing", None),
+            native_provider=getattr(payment_form, "native_provider", None),
+            _raw=payment_form
+        )

@@ -1,6 +1,5 @@
 #  Pyrogram - Telegram MTProto API Client Library for Python
 #  Copyright (C) 2017-present Dan <https://github.com/delivrance>
-#  Copyright (C) 2022-present Mayuri-Chan <https://github.com/Mayuri-Chan>
 #
 #  This file is part of Pyrogram.
 #
@@ -25,14 +24,16 @@ from pyrogram.filters import Filter
 
 class OnPreCheckoutQuery:
     def on_pre_checkout_query(
-        self: Union["OnPreCheckoutQuery", Filter, None] = None,
-        filters: Optional[Filter] = None,
+        self=None,
+        filters=None,
         group: int = 0,
     ) -> Callable:
         """Decorator for handling pre-checkout queries.
 
         This does the same thing as :meth:`~pyrogram.Client.add_handler` using the
         :obj:`~pyrogram.handlers.PreCheckoutQueryHandler`.
+
+        .. include:: /_includes/usable-by/bots.rst
 
         Parameters:
             filters (:obj:`~pyrogram.filters`, *optional*):
@@ -41,13 +42,12 @@ class OnPreCheckoutQuery:
 
             group (``int``, *optional*):
                 The group identifier, defaults to 0.
+
         """
 
         def decorator(func: Callable) -> Callable:
             if isinstance(self, pyrogram.Client):
-                self.add_handler(
-                    pyrogram.handlers.PreCheckoutQueryHandler(func, filters), group
-                )
+                self.add_handler(pyrogram.handlers.PreCheckoutQueryHandler(func, filters), group)
             elif isinstance(self, Filter) or self is None:
                 if not hasattr(func, "handlers"):
                     func.handlers = []
@@ -55,7 +55,7 @@ class OnPreCheckoutQuery:
                 func.handlers.append(
                     (
                         pyrogram.handlers.PreCheckoutQueryHandler(func, self),
-                        group if filters is None else filters,
+                        group if filters is None else filters
                     )
                 )
 

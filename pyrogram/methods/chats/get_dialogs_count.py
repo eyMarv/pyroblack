@@ -16,8 +16,6 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional
-
 import pyrogram
 from pyrogram import raw
 
@@ -26,7 +24,7 @@ class GetDialogsCount:
     async def get_dialogs_count(
         self: "pyrogram.Client",
         pinned_only: bool = False,
-        from_archive: Optional[bool] = None,
+        chat_list: int = 0
     ) -> int:
         """Get the total count of your dialogs.
 
@@ -36,9 +34,9 @@ class GetDialogsCount:
             pinned_only (``bool``, *optional*):
                 Pass True if you want to count only pinned dialogs.
                 Defaults to False.
-
-            from_archive (``bool``, *optional*):
-                Pass True to get dialogs count from archive.
+            
+            chat_list (``int``, *optional*):
+                Chat list from which to get the dialogs; Only Main (0) and Archive (1) chat lists are supported. Defaults to (0) Main chat list.
 
         Returns:
             ``int``: On success, the dialogs count is returned.
@@ -51,13 +49,7 @@ class GetDialogsCount:
         """
 
         if pinned_only:
-            r = await self.invoke(
-                raw.functions.messages.GetPinnedDialogs(
-                    folder_id=1 if from_archive else 0
-                )
-            )
-
-            return len(r.dialogs)
+            return len((await self.invoke(raw.functions.messages.GetPinnedDialogs(folder_id=chat_list))).dialogs)
         else:
             r = await self.invoke(
                 raw.functions.messages.GetDialogs(
@@ -66,9 +58,7 @@ class GetDialogsCount:
                     offset_peer=raw.types.InputPeerEmpty(),
                     limit=1,
                     hash=0,
-                    folder_id=(
-                        None if from_archive is None else 1 if from_archive else 0
-                    ),
+                    folder_id=chat_list
                 )
             )
 

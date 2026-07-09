@@ -16,6 +16,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
 
+from asyncio import sleep
 from typing import Union, Optional, AsyncGenerator
 
 import pyrogram
@@ -36,7 +37,6 @@ class GetDiscussionReplies:
         Parameters:
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
-                You can also use chat public link in form of *t.me/<username>* (str).
 
             message_id (``int``):
                 Message id.
@@ -67,19 +67,26 @@ class GetDiscussionReplies:
                     limit=limit,
                     max_id=0,
                     min_id=0,
-                    hash=0,
+                    hash=0
                 )
             )
 
             users = {u.id: u for u in r.users}
             chats = {c.id: c for c in r.chats}
-            messages = r.messages
+            messages = r.messages  # TODO
 
             if not messages:
                 return
 
             for message in messages:
-                yield await types.Message._parse(self, message, users, chats, replies=0)
+                await sleep(0)
+                yield await types.Message._parse(
+                    self,
+                    message,
+                    users,
+                    chats,
+                    replies=self.fetch_replies
+                )
 
                 current += 1
 

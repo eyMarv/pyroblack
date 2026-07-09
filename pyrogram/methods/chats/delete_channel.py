@@ -23,7 +23,10 @@ from pyrogram import raw
 
 
 class DeleteChannel:
-    async def delete_channel(self: "pyrogram.Client", chat_id: Union[int, str]) -> bool:
+    async def delete_channel(
+        self: "pyrogram.Client",
+        chat_id: Union[int, str]
+    ) -> bool:
         """Delete a channel.
 
         .. include:: /_includes/usable-by/users.rst
@@ -31,7 +34,6 @@ class DeleteChannel:
         Parameters:
             chat_id (``int`` | ``str``):
                 The id of the channel to be deleted.
-                You can also use chat public link in form of *t.me/<username>* (str).
 
         Returns:
             ``bool``: On success, True is returned.

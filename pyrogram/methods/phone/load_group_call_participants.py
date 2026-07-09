@@ -1,21 +1,20 @@
-#  pyroblack - Telegram MTProto API Client Library for Python
-#  Copyright (C) 2022-present Mayuri-Chan <https://github.com/Mayuri-Chan>
-#  Copyright (C) 2024-present eyMarv <https://github.com/eyMarv>
+#  Pyrogram - Telegram MTProto API Client Library for Python
+#  Copyright (C) 2017-present Dan <https://github.com/delivrance>
 #
-#  This file is part of pyroblack.
+#  This file is part of Pyrogram.
 #
-#  pyroblack is free software: you can redistribute it and/or modify
+#  Pyrogram is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU Lesser General Public License as published
 #  by the Free Software Foundation, either version 3 of the License, or
 #  (at your option) any later version.
 #
-#  pyroblack is distributed in the hope that it will be useful,
+#  Pyrogram is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU Lesser General Public License for more details.
 #
 #  You should have received a copy of the GNU Lesser General Public License
-#  along with pyroblack.  If not, see <http://www.gnu.org/licenses/>.
+#  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
 
 from asyncio import sleep
 from typing import Union, AsyncGenerator
@@ -29,22 +28,20 @@ class LoadGroupCallParticipants:
         self: "pyrogram.Client",
         chat_id: Union[int, str],
         limit: int = 0
-    ) -> AsyncGenerator["types.GroupCallMember", None]:
+    ) -> AsyncGenerator["types.GroupCallParticipant", None]:
         """Loads participants list in a group call of a chat.
 
         .. include:: /_includes/usable-by/users.rst
 
         Parameters:
             chat_id (``int`` | ``str``):
-                Unique identifier (int) or username (str) of the target chat.
-                A chat can be either a basic group or a supergroup.
+                Unique identifier (int) or username (str) of the target chat. A chat can be either a basic group or a supergroup.
 
             limit (``int``, *optional*):
-                Limits the number of participants to be retrieved.
-                By default, no limit is applied and all participants are returned.
+                Limits the number of participants to be retrieved. By default, no limit is applied and all participants are returned.
 
         Returns:
-            ``Generator``: On success, a generator yielding :obj:`~pyrogram.types.GroupCallMember` objects is returned.
+            ``Generator``: On success, a generator yielding :obj:`~pyrogram.types.GroupCallParticipant` object is returned.
 
         Example:
             .. code-block:: python
@@ -88,7 +85,7 @@ class LoadGroupCallParticipants:
             users = {u.id: u for u in r.users}
             chats = {c.id: c for c in r.chats}
             participants = [
-                types.GroupCallMember._parse(
+                types.GroupCallParticipant._parse(
                     self, participant, users, chats
                 ) for participant in r.participants
             ]

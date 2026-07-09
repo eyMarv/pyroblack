@@ -1,21 +1,20 @@
-#  pyroblack - Telegram MTProto API Client Library for Python
-#  Copyright (C) 2022-present Mayuri-Chan <https://github.com/Mayuri-Chan>
-#  Copyright (C) 2024-present eyMarv <https://github.com/eyMarv>
+#  Pyrogram - Telegram MTProto API Client Library for Python
+#  Copyright (C) 2017-present Dan <https://github.com/delivrance>
 #
-#  This file is part of pyroblack.
+#  This file is part of Pyrogram.
 #
-#  pyroblack is free software: you can redistribute it and/or modify
+#  Pyrogram is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU Lesser General Public License as published
 #  by the Free Software Foundation, either version 3 of the License, or
 #  (at your option) any later version.
 #
-#  pyroblack is distributed in the hope that it will be useful,
+#  Pyrogram is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU Lesser General Public License for more details.
 #
 #  You should have received a copy of the GNU Lesser General Public License
-#  along with pyroblack.  If not, see <http://www.gnu.org/licenses/>.
+#  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
 
 from typing import Union
 
@@ -35,12 +34,10 @@ class GetVideoChatRtmpUrl:
 
         Parameters:
             chat_id (``int`` | ``str``):
-                Unique identifier (int) or username (str) of the target chat.
-                A chat can be either a basic group, supergroup or a channel.
+                Unique identifier (int) or username (str) of the target chat. A chat can be either a basic group, supergroup or a channel.
 
             replace (``bool``, *optional*):
-                Whether to replace the previous stream key or simply return the existing one.
-                Defaults to False, i.e., return the existing one.
+                Whether to replace the previous stream key or simply return the existing one. Defaults to False, i.e., return the existing one.
 
         Returns:
             :obj:`~pyrogram.types.RtmpUrl`: On success, the RTMP URL and stream key is returned.
@@ -48,7 +45,7 @@ class GetVideoChatRtmpUrl:
         Example:
             .. code-block:: python
 
-                await app.get_video_chat_rtmp_url(chat_id)
+                await app.get_stream_rtmp_url(chat_id)
 
         """
         peer = await self.resolve_peer(chat_id)

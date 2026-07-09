@@ -26,7 +26,7 @@ class SetSendAsChat:
     async def set_send_as_chat(
         self: "pyrogram.Client",
         chat_id: Union[int, str],
-        send_as_chat_id: Union[int, str],
+        send_as_chat_id: Union[int, str]
     ) -> bool:
         """Set the default "send_as" chat for a chat.
 
@@ -37,11 +37,9 @@ class SetSendAsChat:
         Parameters:
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
-                You can also use chat public link in form of *t.me/<username>* (str).
 
             send_as_chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the send_as chat.
-                You can also use chat public link in form of *t.me/<username>* (str).
 
         Returns:
             ``bool``: On success, true is returned
@@ -54,6 +52,6 @@ class SetSendAsChat:
         return await self.invoke(
             raw.functions.messages.SaveDefaultSendAs(
                 peer=await self.resolve_peer(chat_id),
-                send_as=await self.resolve_peer(send_as_chat_id),
+                send_as=await self.resolve_peer(send_as_chat_id)
             )
         )

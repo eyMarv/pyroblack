@@ -48,14 +48,9 @@ class StarAmount(Object):
 
     @staticmethod
     def _parse(
-        stars_status: "raw.base.payments.StarsStatus | raw.types.StarsAmount"
+        client: "pyrogram.Client",
+        stars_status: "raw.base.payments.StarsStatus"
     ) -> "StarAmount":
-        if isinstance(stars_status, raw.types.StarsAmount):
-            return StarAmount(
-                star_count=stars_status.amount,
-                nanostar_count=stars_status.nanos,
-            )
-
         return StarAmount(
             star_count=stars_status.balance.amount,
             nanostar_count=stars_status.balance.nanos,

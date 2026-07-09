@@ -16,15 +16,14 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import List
-
-from pyrogram import raw, types
+import pyrogram
+from pyrogram import raw, types, utils
 
 from ..object import Object
 
 
 class ActiveSessions(Object):
-    """Contains a list of currently active sessions
+    """Contains a list of sessions
 
     Parameters:
         inactive_session_ttl_days (``int``):
@@ -32,13 +31,14 @@ class ActiveSessions(Object):
 
         active_sessions (List of :obj:`~pyrogram.types.ActiveSession`):
             List of sessions.
+
     """
 
     def __init__(
         self,
         *,
         inactive_session_ttl_days: int = None,
-        active_sessions: List["types.ActiveSession"] = None,
+        active_sessions: list["types.ActiveSession"] = None
     ):
         super().__init__()
 
@@ -46,13 +46,14 @@ class ActiveSessions(Object):
         self.active_sessions = active_sessions
 
     @staticmethod
-    def _parse(authorizations: "raw.types.account.Authorizations") -> "ActiveSessions":
+    def _parse(
+        client: "pyrogram.Client",
+        authorizations: "raw.types.account.Authorizations"
+    ) -> "ActiveSessions":        
         return ActiveSessions(
             inactive_session_ttl_days=authorizations.authorization_ttl_days,
-            active_sessions=types.List(
-                [
-                    types.ActiveSession._parse(active)
-                    for active in authorizations.authorizations
-                ]
-            ),
+            active_sessions=types.List([
+                types.ActiveSession._parse(client, active)
+                for active in authorizations.authorizations
+            ])
         )

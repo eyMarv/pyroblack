@@ -16,7 +16,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import List, Optional, Union
+from typing import Optional, Union
 
 import pyrogram
 from pyrogram import raw, types
@@ -27,7 +27,8 @@ class GetSendAsChats:
         self: "pyrogram.Client",
         chat_id: Union[int, str],
         for_paid_reactions: Optional[bool] = None,
-    ) -> List["types.Chat"]:
+        for_live_stories: Optional[bool] = None,
+    ) -> list["types.Chat"]:
         """Get the list of "send_as" chats available.
 
         .. include:: /_includes/usable-by/users.rst
@@ -35,24 +36,28 @@ class GetSendAsChats:
         Parameters:
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
-                You can also use chat public link in form of *t.me/<username>* (str).
 
             for_paid_reactions (``bool``, *optional*):
                 Pass True to get the list of available send_as chats for paid reactions.
 
+            for_live_stories (``bool``, *optional*):
+                Pass True to get the list of available send_as chats for viewing live stories.
+
         Returns:
-            List[:obj:`~pyrogram.types.Chat`]: The list of chats.
+            List of :obj:`~pyrogram.types.Chat`: The list of chats.
 
         Example:
             .. code-block:: python
 
                 chats = await app.get_send_as_chats(chat_id)
                 print(chats)
+
         """
         r = await self.invoke(
             raw.functions.channels.GetSendAs(
                 peer=await self.resolve_peer(chat_id),
                 for_paid_reactions=for_paid_reactions,
+                for_live_stories=for_live_stories
             )
         )
 
@@ -62,13 +67,10 @@ class GetSendAsChats:
         send_as_chats = types.List()
 
         for p in r.peers:
+            # TODO
             if isinstance(p.peer, raw.types.PeerUser):
-                send_as_chats.append(
-                    types.Chat._parse_chat(self, users[p.peer.user_id])
-                )
+                send_as_chats.append(types.Chat._parse_chat(self, users[p.peer.user_id]))
             else:
-                send_as_chats.append(
-                    types.Chat._parse_chat(self, chats[p.peer.channel_id])
-                )
+                send_as_chats.append(types.Chat._parse_chat(self, chats[p.peer.channel_id]))
 
         return send_as_chats

@@ -1,3 +1,4 @@
+
 #  Pyrogram - Telegram MTProto API Client Library for Python
 #  Copyright (C) 2017-present Dan <https://github.com/delivrance>
 #
@@ -16,20 +17,18 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
 
-from .get_call_members import GetCallMembers
+from .load_group_call_participants import LoadGroupCallParticipants
+from .invite_group_call_participants import InviteGroupCallParticipants
 from .create_video_chat import CreateVideoChat
 from .discard_group_call import DiscardGroupCall
 from .get_video_chat_rtmp_url import GetVideoChatRtmpUrl
-from .invite_group_call_participants import InviteGroupCallParticipants
-from .load_group_call_participants import LoadGroupCallParticipants
 
 
 class Phone(
-    GetCallMembers,
+    InviteGroupCallParticipants,
+    LoadGroupCallParticipants,
     CreateVideoChat,
     DiscardGroupCall,
     GetVideoChatRtmpUrl,
-    InviteGroupCallParticipants,
-    LoadGroupCallParticipants,
 ):
     pass

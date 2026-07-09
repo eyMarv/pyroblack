@@ -1,5 +1,6 @@
 #  Pyrogram - Telegram MTProto API Client Library for Python
-#  Copyright (C) 2017-present Dan <https://github.com/delivrance>
+#  Copyright (C) 2017-2024 Dan <https://github.com/delivrance>
+#  Copyright (C) 2026-present <https://github.com/TelegramPlayGround>
 #
 #  This file is part of Pyrogram.
 #
@@ -17,5 +18,3 @@
 #  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
 
 from .parser import Parser
-
-__all__ = ["Parser"]

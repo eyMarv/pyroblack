@@ -1,22 +1,20 @@
-#  pyroblack - Telegram MTProto API Client Library for Python
+#  Pyrogram - Telegram MTProto API Client Library for Python
 #  Copyright (C) 2017-present Dan <https://github.com/delivrance>
-#  Copyright (C) 2022-present Mayuri-Chan <https://github.com/Mayuri-Chan>
-#  Copyright (C) 2024-present eyMarv <https://github.com/eyMarv>
 #
-#  This file is part of pyroblack.
+#  This file is part of Pyrogram.
 #
-#  pyroblack is free software: you can redistribute it and/or modify
+#  Pyrogram is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU Lesser General Public License as published
 #  by the Free Software Foundation, either version 3 of the License, or
 #  (at your option) any later version.
 #
-#  pyroblack is distributed in the hope that it will be useful,
+#  Pyrogram is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU Lesser General Public License for more details.
 #
 #  You should have received a copy of the GNU Lesser General Public License
-#  along with pyroblack.  If not, see <http://www.gnu.org/licenses/>.
+#  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
 
 from typing import Optional
 
@@ -28,16 +26,16 @@ class MessageEffect(Object):
     """Contains information about an effect added to a message.
 
     Parameters:
-        id (``int`` ``64-bit``):
+        id (``int`` ``64-bit``, *optional*):
             Unique identifier of the effect.
 
         emoji (``str``):
             Emoji that represents the effect.
 
-        static_icon (:obj:`~pyrogram.types.Document`, *optional*):
-            Static icon for the effect in WEBP format.
+        static_icon (:obj:`~pyrogram.types.Sticker`, *optional*):
+            Static icon for the effect in WEBP format; may be null if none
 
-        effect_animation (:obj:`~pyrogram.types.Sticker`, *optional*):
+        effect_animation (:obj:`~pyrogram.types.Document`, *optional*):
             Effect animation for the effect in TGS format.
 
         select_animation (:obj:`~pyrogram.types.Document`, *optional*):
@@ -53,8 +51,8 @@ class MessageEffect(Object):
         *,
         id: int,
         emoji: str,
-        static_icon: Optional["types.Document"] = None,
-        effect_animation: Optional["types.Sticker"] = None,
+        static_icon: Optional["types.Sticker"] = None,
+        effect_animation: Optional["types.Document"] = None,
         select_animation: Optional["types.Document"] = None,
         is_premium: Optional[bool] = None
     ):
@@ -79,12 +77,17 @@ class MessageEffect(Object):
         static_icon = None
         select_animation = None
 
+        effect_sticker_id = effect.effect_sticker_id
+        static_icon_id = getattr(effect, "static_icon_id", None)
+        effect_animation_id = getattr(effect, "effect_animation_id", None)
+
         if effect_animation_document:
             effect_animation = await types.Sticker._parse(
                 client,
                 effect_animation_document,
                 {type(i): i for i in effect_animation_document.attributes}
             )
+        # TODO: FIXME!
         if static_icon_document:
             document_attributes = {
                 type(i): i for i in static_icon_document.attributes
@@ -110,7 +113,7 @@ class MessageEffect(Object):
             id=effect.id,
             emoji=effect.emoticon,
             static_icon=static_icon,
-            effect_animation=effect_animation,
-            select_animation=select_animation,
+            effect_animation=effect_animation,  # TODO: FIXME!
+            select_animation=select_animation,  # TODO: FIXME!
             is_premium=getattr(effect, "premium_required", None)
         )

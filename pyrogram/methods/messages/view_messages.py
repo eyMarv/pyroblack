@@ -16,7 +16,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union, List
+from typing import Union
 
 import pyrogram
 from pyrogram import raw
@@ -26,9 +26,10 @@ class ViewMessages:
     async def view_messages(
         self: "pyrogram.Client",
         chat_id: Union[int, str],
-        message_id: Union[int, List[int]],
+        message_ids: Union[int, list[int]],
+        force_read: bool = True
     ) -> bool:
-        """Increment message views counter.
+        """Informs the server that messages are being viewed by the current user.
 
         .. include:: /_includes/usable-by/users.rst
 
@@ -36,8 +37,11 @@ class ViewMessages:
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
 
-            message_id (``int`` | List of ``int``):
+            message_ids (``int`` | List of ``int``):
                 Identifier or list of message identifiers of the target message.
+
+            force_read (``bool``, *optional*):
+                Pass True to mark as read the specified messages and also increment the view counter.
 
         Returns:
             ``bool``: On success, True is returned.
@@ -48,11 +52,13 @@ class ViewMessages:
                 # Increment message views
                 await app.view_messages(chat_id, 1)
         """
-        ids = [message_id] if not isinstance(message_id, list) else message_id
+        ids = [message_ids] if not isinstance(message_ids, list) else message_ids
 
         r = await self.invoke(
             raw.functions.messages.GetMessagesViews(
-                peer=await self.resolve_peer(chat_id), id=ids, increment=True
+                peer=await self.resolve_peer(chat_id),
+                id=ids,
+                increment=force_read
             )
         )
 

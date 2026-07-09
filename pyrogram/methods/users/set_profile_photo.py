@@ -16,54 +16,52 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union, BinaryIO, List, Optional
+import io
+from typing import Union
 
 import pyrogram
 from pyrogram import raw
 
 
 class SetProfilePhoto:
+    # TODO: FIXME!
     async def set_profile_photo(
         self: "pyrogram.Client",
         *,
-        photo: Optional[Union[str, BinaryIO]] = None,
-        emoji: int = None,
-        emoji_background: Union[int, List[int]] = None,
-        video: Union[str, BinaryIO] = None,
-        is_public: Optional[bool] = None,
+        photo: Union[str, "io.BytesIO"] = None,
+        video: Union[str, "io.BytesIO"] = None,
+        public: bool = False,
+        for_my_bot: Union[int, str] = None,
+        photo_frame_start_timestamp: float = None
     ) -> bool:
         """Set a new profile photo or video (H.264/MPEG-4 AVC video, max 5 seconds).
 
         The ``photo`` and ``video`` arguments are mutually exclusive.
         Pass either one as named argument (see examples below).
 
-        .. note::
-
-            This bots method only works for photo only.
-
         .. include:: /_includes/usable-by/users-bots.rst
 
         Parameters:
-            photo (``str`` | ``BinaryIO``, *optional*):
+            photo (``str`` | :obj:`io.BytesIO`, *optional*):
                 Profile photo to set.
                 Pass a file path as string to upload a new photo that exists on your local machine or
                 pass a binary file-like object with its attribute ".name" set for in-memory uploads.
 
-            emoji (``int``, *optional*):
-                Unique identifier (int) of the emoji to be used as the profile photo.
-
-            emoji_background (``int`` | ``List[int]``, *optional*):
-                hexadecimal colors or List of hexadecimal colors to be used as the chat photo background.
-
-            video (``str`` | ``BinaryIO``, *optional*):
+            video (``str`` | :obj:`io.BytesIO`, *optional*):
                 Profile video to set.
                 Pass a file path as string to upload a new video that exists on your local machine or
                 pass a binary file-like object with its attribute ".name" set for in-memory uploads.
 
-            is_public (``bool``, *optional*):
-                If set to True, the chosen profile photo will be shown to users that can't display
-                your main profile photo due to your privacy settings.
-                Defaults to None.
+            public (``bool``, *optional*):
+                Pass True to upload a public profile photo for users who are restricted from viewing your real profile photos due to your privacy settings.
+                Defaults to False.
+
+            for_my_bot (``int`` | ``str``, *optional*):
+                Unique identifier (int) or username (str) of the bot for which profile photo has to be updated instead of the current user.
+                The bot should have ``can_be_edited`` property set to True.
+
+            photo_frame_start_timestamp (``float``, *optional*):
+                Floating point UNIX timestamp in seconds, indicating the frame of the video/sticker that should be used as static preview; can only be used if ``video`` is set.
 
         Returns:
             ``bool``: True on success.
@@ -76,29 +74,16 @@ class SetProfilePhoto:
 
                 # Set a new profile video
                 await app.set_profile_photo(video="new_video.mp4")
-
-                # Set/update your account's public profile photo
-                await app.set_profile_photo(photo="new_photo.jpg", is_public=True)
         """
-
-        emoji_id = None
-        if emoji:
-            background_colors = (
-                emoji_background if emoji_background is not None else [0xFFFFFF]
-            )
-            if isinstance(background_colors, int):
-                background_colors = [background_colors]
-            emoji_id = raw.types.VideoSizeEmojiMarkup(
-                emoji_id=emoji, background_colors=background_colors
-            )
 
         return bool(
             await self.invoke(
                 raw.functions.photos.UploadProfilePhoto(
-                    fallback=is_public,
+                    fallback=public,
                     file=await self.save_file(photo),
-                    video_emoji_markup=emoji_id,
                     video=await self.save_file(video),
+                    bot=await self.resolve_peer(for_my_bot) if for_my_bot else None,
+                    video_start_ts=photo_frame_start_timestamp
                 )
             )
         )

@@ -23,11 +23,9 @@ from pyrogram.utils import compute_password_check
 
 class DeleteAccount:
     async def delete_account(
-        self: "pyrogram.Client",
-        reason: str = "",
-        password: str = None,
+        self: "pyrogram.Client", reason: str = "", password: str = None
     ) -> bool:
-        """Delete the current user's account, removing all associated data from the server.
+        """Deletes the account of the current user, deleting all information associated with the user from the server.
 
         .. include:: /_includes/usable-by/users.rst
 
@@ -36,11 +34,15 @@ class DeleteAccount:
                 The reason why the account was deleted.
 
             password (``str``, *optional*):
-                The 2-step verification password of the current user. If no password is
-                provided, account deletion can be cancelled within one week.
+                The 2-step verification password of the current user. If the current user isn't authorized, then an empty string can be passed and account deletion can be canceled within one week.
 
         Returns:
-            ``bool``: True on success.
+            `bool`: True On success.
+
+        Example:
+            .. code-block:: python
+
+                await app.delete_account(reason, password)
         """
         r = await self.invoke(
             raw.functions.account.DeleteAccount(

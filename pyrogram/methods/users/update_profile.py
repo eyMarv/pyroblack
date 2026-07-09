@@ -23,9 +23,10 @@ from pyrogram import raw
 class UpdateProfile:
     async def update_profile(
         self: "pyrogram.Client",
+        *,
         first_name: str = None,
         last_name: str = None,
-        bio: str = None,
+        bio: str = None
     ) -> bool:
         """Update your profile details such as first name, last name and bio.
 
@@ -35,14 +36,15 @@ class UpdateProfile:
 
         Parameters:
             first_name (``str``, *optional*):
-                The new first name.
+                The new first name; 1-64 characters.
 
             last_name (``str``, *optional*):
-                The new last name.
+                The new last name; 1-64 characters.
                 Pass "" (empty string) to remove it.
 
             bio (``str``, *optional*):
-                The new bio, also known as "about". Max 70 characters.
+                Changes the bio of the current user.
+                Max ``intro_description_length_limit`` characters without line feeds.
                 Pass "" (empty string) to remove it.
 
         Returns:
@@ -52,10 +54,10 @@ class UpdateProfile:
             .. code-block:: python
 
                 # Update your first name only
-                await app.update_profile(first_name="pyroblack")
+                await app.update_profile(first_name="Pyrogram")
 
                 # Update first name and bio
-                await app.update_profile(first_name="pyroblack", bio="https://github.io/eyMarv/pyroblack")
+                await app.update_profile(first_name="Pyrogram", bio="https://github.com/TelegramPlayground/pyrogram")
 
                 # Remove the last name
                 await app.update_profile(last_name="")
@@ -64,7 +66,9 @@ class UpdateProfile:
         return bool(
             await self.invoke(
                 raw.functions.account.UpdateProfile(
-                    first_name=first_name, last_name=last_name, about=bio
+                    first_name=first_name,
+                    last_name=last_name,
+                    about=bio
                 )
             )
         )

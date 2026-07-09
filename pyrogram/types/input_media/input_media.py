@@ -16,10 +16,12 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import List, Union, BinaryIO
+import io
+from typing import Optional, Union, Callable
 
 from ..messages_and_media import MessageEntity
 from ..object import Object
+from ... import enums
 
 
 class InputMedia(Object):
@@ -36,10 +38,10 @@ class InputMedia(Object):
 
     def __init__(
         self,
-        media: Union[str, BinaryIO],
-        caption: str = "",
-        parse_mode: str = None,
-        caption_entities: List[MessageEntity] = None,
+        media: Union[str, "io.BytesIO"],
+        caption: Optional[str] = "",
+        parse_mode: Optional["enums.ParseMode"] = None,
+        caption_entities: Optional[list[MessageEntity]] = None,
     ):
         super().__init__()
 
@@ -47,3 +49,13 @@ class InputMedia(Object):
         self.caption = caption
         self.parse_mode = parse_mode
         self.caption_entities = caption_entities
+
+    async def write(
+        self,
+        client: "pyrogram.Client",
+        chat_id: Optional[Union[int, str]] = None,
+        business_connection_id: Optional[str] = None,
+        progress: Optional[Callable] = None,
+        progress_args: tuple = (),
+    ) -> tuple["raw.base.InputMedia", bool]:
+        raise NotImplementedError

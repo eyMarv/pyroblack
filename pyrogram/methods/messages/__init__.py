@@ -16,208 +16,133 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
 
-from .add_checklist_tasks import AddChecklistTasks
-from .add_poll_option import AddPollOption
 from .copy_media_group import CopyMediaGroup
-from .count_public_messages_by_tag import CountPublicMessagesByTag
 from .copy_message import CopyMessage
 from .delete_chat_history import DeleteChatHistory
 from .delete_messages import DeleteMessages
-from .delete_poll_option import DeletePollOption
 from .download_media import DownloadMedia
+from .edit_cached_media import EditCachedMedia
 from .edit_inline_caption import EditInlineCaption
 from .edit_inline_media import EditInlineMedia
 from .edit_inline_reply_markup import EditInlineReplyMarkup
 from .edit_inline_text import EditInlineText
 from .edit_message_caption import EditMessageCaption
-from .edit_message_checklist import EditMessageChecklist
 from .edit_message_media import EditMessageMedia
 from .edit_message_reply_markup import EditMessageReplyMarkup
 from .edit_message_text import EditMessageText
-from .forward_media_group import ForwardMediaGroup
 from .forward_messages import ForwardMessages
-from .get_available_effects import GetAvailableEffects
 from .get_chat_history import GetChatHistory
 from .get_chat_history_count import GetChatHistoryCount
-from .get_chat_sponsored_messages import GetChatSponsoredMessages
 from .get_custom_emoji_stickers import GetCustomEmojiStickers
 from .get_discussion_message import GetDiscussionMessage
 from .get_discussion_replies import GetDiscussionReplies
 from .get_discussion_replies_count import GetDiscussionRepliesCount
-from .get_main_web_app import GetMainWebApp
 from .get_media_group import GetMediaGroup
-from .get_message_read_participants import GetMessageReadParticipants
 from .get_messages import GetMessages
-from .get_saved_gifs import GetSavedGifs
-from .get_scheduled_messages import GetScheduledMessages
-from .get_stickers import GetStickers
-from .get_web_app_link_url import GetWebAppLinkUrl
-from .get_web_app_url import GetWebAppUrl
-from .mark_checklist_tasks_as_done import MarkChecklistTasksAsDone
-from .open_web_app import OpenWebApp
 from .read_chat_history import ReadChatHistory
-from .read_mentions import ReadMentions
-from .read_reactions import ReadReactions
 from .retract_vote import RetractVote
-from .save_gif import SaveGif
 from .search_global import SearchGlobal
 from .search_global_count import SearchGlobalCount
-from .search_global_hashtag_messages import SearchGlobalHashtagMessages
-from .search_global_hashtag_messages_count import SearchGlobalHashtagMessagesCount
 from .search_messages import SearchMessages
 from .search_messages_count import SearchMessagesCount
-from .search_posts import SearchPosts
-from .search_posts_count import SearchPostsCount
-from .search_public_messages_by_tag import SearchPublicMessagesByTag
 from .send_animation import SendAnimation
 from .send_audio import SendAudio
 from .send_cached_media import SendCachedMedia
 from .send_chat_action import SendChatAction
-from .send_checklist import SendChecklist
 from .send_contact import SendContact
 from .send_dice import SendDice
 from .send_document import SendDocument
-from .send_invoice import SendInvoice
 from .send_location import SendLocation
 from .send_media_group import SendMediaGroup
 from .send_message import SendMessage
-from .add_to_gifs import AddToGifs
-from .approve_suggested_post import ApproveSuggestedPost
-from .compose_text_with_ai import ComposeTextWithAI
-from .decline_suggested_post import DeclineSuggestedPost
-from .delete_direct_messages_chat_topic_history import DeleteDirectMessagesChatTopicHistory
-from .fix_text_with_ai import FixTextWithAI
-from .get_direct_messages_chat_topic_history import GetDirectMessagesChatTopicHistory
-from .get_user_personal_chat_messages import GetUserPersonalChatMessages
-from .set_direct_messages_chat_topic_is_marked_as_unread import SetDirectMessagesChatTopicIsMarkedAsUnread
-from .summarize_message import SummarizeMessage
-from .translate_message_text import TranslateMessageText
-from .send_live_photo import SendLivePhoto
-from .send_message_draft import SendMessageDraft
 from .send_paid_media import SendPaidMedia
-from .send_rich_message import SendRichMessage
-from .send_rich_message_draft import SendRichMessageDraft
-from .send_paid_reaction import SendPaidReaction
 from .send_photo import SendPhoto
 from .send_poll import SendPoll
-from .send_reaction import SendReaction
-from .send_screenshot_notification import SendScreenshotNotification
+from .add_paid_message_reaction import AddPaidMessageReaction
 from .set_reaction import SetReaction
 from .send_sticker import SendSticker
 from .send_venue import SendVenue
 from .send_video import SendVideo
 from .send_video_note import SendVideoNote
 from .send_voice import SendVoice
-from .send_web_page import SendWebPage
-from .start_bot import StartBot
 from .stop_poll import StopPoll
 from .stream_media import StreamMedia
-from .transcribe_audio import TranscribeAudio
-from .translate_text import TranslateText
 from .view_messages import ViewMessages
 from .vote_poll import VotePoll
-
+from .get_chat_sponsored_messages import GetChatSponsoredMessages
+from .search_public_messages_by_tag import SearchPublicMessagesByTag
+from .count_public_messages_by_tag import CountPublicMessagesByTag
+from .translate_text import TranslateText
+from .send_screenshot_notification import SendScreenshotNotification
+from .send_checklist import SendChecklist
+from .edit_message_checklist import EditMessageChecklist
+from .mark_checklist_tasks_as_done import MarkChecklistTasksAsDone
+from .add_poll_option import AddPollOption
+from .delete_poll_option import DeletePollOption
 
 class Messages(
+    CopyMediaGroup,
+    CopyMessage,
     DeleteChatHistory,
-    AddChecklistTasks,
-    AddPollOption,
     DeleteMessages,
-    DeletePollOption,
+    DownloadMedia,
+    EditCachedMedia,
+    EditInlineCaption,
+    EditInlineMedia,
+    EditInlineReplyMarkup,
+    EditInlineText,
     EditMessageCaption,
-    EditMessageChecklist,
-    EditMessageReplyMarkup,
     EditMessageMedia,
+    EditMessageReplyMarkup,
     EditMessageText,
-    ForwardMediaGroup,
     ForwardMessages,
-    GetAvailableEffects,
-    GetChatSponsoredMessages,
-    GetMainWebApp,
+    GetChatHistory,
+    GetChatHistoryCount,
+    GetCustomEmojiStickers,
+    GetDiscussionMessage,
+    GetDiscussionReplies,
+    GetDiscussionRepliesCount,
     GetMediaGroup,
-    GetMessageReadParticipants,
     GetMessages,
-    GetSavedGifs,
-    GetScheduledMessages,
-    GetStickers,
-    GetWebAppLinkUrl,
-    GetWebAppUrl,
-    MarkChecklistTasksAsDone,
-    OpenWebApp,
     ReadChatHistory,
-    ReadMentions,
-    ReadReactions,
-    SaveGif,
-    SendAudio,
-    SendChatAction,
-    SendChecklist,
-    SendContact,
-    SendDocument,
+    RetractVote,
+    SearchGlobal,
+    SearchGlobalCount,
+    SearchMessages,
+    SearchMessagesCount,
+    SearchPublicMessagesByTag,
+    CountPublicMessagesByTag,
     SendAnimation,
-    SendInvoice,
+    SendAudio,
+    SendCachedMedia,
+    SendChatAction,
+    SendContact,
+    SendDice,
+    SendDocument,
     SendLocation,
     SendMediaGroup,
     SendMessage,
-    SendMessageDraft,
     SendPaidMedia,
-    SendPaidReaction,
     SendPhoto,
-    SendLivePhoto,
-    SendRichMessage,
-    SendRichMessageDraft,
+    SendPoll,
+    SendScreenshotNotification,
     SendSticker,
     SendVenue,
     SendVideo,
     SendVideoNote,
     SendVoice,
-    SendWebPage,
-    StartBot,
-    ViewMessages,
-    SendPoll,
-    VotePoll,
-    StopPoll,
-    RetractVote,
-    DownloadMedia,
-    GetChatHistory,
-    SendCachedMedia,
-    GetChatHistoryCount,
-    EditInlineText,
-    EditInlineCaption,
-    EditInlineMedia,
-    EditInlineReplyMarkup,
-    SendDice,
-    SearchMessages,
-    SearchGlobal,
-    SearchGlobalHashtagMessages,
-    CopyMessage,
-    CopyMediaGroup,
-    CountPublicMessagesByTag,
-    SearchMessagesCount,
-    SearchPosts,
-    SearchPostsCount,
-    SearchPublicMessagesByTag,
-    SearchGlobalCount,
-    SearchGlobalHashtagMessagesCount,
-    GetDiscussionMessage,
-    SendReaction,
-    SendScreenshotNotification,
+    AddPaidMessageReaction,
     SetReaction,
-    GetDiscussionReplies,
-    GetDiscussionRepliesCount,
+    StopPoll,
     StreamMedia,
-    GetCustomEmojiStickers,
-    TranscribeAudio,
+    ViewMessages,
+    VotePoll,
+    GetChatSponsoredMessages,
     TranslateText,
-    AddToGifs,
-    ApproveSuggestedPost,
-    ComposeTextWithAI,
-    DeclineSuggestedPost,
-    DeleteDirectMessagesChatTopicHistory,
-    FixTextWithAI,
-    GetDirectMessagesChatTopicHistory,
-    GetUserPersonalChatMessages,
-    SetDirectMessagesChatTopicIsMarkedAsUnread,
-    SummarizeMessage,
-    TranslateMessageText,
+    SendChecklist,
+    EditMessageChecklist,
+    MarkChecklistTasksAsDone,
+    AddPollOption,
+    DeletePollOption
 ):
     pass

@@ -30,7 +30,7 @@ class AddContact:
         first_name: str,
         last_name: str = "",
         phone_number: str = "",
-        share_phone_number: bool = False,
+        share_phone_number: bool = False
     ):
         """Add an existing Telegram user as contact, even without a phone number.
 
@@ -39,7 +39,6 @@ class AddContact:
         Parameters:
             user_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target user.
-                You can also use user profile link in form of *t.me/<username>* (str).
 
             first_name (``str``):
                 User's first name.
@@ -72,7 +71,7 @@ class AddContact:
                 first_name=first_name,
                 last_name=last_name,
                 phone=phone_number,
-                add_phone_privacy_exception=share_phone_number,
+                add_phone_privacy_exception=share_phone_number
             )
         )
 

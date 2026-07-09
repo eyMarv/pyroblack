@@ -16,7 +16,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union, List
+from typing import Union
 
 import pyrogram
 from pyrogram import raw
@@ -27,7 +27,8 @@ class CreateGroup:
     async def create_group(
         self: "pyrogram.Client",
         title: str,
-        users: Union[Union[int, str], List[Union[int, str]]],
+        users: Union[Union[int, str], list[Union[int, str]]] = None,
+        message_auto_delete_time: int = 0
     ) -> "types.Chat":
         """Create a new basic group.
 
@@ -43,8 +44,11 @@ class CreateGroup:
 
             users (``int`` | ``str`` | List of ``int`` or ``str``):
                 Users to create a chat with.
-                You must pass at least one user using their IDs (int), usernames (str) or phone numbers (str).
                 Multiple users can be invited by passing a list of IDs, usernames or phone numbers.
+                Identifiers of users to be added to the basic group; may be empty to create a basic group without other members
+            
+            message_auto_delete_time (``int``, *optional*):
+                Message auto-delete time value, in seconds; must be from 0 up to 365 * 86400 and be divisible by 86400. If 0, then messages aren't deleted automatically.
 
         Returns:
             :obj:`~pyrogram.types.Chat`: On success, a chat object is returned.
@@ -54,13 +58,13 @@ class CreateGroup:
 
                 await app.create_group("Group Title", user_id)
         """
-        if not isinstance(users, list):
+        if users and not isinstance(users, list):
             users = [users]
-
         r = await self.invoke(
             raw.functions.messages.CreateChat(
-                title=title, users=[await self.resolve_peer(u) for u in users]
+                users=[await self.resolve_peer(u) for u in users] if users else [],
+                title=title,
+                ttl_period=message_auto_delete_time
             )
         )
-
-        return types.Chat._parse_chat(self, r.chats[0])
+        return types.Chat._parse_chat(self, r.updates.chats[0])

@@ -18,6 +18,7 @@
 
 from datetime import datetime
 
+import pyrogram
 from pyrogram import raw, utils
 
 from ..object import Object
@@ -61,10 +62,7 @@ class ActiveSession(Object):
             A human-readable description of the location from which the session was created, based on the IP address.
 
         country (``str``):
-            Country determined from IP.
-
-        region (``str``):
-            Region determined from IP.
+            Country.
 
         is_current (``bool``):
             True, if this session is the current session.
@@ -89,6 +87,7 @@ class ActiveSession(Object):
     def __init__(
         self,
         *,
+        client: "pyrogram.Client" = None,
         id: int = None,
         device_model: str = None,
         platform: str = None,
@@ -101,15 +100,14 @@ class ActiveSession(Object):
         ip_address: str = None,
         location: str = None,
         country: str = None,
-        region: str = None,
         is_current: bool = None,
         is_password_pending: bool = None,
         is_unconfirmed: bool = None,
         can_accept_secret_chats: bool = None,
         can_accept_calls: bool = None,
-        is_official_application: bool = None,
+        is_official_application: bool = None
     ):
-        super().__init__()
+        super().__init__(client)
 
         self.id = id
         self.device_model = device_model
@@ -123,7 +121,6 @@ class ActiveSession(Object):
         self.ip_address = ip_address
         self.location = location
         self.country = country
-        self.region = region
         self.is_current = is_current
         self.is_password_pending = is_password_pending
         self.is_unconfirmed = is_unconfirmed
@@ -132,8 +129,12 @@ class ActiveSession(Object):
         self.is_official_application = is_official_application
 
     @staticmethod
-    def _parse(session: "raw.types.Authorization") -> "ActiveSession":
+    def _parse(
+        client: "pyrogram.Client",
+        session: "raw.types.Authorization"
+    ) -> "ActiveSession":        
         return ActiveSession(
+            client=client,
             id=session.hash,
             device_model=session.device_model,
             platform=session.platform,
@@ -146,36 +147,35 @@ class ActiveSession(Object):
             ip_address=session.ip,
             location=session.region,
             country=session.country,
-            region=session.region,
             is_current=getattr(session, "current", None),
             is_password_pending=getattr(session, "password_pending", None),
             is_unconfirmed=getattr(session, "unconfirmed", None),
-            can_accept_secret_chats=not getattr(
-                session, "encrypted_requests_disabled", False
-            ),
+            can_accept_secret_chats=not getattr(session, "encrypted_requests_disabled", False),
             can_accept_calls=not getattr(session, "call_requests_disabled", False),
-            is_official_application=getattr(session, "official_app", None),
+            is_official_application=getattr(session, "official_app", None)
         )
 
-    async def reset(self):
+    async def terminate(self):
         """Bound method *reset* of :obj:`~pyrogram.types.ActiveSession`.
 
         Use as a shortcut for:
 
         .. code-block:: python
 
-            await client.reset_session(123456789)
+            await client.terminate_session(123456789)
 
         Example:
-            .. code-block:: python
 
-                await session.reset()
+        .. code-block:: python
+
+            await session.reset()
 
         Returns:
             True on success.
 
         Raises:
-            RPCError: In case of a Telegram RPC error.
+            :obj:`~pyrogram.errors.RPCError`: In case of a Telegram RPC error.
+
         """
 
-        return await self._client.reset_session(self.id)
+        return await self._client.terminate_session(self.id)

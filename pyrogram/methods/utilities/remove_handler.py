@@ -17,12 +17,16 @@
 #  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
 
 import pyrogram
-from pyrogram.handlers import DisconnectHandler, InvokeErrHandler
+from pyrogram.handlers import DisconnectHandler
 from pyrogram.handlers.handler import Handler
 
 
 class RemoveHandler:
-    def remove_handler(self: "pyrogram.Client", handler: "Handler", group: int = 0):
+    def remove_handler(
+        self: "pyrogram.Client",
+        handler: "Handler",
+        group: int = 0
+    ):
         """Remove a previously-registered update handler.
 
         Make sure to provide the right group where the handler was added in. You can use the return value of the
@@ -55,7 +59,5 @@ class RemoveHandler:
         """
         if isinstance(handler, DisconnectHandler):
             self.disconnect_handler = None
-        elif isinstance(handler, InvokeErrHandler):
-            self.invoke_err_handler = None
         else:
             self.dispatcher.remove_handler(handler, group)

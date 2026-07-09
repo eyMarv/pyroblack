@@ -22,7 +22,10 @@ from pyrogram import types
 
 class CreateChannel:
     async def create_channel(
-        self: "pyrogram.Client", title: str, description: str = ""
+        self: "pyrogram.Client",
+        title: str,
+        description: str = "",
+        message_auto_delete_time: int = 0
     ) -> "types.Chat":
         """Create a new broadcast channel.
 
@@ -35,6 +38,9 @@ class CreateChannel:
             description (``str``, *optional*):
                 The channel description.
 
+            message_auto_delete_time (``int``, *optional*):
+                Message auto-delete time value, in seconds; must be from 0 up to 365 * 86400 and be divisible by 86400. If 0, then messages aren't deleted automatically.
+
         Returns:
             :obj:`~pyrogram.types.Chat`: On success, a chat object is returned.
 
@@ -45,7 +51,10 @@ class CreateChannel:
         """
         r = await self.invoke(
             raw.functions.channels.CreateChannel(
-                title=title, about=description, broadcast=True
+                title=title,
+                about=description,
+                broadcast=True,
+                ttl_period=message_auto_delete_time
             )
         )
 

@@ -24,8 +24,8 @@ from pyrogram.filters import Filter
 
 class OnShippingQuery:
     def on_shipping_query(
-        self: Union["OnShippingQuery", Filter, None] = None,
-        filters: Optional[Filter] = None,
+        self=None,
+        filters=None,
         group: int = 0,
     ) -> Callable:
         """Decorator for handling shipping queries.
@@ -33,13 +33,16 @@ class OnShippingQuery:
         This does the same thing as :meth:`~pyrogram.Client.add_handler` using the
         :obj:`~pyrogram.handlers.ShippingQueryHandler`.
 
+        .. include:: /_includes/usable-by/bots.rst
+
         Parameters:
             filters (:obj:`~pyrogram.filters`, *optional*):
-                Pass one or more filters to allow only a subset of shipping queries to be passed
+                Pass one or more filters to allow only a subset of callback queries to be passed
                 in your function.
 
             group (``int``, *optional*):
                 The group identifier, defaults to 0.
+
         """
 
         def decorator(func: Callable) -> Callable:
@@ -52,7 +55,7 @@ class OnShippingQuery:
                 func.handlers.append(
                     (
                         pyrogram.handlers.ShippingQueryHandler(func, self),
-                        group if filters is None else filters,
+                        group if filters is None else filters
                     )
                 )
 

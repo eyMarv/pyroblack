@@ -1,26 +1,28 @@
-#  pyroblack - Telegram MTProto API Client Library for Python
-#  Copyright (C) 2022-present Mayuri-Chan <https://github.com/Mayuri-Chan>
-#  Copyright (C) 2024-present eyMarv <https://github.com/eyMarv>
+#  Pyrogram - Telegram MTProto API Client Library for Python
+#  Copyright (C) 2017-present <https://github.com/KurimuzonAkuma>
 #
-#  This file is part of pyroblack.
+#  This file is part of Pyrogram.
 #
-#  pyroblack is free software: you can redistribute it and/or modify
+#  Pyrogram is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU Lesser General Public License as published
 #  by the Free Software Foundation, either version 3 of the License, or
 #  (at your option) any later version.
 #
-#  pyroblack is distributed in the hope that it will be useful,
+#  Pyrogram is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU Lesser General Public License for more details.
 #
 #  You should have received a copy of the GNU Lesser General Public License
-#  along with pyroblack.  If not, see <http://www.gnu.org/licenses/>.
+#  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Iterable, List, Union
+import logging
+from typing import Iterable, Union
 
 import pyrogram
-from pyrogram import raw, types
+from pyrogram import raw, types, utils
+
+log = logging.getLogger(__name__)
 
 
 class GetDirectMessagesTopicsByID:
@@ -28,7 +30,10 @@ class GetDirectMessagesTopicsByID:
         self: "pyrogram.Client",
         chat_id: Union[int, str],
         topic_ids: Union[int, Iterable[int]]
-    ) -> Union["types.DirectMessagesTopic", List["types.DirectMessagesTopic"]]:
+    ) -> Union[
+        "types.DirectMessagesTopic",
+        list["types.DirectMessagesTopic"]
+    ]:
         """Get one or more direct message topic from a chat by using topic identifiers.
 
         .. include:: /_includes/usable-by/users.rst
@@ -53,8 +58,10 @@ class GetDirectMessagesTopicsByID:
 
                 # Get more than one topic (list of topics)
                 await app.get_direct_messages_topics_by_id(chat_id, [12345, 12346])
+
         """
-        is_iterable = not isinstance(topic_ids, int)
+
+        is_iterable = utils.is_list_like(topic_ids)
         ids = list(topic_ids) if is_iterable else [topic_ids]
 
         r = await self.invoke(
@@ -70,6 +77,13 @@ class GetDirectMessagesTopicsByID:
         topics = types.List()
 
         for i in r.dialogs:
-            topics.append(types.DirectMessagesTopic._parse(client=self, topic=i, users=users, chats=chats))
+            topics.append(
+                types.DirectMessagesTopic._parse_dialog(
+                    client=self,
+                    topic=i,
+                    users=users,
+                    chats=chats
+                )
+            )
 
         return topics if is_iterable else topics[0] if topics else None

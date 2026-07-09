@@ -1,18 +1,65 @@
-import random
+#  Pyrogram - Telegram MTProto API Client Library for Python
+#  Copyright (C) 2017-present Dan <https://github.com/delivrance>
+#
+#  This file is part of Pyrogram.
+#
+#  Pyrogram is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU Lesser General Public License as published
+#  by the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  Pyrogram is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU Lesser General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public License
+#  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
+
+from random import choice
 
 from pyrogram import raw, types
-
 from ..object import Object
 
 
 class GiftedStars(Object):
-    """Telegram Stars were gifted to a user."""
+    """Telegram Stars were gifted to a user
+
+    Parameters:
+        gifter_user_id (``int``):
+            The identifier of a user that gifted Telegram Stars; 0 if the gift was anonymous or is outgoing
+
+        receiver_user_id (``int``):
+            The identifier of a user that received Telegram Stars; 0 if the gift is incoming
+
+        currency (``str``):
+            Currency for the paid amount
+
+        amount (``int``):
+            The paid amount, in the smallest units of the currency
+
+        cryptocurrency (``str``):
+            Cryptocurrency used to pay for the gift; may be empty if none
+
+        cryptocurrency_amount (``int``):
+            The paid amount, in the smallest units of the cryptocurrency; 0 if none
+
+        star_count (``int``):
+            Number of Telegram Stars that were gifted
+
+        transaction_id (``str``):
+            Identifier of the transaction for Telegram Stars purchase; for receiver only
+
+        sticker (:obj:`~pyrogram.types.Sticker`):
+            A sticker to be shown in the transaction information; may be None if unknown
+
+    """
 
     def __init__(
         self,
         *,
-        gifter: "types.User" = None,
-        receiver: "types.User" = None,
+        gifter_user_id: int = None,
+        receiver_user_id: int = None,
         currency: str = None,
         amount: int = None,
         cryptocurrency: str = None,
@@ -23,8 +70,8 @@ class GiftedStars(Object):
     ):
         super().__init__()
 
-        self.gifter = gifter
-        self.receiver = receiver
+        self.gifter_user_id = gifter_user_id
+        self.receiver_user_id = receiver_user_id
         self.currency = currency
         self.amount = amount
         self.cryptocurrency = cryptocurrency
@@ -34,33 +81,25 @@ class GiftedStars(Object):
         self.sticker = sticker
 
     @staticmethod
-    async def _parse(client, action, gifter=None, receiver=None) -> "GiftedStars":
-        raw_stickers = await client.invoke(
-            raw.functions.messages.GetStickerSet(
-                stickerset=raw.types.InputStickerSetPremiumGifts(),
-                hash=0
-            )
+    async def _parse(
+        client,
+        gifted_stars: "raw.types.MessageActionGiftStars",
+        gifter_user_id: int,
+        receiver_user_id: int
+    ) -> "GiftedStars":
+        sticker = None
+        stickers, _ = await client._get_raw_stickers(
+            raw.types.InputStickerSetPremiumGifts()
         )
-
+        sticker = choice(stickers)
         return GiftedStars(
-            gifter=types.User._parse(client, gifter),
-            receiver=types.User._parse(client, receiver),
-            currency=action.currency,
-            amount=action.amount,
-            cryptocurrency=getattr(action, "crypto_currency", None),
-            cryptocurrency_amount=getattr(action, "crypto_amount", None),
-            star_count=action.stars,
-            transaction_id=getattr(action, "transaction_id", None),
-            sticker=random.choice(
-                types.List(
-                    [
-                        await types.Sticker._parse(
-                            client,
-                            doc,
-                            {type(item): item for item in doc.attributes}
-                        )
-                        for doc in raw_stickers.documents
-                    ]
-                )
-            )
+            gifter_user_id=gifter_user_id,
+            receiver_user_id=receiver_user_id,
+            currency=gifted_stars.currency,
+            amount=gifted_stars.amount,
+            cryptocurrency=getattr(gifted_stars, "crypto_currency", None),
+            cryptocurrency_amount=getattr(gifted_stars, "crypto_amount", None),
+            star_count=gifted_stars.stars,
+            transaction_id=getattr(gifted_stars, "transaction_id", None),
+            sticker=sticker
         )

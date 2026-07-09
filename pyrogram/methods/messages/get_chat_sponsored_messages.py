@@ -27,7 +27,7 @@ class GetChatSponsoredMessages:
         self: "pyrogram.Client",
         chat_id: Union[int, str],
     ) -> Optional[list["types.SponsoredMessage"]]:
-        """Get sponsored messages to be shown in a chat; for channel chats only.
+        """Returns sponsored messages to be shown in a chat; for channel chats only.
 
         .. include:: /_includes/usable-by/users.rst
 
@@ -36,7 +36,15 @@ class GetChatSponsoredMessages:
                 Unique identifier (int) or username (str) of the target chat.
 
         Returns:
-            List of :obj:`~pyrogram.types.SponsoredMessage`: A list of sponsored messages.
+            List of :obj:`~pyrogram.types.SponsoredMessage`: a list of sponsored messages is returned.
+
+        Example:
+            .. code-block:: python
+
+                # Get a sponsored messages
+                sm = await app.get_chat_sponsored_messages(chat_id)
+                print(sm)
+
         """
         r = await self.invoke(
             raw.functions.messages.GetSponsoredMessages(
@@ -47,6 +55,7 @@ class GetChatSponsoredMessages:
         if isinstance(r, raw.types.messages.SponsoredMessagesEmpty):
             return None
 
-        return types.List(
-            [types.SponsoredMessage._parse(self, sm) for sm in r.messages]
-        )
+        return types.List([
+            types.SponsoredMessage._parse(self, sm)
+            for sm in r.messages
+        ])

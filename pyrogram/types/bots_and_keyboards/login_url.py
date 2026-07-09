@@ -34,9 +34,10 @@ class LoginUrl(Object):
             be opened. The data added is the same as described in
             `Receiving authorization data <https://core.telegram.org/widgets/login#receiving-authorization-data>`.
 
-            **NOTE**: You **must** always check the hash of the received data to verify the authentication and the
-            integrity of the data as described in
-            `Checking authorization <https://core.telegram.org/widgets/login#checking-authorization>`_.
+            .. note::
+            
+                You **must** always check the hash of the received data to verify the authentication
+                and the integrity of the data as described in `Checking authorization <https://core.telegram.org/widgets/login#checking-authorization>`_.
 
         forward_text (``str``, *optional*):
             New text of the button in forwarded messages.
@@ -57,13 +58,12 @@ class LoginUrl(Object):
     """
 
     def __init__(
-        self,
-        *,
+        self, *,
         url: str,
         forward_text: str = None,
         bot_username: str = None,
         request_write_access: str = None,
-        button_id: int = None,
+        button_id: int = None
     ):
         super().__init__()
 
@@ -75,13 +75,18 @@ class LoginUrl(Object):
 
     @staticmethod
     def read(b: "raw.types.KeyboardButtonUrlAuth") -> "LoginUrl":
-        return LoginUrl(url=b.url, forward_text=b.fwd_text, button_id=b.button_id)
+        return LoginUrl(
+            url=b.url,
+            forward_text=b.fwd_text,
+            button_id=b.button_id
+        )
 
-    def write(self, text: str, bot: "raw.types.InputUser"):
+    def write(self, text: str, bot: "raw.types.InputUser", style: "raw.types.KeyboardButtonStyle"):
         return raw.types.InputKeyboardButtonUrlAuth(
             text=text,
             url=self.url,
             bot=bot,
             fwd_text=self.forward_text,
             request_write_access=self.request_write_access,
+            style=style
         )

@@ -16,20 +16,30 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
 
+from .answer_pre_checkout_query import AnswerPreCheckoutQuery
+from .answer_shipping_query import AnswerShippingQuery
+from .create_invoice_link import CreateInvoiceLink
 from .get_business_connection import GetBusinessConnection
+from .get_collectible_item_info import GetCollectibleItemInfo
+from .refund_star_payment import RefundStarPayment
+from .send_invoice import SendInvoice
+from .get_payment_form import GetPaymentForm
+from .send_payment_form import SendPaymentForm
+from .get_available_gifts import GetAvailableGifts
 from .get_owned_star_count import GetOwnedStarCount
-from .delete_business_messages import DeleteBusinessMessages
-from .get_business_account_gifts import GetBusinessAccountGifts
-from .transfer_business_account_stars import TransferBusinessAccountStars
 
-# The broader upstream business namespace overlaps heavily with existing
-# Bots/Payments/Messages mixins in pyroblack. Keep this package focused on
-# business-specific capabilities that are not otherwise already mixed into Client.
+
 class TelegramBusiness(
+    AnswerPreCheckoutQuery,
+    AnswerShippingQuery,
+    CreateInvoiceLink,
     GetBusinessConnection,
+    GetCollectibleItemInfo,
+    RefundStarPayment,
+    SendInvoice,
+    GetPaymentForm,
+    SendPaymentForm,
+    GetAvailableGifts,
     GetOwnedStarCount,
-    DeleteBusinessMessages,
-    GetBusinessAccountGifts,
-    TransferBusinessAccountStars,
 ):
     pass

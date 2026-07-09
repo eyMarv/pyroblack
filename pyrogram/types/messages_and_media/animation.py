@@ -17,18 +17,11 @@
 #  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
 
 from datetime import datetime
-from typing import List
 
 import pyrogram
 from pyrogram import raw, utils
 from pyrogram import types
-from pyrogram.file_id import (
-    FileId,
-    FileType,
-    FileUniqueId,
-    FileUniqueType,
-    ThumbnailSource,
-)
+from pyrogram.file_id import FileId, FileType, FileUniqueId, FileUniqueType, ThumbnailSource
 from ..object import Object
 
 
@@ -49,7 +42,7 @@ class Animation(Object):
         height (``int``):
             Animation height as defined by sender.
 
-        duration (``int``):
+        duration (``int``, *optional*):
             Duration of the animation in seconds as defined by sender.
 
         file_name (``str``, *optional*):
@@ -76,12 +69,12 @@ class Animation(Object):
         file_unique_id: str,
         width: int,
         height: int,
-        duration: int,
+        duration: int = None,
         file_name: str = None,
         mime_type: str = None,
         file_size: int = None,
         date: datetime = None,
-        thumbs: List["types.Thumbnail"] = None,
+        thumbs: list["types.Thumbnail"] = None
     ):
         super().__init__(client)
 
@@ -101,7 +94,7 @@ class Animation(Object):
         client,
         animation: "raw.types.Document",
         video_attributes: "raw.types.DocumentAttributeVideo",
-        file_name: str,
+        file_name: str
     ) -> "Animation":
         return Animation(
             file_id=FileId(
@@ -109,10 +102,11 @@ class Animation(Object):
                 dc_id=animation.dc_id,
                 media_id=animation.id,
                 access_hash=animation.access_hash,
-                file_reference=animation.file_reference,
+                file_reference=animation.file_reference
             ).encode(),
             file_unique_id=FileUniqueId(
-                file_unique_type=FileUniqueType.DOCUMENT, media_id=animation.id
+                file_unique_type=FileUniqueType.DOCUMENT,
+                media_id=animation.id
             ).encode(),
             width=getattr(video_attributes, "w", 0),
             height=getattr(video_attributes, "h", 0),
@@ -122,5 +116,46 @@ class Animation(Object):
             file_name=file_name,
             date=utils.timestamp_to_datetime(animation.date),
             thumbs=types.Thumbnail._parse(client, animation),
-            client=client,
+            client=client
         )
+
+    @staticmethod
+    def _parse_chat_animation(
+        client,
+        video: "raw.types.Photo"
+    ) -> "Animation":
+        if isinstance(video, raw.types.Photo):
+            if not video.video_sizes:
+                return
+            video_sizes: list[raw.types.VideoSize] = []
+            for p in video.video_sizes:
+                if isinstance(p, raw.types.VideoSize):
+                    video_sizes.append(p)
+                # TODO: VideoSizeEmojiMarkup
+            video_sizes.sort(key=lambda p: p.size)
+            video_size = video_sizes[-1]
+            return Animation(
+                file_id=FileId(
+                    file_type=FileType.PHOTO,
+                    dc_id=video.dc_id,
+                    media_id=video.id,
+                    access_hash=video.access_hash,
+                    file_reference=video.file_reference,
+                    thumbnail_source=ThumbnailSource.THUMBNAIL,
+                    thumbnail_file_type=FileType.PHOTO,
+                    thumbnail_size=video_size.type,
+                    volume_id=0,
+                    local_id=0
+                ).encode() if video else None,
+                file_unique_id=FileUniqueId(
+                    file_unique_type=FileUniqueType.DOCUMENT,
+                    media_id=video.id
+                ).encode() if video else None,
+                width=video_size.w,
+                height=video_size.h,
+                file_size=video_size.size,
+                date=utils.timestamp_to_datetime(video.date) if video else None,
+                file_name=f"chat_video_{video.date}_{client.rnd_id()}.mp4",
+                mime_type="video/mp4",
+                client=client
+            )

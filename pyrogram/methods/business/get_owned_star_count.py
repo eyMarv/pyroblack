@@ -27,7 +27,7 @@ class GetOwnedStarCount:
         self: "pyrogram.Client",
         user_id: Optional[Union[int, str]] = None,
     ) -> "types.StarAmount":
-        """Get the number of Telegram Stars owned by the current account or the specified bot.
+        """Get the number of Telegram Stars count owned by the current account or the specified bot.
 
         .. include:: /_includes/usable-by/users.rst
 
@@ -44,10 +44,11 @@ class GetOwnedStarCount:
             .. code-block:: python
 
                 # Get stars balance
-                await app.get_owned_star_count()
+                app.get_stars_balance()
 
                 # Get stars balance of a bot owned by the current user
-                await app.get_owned_star_count(user_id="pyrogrambot")
+                app.get_stars_balance(user_id="pyrogrambot")
+
         """
         if user_id is None:
             peer = raw.types.InputPeerSelf()
@@ -57,39 +58,35 @@ class GetOwnedStarCount:
         r = await self.invoke(
             raw.functions.payments.GetStarsStatus(
                 peer=peer
+                # TODO
             )
         )
 
         return types.StarAmount._parse(self, r)
 
+
     async def get_business_account_star_balance(
         self: "pyrogram.Client",
         business_connection_id: str,
     ) -> "types.StarAmount":
-        """Returns the amount of Telegram Stars owned by a managed business account.
-
-        Requires the can_view_gifts_and_stars business bot right.
+        """Returns the amount of Telegram Stars owned by a managed business account. Requires the can_view_gifts_and_stars business bot right.
 
         .. include:: /_includes/usable-by/bots.rst
 
         Parameters:
             business_connection_id (``str``):
                 Unique identifier of the business connection
-
+        
         Returns:
             :obj:`~pyrogram.types.StarAmount`: On success, the current stars balance is returned.
+        
         """
         if not business_connection_id:
             raise ValueError("business_connection_id is required")
 
-        business_connection = self.business_user_connection_cache.get(
-            business_connection_id
-        )
+        business_connection = self.business_user_connection_cache[business_connection_id]
         if business_connection is None:
-            business_connection = await self.get_business_connection(
-                business_connection_id
-            )
-
+            business_connection = await self.get_business_connection(business_connection_id)
         r = await self.invoke(
             raw.functions.InvokeWithBusinessConnection(
                 query=raw.functions.payments.GetStarsStatus(

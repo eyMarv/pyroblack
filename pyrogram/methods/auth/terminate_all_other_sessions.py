@@ -22,13 +22,19 @@ from pyrogram import raw
 
 class TerminateAllOtherSessions:
     async def terminate_all_other_sessions(
-        self: "pyrogram.Client",
+        self: "pyrogram.Client"
     ) -> bool:
-        """Terminate all other sessions of the current user.
+        """Terminates all other sessions of the current user.
 
         .. include:: /_includes/usable-by/users.rst
 
         Returns:
-            ``bool``: On success, True is returned.
+            ``bool``: On success, in case the session is destroyed, True is returned. Otherwise, False is returned.
+
+        Raises:
+            :obj:`~pyrogram.errors.RPCError`: In case of a Telegram RPC error.
+
         """
-        return bool(await self.invoke(raw.functions.auth.ResetAuthorizations()))
+        return await self.invoke(
+            raw.functions.auth.ResetAuthorizations()
+        )

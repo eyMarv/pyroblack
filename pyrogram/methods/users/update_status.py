@@ -25,30 +25,22 @@ class UpdateStatus:
         self: "pyrogram.Client",
         offline: bool = False,
     ) -> bool:
-        """Update your profile status.
+        """Updates online user status.
 
         .. include:: /_includes/usable-by/users.rst
 
         Parameters:
             offline (``bool``):
-                The new status. Pass True to appear offline.
+                If (True) is transmitted, user status will change to (UserStatusOffline), Otherwise user status will change to (UserStatusOnline).
 
         Returns:
-            ``bool``: True on success.
+            `bool`: True On success.
 
         Example:
             .. code-block:: python
 
-                # Change status to online
                 await app.update_status()
-
-                # Change status to offline
-                await app.update_status(offline=True)
         """
-        r = await self.invoke(
-            raw.functions.account.UpdateStatus(
-                offline=offline
-            )
-        )
+        r = await self.invoke(raw.functions.account.UpdateStatus(offline=offline))
 
         return bool(r)

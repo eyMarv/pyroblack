@@ -39,11 +39,9 @@ class ApproveChatJoinRequest:
             chat_id (``int`` | ``str``):
                 Unique identifier for the target chat or username of the target channel/supergroup
                 (in the format @username).
-                You can also use chat public link in form of *t.me/<username>* (str).
 
             user_id (``int``):
                 Unique identifier of the target user.
-                You can also use user profile link in form of *t.me/<username>* (str).
 
         Returns:
             ``bool``: True on success.
@@ -52,7 +50,7 @@ class ApproveChatJoinRequest:
             raw.functions.messages.HideChatJoinRequest(
                 peer=await self.resolve_peer(chat_id),
                 user_id=await self.resolve_peer(user_id),
-                approved=True,
+                approved=True
             )
         )
 

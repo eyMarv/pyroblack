@@ -86,10 +86,13 @@ class GetChatArchivedStories:
                 await sleep(0)
                 yield await types.Story._parse(
                     self,
-                    story,
-                    peer,
                     users,
-                    chats
+                    chats,
+                    None, None, None,
+                    # TODO
+                    story,
+                    None, #
+                    # TODO
                 )
 
                 current += 1

@@ -16,7 +16,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional, List
+from typing import Optional
 
 import pyrogram
 from pyrogram import raw, types, utils, enums
@@ -55,6 +55,9 @@ class InlineQueryResultCachedVideo(InlineQueryResult):
         caption_entities (List of :obj:`~pyrogram.types.MessageEntity`):
             List of special entities that appear in the caption, which can be specified instead of *parse_mode*.
 
+        show_caption_above_media (``bool``, *optional*):
+            Pass True, if the caption must be shown above the message media.
+
         reply_markup (:obj:`~pyrogram.types.InlineKeyboardMarkup`, *optional*):
             An InlineKeyboardMarkup object.
 
@@ -70,9 +73,10 @@ class InlineQueryResultCachedVideo(InlineQueryResult):
         description: str = None,
         caption: str = "",
         parse_mode: Optional["enums.ParseMode"] = None,
-        caption_entities: List["types.MessageEntity"] = None,
+        caption_entities: list["types.MessageEntity"] = None,
+        show_caption_above_media: bool = None,
         reply_markup: "types.InlineKeyboardMarkup" = None,
-        input_message_content: "types.InputMessageContent" = None,
+        input_message_content: "types.InputMessageContent" = None
     ):
         super().__init__("video", id, input_message_content, reply_markup)
 
@@ -82,15 +86,14 @@ class InlineQueryResultCachedVideo(InlineQueryResult):
         self.caption = caption
         self.parse_mode = parse_mode
         self.caption_entities = caption_entities
+        self.show_caption_above_media = show_caption_above_media
         self.reply_markup = reply_markup
         self.input_message_content = input_message_content
 
     async def write(self, client: "pyrogram.Client"):
-        message, entities = (
-            await utils.parse_text_entities(
-                client, self.caption, self.parse_mode, self.caption_entities
-            )
-        ).values()
+        message, entities = (await utils.parse_text_entities(
+            client, self.caption, self.parse_mode, self.caption_entities
+        )).values()
 
         file_id = FileId.decode(self.video_file_id)
 
@@ -108,13 +111,10 @@ class InlineQueryResultCachedVideo(InlineQueryResult):
                 await self.input_message_content.write(client, self.reply_markup)
                 if self.input_message_content
                 else raw.types.InputBotInlineMessageMediaAuto(
-                    reply_markup=(
-                        await self.reply_markup.write(client)
-                        if self.reply_markup
-                        else None
-                    ),
+                    reply_markup=await self.reply_markup.write(client) if self.reply_markup else None,
                     message=message,
                     entities=entities,
+                    invert_media=self.show_caption_above_media
                 )
-            ),
+            )
         )

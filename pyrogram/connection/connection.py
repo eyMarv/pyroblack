@@ -1,87 +1,86 @@
-#  pyroblack - Telegram MTProto API Client Library for Python
+#  Pyrogram - Telegram MTProto API Client Library for Python
 #  Copyright (C) 2017-present Dan <https://github.com/delivrance>
-#  Copyright (C) 2022-present Mayuri-Chan <https://github.com/Mayuri-Chan>
-#  Copyright (C) 2024-present eyMarv <https://github.com/eyMarv>
 #
-#  This file is part of pyroblack.
+#  This file is part of Pyrogram.
 #
-#  pyroblack is free software: you can redistribute it and/or modify
+#  Pyrogram is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU Lesser General Public License as published
 #  by the Free Software Foundation, either version 3 of the License, or
 #  (at your option) any later version.
 #
-#  pyroblack is distributed in the hope that it will be useful,
+#  Pyrogram is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU Lesser General Public License for more details.
 #
 #  You should have received a copy of the GNU Lesser General Public License
-#  along with pyroblack.  If not, see <http://www.gnu.org/licenses/>.
+#  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
 
 import asyncio
 import logging
-from typing import Optional, Type
+from typing import Optional
 
-from .transport import TCP, TCPAbridged
+from .transport import *
 from ..session.internals import DataCenter
 
 log = logging.getLogger(__name__)
 
 
 class Connection:
-    MAX_CONNECTION_ATTEMPTS = 3
+    MAX_RETRIES = 3
 
-    def __init__(
-        self,
-        dc_id: int,
-        test_mode: bool,
-        ipv6: bool,
-        alt_port: bool,
-        proxy: dict,
-        media: bool = False,
-        protocol_factory: Type[TCP] = TCPAbridged,
-    ) -> None:
+    MODES = {
+        0: TCPFull,
+        1: TCPAbridged,
+        2: TCPIntermediate,
+        3: TCPAbridgedO,
+        4: TCPIntermediateO
+    }
+
+    def __init__(self, dc_id: int, test_mode: bool, ipv6: bool, proxy: dict, media: bool = False, mode: int = 3):
         self.dc_id = dc_id
         self.test_mode = test_mode
         self.ipv6 = ipv6
-        self.alt_port = alt_port
         self.proxy = proxy
         self.media = media
-        self.protocol_factory = protocol_factory
+        self.address = DataCenter(dc_id, test_mode, ipv6, media)
+        self.mode = self.MODES.get(mode, TCPAbridged)
 
-        self.address = DataCenter(dc_id, test_mode, ipv6, alt_port, media)
-        self.protocol: Optional[TCP] = None
+        self.protocol = None  # type: TCP
 
-    async def connect(self) -> None:
-        for _ in range(Connection.MAX_CONNECTION_ATTEMPTS):
-            self.protocol = self.protocol_factory(ipv6=self.ipv6, proxy=self.proxy)
+    async def connect(self):
+        for i in range(Connection.MAX_RETRIES):
+            self.protocol = self.mode(self.ipv6, self.proxy)
 
             try:
                 log.info("Connecting...")
                 await self.protocol.connect(self.address)
             except OSError as e:
-                log.warning("Unable to connect due to network issues: %s", e)
-                await self.protocol.close()
+                log.warning(f"Unable to connect due to network issues: {e}")
+                self.protocol.close()
                 await asyncio.sleep(1)
             else:
-                log.info(
-                    "Connected! %s DC%s%s - IPv%s",
+                log.info("Connected! {} DC{}{} - IPv{} - {}".format(
                     "Test" if self.test_mode else "Production",
                     self.dc_id,
                     " (media)" if self.media else "",
                     "6" if self.ipv6 else "4",
-                )
+                    self.mode.__name__,
+                ))
                 break
         else:
             log.warning("Connection failed! Trying again...")
-            raise ConnectionError
+            raise TimeoutError
 
-    def close(self) -> None:
+    def close(self):
         self.protocol.close()
         log.info("Disconnected")
 
-    async def send(self, data: bytes) -> None:
-        await self.protocol.send(data)
+    async def send(self, data: bytes):
+        try:
+            await self.protocol.send(data)
+        except Exception as e:
+            raise OSError(e)
 
     async def recv(self) -> Optional[bytes]:
         return await self.protocol.recv()

@@ -1,21 +1,20 @@
-#  pyroblack - Telegram MTProto API Client Library for Python
-#  Copyright (C) 2022-present Mayuri-Chan <https://github.com/Mayuri-Chan>
-#  Copyright (C) 2024-present eyMarv <https://github.com/eyMarv>
+#  Pyrogram - Telegram MTProto API Client Library for Python
+#  Copyright (C) 2017-present Dan <https://github.com/delivrance>
 #
-#  This file is part of pyroblack.
+#  This file is part of Pyrogram.
 #
-#  pyroblack is free software: you can redistribute it and/or modify
+#  Pyrogram is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU Lesser General Public License as published
 #  by the Free Software Foundation, either version 3 of the License, or
 #  (at your option) any later version.
 #
-#  pyroblack is distributed in the hope that it will be useful,
+#  Pyrogram is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU Lesser General Public License for more details.
 #
 #  You should have received a copy of the GNU Lesser General Public License
-#  along with pyroblack.  If not, see <http://www.gnu.org/licenses/>.
+#  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
 
 from typing import Union
 
@@ -34,22 +33,20 @@ class CreateVideoChat:
         is_rtmp_stream: bool = None
     ) -> "types.Message":
         """Creates a video chat (a group call bound to a chat).
-
+        
         Available only for basic groups, supergroups and channels; requires can_manage_video_chats administrator right.
 
         .. include:: /_includes/usable-by/users.rst
 
         Parameters:
             chat_id (``int`` | ``str``):
-                Unique identifier (int) or username (str) of the target chat in which the video chat will be created.
-                A chat can be either a basic group, supergroup or a channel.
+                Unique identifier (int) or username (str) of the target chat in which the video chat will be created. A chat can be either a basic group, supergroup or a channel.
 
             title (``str``, *optional*):
                 Group call title; if empty, chat title will be used.
 
             start_date (:py:obj:`~datetime.datetime`, *optional*):
-                Point in time (Unix timestamp) when the group call is expected to be started by an administrator;
-                0 to start the video chat immediately. The date must be at least 10 seconds and at most 8 days in the future.
+                Point in time (Unix timestamp) when the group call is expected to be started by an administrator; 0 to start the video chat immediately. The date must be at least 10 seconds and at most 8 days in the future.
 
             is_rtmp_stream (``bool``, *optional*):
                 Pass true to create an RTMP stream instead of an ordinary video chat; requires owner privileges.
@@ -74,6 +71,7 @@ class CreateVideoChat:
             raw.functions.phone.CreateGroupCall(
                 rtmp_stream=is_rtmp_stream,
                 peer=peer,
+                # TODO: temp. workaround
                 random_id=self.rnd_id() >> 32,
                 title=title,
                 schedule_date=utils.datetime_to_timestamp(start_date),

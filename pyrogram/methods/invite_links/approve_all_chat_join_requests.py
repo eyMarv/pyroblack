@@ -24,7 +24,9 @@ from pyrogram import raw
 
 class ApproveAllChatJoinRequests:
     async def approve_all_chat_join_requests(
-        self: "pyrogram.Client", chat_id: Union[int, str], invite_link: str = None
+        self: "pyrogram.Client",
+        chat_id: Union[int, str],
+        invite_link: str = None
     ) -> bool:
         """Approve all pending join requests in a chat.
 
@@ -34,7 +36,6 @@ class ApproveAllChatJoinRequests:
             chat_id (``int`` | ``str``):
                 Unique identifier for the target chat or username of the target channel/supergroup
                 (in the format @username).
-                You can also use chat public link in form of *t.me/<username>* (str).
 
             invite_link (``str``, *optional*):
                 Pass an invite link to approve only its join requests.
@@ -45,7 +46,9 @@ class ApproveAllChatJoinRequests:
         """
         await self.invoke(
             raw.functions.messages.HideAllChatJoinRequests(
-                peer=await self.resolve_peer(chat_id), approved=True, link=invite_link
+                peer=await self.resolve_peer(chat_id),
+                approved=True,
+                link=invite_link
             )
         )
 

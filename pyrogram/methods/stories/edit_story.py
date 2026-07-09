@@ -183,17 +183,16 @@ class EditStory:
             )
         )
 
-        users = {i.id: i for i in r.users}
-        chats = {i.id: i for i in r.chats}
-
         for i in r.updates:
             if isinstance(i, raw.types.UpdateStory):
                 return await types.Story._parse(
                     self,
+                    {i.id: i for i in r.users},
+                    {i.id: i for i in r.chats},
+                    None, None,
+                    i,
                     i.story,
-                    i.peer,
-                    users,
-                    chats
+                    i.peer
                 )
 
 
