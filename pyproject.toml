@@ -3,7 +3,7 @@ name = "pyroblack"
 dynamic = ["version"]
 description = "Pyrogram, but black. Elegant, modern and asynchronous Telegram MTProto API framework in Python for users and bots"
 authors = [{ name = "eyMarv", email = "eyMarv07@gmail.com" }]
-dependencies = ["pyaes==1.6.1", "pysocks==1.7.1"]
+dependencies = ["aiosqlite-black>=0.21.0", "pyaes==1.6.1", "pysocks==1.7.1", "pymediainfo-pyroblack>=6.1.1,<7.0.0"]
 readme = "README.md"
 license = "LGPL-3.0-or-later"
 requires-python = ">=3.9"
