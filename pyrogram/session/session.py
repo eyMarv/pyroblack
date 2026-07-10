@@ -122,6 +122,7 @@ class Session:
 
         self.instant_stop = False  # reset
 
+        retries = 0
         while True:
             self.connection = self.client.connection_factory(
                 self.dc_id,
@@ -172,7 +173,13 @@ class Session:
             except AuthKeyDuplicated as e:
                 await self.stop()
                 raise e
-            except (OSError, TimeoutError, RPCError):
+            except (OSError, TimeoutError, RPCError) as e:
+                retries += 1
+                if retries >= self.MAX_RETRIES:
+                    log.error(f"Session start failed after {retries} attempts: {type(e).__name__}: {e}")
+                    await self.stop()
+                    raise ConnectionError(f"Failed to start session after {retries} retries: {e}") from e
+                log.warning(f"Session start attempt {retries}/{self.MAX_RETRIES} failed: {type(e).__name__}: {e}")
                 await self.stop()
             except Exception as e:
                 await self.stop()
