@@ -229,7 +229,7 @@ class Session:
         if not self.is_started.is_set():
             return
 
-        now = time()
+        now = time.time()
         if (
             self.last_reconnect_attempt
             and (now - self.last_reconnect_attempt) < self.RECONNECT_THRESHOLD
@@ -241,7 +241,7 @@ class Session:
             await asyncio.sleep(to_wait)
 
         async with self.restart_lock:
-            self.last_reconnect_attempt = time()
+            self.last_reconnect_attempt = time.time()
 
             await self.stop()
 
