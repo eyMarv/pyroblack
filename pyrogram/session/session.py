@@ -54,6 +54,7 @@ class Session:
     WAIT_TIMEOUT = 15
     SLEEP_THRESHOLD = 10
     MAX_RETRIES = 5
+    START_MAX_RETRIES = 8
     ACKS_THRESHOLD = 8
     PING_INTERVAL = 5
     STORED_MSG_IDS_MAX_SIZE = 1000 * 2
@@ -137,7 +138,7 @@ class Session:
 
                 self.network_task = self.client.loop.create_task(self.network_worker())
 
-                await self.send(raw.functions.Ping(ping_id=0), timeout=self.START_TIMEOUT)
+                await self.send(raw.functions.Ping(ping_id=0), timeout=max(self.START_TIMEOUT, 5))
 
                 if not self.is_cdn:
                     await self.send(
@@ -161,7 +162,7 @@ class Session:
                                 )
                             )
                         ),
-                        timeout=self.START_TIMEOUT
+                        timeout=max(self.START_TIMEOUT, 5)
                     )
 
                 self.ping_task = self.client.loop.create_task(self.ping_worker())
@@ -173,14 +174,29 @@ class Session:
             except AuthKeyDuplicated as e:
                 await self.stop()
                 raise e
-            except (OSError, TimeoutError, RPCError) as e:
+            except (OSError, TimeoutError, InternalServerError, ServiceUnavailable) as e:
+                # Transient failures (network hiccup, load spike, server busy).
+                # Retry with exponential backoff so a momentary timeout during
+                # e.g. a large file split doesn't permanently kill the session.
                 retries += 1
-                if retries >= self.MAX_RETRIES:
+                if retries >= self.START_MAX_RETRIES:
                     log.error(f"Session start failed after {retries} attempts: {type(e).__name__}: {e}")
                     await self.stop()
-                    raise ConnectionError(f"Failed to start session after {retries} retries: {e}") from e
-                log.warning(f"Session start attempt {retries}/{self.MAX_RETRIES} failed: {type(e).__name__}: {e}")
+                    raise ConnectionError(f"Failed to start session after {retries} retries: {type(e).__name__}: {e}") from e
+                backoff = min(2 ** (retries - 1), 16)
+                log.warning(
+                    f"Session start attempt {retries}/{self.START_MAX_RETRIES} failed: "
+                    f"{type(e).__name__}: {e} — retrying in {backoff}s"
+                )
                 await self.stop()
+                await asyncio.sleep(backoff)
+            except RPCError as e:
+                # Permanent protocol-level errors (e.g. CONNECTION_LAYER_INVALID,
+                # bad auth). Retrying cannot fix these — fail fast so the caller
+                # sees the real reason instead of hanging on pointless retries.
+                log.error(f"Session start failed (non-retryable): {type(e).__name__}: {e}")
+                await self.stop()
+                raise
             except Exception as e:
                 await self.stop()
                 raise e
