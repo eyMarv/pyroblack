@@ -96,21 +96,39 @@ class SaveFile:
         if path is None:
             return None
 
+        # Shared failure flag: if any part permanently fails after all retries,
+        # we must abort the whole upload rather than silently completing with a
+        # missing/corrupt part (which Telegram would reject or, worse, accept as
+        # a truncated file).
+        upload_error: list = []
+
         async def worker(session):
             while True:
                 data = await queue.get()
 
                 if data is None:
+                    queue.task_done()
                     return
 
-                for attempt in range(3):
+                last_exc = None
+                for attempt in range(5):
+                    if upload_error:
+                        # Another worker already failed; stop uploading parts.
+                        break
                     try:
                         await session.invoke(data)
+                        last_exc = None
                         break
                     except Exception as e:
-                        loglvl = log.info if attempt < 2 else log.warning
-                        loglvl(f"Retrying file part due to error: {e}")
-                        await asyncio.sleep(2**attempt)
+                        last_exc = e
+                        loglvl = log.info if attempt < 4 else log.warning
+                        loglvl(f"Retrying file part (attempt {attempt + 1}/5) due to error: {e}")
+                        await asyncio.sleep(min(2 ** attempt, 8))
+
+                if last_exc is not None and not upload_error:
+                    upload_error.append(last_exc)
+
+                queue.task_done()
 
         part_size = 512 * 1024
 
@@ -160,6 +178,10 @@ class SaveFile:
             fp.seek(part_size * file_part)
 
             while True:
+                if upload_error:
+                    # A worker permanently failed a part; abort producing more.
+                    raise upload_error[0]
+
                 chunk = fp.read(part_size)
 
                 if not chunk:
@@ -203,10 +225,19 @@ class SaveFile:
                         await func()
                     else:
                         await self.loop.run_in_executor(self.executor, func)
+
+            # Wait for all queued parts to finish uploading before we declare
+            # success. Without this, we could return an InputFile referencing
+            # parts that are still in-flight (or that failed).
+            await queue.join()
+
+            if upload_error:
+                raise upload_error[0]
         except StopTransmission:
             raise
         except Exception as e:
             log.error(e, exc_info=True)
+            raise
         else:
             if is_big:
                 return raw.types.InputFileBig(

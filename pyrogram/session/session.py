@@ -229,16 +229,29 @@ class Session:
         if not self.is_started.is_set():
             return
 
-        now = time.time()
-        if (
-            self.last_reconnect_attempt
-            and (now - self.last_reconnect_attempt) < self.RECONNECT_THRESHOLD
-        ):
-            to_wait = self.RECONNECT_THRESHOLD - (now - self.last_reconnect_attempt)
-            log.debug(
-                f"[pyroblack] Client [{self.client.name}] is reconnecting too frequently, sleeping for {to_wait} seconds"
-            )
-            await asyncio.sleep(to_wait)
+        # Mark the session as disconnected immediately so that any concurrent
+        # invoke()/send() waits on the is_connected event instead of writing
+        # into a now-dead socket during the reconnect (throttle) window. This
+        # is critical: without it, in-flight uploads pour data into a broken
+        # connection and only fail after the full WAIT_TIMEOUT each, which is
+        # what makes throughput decay to kbps over long-running sessions.
+        self.is_connected.clear()
+
+        # Media sessions (uploads/downloads) reconnect frequently on large
+        # transfers and carry no auth-spam risk, so they must reconnect
+        # instantly. The throttle only guards the main session against
+        # reconnect storms.
+        if not self.is_media:
+            now = time.time()
+            if (
+                self.last_reconnect_attempt
+                and (now - self.last_reconnect_attempt) < self.RECONNECT_THRESHOLD
+            ):
+                to_wait = self.RECONNECT_THRESHOLD - (now - self.last_reconnect_attempt)
+                log.debug(
+                    f"[pyroblack] Client [{self.client.name}] is reconnecting too frequently, sleeping for {to_wait} seconds"
+                )
+                await asyncio.sleep(to_wait)
 
         async with self.restart_lock:
             self.last_reconnect_attempt = time.time()
