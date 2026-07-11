@@ -373,6 +373,14 @@ class Client(Methods):
         self.media_sessions: Dict[int, "Session"] = {}
         self.media_sessions_lock = asyncio.Lock()
 
+        # Persistent media-session pools (ported from wzgram). Upload sessions
+        # are created once per DC and reused across every upload instead of
+        # being rebuilt (TCP + auth handshake) for each file. This is the single
+        # biggest upload-throughput and stability win: no per-file reconnect
+        # storms, no repeated InitConnection timeouts.
+        self.media_session_pools: Dict[int, list] = {}
+        self._media_sessions_locks: Dict[int, asyncio.Lock] = {}
+
         self.dispatcher = Dispatcher(self)
         self.rnd_id = MsgId
         self.parser = Parser(self)
@@ -1361,6 +1369,58 @@ class Client(Methods):
 
     def guess_extension(self, mime_type: str) -> Optional[str]:
         return self.mimetypes.guess_extension(mime_type)
+
+    async def _make_media_session(self, dc_id: int) -> "Session":
+        """Create and fully initialize a media session for a given DC."""
+        auth_key = (
+            await self.storage.auth_key()
+            if dc_id == await self.storage.dc_id()
+            else await Auth(self, dc_id, await self.storage.test_mode()).create()
+        )
+
+        session = Session(
+            self, dc_id, auth_key,
+            await self.storage.test_mode(),
+            is_media=True
+        )
+        await session.start()
+
+        if dc_id != await self.storage.dc_id():
+            for _ in range(3):
+                exported_auth = await self.invoke(
+                    raw.functions.auth.ExportAuthorization(dc_id=dc_id)
+                )
+                try:
+                    await session.invoke(
+                        raw.functions.auth.ImportAuthorization(
+                            id=exported_auth.id, bytes=exported_auth.bytes
+                        )
+                    )
+                except AuthBytesInvalid:
+                    continue
+                else:
+                    break
+            else:
+                await session.stop()
+                raise AuthBytesInvalid
+
+        return session
+
+    async def _get_media_session_pool(self, dc_id: int, n: int) -> list:
+        """Return a pool of at least ``n`` live media sessions for ``dc_id``.
+
+        Sessions are created once and reused across uploads. Dead sessions
+        (dropped connections) are pruned and lazily replaced, so a reconnect
+        never rebuilds the whole pool or stalls other in-flight transfers.
+        """
+        lock = self._media_sessions_locks.setdefault(dc_id, asyncio.Lock())
+        async with lock:
+            pool = self.media_session_pools.get(dc_id, [])
+            pool = [s for s in pool if s.is_started.is_set()]
+            while len(pool) < n:
+                pool.append(await self._make_media_session(dc_id))
+            self.media_session_pools[dc_id] = pool
+            return list(pool)
 
 
 class Cache:

@@ -22,7 +22,6 @@ import asyncio
 import bisect
 import logging
 import os
-import time
 from hashlib import sha1
 from io import BytesIO
 
@@ -50,15 +49,13 @@ class Result:
 
 
 class Session:
-    START_TIMEOUT = 1
+    START_TIMEOUT = 2
     WAIT_TIMEOUT = 15
     SLEEP_THRESHOLD = 10
-    MAX_RETRIES = 5
-    START_MAX_RETRIES = 8
-    ACKS_THRESHOLD = 8
+    MAX_RETRIES = 10
+    ACKS_THRESHOLD = 10
     PING_INTERVAL = 5
     STORED_MSG_IDS_MAX_SIZE = 1000 * 2
-    RECONNECT_THRESHOLD = 60
 
     TRANSPORT_ERRORS = {
         404: "auth key not found",
@@ -108,14 +105,16 @@ class Session:
 
         self.network_task = None
 
-        self.is_connected = asyncio.Event()
+        # Restart coordination (ported from wzgram's proven model):
+        #   _restart_lock  — only one restart runs at a time
+        #   _restart_done  — concurrent callers await the in-progress restart
+        #                    instead of each spawning their own or timing out
+        self._restart_lock = asyncio.Lock()
+        self._restart_done = asyncio.Event()
+        self._restart_done.set()
 
         self.is_started = asyncio.Event()
         self.instant_stop = False
-        self.restart_lock = asyncio.Lock()
-        self.start_lock = asyncio.Lock()
-        self.last_reconnect_attempt = None
-
 
     async def start(self):
         if self.instant_stop:
@@ -123,7 +122,6 @@ class Session:
 
         self.instant_stop = False  # reset
 
-        retries = 0
         while True:
             self.connection = self.client.connection_factory(
                 self.dc_id,
@@ -138,7 +136,7 @@ class Session:
 
                 self.network_task = self.client.loop.create_task(self.network_worker())
 
-                await self.send(raw.functions.Ping(ping_id=0), timeout=max(self.START_TIMEOUT, 5))
+                await self.send(raw.functions.Ping(ping_id=0), timeout=self.START_TIMEOUT)
 
                 if not self.is_cdn:
                     await self.send(
@@ -162,7 +160,7 @@ class Session:
                                 )
                             )
                         ),
-                        timeout=max(self.START_TIMEOUT, 5)
+                        timeout=self.START_TIMEOUT
                     )
 
                 self.ping_task = self.client.loop.create_task(self.ping_worker())
@@ -174,43 +172,23 @@ class Session:
             except AuthKeyDuplicated as e:
                 await self.stop()
                 raise e
-            except (OSError, TimeoutError, InternalServerError, ServiceUnavailable) as e:
-                # Transient failures (network hiccup, load spike, server busy).
-                # Retry with exponential backoff so a momentary timeout during
-                # e.g. a large file split doesn't permanently kill the session.
-                retries += 1
-                if retries >= self.START_MAX_RETRIES:
-                    log.error(f"Session start failed after {retries} attempts: {type(e).__name__}: {e}")
-                    await self.stop()
-                    raise ConnectionError(f"Failed to start session after {retries} retries: {type(e).__name__}: {e}") from e
-                backoff = min(2 ** (retries - 1), 16)
-                log.warning(
-                    f"Session start attempt {retries}/{self.START_MAX_RETRIES} failed: "
-                    f"{type(e).__name__}: {e} — retrying in {backoff}s"
-                )
+            except (OSError, TimeoutError, RPCError):
                 await self.stop()
-                await asyncio.sleep(backoff)
-            except RPCError as e:
-                # Permanent protocol-level errors (e.g. CONNECTION_LAYER_INVALID,
-                # bad auth). Retrying cannot fix these — fail fast so the caller
-                # sees the real reason instead of hanging on pointless retries.
-                log.error(f"Session start failed (non-retryable): {type(e).__name__}: {e}")
-                await self.stop()
-                raise
+                await asyncio.sleep(1)
             except Exception as e:
                 await self.stop()
                 raise e
             else:
                 break
 
-        self.is_connected.set()
         self.is_started.set()
 
         log.info("Session started")
 
     async def stop(self):
-        self.is_connected.clear()
         self.is_started.clear()
+
+        self.stored_msg_ids.clear()
 
         self.ping_task_event.set()
 
@@ -224,6 +202,8 @@ class Session:
         if self.network_task:
             await self.network_task
 
+        # Wake every in-flight request so it re-checks state (and retries via
+        # invoke) instead of hanging until its own timeout.
         for i in self.results.values():
             i.event.set()
 
@@ -235,53 +215,23 @@ class Session:
 
         log.info("Session stopped")
 
-    async def restart(self, stop: bool = False):
-        if self.instant_stop:
+    async def restart(self):
+        # Coordinated restart: the first caller performs the restart; any other
+        # caller that arrives while it's running simply waits for it to finish
+        # rather than kicking off a competing restart or timing out on a lock.
+        if self._restart_lock.locked():
+            await self._restart_done.wait()
             return
 
-        if self.restart_lock.locked():
-            return
-
-        if not self.is_started.is_set():
-            return
-
-        # Mark the session as disconnected immediately so that any concurrent
-        # invoke()/send() waits on the is_connected event instead of writing
-        # into a now-dead socket during the reconnect (throttle) window. This
-        # is critical: without it, in-flight uploads pour data into a broken
-        # connection and only fail after the full WAIT_TIMEOUT each, which is
-        # what makes throughput decay to kbps over long-running sessions.
-        self.is_connected.clear()
-
-        # Media sessions (uploads/downloads) reconnect frequently on large
-        # transfers and carry no auth-spam risk, so they must reconnect
-        # instantly. The throttle only guards the main session against
-        # reconnect storms.
-        if not self.is_media:
-            now = time.time()
-            if (
-                self.last_reconnect_attempt
-                and (now - self.last_reconnect_attempt) < self.RECONNECT_THRESHOLD
-            ):
-                to_wait = self.RECONNECT_THRESHOLD - (now - self.last_reconnect_attempt)
-                log.debug(
-                    f"[pyroblack] Client [{self.client.name}] is reconnecting too frequently, sleeping for {to_wait} seconds"
-                )
-                await asyncio.sleep(to_wait)
-
-        async with self.restart_lock:
-            self.last_reconnect_attempt = time.time()
-
-            await self.stop()
-
-            if not stop:
-                try:
-                    await self.start()
-                    log.info("Session restarted successfully")
-                except Exception as e:
-                    log.error(f"Session restart failed: {e}", exc_info=True)
-            else:
-                log.info("Session restarted successfully")
+        async with self._restart_lock:
+            self._restart_done.clear()
+            try:
+                await self.stop()
+                if getattr(self.client.storage, "conn", True) is None:
+                    await self.client.storage.open()
+                await self.start()
+            finally:
+                self._restart_done.set()
 
     async def handle_packet(self, packet):
         try:
@@ -409,7 +359,7 @@ class Session:
                 if self.instant_stop:
                     break
 
-                if self.is_connected.is_set():
+                if self.is_started.is_set():
                     self.client.loop.create_task(self.restart())
 
                 break
@@ -421,7 +371,7 @@ class Session:
                 if self.instant_stop:
                     break
 
-                if self.is_connected.is_set():
+                if self.is_started.is_set():
                     self.client.loop.create_task(self.restart())
 
                 break
@@ -498,23 +448,6 @@ class Session:
 
         sleep_threshold = max(sleep_threshold, self.client.sleep_threshold)
 
-        if self.restart_lock.locked():
-            await asyncio.wait_for(self.restart_lock.acquire(), timeout=5)
-            self.restart_lock.release()
-
-        if self.instant_stop:
-            raise ConnectionError("Client was stopped")
-
-        if not self.is_started.is_set():
-            if self.restart_lock.locked() or self.start_lock.locked():
-                # Wait for the session to be started or restarted
-                await self.is_started.wait()
-
-        try:
-            await asyncio.wait_for(self.is_connected.wait(), self.WAIT_TIMEOUT)
-        except asyncio.TimeoutError:
-            pass
-
         if isinstance(query, Session.CUR_ALWD_INNR_QRYS):
             inner_query = query.query
         else:
@@ -522,7 +455,17 @@ class Session:
 
         query_name = ".".join(inner_query.QUALNAME.split(".")[1:])
 
-        while True:
+        while retries > 0:
+            if self.instant_stop:
+                raise ConnectionError("Client was stopped")
+
+            # Wait until the session is up. If a restart is in progress this
+            # blocks until it finishes rather than writing into a dead socket.
+            try:
+                await asyncio.wait_for(self.is_started.wait(), self.WAIT_TIMEOUT)
+            except asyncio.TimeoutError:
+                pass
+
             try:
                 return await self.send(query, timeout=timeout)
             except (FloodWait, FloodPremiumWait) as e:
@@ -539,16 +482,14 @@ class Session:
                 if self.instant_stop:
                     raise ConnectionError("Client was stopped")
 
+                # Non-retryable server-side conditions: surface immediately.
                 if (
-                    retries == 0 or
-                    (
-                        isinstance(e, InternalServerError) and
-                        getattr(e, "code", 0) == 500 and
-                        (e.ID or e.NAME) in [
-                            "HISTORY_GET_FAILED",
-                            "PERSISTENT_TIMESTAMP_OUTDATED",
-                        ]
-                    )
+                    isinstance(e, InternalServerError) and
+                    getattr(e, "code", 0) == 500 and
+                    (getattr(e, "ID", None) or getattr(e, "NAME", None)) in [
+                        "HISTORY_GET_FAILED",
+                        "PERSISTENT_TIMESTAMP_OUTDATED",
+                    ]
                 ):
                     if callable(self.client.invoke_err_handler):
                         try:
@@ -557,8 +498,17 @@ class Session:
                             pass
                     raise e from None
 
+                retries -= 1
+                if retries == 0:
+                    if callable(self.client.invoke_err_handler):
+                        try:
+                            await self.client.invoke_err_handler(self.client, e)
+                        except Exception:
+                            pass
+                    raise
+
                 (log.warning if retries < 2 else log.info)(
-                    f'[{Session.MAX_RETRIES - retries + 1}] Retrying "{query_name}" due to {str(e) or repr(e)}')
+                    f'[{Session.MAX_RETRIES - retries}] Retrying "{query_name}" due to {str(e) or repr(e)}')
 
                 if callable(self.client.invoke_err_handler):
                     try:
@@ -566,7 +516,13 @@ class Session:
                     except Exception:
                         pass
 
-                await asyncio.sleep(0.5)
+                # Rebuild the connection for genuine transport failures; for
+                # transient server errors just back off briefly. This is the
+                # crucial recovery path — a dead media socket is restarted here
+                # and the request retried on the fresh connection.
+                if isinstance(e, (OSError, TimeoutError)):
+                    await self.restart()
+                else:
+                    await asyncio.sleep(1)
 
-                return await self.invoke(query, retries - 1, timeout)
         raise TimeoutError("Exceeded maximum number of retries")

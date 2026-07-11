@@ -52,6 +52,17 @@ class Terminate:
 
         self.media_sessions.clear()
 
+        # Tear down the persistent upload pools too, so a stop/terminate leaves
+        # no live media sessions behind.
+        for pool in self.media_session_pools.values():
+            for session in pool:
+                try:
+                    await session.stop()
+                except Exception as e:
+                    log.warning("Error stopping pooled media session: %s", e)
+
+        self.media_session_pools.clear()
+
         self.updates_watchdog_event.set()
 
         if self.updates_watchdog_task is not None:
