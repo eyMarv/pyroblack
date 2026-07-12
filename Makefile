@@ -21,8 +21,10 @@ clean-build:
 	$(RM) *.egg-info build dist
 
 clean-docs:
+	# Only wipe generated docs trees. Hand-written enums under
+	# docs/source/api/enums/ are tracked in git and must not be deleted.
 	$(RM) docs/build
-	$(RM) docs/build docs/source/api/bound-methods docs/source/api/methods docs/source/api/types docs/source/api/enums docs/source/telegram
+	$(RM) docs/source/api/bound-methods docs/source/api/methods docs/source/api/types docs/source/telegram
 
 clean-api:
 	$(RM) pyrogram/errors/exceptions pyrogram/raw/all.py pyrogram/raw/base pyrogram/raw/functions pyrogram/raw/types

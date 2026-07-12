@@ -203,6 +203,32 @@ Account
 
     {account}
 
+Payments
+--------
+
+.. autosummary::
+    :nosignatures:
+
+    {payments}
+
+.. toctree::
+    :hidden:
+
+    {payments}
+
+Phone
+-----
+
+.. autosummary::
+    :nosignatures:
+
+    {phone}
+
+.. toctree::
+    :hidden:
+
+    {phone}
+
 Advanced
 --------
 

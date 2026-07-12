@@ -891,6 +891,17 @@ def pyrogram_api():
             ChatJoinRequest.approve
             ChatJoinRequest.decline
         """,
+        folder="""
+        Folder
+            Folder.delete
+            Folder.edit
+            Folder.include_chat
+            Folder.exclude_chat
+            Folder.pin_chat
+            Folder.remove_chat
+            Folder.update_color
+            Folder.create_invite_link
+        """,
         active_session="""
         ActiveSession
             ActiveSession.reset
