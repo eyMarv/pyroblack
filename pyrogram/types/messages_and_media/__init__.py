@@ -1,20 +1,24 @@
-#  Pyrogram - Telegram MTProto API Client Library for Python
-#  Copyright (C) 2017-present Dan <https://github.com/delivrance>
+#  Pyroblack - Telegram MTProto API Client Library for Python
+#  Copyright (C) 2017-2024 Dan <https://github.com/delivrance>
+#  Copyright (C) 2024-present eyMarv <https://github.com/eyMarv>
+#  Maintainer: irisXDR <https://github.com/irisXDR>
 #
-#  This file is part of Pyrogram.
+#  This file is part of Pyroblack.
 #
-#  Pyrogram is free software: you can redistribute it and/or modify
+#  Pyroblack is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU Lesser General Public License as published
 #  by the Free Software Foundation, either version 3 of the License, or
 #  (at your option) any later version.
 #
-#  Pyrogram is distributed in the hope that it will be useful,
+#  Pyroblack is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU Lesser General Public License for more details.
 #
+#  Pyroblack is a continuation fork of Pyrogram <https://github.com/pyrogram/pyrogram>
+#
 #  You should have received a copy of the GNU Lesser General Public License
-#  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
+#  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
 from .animation import Animation
 from .audio import Audio
@@ -83,6 +87,33 @@ from .chat_has_protected_content_disable_requested import ChatHasProtectedConten
 from .poll_option_added import PollOptionAdded
 from .poll_option_deleted import PollOptionDeleted
 
+from .gift_attribute import GiftAttribute
+from .gift_auction import GiftAuction
+from .gift_auction_state import GiftAuctionState
+from .gift_collection import GiftCollection
+from .gift_purchase_limit import GiftPurchaseLimit
+from .gift_resale_parameters import GiftResaleParameters
+from .gift_resale_price import GiftResalePrice
+from .gift_upgrade_preview import GiftUpgradePreview
+from .gift_upgrade_price import GiftUpgradePrice
+from .gift_upgrade_variants import GiftUpgradeVariants
+from .gifted_ton import GiftedTon
+from .giveaway_prize_stars import GiveawayPrizeStars
+from .my_boost import MyBoost
+from .premium_gift_code import PremiumGiftCode
+from .star_amount import StarAmount
+from .boosts_status import BoostsStatus
+from .chat_boost import ChatBoost
+from .craft_gift_result import CraftGiftResult
+from .upgraded_gift_attribute_id import UpgradedGiftAttributeId
+from .upgraded_gift_attribute_id_backdrop import UpgradedGiftAttributeIdBackdrop
+from .upgraded_gift_attribute_id_model import UpgradedGiftAttributeIdModel
+from .upgraded_gift_attribute_id_symbol import UpgradedGiftAttributeIdSymbol
+from .upgraded_gift_attribute_rarity import UpgradedGiftAttributeRarity
+from .upgraded_gift_original_details import UpgradedGiftOriginalDetails
+from .upgraded_gift_purchase_offer import UpgradedGiftPurchaseOffer
+from .upgraded_gift_value_info import UpgradedGiftValueInfo
+
 __all__ = [
     "Animation",
     "Audio",
@@ -149,4 +180,30 @@ __all__ = [
     "ChatHasProtectedContentDisableRequested",
     "PollOptionAdded",
     "PollOptionDeleted",
+    "GiftAttribute",
+    "GiftAuction",
+    "GiftAuctionState",
+    "GiftCollection",
+    "GiftPurchaseLimit",
+    "GiftResaleParameters",
+    "GiftResalePrice",
+    "GiftUpgradePreview",
+    "GiftUpgradePrice",
+    "GiftUpgradeVariants",
+    "GiftedTon",
+    "GiveawayPrizeStars",
+    "MyBoost",
+    "PremiumGiftCode",
+    "StarAmount",
+    "BoostsStatus",
+    "ChatBoost",
+    "CraftGiftResult",
+    "UpgradedGiftAttributeId",
+    "UpgradedGiftAttributeIdBackdrop",
+    "UpgradedGiftAttributeIdModel",
+    "UpgradedGiftAttributeIdSymbol",
+    "UpgradedGiftAttributeRarity",
+    "UpgradedGiftOriginalDetails",
+    "UpgradedGiftPurchaseOffer",
+    "UpgradedGiftValueInfo",
 ]

@@ -1,22 +1,24 @@
-#  pyroblack - Telegram MTProto API Client Library for Python
-#  Copyright (C) 2017-present Dan <https://github.com/delivrance>
-#  Copyright (C) 2022-present Mayuri-Chan <https://github.com/Mayuri-Chan>
+#  Pyroblack - Telegram MTProto API Client Library for Python
+#  Copyright (C) 2017-2024 Dan <https://github.com/delivrance>
 #  Copyright (C) 2024-present eyMarv <https://github.com/eyMarv>
+#  Maintainer: irisXDR <https://github.com/irisXDR>
 #
-#  This file is part of pyroblack.
+#  This file is part of Pyroblack.
 #
-#  pyroblack is free software: you can redistribute it and/or modify
+#  Pyroblack is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU Lesser General Public License as published
 #  by the Free Software Foundation, either version 3 of the License, or
 #  (at your option) any later version.
 #
-#  pyroblack is distributed in the hope that it will be useful,
+#  Pyroblack is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU Lesser General Public License for more details.
 #
+#  Pyroblack is a continuation fork of Pyrogram <https://github.com/pyrogram/pyrogram>
+#
 #  You should have received a copy of the GNU Lesser General Public License
-#  along with pyroblack.  If not, see <http://www.gnu.org/licenses/>.
+#  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
 import asyncio
 import bisect
@@ -197,7 +199,7 @@ class Session:
 
         self.ping_task_event.clear()
 
-        self.connection.close()
+        await self.connection.close()
 
         if self.network_task:
             await self.network_task
@@ -384,7 +386,8 @@ class Session:
         self,
         data: TLObject,
         wait_response: bool = True,
-        timeout: float = WAIT_TIMEOUT
+        timeout: float = WAIT_TIMEOUT,
+        retry: int = 0,
     ):
         message = self.msg_factory(data)
         msg_id = message.msg_id
@@ -429,12 +432,29 @@ class Session:
 
                 RPCError.raise_it(result, type(data))
             elif isinstance(result, raw.types.BadMsgNotification):
-                raise BadMsgNotification(result.error_code)
+                # Clock skew / msg_id race: bump our local msg_id and retry once
+                # (ported from wzgram). Raising immediately used to abort healthy
+                # transfers on transient BadMsg.
+                if retry > 1:
+                    raise BadMsgNotification(result.error_code)
+                self._handle_bad_notification()
+                return await self.send(data, wait_response, timeout, retry + 1)
             elif isinstance(result, raw.types.BadServerSalt):
                 self.salt = result.new_server_salt
                 return await self.send(data, wait_response, timeout)
             else:
                 return result
+
+    def _handle_bad_notification(self):
+        new_msg_id = MsgId()
+        if self.stored_msg_ids and self.stored_msg_ids[-1] >= new_msg_id:
+            new_msg_id = self.stored_msg_ids[-1] + 4
+            log.debug(
+                "Changing msg_id old=%s new=%s",
+                self.stored_msg_ids[-1],
+                new_msg_id,
+            )
+            self.stored_msg_ids[-1] = new_msg_id
 
     async def invoke(
         self,

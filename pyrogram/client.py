@@ -1,32 +1,36 @@
-#  pyroblack - Telegram MTProto API Client Library for Python
-#  Copyright (C) 2017-present Dan <https://github.com/delivrance>
-#  Copyright (C) 2022-present Mayuri-Chan <https://github.com/Mayuri-Chan>
+#  Pyroblack - Telegram MTProto API Client Library for Python
+#  Copyright (C) 2017-2024 Dan <https://github.com/delivrance>
 #  Copyright (C) 2024-present eyMarv <https://github.com/eyMarv>
+#  Maintainer: irisXDR <https://github.com/irisXDR>
 #
-#  This file is part of pyroblack.
+#  This file is part of Pyroblack.
 #
-#  pyroblack is free software: you can redistribute it and/or modify
+#  Pyroblack is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU Lesser General Public License as published
 #  by the Free Software Foundation, either version 3 of the License, or
 #  (at your option) any later version.
 #
-#  pyroblack is distributed in the hope that it will be useful,
+#  Pyroblack is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU Lesser General Public License for more details.
 #
+#  Pyroblack is a continuation fork of Pyrogram <https://github.com/pyrogram/pyrogram>
+#
 #  You should have received a copy of the GNU Lesser General Public License
-#  along with pyroblack.  If not, see <http://www.gnu.org/licenses/>.
+#  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
 import asyncio
 import functools
 import inspect
 import logging
+import math
 import os
 import platform
 import re
 import shutil
 import sys
+import time
 from concurrent.futures.thread import ThreadPoolExecutor
 from datetime import datetime, timedelta
 from hashlib import sha256
@@ -259,7 +263,11 @@ class Client(Methods):
     # Interval of seconds in which the updates watchdog will kick in
     UPDATES_WATCHDOG_INTERVAL = 10 * 60
 
-    MAX_CONCURRENT_TRANSMISSIONS = 1
+    # Raised from 1 (PyroTGFork default) to 16 to match wzgram's throughput
+    # model. One concurrent transmission left the media session pool idle
+    # under multi-file bots. Callers can still lower it via the constructor.
+    MAX_CONCURRENT_TRANSMISSIONS = 16
+    DOWNLOAD_POOL_SIZE = 4
     MAX_CACHE_SIZE = 10000
 
     mimetypes = MimeTypes()
@@ -1195,43 +1203,38 @@ class Client(Methods):
             total = abs(limit) or (1 << 31) - 1
             chunk_size = 1024 * 1024
             offset_bytes = abs(offset) * chunk_size
+            _last_progress_time = 0.0
 
             dc_id = file_id.dc_id
 
-            try:
-                session = self.media_sessions.get(dc_id)
-                if not session:
-                    session = self.media_sessions[dc_id] = Session(
-                        self, dc_id,
-                        await Auth(self, dc_id, await self.storage.test_mode()).create()
-                        if dc_id != await self.storage.dc_id()
-                        else await self.storage.auth_key(),
-                        await self.storage.test_mode(),
-                        is_media=True
-                    )
-                    await session.start()
+            async def _report_progress(sent: int, total_size: int):
+                if not progress:
+                    return
+                nonlocal _last_progress_time
+                now = time.monotonic()
+                if now - _last_progress_time < 0.1:
+                    return
+                _last_progress_time = now
 
-                    if dc_id != await self.storage.dc_id():
-                        for _ in range(3):
-                            exported_auth = await self.invoke(
-                                raw.functions.auth.ExportAuthorization(
-                                    dc_id=dc_id
-                                )
-                            )
-
-                            try:
-                                await session.invoke(
-                                    raw.functions.auth.ImportAuthorization(
-                                        id=exported_auth.id,
-                                        bytes=exported_auth.bytes
-                                    )
-                                )
-                            except AuthBytesInvalid:
-                                continue
-                            else:
-                                break
+                async def report():
+                    try:
+                        if inspect.iscoroutinefunction(progress):
+                            await progress(sent, total_size, *progress_args)
                         else:
-                            raise AuthBytesInvalid
+                            await self.loop.run_in_executor(
+                                self.executor,
+                                functools.partial(progress, sent, total_size, *progress_args),
+                            )
+                    except Exception as e:
+                        log.warning("Download progress callback error: %s", e)
+
+                asyncio.ensure_future(report())
+
+            try:
+                # Reuse the persistent media pool (same pool as uploads) so a
+                # download doesn't pay a full TCP+auth handshake every time.
+                pool = await self._get_media_session_pool(dc_id, 1)
+                session = pool[0]
 
                 r = await session.invoke(
                     raw.functions.upload.GetFile(
@@ -1239,48 +1242,135 @@ class Client(Methods):
                         offset=offset_bytes,
                         limit=chunk_size
                     ),
-                    sleep_threshold=self.sleep_threshold
+                    sleep_threshold=30
                 )
 
                 if isinstance(r, raw.types.upload.File):
-                    while True:
-                        chunk = r.bytes
+                    first_chunk = r.bytes
+                    yield first_chunk
+                    current += 1
+                    offset_bytes += chunk_size
+                    await _report_progress(
+                        min(offset_bytes, file_size) if file_size != 0 else offset_bytes,
+                        file_size,
+                    )
 
-                        yield chunk
+                    if (
+                        not first_chunk
+                        or len(first_chunk) < chunk_size
+                        or current >= total
+                    ):
+                        return
 
-                        current += 1
-                        offset_bytes += chunk_size
-
-                        if progress:
-                            func = functools.partial(
-                                progress,
-                                min(offset_bytes, file_size)
-                                if file_size != 0
-                                else offset_bytes,
+                    # Sequential fallback when file size is unknown (streaming
+                    # callers / photos without a size field).
+                    if file_size <= 0:
+                        while current < total:
+                            r = await session.invoke(
+                                raw.functions.upload.GetFile(
+                                    location=location,
+                                    offset=offset_bytes,
+                                    limit=chunk_size,
+                                ),
+                                sleep_threshold=30,
+                            )
+                            chunk = r.bytes
+                            if not chunk:
+                                return
+                            yield chunk
+                            current += 1
+                            offset_bytes += chunk_size
+                            await _report_progress(
+                                min(offset_bytes, file_size) if file_size != 0 else offset_bytes,
                                 file_size,
-                                *progress_args
+                            )
+                            if len(chunk) < chunk_size or current >= total:
+                                return
+                        return
+
+                    # Parallel download (aria2c-style work queue) using the
+                    # media-session pool. Ported from wzgram — this is the
+                    # download-side twin of the persistent upload pool.
+                    n_parallel = min(
+                        self.DOWNLOAD_POOL_SIZE,
+                        math.ceil((file_size - offset_bytes) / chunk_size) or 1,
+                    )
+                    pool = await self._get_media_session_pool(dc_id, n_parallel)
+                    n_sessions = len(pool)
+
+                    work = asyncio.Queue()
+                    chunks_needed = min(
+                        total - current,
+                        math.ceil((file_size - offset_bytes) / chunk_size),
+                    )
+                    for i in range(chunks_needed):
+                        work.put_nowait(offset_bytes + i * chunk_size)
+
+                    received = {}
+                    data_ready = asyncio.Event()
+
+                    async def _worker(s):
+                        while True:
+                            try:
+                                off = work.get_nowait()
+                            except asyncio.QueueEmpty:
+                                return
+
+                            rr = await s.invoke(
+                                raw.functions.upload.GetFile(
+                                    location=location,
+                                    offset=off,
+                                    limit=chunk_size,
+                                ),
+                                sleep_threshold=30,
+                            )
+                            chunk_data = rr.bytes
+                            received[off] = chunk_data
+                            data_ready.set()
+
+                            if len(chunk_data) < chunk_size:
+                                return
+
+                    tasks = [
+                        asyncio.ensure_future(_worker(pool[i % n_sessions]))
+                        for i in range(n_parallel)
+                    ]
+
+                    try:
+                        while current < total:
+                            while offset_bytes not in received:
+                                for t in tasks:
+                                    if t.done():
+                                        exc = t.exception()
+                                        if exc and not isinstance(exc, asyncio.CancelledError):
+                                            raise exc
+                                if all(t.done() for t in tasks):
+                                    return
+                                await data_ready.wait()
+                                data_ready.clear()
+
+                            chunk = received.pop(offset_bytes)
+                            yield chunk
+                            current += 1
+                            offset_bytes += chunk_size
+                            await _report_progress(
+                                min(offset_bytes, file_size) if file_size != 0 else offset_bytes,
+                                file_size,
                             )
 
-                            if inspect.iscoroutinefunction(progress):
-                                await func()
-                            else:
-                                await self.loop.run_in_executor(self.executor, func)
-
-                        if len(chunk) < chunk_size or current >= total:
-                            break
-
-                        r = await session.invoke(
-                            raw.functions.upload.GetFile(
-                                location=location,
-                                offset=offset_bytes,
-                                limit=chunk_size
-                            )
-                        )
+                            if len(chunk) < chunk_size or current >= total:
+                                return
+                    finally:
+                        for t in tasks:
+                            if not t.done():
+                                t.cancel()
 
                 elif isinstance(r, raw.types.upload.FileCdnRedirect):
                     cdn_session = Session(
-                        self, r.dc_id, await Auth(self, r.dc_id, await self.storage.test_mode()).create(),
-                        await self.storage.test_mode(), is_media=True, is_cdn=True
+                        self, r.dc_id,
+                        await Auth(self, r.dc_id, await self.storage.test_mode()).create(),
+                        await self.storage.test_mode(),
+                        is_media=True, is_cdn=True
                     )
 
                     try:
@@ -1310,8 +1400,11 @@ class Client(Methods):
 
                             chunk = r2.bytes
 
-                            # https://core.telegram.org/cdn#decrypting-files
-                            decrypted_chunk = aes.ctr256_decrypt(
+                            # Offload CDN AES to the multi-worker crypto pool
+                            # so large CDN payloads don't block the event loop.
+                            decrypted_chunk = await self.loop.run_in_executor(
+                                pyrogram.crypto_executor,
+                                aes.ctr256_decrypt,
                                 chunk,
                                 r.encryption_key,
                                 bytearray(
@@ -1327,7 +1420,6 @@ class Client(Methods):
                                 )
                             )
 
-                            # https://core.telegram.org/cdn#verifying-files
                             for i, h in enumerate(hashes):
                                 cdn_chunk = decrypted_chunk[h.limit * i: h.limit * (i + 1)]
                                 CDNFileHashMismatch.check(
@@ -1340,18 +1432,10 @@ class Client(Methods):
                             current += 1
                             offset_bytes += chunk_size
 
-                            if progress:
-                                func = functools.partial(
-                                    progress,
-                                    min(offset_bytes, file_size) if file_size != 0 else offset_bytes,
-                                    file_size,
-                                    *progress_args
-                                )
-
-                                if inspect.iscoroutinefunction(progress):
-                                    await func()
-                                else:
-                                    await self.loop.run_in_executor(self.executor, func)
+                            await _report_progress(
+                                min(offset_bytes, file_size) if file_size != 0 else offset_bytes,
+                                file_size,
+                            )
 
                             if len(chunk) < chunk_size or current >= total:
                                 break
@@ -1363,6 +1447,7 @@ class Client(Methods):
                 raise
             except Exception as e:
                 log.exception(e)
+
 
     def guess_mime_type(self, filename: str) -> Optional[str]:
         return self.mimetypes.guess_type(filename)[0]

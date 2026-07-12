@@ -1,26 +1,30 @@
-#  Pyrogram - Telegram MTProto API Client Library for Python
-#  Copyright (C) 2017-present Dan <https://github.com/delivrance>
+#  Pyroblack - Telegram MTProto API Client Library for Python
+#  Copyright (C) 2017-2024 Dan <https://github.com/delivrance>
+#  Copyright (C) 2024-present eyMarv <https://github.com/eyMarv>
+#  Maintainer: irisXDR <https://github.com/irisXDR>
 #
-#  This file is part of Pyrogram.
+#  This file is part of Pyroblack.
 #
-#  Pyrogram is free software: you can redistribute it and/or modify
+#  Pyroblack is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU Lesser General Public License as published
 #  by the Free Software Foundation, either version 3 of the License, or
 #  (at your option) any later version.
 #
-#  Pyrogram is distributed in the hope that it will be useful,
+#  Pyroblack is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU Lesser General Public License for more details.
 #
+#  Pyroblack is a continuation fork of Pyrogram <https://github.com/pyrogram/pyrogram>
+#
 #  You should have received a copy of the GNU Lesser General Public License
-#  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
+#  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+import asyncio
 import logging
 import os
 from typing import Optional
 
-import pyrogram
 from pyrogram.crypto import aes
 from .tcp import TCP
 
@@ -30,8 +34,14 @@ log = logging.getLogger(__name__)
 class TCPAbridgedO(TCP):
     RESERVED = (b"HEAD", b"POST", b"GET ", b"OPTI", b"\xee" * 4)
 
-    def __init__(self, ipv6: bool, proxy: dict):
-        super().__init__(ipv6, proxy)
+    def __init__(
+        self,
+        ipv6: bool,
+        proxy: dict,
+        crypto_executor=None,
+        loop: Optional[asyncio.AbstractEventLoop] = None,
+    ):
+        super().__init__(ipv6, proxy, crypto_executor, loop)
 
         self.encrypt = None
         self.decrypt = None
@@ -42,8 +52,12 @@ class TCPAbridgedO(TCP):
         while True:
             nonce = bytearray(os.urandom(64))
 
-            if nonce[0] != b"\xef" and nonce[:4] not in self.RESERVED and nonce[4:4] != b"\x00" * 4:
-                nonce[56] = nonce[57] = nonce[58] = nonce[59] = 0xef
+            if (
+                bytes([nonce[0]]) != b"\xef"
+                and nonce[:4] not in self.RESERVED
+                and nonce[4:8] != b"\x00" * 4
+            ):
+                nonce[56] = nonce[57] = nonce[58] = nonce[59] = 0xEF
                 break
 
         temp = bytearray(nonce[55:7:-1])
@@ -57,8 +71,14 @@ class TCPAbridgedO(TCP):
 
     async def send(self, data: bytes, *args):
         length = len(data) // 4
-        data = (bytes([length]) if length <= 126 else b"\x7f" + length.to_bytes(3, "little")) + data
-        payload = await self.loop.run_in_executor(pyrogram.crypto_executor, aes.ctr256_encrypt, data, *self.encrypt)
+        data = (
+            bytes([length]) if length <= 126 else b"\x7f" + length.to_bytes(3, "little")
+        ) + data
+        # Offload AES to the shared crypto pool so the event loop stays free
+        # under multi-session upload load (ported from wzgram).
+        payload = await self.loop.run_in_executor(
+            self.crypto_executor, aes.ctr256_encrypt, data, *self.encrypt
+        )
 
         await super().send(payload)
 
@@ -83,4 +103,6 @@ class TCPAbridgedO(TCP):
         if data is None:
             return None
 
-        return await self.loop.run_in_executor(pyrogram.crypto_executor, aes.ctr256_decrypt, data, *self.decrypt)
+        return await self.loop.run_in_executor(
+            self.crypto_executor, aes.ctr256_decrypt, data, *self.decrypt
+        )

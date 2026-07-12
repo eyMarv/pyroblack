@@ -1,27 +1,31 @@
-#  Pyrogram - Telegram MTProto API Client Library for Python
-#  Copyright (C) 2017-present Dan <https://github.com/delivrance>
+#  Pyroblack - Telegram MTProto API Client Library for Python
+#  Copyright (C) 2017-2024 Dan <https://github.com/delivrance>
+#  Copyright (C) 2024-present eyMarv <https://github.com/eyMarv>
+#  Maintainer: irisXDR <https://github.com/irisXDR>
 #
-#  This file is part of Pyrogram.
+#  This file is part of Pyroblack.
 #
-#  Pyrogram is free software: you can redistribute it and/or modify
+#  Pyroblack is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU Lesser General Public License as published
 #  by the Free Software Foundation, either version 3 of the License, or
 #  (at your option) any later version.
 #
-#  Pyrogram is distributed in the hope that it will be useful,
+#  Pyroblack is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU Lesser General Public License for more details.
 #
+#  Pyroblack is a continuation fork of Pyrogram <https://github.com/pyrogram/pyrogram>
+#
 #  You should have received a copy of the GNU Lesser General Public License
-#  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
+#  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
 import asyncio
 import ipaddress
 import logging
 import socket
-import time
 from concurrent.futures import ThreadPoolExecutor
+from typing import Optional
 
 try:
     import socks
@@ -30,10 +34,10 @@ except ImportError as e:
         "PySocks is missing and Pyrogram can't run without. "
         "Please install it using \"pip3 install pysocks\"."
     )
-
     raise e
 
 from pyrogram import utils
+from pyrogram.crypto.executor import get_crypto_executor
 
 log = logging.getLogger(__name__)
 
@@ -41,14 +45,22 @@ log = logging.getLogger(__name__)
 class TCP:
     TIMEOUT = 10
 
-    def __init__(self, ipv6: bool, proxy: dict):
+    def __init__(
+        self,
+        ipv6: bool,
+        proxy: dict,
+        crypto_executor: Optional[ThreadPoolExecutor] = None,
+        loop: Optional[asyncio.AbstractEventLoop] = None,
+    ):
         self.socket = None
 
-        self.reader = None  # type: asyncio.StreamReader
-        self.writer = None  # type: asyncio.StreamWriter
+        self.reader = None  # type: Optional[asyncio.StreamReader]
+        self.writer = None  # type: Optional[asyncio.StreamWriter]
 
         self.lock = asyncio.Lock()
-        self.loop = utils.get_event_loop()
+        self.loop = loop or utils.get_event_loop()
+        self.proxy = proxy
+        self.crypto_executor = crypto_executor or get_crypto_executor()
 
         if proxy:
             hostname = proxy.get("hostname")
@@ -68,44 +80,67 @@ class TCP:
                 addr=hostname,
                 port=proxy.get("port", None),
                 username=proxy.get("username", None),
-                password=proxy.get("password", None)
+                password=proxy.get("password", None),
             )
 
-            log.info(f"Using proxy {hostname}")
+            # PySocks still needs a blocking connect; keep the timeout for that path.
+            self.socket.settimeout(TCP.TIMEOUT)
+            log.info("Using proxy %s", hostname)
         else:
-            self.socket = socks.socksocket(
-                socket.AF_INET6 if ipv6
-                else socket.AF_INET
+            # Native non-blocking socket so we can use asyncio sock_connect
+            # (no temporary ThreadPoolExecutor per connect).
+            self.socket = socket.socket(
+                socket.AF_INET6 if ipv6 else socket.AF_INET
             )
-
-        self.socket.settimeout(TCP.TIMEOUT)
+            self.socket.setblocking(False)
 
     async def connect(self, address: tuple):
-        # The socket used by the whole logic is blocking and thus it blocks when connecting.
-        # Offload the task to a thread executor to avoid blocking the main event loop.
-        with ThreadPoolExecutor(1) as executor:
-            await self.loop.run_in_executor(executor, self.socket.connect, address)
+        if self.proxy:
+            # PySocks connect is still blocking — offload to a throwaway executor.
+            with ThreadPoolExecutor(1) as executor:
+                await self.loop.run_in_executor(executor, self.socket.connect, address)
+        else:
+            try:
+                await asyncio.wait_for(
+                    self.loop.sock_connect(self.socket, address),
+                    TCP.TIMEOUT,
+                )
+            except asyncio.TimeoutError:
+                raise TimeoutError("Connection timed out")
 
         self.reader, self.writer = await asyncio.open_connection(sock=self.socket)
 
-    def close(self):
+        # Socket-level tuning for high-throughput media transfers (ported from
+        # wzgram): disable Nagle, enable keepalive, and grow the kernel buffers
+        # so large SaveBigFilePart / GetFile payloads don't stall on small
+        # default SO_SNDBUF/SO_RCVBUF.
         try:
-            self.writer.close()
-        except AttributeError:
-            try:
-                self.socket.shutdown(socket.SHUT_RDWR)
-            except OSError:
-                pass
-            finally:
-                # A tiny sleep placed here helps avoiding .recv(n) hanging until the timeout.
-                # This is a workaround that seems to fix the occasional delayed stop of a client.
-                time.sleep(0.001)
-                self.socket.close()
+            sock = self.writer.get_extra_info("socket")
+            if sock is not None:
+                sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+                sock.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
+                sock.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 4 * 1024 * 1024)
+                sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 4 * 1024 * 1024)
+        except OSError:
+            pass
+
+    async def close(self):
+        try:
+            if self.writer is not None:
+                self.writer.close()
+                await asyncio.wait_for(self.writer.wait_closed(), TCP.TIMEOUT)
+        except Exception as e:
+            log.info("Close exception: %s %s", type(e).__name__, e)
 
     async def send(self, data: bytes):
         async with self.lock:
-            self.writer.write(data)
-            await self.writer.drain()
+            try:
+                if self.writer is not None:
+                    self.writer.write(data)
+                    await self.writer.drain()
+            except Exception as e:
+                log.info("Send exception: %s %s", type(e).__name__, e)
+                raise OSError(e)
 
     async def recv(self, length: int = 0):
         data = b""
@@ -114,7 +149,7 @@ class TCP:
             try:
                 chunk = await asyncio.wait_for(
                     self.reader.read(length - len(data)),
-                    TCP.TIMEOUT
+                    TCP.TIMEOUT,
                 )
             except (OSError, asyncio.TimeoutError):
                 return None

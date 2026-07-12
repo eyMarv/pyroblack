@@ -1,98 +1,102 @@
-#  Pyrogram - Telegram MTProto API Client Library for Python
-#  Copyright (C) 2017-present Dan <https://github.com/delivrance>
+#  Pyroblack - Telegram MTProto API Client Library for Python
+#  Copyright (C) 2017-2024 Dan <https://github.com/delivrance>
+#  Copyright (C) 2024-present eyMarv <https://github.com/eyMarv>
+#  Maintainer: irisXDR <https://github.com/irisXDR>
 #
-#  This file is part of Pyrogram.
+#  This file is part of Pyroblack.
 #
-#  Pyrogram is free software: you can redistribute it and/or modify
+#  Pyroblack is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU Lesser General Public License as published
 #  by the Free Software Foundation, either version 3 of the License, or
 #  (at your option) any later version.
 #
-#  Pyrogram is distributed in the hope that it will be useful,
+#  Pyroblack is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU Lesser General Public License for more details.
 #
+#  Pyroblack is a continuation fork of Pyrogram <https://github.com/pyrogram/pyrogram>
+#
 #  You should have received a copy of the GNU Lesser General Public License
-#  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
+#  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-import re
-from typing import Union
-
+from typing import Optional
 import pyrogram
-from pyrogram import raw
+from pyrogram import raw, types
 
 
 class SendPaymentForm:
     async def send_payment_form(
         self: "pyrogram.Client",
-        chat_id: Union[int, str],
-        message_id: Union[int, str],
-    ) -> bool:
-        """Pay an invoice.
-
-        .. note::
-
-            For now only stars invoices are supported.
+        payment_form_id: int,
+        input_invoice: "types.InputInvoice",
+        credentials: Optional["types.InputCredentials"] = None
+    ) -> "types.PaymentResult":
+        """Send a filled-out payment form to the bot for final verification.
 
         .. include:: /_includes/usable-by/users.rst
 
         Parameters:
-            chat_id (``int`` | ``str``):
-                Unique identifier (int) or username (str) of the target chat.
-                Unique identifier for the target chat in form of a *t.me/joinchat/* link, identifier (int) or username
-                of the target channel/supergroup (in the format @username).
+            payment_form_id (``int``):
+                Payment form identifier returned by :meth:`~pyrogram.Client.get_payment_form`.
 
-            message_id (``int`` | ``str``):
-                Pass a message identifier or to get the invoice from message.
-                Pass a invoice link in form of a *t.me/$...* link or slug itself to get the payment form from link.
+            input_invoice (:obj:`~pyrogram.types.InputInvoice`):
+                The invoice.
+
+            credentials (:obj:`~pyrogram.types.InputCredentials`, *optional*):
+                The credentials chosen by user for payment.
+                Pass None for a payment in Telegram Stars.
 
         Returns:
-            ``bool``: On success, True is returned.
+            :obj:`~pyrogram.types.PaymentResult`: On success, the payment result is returned.
 
         Example:
             .. code-block:: python
 
-                # Pay invoice from message
-                app.send_payment_form(chat_id, 123)
+                # Pay regular invoice from message
+                invoice = types.InputInvoiceMessage(
+                    chat_id=chat_id,
+                    message_id=123
+                )
 
-                # Pay invoice form from link
-                # Chat id can be None
-                app.send_payment_form(chat_id, "https://t.me/$xvbzUtt5sUlJCAAATqZrWRy9Yzk")
+                form = await app.get_payment_form(invoice)
+
+                await app.send_payment_form(
+                    payment_form_id=form.id,
+                    input_invoice=invoice,
+                    credentials=types.InputCredentialsNew(
+                        data=json.dumps({"token": "...", "type": "card"}), # Pass the token received from the payment provider
+                    )
+                )
+
+                # Pay star invoice from message
+                invoice = types.InputInvoiceMessage(
+                    chat_id=chat_id,
+                    message_id=123
+                )
+
+                form = await app.get_payment_form(invoice)
+
+                await app.send_payment_form(
+                    payment_form_id=form.id,
+                    input_invoice=invoice
+                )
         """
-        invoice = None
-
-        if isinstance(message_id, int):
-            invoice = raw.types.InputInvoiceMessage(
-                peer=await self.resolve_peer(chat_id), msg_id=message_id
+        if credentials is None:
+            r = await self.invoke(
+                raw.functions.payments.SendStarsForm(
+                    form_id=payment_form_id,
+                    invoice=await input_invoice.write(self),
+                )
             )
-        elif isinstance(message_id, str):
-            match = re.match(
-                r"^(?:https?://)?(?:www\.)?(?:t(?:elegram)?\.(?:org|me|dog)/\$)([\w-]+)$",
-                message_id,
+        else:
+            r = await self.invoke(
+                raw.functions.payments.SendPaymentForm(
+                    form_id=payment_form_id,
+                    invoice=await input_invoice.write(self),
+                    credentials=await credentials.write(self)
+                )
             )
 
-            if match:
-                slug = match.group(1)
-            else:
-                slug = message_id
+        return types.PaymentResult._parse(r)
 
-            invoice = raw.types.InputInvoiceSlug(slug=slug)
-
-        form = await self.get_payment_form(chat_id=chat_id, message_id=message_id)
-
-        # if form.invoice.currency == "XTR":
-        await self.invoke(
-            raw.functions.payments.SendStarsForm(form_id=form.id, invoice=invoice)
-        )
-        # TODO: Add support for regular invoices (credentials)
-        # else:
-        #     r = await self.invoke(
-        #         raw.functions.payments.SendPaymentForm(
-        #             form_id=form.id,
-        #             invoice=invoice,
-        #             credentials=raw.types.InputPaymentCredentials(data=raw.types.DataJSON(data={}))
-        #         )
-        #     )
-
-        return True

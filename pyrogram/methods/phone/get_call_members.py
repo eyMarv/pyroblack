@@ -1,20 +1,24 @@
-#  Pyrogram - Telegram MTProto API Client Library for Python
-#  Copyright (C) 2017-present Dan <https://github.com/delivrance>
+#  Pyroblack - Telegram MTProto API Client Library for Python
+#  Copyright (C) 2017-2024 Dan <https://github.com/delivrance>
+#  Copyright (C) 2024-present eyMarv <https://github.com/eyMarv>
+#  Maintainer: irisXDR <https://github.com/irisXDR>
 #
-#  This file is part of Pyrogram.
+#  This file is part of Pyroblack.
 #
-#  Pyrogram is free software: you can redistribute it and/or modify
+#  Pyroblack is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU Lesser General Public License as published
 #  by the Free Software Foundation, either version 3 of the License, or
 #  (at your option) any later version.
 #
-#  Pyrogram is distributed in the hope that it will be useful,
+#  Pyroblack is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU Lesser General Public License for more details.
 #
+#  Pyroblack is a continuation fork of Pyrogram <https://github.com/pyrogram/pyrogram>
+#
 #  You should have received a copy of the GNU Lesser General Public License
-#  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
+#  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
 from typing import Union, AsyncGenerator
 
@@ -24,7 +28,9 @@ from pyrogram import types, raw
 
 class GetCallMembers:
     async def get_call_members(
-        self: "pyrogram.Client", chat_id: Union[int, str], limit: int = 0
+        self: "pyrogram.Client",
+        chat_id: Union[int, str],
+        limit: int = 0
     ) -> AsyncGenerator["types.GroupCallMember", None]:
         """Get the members list of a chat call.
 
@@ -54,9 +60,7 @@ class GetCallMembers:
         if isinstance(peer, raw.types.InputPeerChannel):
             r = await self.invoke(raw.functions.channels.GetFullChannel(channel=peer))
         elif isinstance(peer, raw.types.InputPeerChat):
-            r = await self.invoke(
-                raw.functions.messages.GetFullChat(chat_id=peer.chat_id)
-            )
+            r = await self.invoke(raw.functions.messages.GetFullChat(chat_id=peer.chat_id))
         else:
             raise ValueError("Target chat should be group, supergroup or channel.")
 
@@ -73,9 +77,13 @@ class GetCallMembers:
         while True:
             r = await self.invoke(
                 raw.functions.phone.GetGroupParticipants(
-                    call=full_chat.call, ids=[], sources=[], offset=offset, limit=limit
+                    call=full_chat.call,
+                    ids=[],
+                    sources=[],
+                    offset=offset,
+                    limit=limit
                 ),
-                sleep_threshold=60,
+                sleep_threshold=60
             )
 
             users = {u.id: u for u in r.users}
@@ -97,3 +105,4 @@ class GetCallMembers:
 
                 if current >= total:
                     return
+
