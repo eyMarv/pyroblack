@@ -52,6 +52,23 @@ from .gift_type import GiftType
 from .payment_form_type import PaymentFormType
 from .profile_tab import ProfileTab
 from .upgraded_gift_origin import UpgradedGiftOrigin
+from .top_chat_category import TopChatCategory
+from .block_list import BlockList
+from .phone_number_code_type import PhoneNumberCodeType
+from .chat_join_request_query_result import ChatJoinRequestQueryResult
+from .suggested_post_state import SuggestedPostState
+from .suggested_post_refund_reason import SuggestedPostRefundReason
+from .folder_color import FolderColor
+from .paid_reaction_privacy import PaidReactionPrivacy
+from .privacy_key import PrivacyKey
+from .reaction_type import ReactionType
+from .reply_color import ReplyColor
+from .business_schedule import BusinessSchedule
+from .mask_point_type import MaskPointType
+from .media_area_type import MediaAreaType
+from .phone_call_discard_reason import PhoneCallDiscardReason
+from .privacy_rule_type import PrivacyRuleType
+from .sticker_type import StickerType
 
 __all__ = [
     'ChatAction',
@@ -84,4 +101,21 @@ __all__ = [
     "UpgradedGiftOrigin",
     "StoriesPrivacyRules",
     "StoryPrivacy",
+    "TopChatCategory",
+    "BlockList",
+    "PhoneNumberCodeType",
+    "ChatJoinRequestQueryResult",
+    "SuggestedPostState",
+    "SuggestedPostRefundReason",
+    "FolderColor",
+    "PaidReactionPrivacy",
+    "PrivacyKey",
+    "ReactionType",
+    "ReplyColor",
+    "BusinessSchedule",
+    "MaskPointType",
+    "MediaAreaType",
+    "PhoneCallDiscardReason",
+    "PrivacyRuleType",
+    "StickerType",
 ]

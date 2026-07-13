@@ -20,6 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+
 from .accept_terms_of_service import AcceptTermsOfService
 from .check_password import CheckPassword
 from .connect import Connect
@@ -39,6 +40,9 @@ from .sign_up import SignUp
 from .terminate import Terminate
 from .terminate_all_other_sessions import TerminateAllOtherSessions
 from .terminate_session import TerminateSession
+from .change_phone_number import ChangePhoneNumber
+from .send_phone_number_code import SendPhoneNumberCode
+from .resend_phone_number_code import ResendPhoneNumberCode
 
 
 class Auth(
@@ -61,5 +65,8 @@ class Auth(
     Terminate,
     TerminateAllOtherSessions,
     TerminateSession,
+    ChangePhoneNumber,
+    SendPhoneNumberCode,
+    ResendPhoneNumberCode
 ):
     pass

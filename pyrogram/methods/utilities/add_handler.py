@@ -21,7 +21,13 @@
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
 import pyrogram
-from pyrogram.handlers import DisconnectHandler, InvokeErrHandler
+from pyrogram.handlers import (
+    DisconnectHandler,
+    InvokeErrHandler,
+    StartHandler,
+    StopHandler,
+    ConnectHandler,
+)
 from pyrogram.handlers.handler import Handler
 
 
@@ -63,7 +69,13 @@ class AddHandler:
 
                 app.run()
         """
-        if isinstance(handler, DisconnectHandler):
+        if isinstance(handler, StartHandler):
+            self.start_handler = handler.callback
+        elif isinstance(handler, StopHandler):
+            self.stop_handler = handler.callback
+        elif isinstance(handler, ConnectHandler):
+            self.connect_handler = handler.callback
+        elif isinstance(handler, DisconnectHandler):
             self.disconnect_handler = handler.callback
         elif isinstance(handler, InvokeErrHandler):
             self.invoke_err_handler = handler.callback

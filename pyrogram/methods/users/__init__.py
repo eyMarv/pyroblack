@@ -20,6 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+
 from .block_user import BlockUser
 from .delete_profile_photos import DeleteProfilePhotos
 from .get_chat_photos import GetChatPhotos
@@ -35,6 +36,7 @@ from .unblock_user import UnblockUser
 from .update_profile import UpdateProfile
 from .set_birthdate import SetBirthdate
 from .set_personal_chat import SetPersonalChat
+from .set_personal_channel import SetPersonalChannel
 from .update_status import UpdateStatus
 from .delete_account import DeleteAccount
 
@@ -48,14 +50,15 @@ class Users(
     GetDefaultEmojiStatuses,
     GetMe,
     GetUsers,
-    SetBirthdate,
     SetEmojiStatus,
-    SetPersonalChat,
     SetProfilePhoto,
     SetUsername,
     UnblockUser,
     UpdateProfile,
+    SetBirthdate,
+    SetPersonalChat,
+    SetPersonalChannel,
     UpdateStatus,
-    DeleteAccount,
+    DeleteAccount
 ):
     pass

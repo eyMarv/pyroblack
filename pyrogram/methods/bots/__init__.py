@@ -20,6 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+
 from .answer_callback_query import AnswerCallbackQuery
 from .answer_inline_query import AnswerInlineQuery
 from .answer_web_app_query import AnswerWebAppQuery
@@ -46,34 +47,54 @@ from .set_chat_menu_button import SetChatMenuButton
 from .set_game_score import SetGameScore
 from .get_owned_bots import GetOwnedBots
 from .get_similar_bots import GetSimilarBots
+from .create_bot import CreateBot
+from .check_bot_username import CheckBotUsername
+from .edit_user_star_subscription import EditUserStarSubscription
+from .get_managed_bot_token import GetManagedBotToken
+from .replace_managed_bot_token import ReplaceManagedBotToken
+from .get_managed_bot_access_settings import GetManagedBotAccessSettings
+from .set_managed_bot_access_settings import SetManagedBotAccessSettings
+from .answer_guest_query import AnswerGuestQuery
+from .answer_chat_join_request_query import AnswerChatJoinRequestQuery
+from .send_chat_join_request_web_app import SendChatJoinRequestWebApp
 
 
 class Bots(
     AnswerCallbackQuery,
     AnswerInlineQuery,
     AnswerWebAppQuery,
-    SendWebAppCustomRequest,
+    DeleteBotCommands,
+    GetBotCommands,
+    GetBotDefaultPrivileges,
+    GetBotInfoDescription,
+    GetBotInfoShortDescription,
+    GetBotName,
+    GetChatMenuButton,
+    GetGameHighScores,
     GetInlineBotResults,
     RequestCallbackAnswer,
-    SendInlineBotResult,
     SendGame,
-    SetGameScore,
-    GetGameHighScores,
+    SendMessageDraft,
+    SendInlineBotResult,
+    SendWebAppCustomRequest,
     SetBotCommands,
-    GetBotCommands,
-    DeleteBotCommands,
     SetBotDefaultPrivileges,
-    GetBotDefaultPrivileges,
-    SetChatMenuButton,
-    GetChatMenuButton,
     SetBotInfoDescription,
-    GetBotInfoDescription,
     SetBotInfoShortDescription,
-    GetBotInfoShortDescription,
     SetBotName,
-    GetBotName,
+    SetChatMenuButton,
+    SetGameScore,
     GetOwnedBots,
     GetSimilarBots,
-    SendMessageDraft,
+    CreateBot,
+    CheckBotUsername,
+    EditUserStarSubscription,
+    GetManagedBotToken,
+    ReplaceManagedBotToken,
+    GetManagedBotAccessSettings,
+    SetManagedBotAccessSettings,
+    AnswerGuestQuery,
+    AnswerChatJoinRequestQuery,
+    SendChatJoinRequestWebApp
 ):
     pass

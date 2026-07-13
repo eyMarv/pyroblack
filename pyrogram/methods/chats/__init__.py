@@ -20,6 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+
 from .add_chat_members import AddChatMembers
 from .archive_chats import ArchiveChats
 from .ban_chat_member import BanChatMember
@@ -71,53 +72,72 @@ from .get_chat_audios_count import GetChatAudiosCount
 from .get_chat_audios import GetChatAudios
 from .remove_profile_audio import RemoveProfileAudio
 from .set_profile_audio_position import SetProfileAudioPosition
+from .get_similar_channels import GetSimilarChannels
+from .get_personal_channels import GetPersonalChannels
+from .get_suitable_discussion_chats import GetSuitableDiscussionChats
+from .get_top_chats import GetTopChats
+from .set_chat_discussion_group import SetChatDiscussionGroup
+from .set_main_profile_tab import SetMainProfileTab
+from .set_upgraded_gift_colors import SetUpgradedGiftColors
+from .update_chat_notifications import UpdateChatNotifications
+from .process_chat_has_protected_content_disable_request import ProcessChatHasProtectedContentDisableRequest
+from .reorder_folders import ReorderFolders
+from .create_folder import CreateFolder
+from .create_folder_invite_link import CreateFolderInviteLink
+from .delete_folder_invite_link import DeleteFolderInviteLink
+from .edit_folder_invite_link import EditFolderInviteLink
+from .get_folder_invite_links import GetFolderInviteLinks
+from .get_chats_for_folder_invite_link import GetChatsForFolderInviteLink
+from .delete_all_message_reactions import DeleteAllMessageReactions
+from .delete_message_reaction import DeleteMessageReaction
+from .get_chat_settings import GetChatSettings
 
 
 class Chats(
-    GetChat,
-    LeaveChat,
-    JoinChat,
+    AddChatMembers,
+    ArchiveChats,
     BanChatMember,
-    UnbanChatMember,
-    RestrictChatMember,
-    SearchChats,
-    PromoteChatMember,
-    GetChatMembers,
-    GetChatMember,
-    SetChatPhoto,
+    CreateChannel,
+    CreateGroup,
+    CreateSupergroup,
+    DeleteChannel,
     DeleteChatPhoto,
-    SetChatTitle,
-    SetChatDescription,
-    SetChatDirectMessagesGroup,
-    SetChatMessageAutoDeleteTime,
-    PinChatMessage,
-    UnpinChatMessage,
+    DeleteSupergroup,
+    DeleteUserHistory,
+    GetChat,
+    GetChatEventLog,
+    GetChatMember,
+    GetChatMembers,
+    GetChatMembersCount,
+    GetChatOnlineCount,
     GetDialogs,
     GetDirectMessagesTopicsByID,
     GetDirectMessagesTopics,
-    GetChatMembersCount,
-    SetChatUsername,
-    SetChatPermissions,
     GetDialogsCount,
-    ArchiveChats,
-    UnarchiveChats,
-    CreateGroup,
-    CreateSupergroup,
-    CreateChannel,
-    AddChatMembers,
-    DeleteChannel,
-    DeleteSupergroup,
     GetNearbyChats,
-    SetAdministratorTitle,
-    SetSlowMode,
-    DeleteUserHistory,
-    UnpinAllChatMessages,
-    MarkChatUnread,
-    GetChatEventLog,
-    GetChatOnlineCount,
     GetSendAsChats,
-    SetSendAsChat,
+    JoinChat,
+    LeaveChat,
+    MarkChatUnread,
+    PinChatMessage,
+    PromoteChatMember,
+    RestrictChatMember,
+    SearchChats,
+    SetAdministratorTitle,
+    SetChatDescription,
+    SetChatDirectMessagesGroup,
+    SetChatPermissions,
+    SetChatPhoto,
     SetChatProtectedContent,
+    SetChatTitle,
+    SetChatMessageAutoDeleteTime,
+    SetChatUsername,
+    SetSendAsChat,
+    SetSlowMode,
+    UnarchiveChats,
+    UnbanChatMember,
+    UnpinAllChatMessages,
+    UnpinChatMessage,
     GetCreatedChats,
     TransferChatOwnership,
     AddProfileAudio,
@@ -125,5 +145,24 @@ class Chats(
     GetChatAudios,
     RemoveProfileAudio,
     SetProfileAudioPosition,
+    GetSimilarChannels,
+    GetPersonalChannels,
+    GetSuitableDiscussionChats,
+    GetTopChats,
+    SetChatDiscussionGroup,
+    SetMainProfileTab,
+    SetUpgradedGiftColors,
+    UpdateChatNotifications,
+    ProcessChatHasProtectedContentDisableRequest,
+    ReorderFolders,
+    CreateFolder,
+    CreateFolderInviteLink,
+    DeleteFolderInviteLink,
+    EditFolderInviteLink,
+    GetFolderInviteLinks,
+    GetChatsForFolderInviteLink,
+    DeleteAllMessageReactions,
+    DeleteMessageReaction,
+    GetChatSettings
 ):
     pass

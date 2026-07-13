@@ -42,3 +42,9 @@ from .purchased_paid_media_handler import PurchasedPaidMediaHandler
 from .shipping_query_handler import ShippingQueryHandler
 from .story_handler import StoryHandler
 from .managed_bot_update_handler import ManagedBotUpdateHandler
+from .start_handler import StartHandler
+from .stop_handler import StopHandler
+from .connect_handler import ConnectHandler
+from .chat_boost_handler import ChatBoostHandler
+from .guest_message_handler import GuestMessageHandler
+from .error_handler import ErrorHandler

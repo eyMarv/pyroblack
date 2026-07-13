@@ -20,11 +20,14 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+
 from .add_contact import AddContact
 from .delete_contacts import DeleteContacts
 from .get_contacts import GetContacts
 from .get_contacts_count import GetContactsCount
 from .import_contacts import ImportContacts
+from .set_contact_note import SetContactNote
+from .get_blocked_message_senders import GetBlockedMessageSenders
 
 
 class Contacts(
@@ -33,5 +36,7 @@ class Contacts(
     GetContacts,
     GetContactsCount,
     ImportContacts,
+    SetContactNote,
+    GetBlockedMessageSenders
 ):
     pass

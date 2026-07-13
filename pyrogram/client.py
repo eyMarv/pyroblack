@@ -404,6 +404,9 @@ class Client(Methods):
 
         self.invoke_err_handler = None
 
+        self.start_handler = None
+        self.stop_handler = None
+        self.connect_handler = None
         self.disconnect_handler = None
 
         from pyrogram.enums import ListenerTypes

@@ -20,6 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+
 from .copy_media_group import CopyMediaGroup
 from .copy_message import CopyMessage
 from .delete_chat_history import DeleteChatHistory
@@ -83,6 +84,26 @@ from .edit_message_checklist import EditMessageChecklist
 from .mark_checklist_tasks_as_done import MarkChecklistTasksAsDone
 from .add_poll_option import AddPollOption
 from .delete_poll_option import DeletePollOption
+from .approve_suggested_post import ApproveSuggestedPost
+from .decline_suggested_post import DeclineSuggestedPost
+from .add_to_gifs import AddToGifs
+from .read_mentions import ReadMentions
+from .read_reactions import ReadReactions
+from .summarize_message import SummarizeMessage
+from .compose_text_with_ai import ComposeTextWithAI
+from .fix_text_with_ai import FixTextWithAI
+from .get_main_web_app import GetMainWebApp
+from .get_web_app_url import GetWebAppUrl
+from .get_web_app_link_url import GetWebAppLinkUrl
+from .open_web_app import OpenWebApp
+from .get_direct_messages_chat_topic_history import GetDirectMessagesChatTopicHistory
+from .delete_direct_messages_chat_topic_history import DeleteDirectMessagesChatTopicHistory
+from .set_direct_messages_chat_topic_is_marked_as_unread import SetDirectMessagesChatTopicIsMarkedAsUnread
+from .get_user_personal_chat_messages import GetUserPersonalChatMessages
+from .send_live_photo import SendLivePhoto
+from .send_rich_message import SendRichMessage
+from .send_rich_message_draft import SendRichMessageDraft
+
 
 class Messages(
     CopyMediaGroup,
@@ -114,8 +135,6 @@ class Messages(
     SearchGlobalCount,
     SearchMessages,
     SearchMessagesCount,
-    SearchPublicMessagesByTag,
-    CountPublicMessagesByTag,
     SendAnimation,
     SendAudio,
     SendCachedMedia,
@@ -129,24 +148,45 @@ class Messages(
     SendPaidMedia,
     SendPhoto,
     SendPoll,
-    SendScreenshotNotification,
+    AddPaidMessageReaction,
+    SetReaction,
     SendSticker,
     SendVenue,
     SendVideo,
     SendVideoNote,
     SendVoice,
-    AddPaidMessageReaction,
-    SetReaction,
     StopPoll,
     StreamMedia,
     ViewMessages,
     VotePoll,
     GetChatSponsoredMessages,
+    SearchPublicMessagesByTag,
+    CountPublicMessagesByTag,
     TranslateText,
+    SendScreenshotNotification,
     SendChecklist,
     EditMessageChecklist,
     MarkChecklistTasksAsDone,
     AddPollOption,
-    DeletePollOption
+    DeletePollOption,
+    ApproveSuggestedPost,
+    DeclineSuggestedPost,
+    AddToGifs,
+    ReadMentions,
+    ReadReactions,
+    SummarizeMessage,
+    ComposeTextWithAI,
+    FixTextWithAI,
+    GetMainWebApp,
+    GetWebAppUrl,
+    GetWebAppLinkUrl,
+    OpenWebApp,
+    GetDirectMessagesChatTopicHistory,
+    DeleteDirectMessagesChatTopicHistory,
+    SetDirectMessagesChatTopicIsMarkedAsUnread,
+    GetUserPersonalChatMessages,
+    SendLivePhoto,
+    SendRichMessage,
+    SendRichMessageDraft,
 ):
     pass

@@ -55,6 +55,11 @@ from .accepted_gift_types import AcceptedGiftTypes
 from .folder import Folder
 from .folder_invite_link import FolderInviteLink
 from .chat_folder_invite_link_info import ChatFolderInviteLinkInfo
+from .bot_verification import BotVerification
+from .chat_settings import ChatSettings
+from .global_privacy_settings import GlobalPrivacySettings
+from .user_rating import UserRating
+from .verification_status import VerificationStatus
 
 __all__ = [
     "Birthdate",
@@ -91,4 +96,9 @@ __all__ = [
     "Folder",
     "FolderInviteLink",
     "ChatFolderInviteLinkInfo",
+    "BotVerification",
+    "ChatSettings",
+    "GlobalPrivacySettings",
+    "UserRating",
+    "VerificationStatus",
 ]

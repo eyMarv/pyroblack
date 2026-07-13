@@ -41,6 +41,12 @@ from .on_pre_checkout_query import OnPreCheckoutQuery
 from .on_shipping_query import OnShippingQuery
 from .on_story import OnStory
 from .on_managed_bot import OnManagedBot
+from .on_start import OnStart
+from .on_stop import OnStop
+from .on_connect import OnConnect
+from .on_chat_boost import OnChatBoost
+from .on_guest_message import OnGuestMessage
+from .on_error import OnError
 
 
 class Decorators(
@@ -67,5 +73,11 @@ class Decorators(
     OnManagedBot,
     OnRawUpdate,
     OnInvokeErr,
+    OnStart,
+    OnStop,
+    OnConnect,
+    OnChatBoost,
+    OnGuestMessage,
+    OnError,
 ):
     pass

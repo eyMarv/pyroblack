@@ -32,6 +32,8 @@ from .reply_parameters import ReplyParameters
 from .external_reply_info import ExternalReplyInfo
 from .text_quote import TextQuote
 from .input_poll_option import InputPollOption
+from .input_rich_message import InputRichMessage
+from .input_rich_message_content import InputRichMessageContent
 
 __all__ = [
     "ExternalReplyInfo",
@@ -46,4 +48,6 @@ __all__ = [
     "TextQuote",
     "InputChecklist",
     "InputChecklistTask",
+    "InputRichMessage",
+    "InputRichMessageContent",
 ]
