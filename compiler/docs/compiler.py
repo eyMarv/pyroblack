@@ -239,8 +239,19 @@ def pyrogram_api():
             delete_chat_history
             transcribe_audio
             translate_message_text
+            translate_text
             delete_chat_history
             add_checklist_tasks
+            add_paid_message_reaction
+            add_poll_option
+            count_public_messages_by_tag
+            delete_poll_option
+            edit_cached_media
+            edit_message_checklist
+            get_chat_sponsored_messages
+            search_public_messages_by_tag
+            send_screenshot_notification
+            set_reaction
         """,
         chats="""
         Chats
@@ -303,6 +314,21 @@ def pyrogram_api():
             leave_folder
             update_color
             update_folder
+            get_forum_topic
+            get_forum_topic_icon_stickers
+            hide_forum_topic
+            toggle_forum_topic_is_pinned
+            unhide_forum_topic
+            get_chat_audios
+            get_chat_audios_count
+            get_created_chats
+            get_direct_messages_topics
+            get_direct_messages_topics_by_id
+            get_nearby_chats
+            search_chats
+            set_chat_direct_messages_group
+            set_chat_message_auto_delete_time
+            transfer_chat_ownership
         """,
         users="""
         Users
@@ -313,26 +339,52 @@ def pyrogram_api():
             set_profile_photo
             delete_profile_photos
             set_username
+            set_birthdate
+            set_personal_chat
             update_birthday
             update_personal_chat
             update_profile
+            update_status
             block_user
             unblock_user
             get_common_chats
             get_default_emoji_statuses
             set_emoji_status
+            delete_account
         """,
         stories="""
         Stories
+            can_post_stories
+            can_post_story
+            copy_story
             delete_stories
             edit_story
+            edit_story_caption
+            edit_story_media
+            edit_story_privacy
+            enable_stealth_mode
             export_story_link
             forward_story
             get_all_stories
+            get_archived_stories
+            get_chat_active_stories
+            get_chat_archived_stories
+            get_chat_stories
+            get_peer_stories
+            get_pinned_stories
             get_stories
             get_stories_history
-            get_peer_stories
+            get_story_views
+            hide_chat_stories
+            hide_my_story_view
+            pin_chat_stories
+            post_story
+            read_chat_stories
             send_story
+            show_chat_stories
+            toggle_story_is_posted_to_chat_page
+            unpin_chat_stories
+            view_stories
         """,
         stickers="""
         Stickers
@@ -359,6 +411,7 @@ def pyrogram_api():
             approve_all_chat_join_requests
             decline_chat_join_request
             decline_all_chat_join_requests
+            check_chat_folder_invite_link
         """,
         contacts="""
         Contacts
@@ -371,14 +424,64 @@ def pyrogram_api():
         """,
         payments="""
         Payments
+            add_collection_gifts
+            apply_gift_code
+            buy_gift_upgrade
             check_gift_code
+            convert_gift_to_stars
+            craft_gift
+            create_gift_collection
+            delete_gift_collection
+            drop_gift_original_details
+            edit_star_subscription
+            get_available_gifts
+            get_chat_gifts
+            get_chat_gifts_count
+            get_gift_auction_state
+            get_gift_collections
+            get_gift_upgrade_preview
+            get_gift_upgrade_variants
+            get_gifts_for_crafting
             get_payment_form
-            send_paid_reaction
+            get_stars_balance
+            get_ton_balance
+            get_upgraded_gift
+            get_upgraded_gift_value_info
+            gift_premium_with_stars
+            hide_gift
+            increase_gift_auction_bid
+            place_gift_auction_bid
+            process_gift_purchase_offer
+            remove_collection_gifts
+            reorder_collection_gifts
+            reorder_gift_collections
+            reuse_star_subscription
+            search_gifts_for_resale
+            send_gift
+            send_gift_purchase_offer
             send_payment_form
+            send_resold_gift
+            set_gift_collection_name
+            set_gift_resale_price
+            set_pinned_gifts
+            show_gift
+            suggest_birthday
+            transfer_gift
+            upgrade_gift
+        """,
+        premium="""
+        Premium
+            apply_boost
+            get_boosts
+            get_boosts_status
         """,
         phone="""
         Phone
-            get_call_members
+            create_video_chat
+            discard_group_call
+            get_video_chat_rtmp_url
+            invite_group_call_participants
+            load_group_call_participants
         """,
         password="""
         Password
@@ -409,9 +512,37 @@ def pyrogram_api():
             refund_star_payment
             get_bot_info
             set_bot_info
+            get_bot_info_description
+            set_bot_info_description
+            get_bot_info_short_description
+            set_bot_info_short_description
+            get_bot_name
+            set_bot_name
             get_collectible_item_info
             get_owned_bots
             get_similar_bots
+            send_message_draft
+            send_web_app_custom_request
+        """,
+        business="""
+        Business
+            create_business_chat_link
+            create_invoice_link
+            delete_business_chat_link
+            delete_business_messages
+            get_business_account_gifts
+            get_business_account_star_balance
+            get_business_chat_links
+            get_business_connection
+            get_connected_bots
+            get_owned_star_count
+            resolve_business_chat_link
+            transfer_business_account_stars
+            update_business_away_message
+            update_business_greeting_message
+            update_business_intro
+            update_business_location
+            update_business_work_hours
         """,
         authorization="""
         Authorization
@@ -444,11 +575,16 @@ def pyrogram_api():
         """,
         account="""
         Account
+            add_profile_audio
             get_account_ttl
-            set_account_ttl
-            set_privacy
+            get_global_privacy_settings
             get_privacy
+            remove_profile_audio
+            set_account_ttl
+            set_global_privacy_settings
             set_inactive_session_ttl
+            set_privacy
+            set_profile_audio_position
         """,
     )
 
@@ -600,6 +736,38 @@ def pyrogram_api():
             PaidMedia
             PaymentForm
             ReadParticipant
+            AcceptedGiftTypes
+            CraftGiftResult
+            Gift
+            GiftAttribute
+            GiftAuction
+            GiftAuctionState
+            GiftCode
+            GiftCollection
+            GiftPurchaseLimit
+            GiftResaleParameters
+            GiftResalePrice
+            GiftUpgradePreview
+            GiftUpgradePrice
+            GiftUpgradeVariants
+            GiftedPremium
+            GiftedStars
+            GiftedTon
+            PremiumGiftCode
+            StarAmount
+            UpgradedGift
+            UpgradedGiftAttributeId
+            UpgradedGiftAttributeIdBackdrop
+            UpgradedGiftAttributeIdModel
+            UpgradedGiftAttributeIdSymbol
+            UpgradedGiftAttributeRarity
+            UpgradedGiftOriginalDetails
+            UpgradedGiftPurchaseOffer
+            UpgradedGiftValueInfo
+            BoostsStatus
+            ChatBoost
+            ChatBoostAdded
+            MyBoost
         """,
         stories="""
         Stories
@@ -614,6 +782,8 @@ def pyrogram_api():
             MediaAreaCoordinates
             InputMediaArea
             InputMediaAreaChannelPost
+            StoryAreaTypeUniqueGift
+            CanPostStoryResultBoostNeeded
         """,
         pyromod="""
         Pyromod

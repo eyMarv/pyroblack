@@ -216,6 +216,19 @@ Payments
 
     {payments}
 
+Premium
+-------
+
+.. autosummary::
+    :nosignatures:
+
+    {premium}
+
+.. toctree::
+    :hidden:
+
+    {premium}
+
 Phone
 -----
 
@@ -228,6 +241,19 @@ Phone
     :hidden:
 
     {phone}
+
+Business
+--------
+
+.. autosummary::
+    :nosignatures:
+
+    {business}
+
+.. toctree::
+    :hidden:
+
+    {business}
 
 Advanced
 --------
