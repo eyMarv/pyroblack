@@ -109,4 +109,8 @@ if [ ! -f "$branch/index.html" ]; then
 fi
 
 git commit -a -m "docs: $branch: Update docs $(date '+%Y-%m-%d | %H:%M:%S %p %Z')" --signoff
+
+# Pull with rebase before pushing to handle concurrent docs runs (e.g. tag + main).
+# If the remote has moved ahead, replay our commit on top instead of failing.
+git pull --rebase origin main || true
 git push -u origin HEAD:main
