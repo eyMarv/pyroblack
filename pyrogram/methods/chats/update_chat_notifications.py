@@ -37,7 +37,9 @@ class UpdateChatNotifications:
         stories_hide_sender: bool = None,
         show_previews: bool = None
     ) -> bool:
-        """Update the notification settings for the selected chat
+        """Update the notification settings for the selected chat.
+
+        .. include:: /_includes/usable-by/users.rst
 
         Parameters:
             chat_id (``int`` | ``str``):
@@ -46,17 +48,18 @@ class UpdateChatNotifications:
             mute (``bool``, *optional*):
                 Pass True if you want to mute chat.
 
-            until_date (:py:obj:`~datetime.datetime`, *optional*):
-                Date when the user will be unmuted. Works only if the mute parameter is set to True. Defaults to forever.
+            mute_until (:py:obj:`~datetime.datetime`, *optional*):
+                Date when the user will be unmuted. Works only if the mute
+                parameter is set to True. Defaults to forever.
 
             stories_muted (``bool``, *optional*):
-                N/A
+                Pass True to mute story notifications from this chat.
 
             stories_hide_sender (``bool``, *optional*):
-                N/A
+                Pass True to hide the sender name in story notifications.
 
             show_previews (``bool``, *optional*):
-                If the text of the message shall be displayed in notification.
+                Pass True to show message text in notifications.
 
         Returns:
             ``bool``: True on success, False otherwise.
@@ -70,7 +73,7 @@ class UpdateChatNotifications:
                 # Mute a chat for 10 minutes
                 await app.update_chat_notifications(
                     chat_id,
-                    mute=True
+                    mute=True,
                     mute_until=datetime.timedelta(minutes=10)
                 )
 
