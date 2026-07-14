@@ -37,7 +37,6 @@ except ImportError as e:
     raise e
 
 from pyrogram import utils
-from pyrogram.crypto.executor import get_crypto_executor
 
 log = logging.getLogger(__name__)
 
@@ -60,7 +59,15 @@ class TCP:
         self.lock = asyncio.Lock()
         self.loop = loop or utils.get_event_loop()
         self.proxy = proxy
-        self.crypto_executor = crypto_executor or get_crypto_executor()
+
+        if crypto_executor is not None:
+            self.crypto_executor = crypto_executor
+            self._owns_crypto_executor = False
+        else:
+            self.crypto_executor = ThreadPoolExecutor(
+                max_workers=1, thread_name_prefix="CryptoWorker"
+            )
+            self._owns_crypto_executor = True
 
         if proxy:
             hostname = proxy.get("hostname")
@@ -131,6 +138,10 @@ class TCP:
                 await asyncio.wait_for(self.writer.wait_closed(), TCP.TIMEOUT)
         except Exception as e:
             log.info("Close exception: %s %s", type(e).__name__, e)
+        finally:
+            if self._owns_crypto_executor and self.crypto_executor is not None:
+                self.crypto_executor.shutdown(wait=False)
+                self.crypto_executor = None
 
     async def send(self, data: bytes):
         async with self.lock:

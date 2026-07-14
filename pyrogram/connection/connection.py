@@ -24,7 +24,6 @@ import asyncio
 import logging
 from typing import Optional, Type
 
-from pyrogram.crypto.executor import get_crypto_executor
 from .transport import *
 from ..session.internals import DataCenter
 
@@ -60,7 +59,7 @@ class Connection:
         self.media = media
         self.address = DataCenter(dc_id, test_mode, ipv6, media)
         self.mode = self.MODES.get(mode, TCPAbridged)
-        self.crypto_executor = crypto_executor or get_crypto_executor()
+        self.crypto_executor = crypto_executor
         self.loop = loop
 
         self.protocol = None  # type: TCP
