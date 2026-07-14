@@ -316,6 +316,7 @@ class Client(Methods):
         fetch_replies: int = 1,
         connection_factory: Type[Connection] = Connection,
         protocol_factory: Type[TCP] = TCPAbridged,
+        connection_mode: int = 1,
         _un_docu_gnihts: list = []
     ):
         super().__init__()
@@ -358,6 +359,11 @@ class Client(Methods):
         self.client_platform = client_platform
         self.connection_factory = connection_factory
         self.protocol_factory = protocol_factory
+        # Transport mode passed to Connection: 1 = TCPAbridged (non-obfuscated,
+        # no per-frame CTR-AES — matches wzgram's proven-fast default and is
+        # the right choice for a bot on a VPS). 3 = TCPAbridgedO (obfuscated),
+        # only needed to defeat ISP/DPI fingerprinting on censored networks.
+        self.connection_mode = connection_mode
         self._un_docu_gnihts = _un_docu_gnihts
         self.link_preview_options = link_preview_options
         self.fetch_replies = fetch_replies

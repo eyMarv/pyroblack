@@ -130,7 +130,8 @@ class Session:
                 self.test_mode,
                 self.client.ipv6,
                 self.client.proxy,
-                self.is_media
+                self.is_media,
+                mode=getattr(self.client, "connection_mode", 1),
             )
 
             try:

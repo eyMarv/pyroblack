@@ -51,6 +51,9 @@ class Auth:
         self.test_mode = test_mode
         self.ipv6 = client.ipv6
         self.proxy = client.proxy
+        # Use the client's transport mode so the auth handshake matches the
+        # session (1 = TCPAbridged non-obfuscated by default).
+        self.mode = getattr(client, "connection_mode", 1)
 
         self.connection = None
 
@@ -85,7 +88,13 @@ class Auth:
         # The server may close the connection at any time, causing the auth key creation to fail.
         # If that happens, just try again up to MAX_RETRIES times.
         while True:
-            self.connection = Connection(self.dc_id, self.test_mode, self.ipv6, self.proxy)
+            self.connection = Connection(
+                self.dc_id,
+                self.test_mode,
+                self.ipv6,
+                self.proxy,
+                mode=self.mode,
+            )
 
             try:
                 log.info(f"Start creating a new auth key on DC{self.dc_id}")
