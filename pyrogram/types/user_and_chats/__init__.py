@@ -20,7 +20,13 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from .birthday import Birthday
 from .birthdate import Birthdate
+from .business_info import BusinessInfo
+from .business_message import BusinessMessage
+from .business_recipients import BusinessRecipients
+from .business_weekly_open import BusinessWeeklyOpen
+from .business_working_hours import BusinessWorkingHours
 from .chat import Chat
 from .chat_admin_with_invite_links import ChatAdminWithInviteLinks
 from .chat_color import ChatColor
@@ -33,18 +39,34 @@ from .chat_member import ChatMember
 from .chat_member_updated import ChatMemberUpdated
 from .chat_permissions import ChatPermissions
 from .chat_photo import ChatPhoto
+from .chat_preview import ChatPreview
 from .chat_privileges import ChatPrivileges
+from .chat_joined_by_request import ChatJoinedByRequest
 from .chat_reactions import ChatReactions
 from .chat_shared import ChatShared
 from .dialog import Dialog
 from .emoji_status import EmojiStatus
+from .forum_topic import ForumTopic
+from .forum_topic_closed import ForumTopicClosed
+from .forum_topic_created import ForumTopicCreated
+from .forum_topic_deleted import ForumTopicDeleted
+from .forum_topic_edited import ForumTopicEdited
+from .forum_topic_reopened import ForumTopicReopened
+from .found_contacts import FoundContacts
+from .general_forum_topic_hidden import GeneralTopicHidden
+from .general_forum_topic_unhidden import GeneralTopicUnhidden
+from .group_call_member import GroupCallMember
 from .group_call_participant import GroupCallParticipant
 from .invite_link_importer import InviteLinkImporter
+from .peer_channel import PeerChannel
+from .peer_user import PeerUser
+from .privacy_rule import PrivacyRule
 from .restriction import Restriction
 from .user import User
 from .username import Username
 from .users_shared import UsersShared
 from .video_chat_ended import VideoChatEnded
+from .video_chat_members_invited import VideoChatMembersInvited
 from .video_chat_participants_invited import VideoChatParticipantsInvited
 from .video_chat_scheduled import VideoChatScheduled
 from .video_chat_started import VideoChatStarted
@@ -62,7 +84,13 @@ from .user_rating import UserRating
 from .verification_status import VerificationStatus
 
 __all__ = [
+    "Birthday",
     "Birthdate",
+    "BusinessInfo",
+    "BusinessMessage",
+    "BusinessRecipients",
+    "BusinessWeeklyOpen",
+    "BusinessWorkingHours",
     "Chat",
     "ChatAdminWithInviteLinks",
     "ChatColor",
@@ -71,22 +99,38 @@ __all__ = [
     "ChatInviteLink",
     "ChatJoiner",
     "ChatJoinRequest",
+    "ChatJoinedByRequest",
     "ChatMember",
     "ChatMemberUpdated",
     "ChatPermissions",
     "ChatPhoto",
+    "ChatPreview",
     "ChatPrivileges",
     "ChatReactions",
     "ChatShared",
     "Dialog",
     "EmojiStatus",
+    "ForumTopic",
+    "ForumTopicClosed",
+    "ForumTopicCreated",
+    "ForumTopicDeleted",
+    "ForumTopicEdited",
+    "ForumTopicReopened",
+    "FoundContacts",
+    "GeneralTopicHidden",
+    "GeneralTopicUnhidden",
+    "GroupCallMember",
     "GroupCallParticipant",
     "InviteLinkImporter",
+    "PeerChannel",
+    "PeerUser",
+    "PrivacyRule",
     "Restriction",
     "User",
     "Username",
     "UsersShared",
     "VideoChatEnded",
+    "VideoChatMembersInvited",
     "VideoChatParticipantsInvited",
     "VideoChatScheduled",
     "VideoChatStarted",

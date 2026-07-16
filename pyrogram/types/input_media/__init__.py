@@ -28,6 +28,8 @@ from .input_media_photo import InputMediaPhoto
 from .input_media_video import InputMediaVideo
 from .input_media_sticker import InputMediaSticker
 from .input_media_live_photo import InputMediaLivePhoto
+from .input_media_area import InputMediaArea
+from .input_media_area_channel_post import InputMediaAreaChannelPost
 from .input_phone_contact import InputPhoneContact
 from .link_preview_options import LinkPreviewOptions
 
@@ -41,5 +43,7 @@ __all__ = [
     "InputMediaVideo",
     "InputMediaSticker",
     "InputMediaLivePhoto",
+    "InputMediaArea",
+    "InputMediaAreaChannelPost",
     "InputPhoneContact",
 ]

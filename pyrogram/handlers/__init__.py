@@ -20,14 +20,18 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from .bot_business_connect_handler import BotBusinessConnectHandler
+from .bot_business_message_handler import BotBusinessMessageHandler
 from .business_bot_connection_handler import BusinessBotConnectionHandler
 from .callback_query_handler import CallbackQueryHandler
 from .chat_join_request_handler import ChatJoinRequestHandler
 from .chat_member_updated_handler import ChatMemberUpdatedHandler
 from .chosen_inline_result_handler import ChosenInlineResultHandler
 from .conversation_handler import ConversationHandler
+from .deleted_bot_business_messages_handler import DeletedBotBusinessMessagesHandler
 from .deleted_messages_handler import DeletedMessagesHandler
 from .disconnect_handler import DisconnectHandler
+from .edited_bot_business_message_handler import EditedBotBusinessMessageHandler
 from .edited_message_handler import EditedMessageHandler
 from .inline_query_handler import InlineQueryHandler
 from .invoke_err_handler import InvokeErrHandler

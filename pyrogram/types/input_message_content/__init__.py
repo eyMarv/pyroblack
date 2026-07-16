@@ -23,21 +23,27 @@
 from .input_checklist import InputChecklist
 from .input_checklist_task import InputChecklistTask
 from .input_message_content import InputMessageContent
+from .input_invoice_message_content import InputInvoiceMessageContent
+from .input_reply_to_message import InputReplyToMessage
+from .input_reply_to_monoforum import InputReplyToMonoforum
+from .input_reply_to_story import InputReplyToStory
 from .input_text_message_content import InputTextMessageContent
 from .input_location_message_content import InputLocationMessageContent
 from .input_venue_message_content import InputVenueMessageContent
 from .input_contact_message_content import InputContactMessageContent
-from .input_invoice_message_content import InputInvoiceMessageContent
-from .reply_parameters import ReplyParameters
-from .external_reply_info import ExternalReplyInfo
-from .text_quote import TextQuote
 from .input_poll_option import InputPollOption
 from .input_rich_message import InputRichMessage
 from .input_rich_message_content import InputRichMessageContent
+from .reply_parameters import ReplyParameters
+from .external_reply_info import ExternalReplyInfo
+from .text_quote import TextQuote
 
 __all__ = [
     "ExternalReplyInfo",
     "InputMessageContent",
+    "InputReplyToMessage",
+    "InputReplyToMonoforum",
+    "InputReplyToStory",
     "InputPollOption",
     "InputTextMessageContent",
     "InputLocationMessageContent",

@@ -20,21 +20,31 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from .alternative_video import AlternativeVideo
 from .animation import Animation
 from .audio import Audio
+from .available_effect import AvailableEffect
+from .checked_gift_code import CheckedGiftCode
 from .contact import Contact
 from .contact_registered import ContactRegistered
 from .dice import Dice
 from .direct_messages_topic import DirectMessagesTopic
 from .document import Document
+from .exported_story_link import ExportedStoryLink
+from .extended_media_preview import ExtendedMediaPreview
 from .game import Game
 from .location import ChatLocation, Location
+from .media_area import MediaArea
+from .media_area_channel_post import MediaAreaChannelPost
+from .media_area_coordinates import MediaAreaCoordinates
 from .message import Message
 from .message_entity import MessageEntity
+from .message_invoice import MessageInvoice
 from .photo import Photo
 from .poll import Poll
 from .poll_answer import PollAnswer
 from .poll_option import PollOption
+from .read_participant import ReadParticipant
 from .reaction import (
     Reaction,
     ReactionType,
@@ -47,6 +57,12 @@ from .sponsored_message import SponsoredMessage
 from .gift import Gift
 from .upgraded_gift import UpgradedGift
 from .sticker import Sticker
+from .stickerset import StickerSet
+from .stories_privacy_rules import StoriesPrivacyRules
+from .story_deleted import StoryDeleted
+from .story_forward_header import StoryForwardHeader
+from .story_skipped import StorySkipped
+from .story_views import StoryViews
 from .stripped_thumbnail import StrippedThumbnail
 from .thumbnail import Thumbnail
 from .venue import Venue
@@ -55,15 +71,24 @@ from .video_quality import VideoQuality
 from .video_note import VideoNote
 from .voice import Voice
 from .web_app_data import WebAppData
+from .transcribed_audio import TranscribedAudio
+from .translated_text import TranslatedText
 from .web_page import WebPage
+from .web_page_empty import WebPageEmpty
+from .web_page_preview import WebPagePreview
 from .message_reactions import MessageReactions
+from .message_origin_import import MessageOriginImport
 from .message_reaction_updated import MessageReactionUpdated
 from .message_reaction_count_updated import MessageReactionCountUpdated
+from .message_reactor import MessageReactor
+from .message_story import MessageStory
 from .chat_boost_added import ChatBoostAdded
 from .payment_form import PaymentForm
 from .giveaway import Giveaway
 from .giveaway_created import GiveawayCreated
 from .giveaway_completed import GiveawayCompleted
+from .giveaway_launched import GiveawayLaunched
+from .giveaway_result import GiveawayResult
 from .giveaway_winners import GiveawayWinners
 from .gift_code import GiftCode
 from .gifted_premium import GiftedPremium
@@ -189,13 +214,18 @@ from .suggested_post_price import (
 from .suggested_post_refunded import SuggestedPostRefunded
 
 __all__ = [
+    "AlternativeVideo",
     "Animation",
     "Audio",
+    "AvailableEffect",
     "ChatBoostAdded",
+    "CheckedGiftCode",
     "Contact",
     "ContactRegistered",
     "Dice",
     "Document",
+    "ExportedStoryLink",
+    "ExtendedMediaPreview",
     "Game",
     "PaymentForm",
     "GiftCode",
@@ -204,16 +234,25 @@ __all__ = [
     "Giveaway",
     "GiveawayCreated",
     "GiveawayCompleted",
+    "GiveawayLaunched",
+    "GiveawayResult",
     "GiveawayWinners",
     "ChatLocation",
     "Location",
+    "MediaArea",
+    "MediaAreaChannelPost",
+    "MediaAreaCoordinates",
     "Message",  # TODO
     "MessageAutoDeleteTimerChanged",
     "MessageEffect",
     "MessageEntity",
+    "MessageInvoice",
+    "MessageOriginImport",
     "MessageReactionCountUpdated",
     "MessageReactionUpdated",
     "MessageReactions",
+    "MessageReactor",
+    "MessageStory",
     "Photo",
     "Reaction",
     "ReactionCount",
@@ -221,8 +260,18 @@ __all__ = [
     "ReactionTypeEmoji",
     "ReactionTypeCustomEmoji",
     "ReactionTypePaid",
+    "ReadParticipant",
     "Thumbnail",
     "StrippedThumbnail",
+    "TranscribedAudio",
+    "TranslatedText",
+    "StoriesPrivacyRules",
+    "StoryDeleted",
+    "StoryForwardHeader",
+    "StorySkipped",
+    "StoryViews",
+    "Sticker",
+    "StickerSet",
     "Poll",
     "PollAnswer",
     "PollOption",
@@ -237,6 +286,8 @@ __all__ = [
     "Voice",
     "WebAppData",
     "WebPage",
+    "WebPageEmpty",
+    "WebPagePreview",
     "WriteAccessAllowed",
     "ScreenshotTaken",
     "FormattedText",

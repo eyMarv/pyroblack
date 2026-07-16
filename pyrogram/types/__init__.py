@@ -32,6 +32,7 @@ from .inline_mode import *
 from .input_media import *
 from .input_paid_media import *
 from .input_message_content import *
+from .input_privacy_rule import *
 from .messages_and_media import *
 from .message_origin import *
 from .business import *
