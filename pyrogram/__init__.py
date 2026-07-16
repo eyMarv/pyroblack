@@ -21,7 +21,7 @@
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
 __fork_name__ = "pyroblack"
-__version__ = "2.9.2"
+__version__ = "2.9.3"
 __license__ = "GNU Lesser General Public License v3.0 (LGPL-3.0)"
 __copyright__ = "#  Copyright (C) 2024-present eyMarv <https://github.com/eyMarv>"
 
@@ -37,13 +37,18 @@ class ContinuePropagation(StopAsyncIteration):
     pass
 
 
+# Re-exported at module level for backward compatibility: pyroblack <= 2.7.2
+# imported ThreadPoolExecutor here, so `from pyrogram import ThreadPoolExecutor`
+# worked in downstream bots. Keep the name bound even though the crypto pool now
+# lives in crypto/executor.py.
+from concurrent.futures.thread import ThreadPoolExecutor
+
 from . import raw, types, filters, handlers, emoji, enums
 from .client import Client
 from .sync import idle, compose
 from .crypto.executor import get_crypto_executor
 
-# Multi-worker crypto pool (cpu_count workers). Replaces the old single-thread
-# ThreadPoolExecutor(1) which serialized all AES work under multi-session load.
-# Keep the public name `crypto_executor` for backward compatibility with any
-# code that imported it.
+# Single-worker crypto executor (see crypto/executor.py for why one thread beats
+# a multi-worker pool here). Keep the public name `crypto_executor` for
+# backward compatibility with any code that imported it.
 crypto_executor = get_crypto_executor()

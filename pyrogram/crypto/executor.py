@@ -26,12 +26,21 @@ from concurrent.futures.thread import ThreadPoolExecutor
 
 _crypto_pool = None
 
+# Number of crypto worker threads. v2.8.6 (peak ~27 MB/s uploads) used a single
+# thread: pack/unpack were serialized in order and the event loop pipelined
+# cleanly against them. The multi-worker pool added in 2.8.7 dispatched every
+# 512 KB part to a different thread, so N threads contended the GIL against the
+# loop while the send side stayed serial (TCP.send holds a lock) — paying the
+# thread-coordination cost with no parallelism gain, which halved throughput.
+# Hard-reverted to 1 to match 2.8.6.
+CRYPTO_WORKERS = 1
+
 
 def get_crypto_executor() -> ThreadPoolExecutor:
     global _crypto_pool
     if _crypto_pool is None:
         _crypto_pool = ThreadPoolExecutor(
-            max_workers=max(1, (os.cpu_count() or 4)),
+            max_workers=CRYPTO_WORKERS,
             thread_name_prefix="Crypto",
         )
     return _crypto_pool
@@ -44,6 +53,6 @@ def set_crypto_executor(executor: ThreadPoolExecutor):
 
 def create_crypto_executor() -> ThreadPoolExecutor:
     return ThreadPoolExecutor(
-        max_workers=max(1, (os.cpu_count() or 4)),
+        max_workers=CRYPTO_WORKERS,
         thread_name_prefix="Crypto",
     )
