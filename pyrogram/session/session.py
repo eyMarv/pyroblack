@@ -244,15 +244,22 @@ class Session:
 
     async def handle_packet(self, packet):
         try:
-            data = await self.client.loop.run_in_executor(
+            # Split the work across the executor boundary (ported from wzgram):
+            # the crypto half (auth_key_id / msg_key / session_id verification +
+            # AES-IGE) runs in the crypto executor with the GIL released, while
+            # the TL deserialization runs back here on the event loop. Keeping
+            # object construction off the crypto thread is the second half of the
+            # throughput win — the crypto threads only do crypto.
+            decrypted = await self.client.loop.run_in_executor(
                 pyrogram.crypto_executor,
-                mtproto.unpack,
-                BytesIO(packet),
+                mtproto.decrypt,
+                packet,
                 self.session_id,
                 self.auth_key,
                 self.auth_key_id,
-                # self.stored_msg_ids
             )
+
+            data = mtproto.parse(*decrypted)
         except SecurityCheckMismatch:
             return
 

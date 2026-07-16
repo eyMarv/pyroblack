@@ -117,17 +117,22 @@ class TCP:
 
         self.reader, self.writer = await asyncio.open_connection(sock=self.socket)
 
-        # Socket-level tuning for high-throughput media transfers (ported from
-        # wzgram): disable Nagle, enable keepalive, and grow the kernel buffers
-        # so large SaveBigFilePart / GetFile payloads don't stall on small
-        # default SO_SNDBUF/SO_RCVBUF.
+        # Socket-level tuning for high-throughput media transfers: disable
+        # Nagle (send full parts immediately) and enable keepalive.
+        #
+        # Do NOT pin SO_SNDBUF / SO_RCVBUF. Any explicit setsockopt on these
+        # sets SOCK_{SND,RCV}BUF_LOCK and permanently disables the kernel's TCP
+        # window autotuning, capping the in-flight window at the fixed size.
+        # On the high bandwidth-delay-product links to Telegram DCs, autotuning
+        # grows the buffers well past 4 MiB; hardcoding 4 MiB throttled a single
+        # connection to roughly half its capacity (the 2.8.7 upload-speed
+        # regression). Leaving them untouched lets the kernel size the buffers
+        # to the connection's BDP.
         try:
             sock = self.writer.get_extra_info("socket")
             if sock is not None:
                 sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
                 sock.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
-                sock.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 4 * 1024 * 1024)
-                sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 4 * 1024 * 1024)
         except OSError:
             pass
 
