@@ -43,6 +43,9 @@ from .terminate_session import TerminateSession
 from .change_phone_number import ChangePhoneNumber
 from .send_phone_number_code import SendPhoneNumberCode
 from .resend_phone_number_code import ResendPhoneNumberCode
+from .reset_session import ResetSession
+from .reset_sessions import ResetSessions
+from .sign_in_qrcode import SignInQrcode
 
 
 class Auth(
@@ -57,10 +60,13 @@ class Auth(
     LogOut,
     RecoverPassword,
     ResendCode,
+    ResetSession,
+    ResetSessions,
     SendCode,
     SendRecoveryCode,
     SignIn,
     SignInBot,
+    SignInQrcode,
     SignUp,
     Terminate,
     TerminateAllOtherSessions,

@@ -563,6 +563,111 @@ async def _get_reply_message_parameters(
     return reply_to
 
 
+def resolve_legacy_reply_parameters(
+    *,
+    reply_parameters: "types.ReplyParameters" = None,
+    reply_to_message_id: int = None,
+    reply_to_story_id: int = None,
+    reply_to_chat_id: Union[int, str] = None,
+    reply_to_monoforum_id: Union[int, str] = None,
+    quote_text: str = None,
+    quote_entities: list = None,
+    chat_id: Union[int, str] = None,
+) -> Optional["types.ReplyParameters"]:
+    """Map pyroblack <= 2.7.2 reply kwargs onto :obj:`~pyrogram.types.ReplyParameters`.
+
+    Newer high-level methods only take ``reply_parameters`` (+ deprecated
+    ``reply_to_message_id``). Older bots still pass ``reply_to_chat_id``,
+    ``quote_text``, ``reply_to_story_id``, etc. Accept those and convert.
+    """
+    legacy = any(
+        v is not None
+        for v in (
+            reply_to_message_id,
+            reply_to_story_id,
+            reply_to_chat_id,
+            reply_to_monoforum_id,
+            quote_text,
+            quote_entities,
+        )
+    )
+
+    if reply_parameters is not None and legacy:
+        # Allow the common (reply_to_message_id + reply_parameters=None) path
+        # already handled by callers; if both real reply_parameters and other
+        # legacy kwargs are set, prefer merging only when reply_parameters is empty.
+        if any(
+            v is not None
+            for v in (
+                reply_to_story_id,
+                reply_to_chat_id,
+                reply_to_monoforum_id,
+                quote_text,
+                quote_entities,
+            )
+        ) or (
+            reply_to_message_id is not None
+            and reply_parameters.message_id
+            and reply_parameters.message_id != reply_to_message_id
+        ):
+            raise ValueError(
+                "Parameters `reply_parameters` and legacy reply_* kwargs are "
+                "mutually exclusive."
+            )
+        return reply_parameters
+
+    if reply_parameters is not None:
+        return reply_parameters
+
+    if not legacy:
+        return None
+
+    story_chat = reply_to_chat_id
+    if reply_to_story_id is not None and story_chat is None:
+        story_chat = chat_id
+
+    return types.ReplyParameters(
+        message_id=reply_to_message_id,
+        story_id=reply_to_story_id,
+        chat_id=story_chat,
+        quote=quote_text,
+        quote_entities=quote_entities,
+        direct_messages_topic_id=reply_to_monoforum_id,
+    )
+
+
+# Back-compat name used by some third-party snippets / older pyroblack docs
+async def get_reply_to(
+    client: "pyrogram.Client",
+    chat_id: Union[int, str] = None,
+    reply_to_message_id: int = None,
+    reply_to_story_id: int = None,
+    message_thread_id: int = None,
+    reply_to_monoforum_id: Union[int, str] = None,
+    reply_to_chat_id: Union[int, str] = None,
+    quote_text: str = None,
+    quote_entities: list = None,
+    parse_mode: "enums.ParseMode" = None,
+):
+    """Deprecated: prefer :func:`resolve_legacy_reply_parameters` +
+    :func:`_get_reply_message_parameters`. Kept for pyroblack <= 2.7.2 imports.
+    """
+    reply_parameters = resolve_legacy_reply_parameters(
+        reply_to_message_id=reply_to_message_id,
+        reply_to_story_id=reply_to_story_id,
+        reply_to_chat_id=reply_to_chat_id,
+        reply_to_monoforum_id=reply_to_monoforum_id,
+        quote_text=quote_text,
+        quote_entities=quote_entities,
+        chat_id=chat_id,
+    )
+    if quote_text is not None and reply_parameters is not None:
+        reply_parameters.quote_parse_mode = parse_mode
+    return await _get_reply_message_parameters(
+        client, message_thread_id, reply_parameters
+    )
+
+
 def _get_reply_to_message_quote_ids(
     reply_parameters: "types.ReplyParameters" = None,
     message_id: int = None,

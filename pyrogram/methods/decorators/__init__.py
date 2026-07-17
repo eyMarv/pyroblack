@@ -20,14 +20,18 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from .on_bot_business_connect import OnBotBusinessConnect
 from .on_bot_business_connection import OnBotBusinessConnection
+from .on_bot_business_message import OnBotBusinessMessage
 from .on_bot_purchased_paid_media import OnBotPurchasedPaidMedia
 from .on_callback_query import OnCallbackQuery
 from .on_chat_join_request import OnChatJoinRequest
 from .on_chat_member_updated import OnChatMemberUpdated
 from .on_chosen_inline_result import OnChosenInlineResult
+from .on_deleted_bot_business_messages import OnDeletedBotBusinessMessages
 from .on_deleted_messages import OnDeletedMessages
 from .on_disconnect import OnDisconnect
+from .on_edited_bot_business_message import OnEditedBotBusinessMessage
 from .on_edited_message import OnEditedMessage
 from .on_inline_query import OnInlineQuery
 from .on_invoke_err import OnInvokeErr
@@ -53,7 +57,11 @@ class Decorators(
     OnMessage,
     OnEditedMessage,
     OnDeletedMessages,
+    OnBotBusinessConnect,
     OnBotBusinessConnection,
+    OnBotBusinessMessage,
+    OnDeletedBotBusinessMessages,
+    OnEditedBotBusinessMessage,
     OnMessageReactionUpdated,
     OnMessageReactionCountUpdated,
     OnInlineQuery,

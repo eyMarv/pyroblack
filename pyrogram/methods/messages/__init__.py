@@ -35,7 +35,9 @@ from .edit_message_caption import EditMessageCaption
 from .edit_message_media import EditMessageMedia
 from .edit_message_reply_markup import EditMessageReplyMarkup
 from .edit_message_text import EditMessageText
+from .forward_media_group import ForwardMediaGroup
 from .forward_messages import ForwardMessages
+from .get_available_effects import GetAvailableEffects
 from .get_chat_history import GetChatHistory
 from .get_chat_history_count import GetChatHistoryCount
 from .get_custom_emoji_stickers import GetCustomEmojiStickers
@@ -43,13 +45,19 @@ from .get_discussion_message import GetDiscussionMessage
 from .get_discussion_replies import GetDiscussionReplies
 from .get_discussion_replies_count import GetDiscussionRepliesCount
 from .get_media_group import GetMediaGroup
+from .get_message_read_participants import GetMessageReadParticipants
 from .get_messages import GetMessages
+from .get_scheduled_messages import GetScheduledMessages
 from .read_chat_history import ReadChatHistory
 from .retract_vote import RetractVote
 from .search_global import SearchGlobal
 from .search_global_count import SearchGlobalCount
+from .search_global_hashtag_messages import SearchGlobalHashtagMessages
+from .search_global_hashtag_messages_count import SearchGlobalHashtagMessagesCount
 from .search_messages import SearchMessages
 from .search_messages_count import SearchMessagesCount
+from .search_posts import SearchPosts
+from .search_posts_count import SearchPostsCount
 from .send_animation import SendAnimation
 from .send_audio import SendAudio
 from .send_cached_media import SendCachedMedia
@@ -57,6 +65,7 @@ from .send_chat_action import SendChatAction
 from .send_contact import SendContact
 from .send_dice import SendDice
 from .send_document import SendDocument
+from .send_invoice import SendInvoice
 from .send_location import SendLocation
 from .send_media_group import SendMediaGroup
 from .send_message import SendMessage
@@ -64,14 +73,18 @@ from .send_paid_media import SendPaidMedia
 from .send_photo import SendPhoto
 from .send_poll import SendPoll
 from .add_paid_message_reaction import AddPaidMessageReaction
+from .send_reaction import SendReaction
 from .set_reaction import SetReaction
 from .send_sticker import SendSticker
 from .send_venue import SendVenue
 from .send_video import SendVideo
 from .send_video_note import SendVideoNote
 from .send_voice import SendVoice
+from .send_web_page import SendWebPage
+from .start_bot import StartBot
 from .stop_poll import StopPoll
 from .stream_media import StreamMedia
+from .transcribe_audio import TranscribeAudio
 from .view_messages import ViewMessages
 from .vote_poll import VotePoll
 from .get_chat_sponsored_messages import GetChatSponsoredMessages
@@ -120,7 +133,9 @@ class Messages(
     EditMessageMedia,
     EditMessageReplyMarkup,
     EditMessageText,
+    ForwardMediaGroup,
     ForwardMessages,
+    GetAvailableEffects,
     GetChatHistory,
     GetChatHistoryCount,
     GetCustomEmojiStickers,
@@ -128,13 +143,19 @@ class Messages(
     GetDiscussionReplies,
     GetDiscussionRepliesCount,
     GetMediaGroup,
+    GetMessageReadParticipants,
     GetMessages,
+    GetScheduledMessages,
     ReadChatHistory,
     RetractVote,
     SearchGlobal,
     SearchGlobalCount,
+    SearchGlobalHashtagMessages,
+    SearchGlobalHashtagMessagesCount,
     SearchMessages,
     SearchMessagesCount,
+    SearchPosts,
+    SearchPostsCount,
     SendAnimation,
     SendAudio,
     SendCachedMedia,
@@ -142,6 +163,7 @@ class Messages(
     SendContact,
     SendDice,
     SendDocument,
+    SendInvoice,
     SendLocation,
     SendMediaGroup,
     SendMessage,
@@ -149,14 +171,18 @@ class Messages(
     SendPhoto,
     SendPoll,
     AddPaidMessageReaction,
+    SendReaction,
     SetReaction,
     SendSticker,
     SendVenue,
     SendVideo,
     SendVideoNote,
     SendVoice,
+    SendWebPage,
+    StartBot,
     StopPoll,
     StreamMedia,
+    TranscribeAudio,
     ViewMessages,
     VotePoll,
     GetChatSponsoredMessages,

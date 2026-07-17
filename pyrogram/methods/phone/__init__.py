@@ -42,6 +42,7 @@ from .load_group_call_participants import LoadGroupCallParticipants
 from .invite_group_call_participants import InviteGroupCallParticipants
 from .create_video_chat import CreateVideoChat
 from .discard_group_call import DiscardGroupCall
+from .get_call_members import GetCallMembers
 from .get_video_chat_rtmp_url import GetVideoChatRtmpUrl
 
 
@@ -50,6 +51,7 @@ class Phone(
     LoadGroupCallParticipants,
     CreateVideoChat,
     DiscardGroupCall,
+    GetCallMembers,
     GetVideoChatRtmpUrl,
 ):
     pass

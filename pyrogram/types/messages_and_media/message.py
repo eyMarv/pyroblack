@@ -25,7 +25,7 @@ import logging
 import re
 from datetime import datetime
 from functools import partial
-from typing import Union, Optional, Callable
+from typing import Union, Optional, Callable, List
 
 import pyrogram
 from pyrogram import raw, enums, types, utils
@@ -1089,11 +1089,10 @@ class Message(Object, Update):
                 screenshot_taken = types.ScreenshotTaken()
 
             elif isinstance(action, raw.types.MessageActionTopicCreate):
-                title = action.title
-                icon_color = action.icon_color
-                icon_emoji_id = getattr(action, "icon_emoji_id", None)
                 service_type = enums.MessageServiceType.FORUM_TOPIC_CREATED
-                forum_topic_created = types.ForumTopicCreated._parse(action)
+                # Pass the full message so topic id = message.id is preserved.
+                # ForumTopicCreated._parse also accepts the bare action.
+                forum_topic_created = types.ForumTopicCreated._parse(message)
 
             elif isinstance(action, (raw.types.MessageActionPaymentSent, raw.types.MessageActionPaymentSentMe)):
                 successful_payment = types.SuccessfulPayment._parse(client, action)
@@ -1662,6 +1661,16 @@ class Message(Object, Update):
     @property
     def content(self) -> Str:
         return self.text or self.caption or Str("").init([])
+
+    @property
+    def markdown(self) -> str:
+        """Message text/caption as Markdown (pyroblack <= 2.7.2 compat)."""
+        return self.content.markdown
+
+    @property
+    def html(self) -> str:
+        """Message text/caption as HTML (pyroblack <= 2.7.2 compat)."""
+        return self.content.html
 
     async def get_media_group(self) -> list["types.Message"]:
         """Bound method *get_media_group* of :obj:`~pyrogram.types.Message`.
@@ -6136,3 +6145,317 @@ class Message(Object, Update):
             star_count=star_count,
             paid_reaction_type=paid_reaction_type
         )
+
+    async def wait_for_click(
+        self,
+        from_user_id: Optional[Union[Union[int, str], List[Union[int, str]]]] = None,
+        timeout: Optional[int] = None,
+        filters=None,
+        alert: Union[str, bool] = True,
+    ):
+        """Waits for a callback query to be clicked on the message.
+
+        Parameters:
+            from_user_id (``int`` | ``str`` | Iterable of ``int`` | Iterable of ``str``, *optional*):
+                The user ID to listen for.
+
+            timeout (``int``, *optional*):
+                The maximum amount of time to wait for a message.
+
+            filters (:obj:`~pyrogram.filters`, *optional*):
+                A filter to check the incoming message against.
+
+            alert (``str`` | ``bool``):
+                The alert to show when the button is clicked by users that are not allowed in from_user_id.
+
+        Returns:
+            :obj:`~pyrogram.types.CallbackQuery`: The callback query that was clicked.
+        """
+        message_id = getattr(self, "id", getattr(self, "message_id", None))
+
+        return await self._client.listen(
+            filters=filters,
+            timeout=timeout,
+            listener_type=pyrogram.enums.ListenerTypes.CALLBACK_QUERY,
+            unallowed_click_alert=alert,
+            chat_id=self.chat.id,
+            user_id=from_user_id,
+            message_id=message_id,
+        )
+
+    async def reply_web_page(
+        self,
+        url: str,
+        text: str = "",
+        quote: bool = None,
+        parse_mode: Optional["enums.ParseMode"] = None,
+        entities: List["types.MessageEntity"] = None,
+        large_media: bool = None,
+        invert_media: bool = None,
+        disable_notification: bool = None,
+        reply_to_message_id: int = None,
+        business_connection_id: str = None,
+        reply_in_chat_id: Union[int, str] = None,
+        quote_text: str = None,
+        quote_entities: List["types.MessageEntity"] = None,
+        schedule_date: datetime = None,
+        protect_content: bool = None,
+        allow_paid_broadcast: bool = None,
+        message_effect_id: int = None,
+        reply_markup=None,
+    ) -> "Message":
+        """Bound method *reply_web_page* of :obj:`~pyrogram.types.Message`.
+
+        Use as a shortcut for:
+
+        .. code-block:: python
+
+            await client.send_web_page(
+                chat_id=message.chat.id,
+                url="https://github.com/eyMarv/pyroblack",
+                reply_to_message_id=message.id
+            )
+
+        Example:
+            .. code-block:: python
+
+                await message.reply_web_page("https://github.com/eyMarv/pyroblack")
+
+        Parameters:
+            url (``str``):
+                Link that will be previewed.
+
+            text (``str``):
+                Text of the message to be sent.
+
+            quote (``bool``, *optional*):
+                If ``True``, the message will be sent as a reply to this message.
+                If *reply_to_message_id* is passed, this parameter will be ignored.
+                Defaults to ``True`` in group chats and ``False`` in private chats.
+
+            parse_mode (:obj:`~pyrogram.enums.ParseMode`, *optional*):
+                By default, texts are parsed using both Markdown and HTML styles.
+                You can combine both syntaxes together.
+
+            entities (List of :obj:`~pyrogram.types.MessageEntity`):
+                List of special entities that appear in message text, which can be specified instead of *parse_mode*.
+
+            large_media (``bool``, *optional*):
+                Make web page preview image larger.
+
+            invert_media (``bool``, *optional*):
+                Move web page preview to above the message.
+
+            disable_notification (``bool``, *optional*):
+                Sends the message silently.
+                Users will receive a notification with no sound.
+
+            reply_to_message_id (``int``, *optional*):
+                If the message is a reply, ID of the original message.
+
+            business_connection_id (``str``, *optional*):
+                Business connection identifier.
+                for business bots only.
+
+            reply_in_chat_id: Union[int, str] = None,
+                Unique identifier of target chat.
+                for reply message in another chat.
+
+            quote_text (``str``, *optional*):
+                Text to quote.
+                for reply_to_message only.
+
+            quote_entities (List of :obj:`~pyrogram.types.MessageEntity`, *optional*):
+                List of special entities that appear in quote_text, which can be specified instead of *parse_mode*.
+                for reply_to_message only.
+
+            schedule_date (:py:obj:`~datetime.datetime`, *optional*):
+                Date when the message will be automatically sent.
+
+            protect_content (``bool``, *optional*):
+                Protects the contents of the sent message from forwarding and saving.
+
+            allow_paid_broadcast (``bool``, *optional*):
+                Pass True to allow the message to ignore regular broadcast limits for a small fee; for bots
+
+            message_effect_id (``int`` ``64-bit``, *optional*):
+                Unique identifier of the message effect to be added to the message; for private chats only.
+
+            reply_markup (:obj:`~pyrogram.types.InlineKeyboardMarkup` | :obj:`~pyrogram.types.ReplyKeyboardMarkup` | :obj:`~pyrogram.types.ReplyKeyboardRemove` | :obj:`~pyrogram.types.ForceReply`, *optional*):
+                Additional interface options. An object for an inline keyboard, custom reply keyboard,
+                instructions to remove reply keyboard or to force a reply from the user.
+
+        Returns:
+            On success, the sent Message is returned.
+
+        Raises:
+            RPCError: In case of a Telegram RPC error.
+        """
+
+        if quote is None:
+            quote = self.chat.type != enums.ChatType.PRIVATE
+
+        if reply_to_message_id is None and quote:
+            reply_to_message_id = self.id
+
+        if business_connection_id is None and self.business_connection_id:
+            business_connection_id = self.business_connection_id
+
+        message_thread_id = None
+        if self.message_thread_id:
+            message_thread_id = self.message_thread_id
+
+        chat_id = self.chat.id
+        reply_to_chat_id = None
+        if reply_in_chat_id is not None:
+            chat_id = reply_in_chat_id
+            reply_to_chat_id = self.chat.id
+
+        return await self._client.send_web_page(
+            chat_id=chat_id,
+            url=url,
+            text=text,
+            parse_mode=parse_mode,
+            entities=entities,
+            large_media=large_media,
+            invert_media=invert_media,
+            disable_notification=disable_notification,
+            message_thread_id=message_thread_id,
+            reply_to_message_id=reply_to_message_id,
+            business_connection_id=business_connection_id,
+            reply_to_chat_id=reply_to_chat_id,
+            quote_text=quote_text,
+            quote_entities=quote_entities,
+            schedule_date=schedule_date,
+            protect_content=protect_content,
+            allow_paid_broadcast=allow_paid_broadcast,
+            message_effect_id=message_effect_id,
+            reply_markup=reply_markup,
+        )
+
+    async def ask(
+        self,
+        text: str,
+        quote: bool = None,
+        parse_mode: Optional["enums.ParseMode"] = None,
+        entities: List["types.MessageEntity"] = None,
+        disable_web_page_preview: bool = None,
+        disable_notification: bool = None,
+        reply_to_message_id: int = None,
+        reply_markup=None,
+        filters=None,
+        timeout: int = None,
+    ) -> "Message":
+        """Bound method *ask* of :obj:`~pyrogram.types.Message`.
+
+        Use as a shortcut for:
+
+        .. code-block:: python
+
+            client.send_message(chat_id, "What is your name?")
+
+            client.wait_for_message(chat_id)
+
+        Parameters:
+            text (``str``):
+                Text of the message to be sent.
+
+            quote (``bool``, *optional*):
+                If ``True``, the message will be sent as a reply to this message.
+                If *reply_to_message_id* is passed, this parameter will be ignored.
+                Defaults to ``True`` in group chats and ``False`` in private chats.
+
+            parse_mode (:obj:`~pyrogram.enums.ParseMode`, *optional*):
+                By default, texts are parsed using both Markdown and HTML styles.
+                You can combine both syntaxes together.
+                Pass "markdown" or "md" to enable Markdown-style parsing only.
+                Pass "html" to enable HTML-style parsing only.
+                Pass None to completely disable style parsing.
+
+            entities (List of :obj:`~pyrogram.types.MessageEntity`):
+                List of special entities that appear in message text, which can be specified instead of *parse_mode*.
+
+            disable_web_page_preview (``bool``, *optional*):
+                Disables link previews for links in this message.
+
+            disable_notification (``bool``, *optional*):
+                Sends the message silently.
+                Users will receive a notification with no sound.
+
+            reply_to_message_id (``int``, *optional*):
+                If the message is a reply, ID of the original message.
+
+            reply_markup (:obj:`~pyrogram.types.InlineKeyboardMarkup` | :obj:`~pyrogram.types.ReplyKeyboardMarkup` | :obj:`~pyrogram.types.ReplyKeyboardRemove` | :obj:`~pyrogram.types.ForceReply`, *optional*):
+                Additional interface options. An object for an inline keyboard, custom reply keyboard,
+                instructions to remove reply keyboard or to force a reply from the user.
+
+            filters (:obj:`Filters`):
+                Pass one or more filters to allow only a subset of callback queries to be passed
+                in your callback function.
+
+            timeout (``int``, *optional*):
+                Timeout in seconds.
+
+        Example:
+            .. code-block:: python
+
+                message.ask("What is your name?")
+
+        Returns:
+            :obj:`~pyrogram.types.Message`: On success, the reply message is returned.
+
+        Raises:
+            RPCError: In case of a Telegram RPC error.
+            asyncio.TimeoutError: In case reply not received within the timeout.
+        """
+        if quote is None:
+            quote = self.chat.type != enums.ChatType.PRIVATE
+
+        if reply_to_message_id is None and quote:
+            reply_to_message_id = self.id
+
+        request = await self._client.send_message(
+            chat_id=self.chat.id,
+            text=text,
+            parse_mode=parse_mode,
+            entities=entities,
+            disable_web_page_preview=disable_web_page_preview,
+            disable_notification=disable_notification,
+            reply_to_message_id=reply_to_message_id,
+            reply_markup=reply_markup,
+        )
+
+        reply_message = await self._client.wait_for_message(
+            self.chat.id, filters=filters, timeout=timeout
+        )
+
+        reply_message.request = request
+        return reply_message
+
+    async def transcribe(self) -> "types.TranscribeAudio":
+        """Bound method *transcribe* of :obj:`~pyrogram.types.Message`.
+
+        Use as a shortcut for:
+
+        .. code-block:: python
+
+            await client.transcribe_audio(
+                chat_id=message.chat.id,
+                message_id=message.id
+                )
+
+        Example:
+            .. code-block:: python
+
+            await message.transcribe()
+
+        Returns:
+            :obj:`~pyrogram.types.TranscribeAudio`: On success.
+
+        Raises:
+            RPCError: In case of a Telegram RPC error.
+        """
+        return await self._client.transcribe_audio(
+            chat_id=self.chat.id, message_id=self.id
+        )
+

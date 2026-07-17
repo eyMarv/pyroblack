@@ -57,6 +57,8 @@ from .set_managed_bot_access_settings import SetManagedBotAccessSettings
 from .answer_guest_query import AnswerGuestQuery
 from .answer_chat_join_request_query import AnswerChatJoinRequestQuery
 from .send_chat_join_request_web_app import SendChatJoinRequestWebApp
+from .get_bot_info import GetBotInfo
+from .set_bot_info import SetBotInfo
 
 
 class Bots(
@@ -66,6 +68,7 @@ class Bots(
     DeleteBotCommands,
     GetBotCommands,
     GetBotDefaultPrivileges,
+    GetBotInfo,
     GetBotInfoDescription,
     GetBotInfoShortDescription,
     GetBotName,
@@ -79,6 +82,7 @@ class Bots(
     SendWebAppCustomRequest,
     SetBotCommands,
     SetBotDefaultPrivileges,
+    SetBotInfo,
     SetBotInfoDescription,
     SetBotInfoShortDescription,
     SetBotName,

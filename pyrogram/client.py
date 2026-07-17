@@ -309,6 +309,8 @@ class Client(Methods):
         max_message_cache_size: int = MAX_CACHE_SIZE,
         max_business_user_connection_cache_size: int = MAX_CACHE_SIZE,
         storage_engine: Storage = None,
+        storage: Storage = None,  # alias for storage_engine (pyroblack <= 2.7.2)
+        upload_boost: bool = False,  # accepted for <=2.7.2; concurrent txns handle this now
         no_joined_notifications: bool = False,
         init_params: "raw.types.JsonObject" = None,
         client_platform: enums.ClientPlatform = enums.ClientPlatform.OTHER,
@@ -367,11 +369,16 @@ class Client(Methods):
         self._un_docu_gnihts = _un_docu_gnihts
         self.link_preview_options = link_preview_options
         self.fetch_replies = fetch_replies
+        # Kept for attribute access by older bots; networking already parallelizes uploads.
+        self.upload_boost = upload_boost
 
         self.executor = ThreadPoolExecutor(self.workers, thread_name_prefix="Handler")
 
         if self.in_memory is None:
             self.in_memory = bool(self.session_string)
+
+        # storage= is the pre-2.8 name for storage_engine=
+        storage_engine = storage_engine or storage
 
         if isinstance(storage_engine, Storage):
             self.storage = storage_engine

@@ -73,6 +73,12 @@ class SendPoll:
         allow_paid_broadcast: bool = None,
         paid_message_star_count: int = None,
         reply_parameters: "types.ReplyParameters" = None,
+        reply_to_chat_id: Union[int, str] = None,
+        reply_to_story_id: int = None,
+        reply_to_monoforum_id: Union[int, str] = None,
+        quote_text: str = None,
+        quote_entities: list = None,
+        invert_media: bool = None,
         message_thread_id: int = None,
         business_connection_id: str = None,
         send_as: Union[int, str] = None,
@@ -267,6 +273,17 @@ class SendPoll:
 
         raw_description = await description.write(self, None) if description else None
         solution = await explanation.write(self) if explanation else None
+
+        reply_parameters = utils.resolve_legacy_reply_parameters(
+            reply_parameters=reply_parameters,
+            reply_to_message_id=reply_to_message_id,
+            reply_to_story_id=reply_to_story_id,
+            reply_to_chat_id=reply_to_chat_id,
+            reply_to_monoforum_id=reply_to_monoforum_id,
+            quote_text=quote_text,
+            quote_entities=quote_entities,
+            chat_id=chat_id,
+        )
 
         reply_to = await utils._get_reply_message_parameters(
             self,

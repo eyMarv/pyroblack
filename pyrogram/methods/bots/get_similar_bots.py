@@ -29,7 +29,8 @@ from pyrogram import raw, types
 class GetSimilarBots:
     async def get_similar_bots(
         self: "pyrogram.Client",
-        user_id: Union[int, str]
+        user_id: Union[int, str] = None,
+        bot: Union[int, str] = None,  # alias for <=2.7.2
     ) -> list["types.User"]:
         """Returns a list of bots similar to the given bot.
 
@@ -50,6 +51,10 @@ class GetSimilarBots:
 
                 bots = await app.get_similar_bots()
         """
+        user_id = user_id or bot
+        if user_id is None:
+            raise ValueError("user_id (or bot) is required")
+
 
         botss = await self.invoke(raw.functions.bots.GetBotRecommendations(
             bot=await self.resolve_peer(user_id)

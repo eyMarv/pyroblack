@@ -91,19 +91,41 @@ from .get_chats_for_folder_invite_link import GetChatsForFolderInviteLink
 from .delete_all_message_reactions import DeleteAllMessageReactions
 from .delete_message_reaction import DeleteMessageReaction
 from .get_chat_settings import GetChatSettings
+# v2.7.2 compatibility: forum/general-topic/folder helpers that lived under chats/
+from .close_general_topic import CloseGeneralTopic
+from .delete_folder import DeleteFolder
+from .edit_general_topic import EditGeneralTopic
+from .export_folder_link import ExportFolderLink
+from .get_folders import GetFolders
+from .get_forum_topics_by_id import GetForumTopicsByID
+from .get_forum_topics_count import GetForumTopicsCount
+from .hide_general_topic import HideGeneralTopic
+from .join_folder import JoinFolder
+from .leave_folder import LeaveFolder
+from .reopen_general_topic import ReopenGeneralTopic
+from .toggle_folder_tags import ToggleFolderTags
+from .toggle_forum_topics import ToggleForumTopics
+from .toggle_join_to_send import ToggleJoinToSend
+from .unhide_general_topic import UnhideGeneralTopic
+from .update_color import UpdateColor
+from .update_folder import UpdateFolder
 
 
 class Chats(
     AddChatMembers,
     ArchiveChats,
     BanChatMember,
+    CloseGeneralTopic,
     CreateChannel,
     CreateGroup,
     CreateSupergroup,
     DeleteChannel,
     DeleteChatPhoto,
+    DeleteFolder,
     DeleteSupergroup,
     DeleteUserHistory,
+    EditGeneralTopic,
+    ExportFolderLink,
     GetChat,
     GetChatEventLog,
     GetChatMember,
@@ -114,13 +136,20 @@ class Chats(
     GetDirectMessagesTopicsByID,
     GetDirectMessagesTopics,
     GetDialogsCount,
+    GetFolders,
+    GetForumTopicsByID,
+    GetForumTopicsCount,
     GetNearbyChats,
     GetSendAsChats,
+    HideGeneralTopic,
     JoinChat,
+    JoinFolder,
     LeaveChat,
+    LeaveFolder,
     MarkChatUnread,
     PinChatMessage,
     PromoteChatMember,
+    ReopenGeneralTopic,
     RestrictChatMember,
     SearchChats,
     SetAdministratorTitle,
@@ -134,10 +163,16 @@ class Chats(
     SetChatUsername,
     SetSendAsChat,
     SetSlowMode,
+    ToggleFolderTags,
+    ToggleForumTopics,
+    ToggleJoinToSend,
     UnarchiveChats,
     UnbanChatMember,
+    UnhideGeneralTopic,
     UnpinAllChatMessages,
     UnpinChatMessage,
+    UpdateColor,
+    UpdateFolder,
     GetCreatedChats,
     TransferChatOwnership,
     AddProfileAudio,

@@ -26,6 +26,7 @@ from .delete_contacts import DeleteContacts
 from .get_contacts import GetContacts
 from .get_contacts_count import GetContactsCount
 from .import_contacts import ImportContacts
+from .search_contacts import SearchContacts
 from .set_contact_note import SetContactNote
 from .get_blocked_message_senders import GetBlockedMessageSenders
 
@@ -36,6 +37,7 @@ class Contacts(
     GetContacts,
     GetContactsCount,
     ImportContacts,
+    SearchContacts,
     SetContactNote,
     GetBlockedMessageSenders
 ):

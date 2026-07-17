@@ -20,8 +20,16 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from .exceptions import *
-from .rpc_error import UnknownError
+# EXCEPTION_AVAIL kept for pyroblack <= 2.7.2 compatibility
+EXCEPTION_AVAIL = False
+try:
+    from .exceptions import *
+except ImportError:
+    pass
+else:
+    EXCEPTION_AVAIL = True
+
+from .rpc_error import RPCError, UnknownError
 from .pyromod.listener_stopped import ListenerStopped
 from .pyromod.listener_timeout import ListenerTimeout
 

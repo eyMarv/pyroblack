@@ -1517,3 +1517,91 @@ class Chat(Object):
         """
 
         return await self._client.unpin_all_chat_messages(self.id)
+
+    def listen(self, *args, **kwargs):
+        """Bound method *listen* of :obj:`~pyrogram.types.Chat`.
+
+        Use as a shortcut for:
+
+        .. code-block:: python
+
+            client.wait_for_message(chat_id)
+
+        Parameters:
+            args (*optional*):
+                The arguments to pass to the :meth:`~pyrogram.Client.listen` method.
+
+            kwargs (*optional*):
+                The keyword arguments to pass to the :meth:`~pyrogram.Client.listen` method.
+
+        Example:
+            .. code-block:: python
+
+                chat.listen()
+
+        Returns:
+            :obj:`~pyrogram.types.Message`: On success, the reply message is returned.
+        Raises:
+            RPCError: In case of a Telegram RPC error.
+            asyncio.TimeoutError: In case reply not received within the timeout.
+        """
+        return self._client.listen(*args, chat_id=self.id, **kwargs)
+
+    def ask(self, text, *args, **kwargs):
+        """Bound method *ask* of :obj:`~pyrogram.types.Chat`.
+
+        Use as a shortcut for:
+
+        .. code-block:: python
+
+            client.send_message(chat_id, "What is your name?")
+
+            client.wait_for_message(chat_id)
+
+        Parameters:
+            text (``str``):
+                Text of the message to be sent.
+
+            args:
+                The arguments to pass to the :meth:`~pyrogram.Client.listen` method.
+
+            kwargs:
+                The keyword arguments to pass to the :meth:`~pyrogram.Client.listen` method.
+
+        Example:
+            .. code-block:: python
+
+                chat.ask("What is your name?")
+
+        Returns:
+            :obj:`~pyrogram.types.Message`: On success, the reply message is returned.
+        Raises:
+            RPCError: In case of a Telegram RPC error.
+            asyncio.TimeoutError: In case reply not received within the timeout.
+        """
+        return self._client.ask(self.id, text, *args, **kwargs)
+
+    def stop_listening(self, *args, **kwargs):
+        """Bound method *stop_listening* of :obj:`~pyrogram.types.Chat`.
+
+        Use as a shortcut for:
+
+        .. code-block:: python
+
+            client.stop_listening(chat_id=chat_id)
+
+        Parameters:
+            args (*optional*):
+                The arguments to pass to the :meth:`~pyrogram.Client.listen` method.
+
+            kwargs (*optional*):
+                The keyword arguments to pass to the :meth:`~pyrogram.Client.listen` method.
+
+        Example:
+            .. code-block:: python
+
+                chat.stop_listen()
+
+        """
+        return self._client.stop_listening(*args, chat_id=self.id, **kwargs)
+

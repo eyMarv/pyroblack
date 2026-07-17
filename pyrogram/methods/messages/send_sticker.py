@@ -61,6 +61,12 @@ class SendSticker:
             "types.ForceReply"
         ] = None,
         schedule_date: datetime = None,
+        reply_to_chat_id: Union[int, str] = None,
+        reply_to_story_id: int = None,
+        reply_to_monoforum_id: Union[int, str] = None,
+        quote_text: str = None,
+        quote_entities: list = None,
+        invert_media: bool = None,
         reply_to_message_id: int = None,
         progress: Callable = None,
         progress_args: tuple = ()
@@ -171,18 +177,16 @@ class SendSticker:
                 await app.send_sticker("me", file_id)
         """
 
-        if reply_to_message_id and reply_parameters:
-            raise ValueError(
-                "Parameters `reply_to_message_id` and `reply_parameters` are mutually "
-                "exclusive."
-            )
-        
-        if reply_to_message_id is not None:
-            log.warning(
-                "This property is deprecated. "
-                "Please use reply_parameters instead"
-            )
-            reply_parameters = types.ReplyParameters(message_id=reply_to_message_id)
+        reply_parameters = utils.resolve_legacy_reply_parameters(
+            reply_parameters=reply_parameters,
+            reply_to_message_id=reply_to_message_id,
+            reply_to_story_id=reply_to_story_id,
+            reply_to_chat_id=reply_to_chat_id,
+            reply_to_monoforum_id=reply_to_monoforum_id,
+            quote_text=quote_text,
+            quote_entities=quote_entities,
+            chat_id=chat_id,
+        )
 
         file = None
 

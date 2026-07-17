@@ -40,5 +40,9 @@ class MessageOriginType(AutoName):
     IMPORT_INFO = auto()
     "The message was imported with `importMessages <https://t.me/telegram/142>`_"
 
+    # Alias for pyroblack <= 2.7.2
+    IMPORT = IMPORT_INFO
+    "Deprecated alias of IMPORT_INFO"
+
     USER = auto()
     "The message was originally sent by a known user"

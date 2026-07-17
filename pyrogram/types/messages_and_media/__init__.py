@@ -30,9 +30,11 @@ from .contact_registered import ContactRegistered
 from .dice import Dice
 from .direct_messages_topic import DirectMessagesTopic
 from .document import Document
+from .external_reply_info import ExternalReplyInfo
 from .exported_story_link import ExportedStoryLink
 from .extended_media_preview import ExtendedMediaPreview
 from .game import Game
+from .labeled_price import LabeledPrice
 from .location import ChatLocation, Location
 from .media_area import MediaArea
 from .media_area_channel_post import MediaAreaChannelPost
@@ -40,6 +42,12 @@ from .media_area_coordinates import MediaAreaCoordinates
 from .message import Message
 from .message_entity import MessageEntity
 from .message_invoice import MessageInvoice
+from .message_origin import MessageOrigin
+from .message_origin_channel import MessageOriginChannel
+from .message_origin_chat import MessageOriginChat
+from .message_origin_hidden_user import MessageOriginHiddenUser
+from .message_origin_user import MessageOriginUser
+from .paid_media import PaidMedia
 from .photo import Photo
 from .poll import Poll
 from .poll_answer import PollAnswer
@@ -59,11 +67,14 @@ from .upgraded_gift import UpgradedGift
 from .sticker import Sticker
 from .stickerset import StickerSet
 from .stories_privacy_rules import StoriesPrivacyRules
+# Story class lives in types.stories; re-export here for v2.7.2 import paths
+from ..stories.story import Story
 from .story_deleted import StoryDeleted
 from .story_forward_header import StoryForwardHeader
 from .story_skipped import StorySkipped
 from .story_views import StoryViews
 from .stripped_thumbnail import StrippedThumbnail
+from .text_quote import TextQuote
 from .thumbnail import Thumbnail
 from .venue import Venue
 from .video import Video
@@ -224,6 +235,7 @@ __all__ = [
     "ContactRegistered",
     "Dice",
     "Document",
+    "ExternalReplyInfo",
     "ExportedStoryLink",
     "ExtendedMediaPreview",
     "Game",
@@ -237,6 +249,7 @@ __all__ = [
     "GiveawayLaunched",
     "GiveawayResult",
     "GiveawayWinners",
+    "LabeledPrice",
     "ChatLocation",
     "Location",
     "MediaArea",
@@ -247,12 +260,18 @@ __all__ = [
     "MessageEffect",
     "MessageEntity",
     "MessageInvoice",
+    "MessageOrigin",
+    "MessageOriginChannel",
+    "MessageOriginChat",
+    "MessageOriginHiddenUser",
     "MessageOriginImport",
+    "MessageOriginUser",
     "MessageReactionCountUpdated",
     "MessageReactionUpdated",
     "MessageReactions",
     "MessageReactor",
     "MessageStory",
+    "PaidMedia",
     "Photo",
     "Reaction",
     "ReactionCount",
@@ -262,10 +281,12 @@ __all__ = [
     "ReactionTypePaid",
     "ReadParticipant",
     "Thumbnail",
+    "TextQuote",
     "StrippedThumbnail",
     "TranscribedAudio",
     "TranslatedText",
     "StoriesPrivacyRules",
+    "Story",
     "StoryDeleted",
     "StoryForwardHeader",
     "StorySkipped",

@@ -55,6 +55,12 @@ class SendMediaGroup:
         allow_paid_broadcast: bool = None,
         paid_message_star_count: int = None,
         message_effect_id: int = None,
+        reply_to_chat_id: Union[int, str] = None,
+        reply_to_story_id: int = None,
+        reply_to_monoforum_id: Union[int, str] = None,
+        quote_text: str = None,
+        quote_entities: list = None,
+        invert_media: bool = None,
         reply_to_message_id: int = None
     ) -> list["types.Message"]:
         """Use this method to send a group of photos, videos, documents or audios as an album.
@@ -125,18 +131,16 @@ class SendMediaGroup:
                 )
         """
 
-        if reply_to_message_id and reply_parameters:
-            raise ValueError(
-                "Parameters `reply_to_message_id` and `reply_parameters` are mutually "
-                "exclusive."
-            )
-        
-        if reply_to_message_id is not None:
-            log.warning(
-                "This property is deprecated. "
-                "Please use reply_parameters instead"
-            )
-            reply_parameters = types.ReplyParameters(message_id=reply_to_message_id)
+        reply_parameters = utils.resolve_legacy_reply_parameters(
+            reply_parameters=reply_parameters,
+            reply_to_message_id=reply_to_message_id,
+            reply_to_story_id=reply_to_story_id,
+            reply_to_chat_id=reply_to_chat_id,
+            reply_to_monoforum_id=reply_to_monoforum_id,
+            quote_text=quote_text,
+            quote_entities=quote_entities,
+            chat_id=chat_id,
+        )
 
         show_caption_above_media = []
         multi_media = []
@@ -476,7 +480,7 @@ class SendMediaGroup:
             allow_paid_floodskip=allow_paid_broadcast,
             allow_paid_stars=paid_message_star_count,
             effect=message_effect_id,
-            invert_media=any(show_caption_above_media)
+            invert_media=invert_media if invert_media is not None else any(show_caption_above_media)
         )
         session = None
         business_connection = None

@@ -63,11 +63,17 @@ class ForumTopicCreated(Object):
 
     @staticmethod
     def _parse(
-        topic_create_action: "raw.types.MessageActionTopicCreate"
+        message_or_action: "raw.types.MessageActionTopicCreate"
     ) -> "ForumTopicCreated":
+        # Accept bare MessageActionTopicCreate or a service Message that wraps it.
+        action = message_or_action
+        if getattr(message_or_action, "action", None) is not None:
+            action = message_or_action.action
+
+        icon_emoji_id = getattr(action, "icon_emoji_id", None)
         return ForumTopicCreated(
-            name=topic_create_action.title,
-            icon_color=topic_create_action.icon_color,  # TODO
-            icon_custom_emoji_id=getattr(topic_create_action, "", None),
-            is_name_implicit=getattr(topic_create_action, "title_missing", False),
+            name=getattr(action, "title", None),
+            icon_color=getattr(action, "icon_color", None),
+            icon_custom_emoji_id=str(icon_emoji_id) if icon_emoji_id is not None else None,
+            is_name_implicit=bool(getattr(action, "title_missing", False)),
         )

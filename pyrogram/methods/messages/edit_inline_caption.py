@@ -34,6 +34,7 @@ class EditInlineCaption:
         parse_mode: Optional["enums.ParseMode"] = None,
         caption_entities: list["types.MessageEntity"] = None,
         show_caption_above_media: bool = None,
+        invert_media: bool = None,
         reply_markup: "types.InlineKeyboardMarkup" = None
     ) -> bool:
         """Edit the caption of inline media messages.

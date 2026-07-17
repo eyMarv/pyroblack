@@ -50,6 +50,9 @@ class ForumTopicEdited(Object):
 
     @staticmethod
     def _parse(action: "raw.types.MessageActionTopicEdit") -> "ForumTopicEdited":
+        # Accept bare action or a service Message wrapping it.
+        if getattr(action, "action", None) is not None:
+            action = action.action
         return ForumTopicEdited(
             title=getattr(action, "title", None),
             icon_color=getattr(action, "icon_color", None),

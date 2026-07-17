@@ -42,3 +42,10 @@ class ChatType(AutoName):
 
     CHANNEL = auto()
     "Chat is a channel"
+
+    # Aliases kept for pyroblack <= 2.7.2 compatibility
+    FORUM = SUPERGROUP
+    "Deprecated alias of SUPERGROUP (forum topics are a supergroup feature)"
+
+    MONOFORUM = CHANNEL
+    "Deprecated alias used by older pyroblack releases for monoforum chats"

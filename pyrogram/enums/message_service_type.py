@@ -91,6 +91,10 @@ class MessageServiceType(AutoName):
     VIDEO_CHAT_PARTICIPANTS_INVITED = auto()
     "Video chat participants invited"
 
+    # Alias for pyroblack <= 2.7.2
+    VIDEO_CHAT_MEMBERS_INVITED = VIDEO_CHAT_PARTICIPANTS_INVITED
+    "Deprecated alias of VIDEO_CHAT_PARTICIPANTS_INVITED"
+
     WEB_APP_DATA = auto()
     "Web app data"
 
@@ -105,6 +109,28 @@ class MessageServiceType(AutoName):
 
     CHAT_BOOST_ADDED = auto()
     "Chat Boost Added"
+
+    # Aliases for pyroblack <= 2.7.2
+    BOOST_APPLY = CHAT_BOOST_ADDED
+    "Deprecated alias of CHAT_BOOST_ADDED"
+
+    GIVEAWAY_LAUNCHED = auto()
+    "Giveaway launched (compat)"
+
+    GIVEAWAY_RESULT = auto()
+    "Giveaway result service message (compat)"
+
+    REQUESTED_CHAT = auto()
+    "Requested chat (compat)"
+
+    CHAT_TTL_CHANGED = MESSAGE_AUTO_DELETE_TIMER_CHANGED
+    "Deprecated alias of MESSAGE_AUTO_DELETE_TIMER_CHANGED"
+
+    JOIN_REQUEST_APPROVED = auto()
+    "Join request approved (compat)"
+
+    BOT_ALLOWED = auto()
+    "Bot allowed (compat)"
 
     CUSTOM_ACTION = auto()
     "Custom action"
@@ -127,11 +153,22 @@ class MessageServiceType(AutoName):
     GENERAL_FORUM_TOPIC_UNHIDDEN = auto()
     "a forum general topic unhidden in the chat"
 
+    # Aliases for pyroblack <= 2.7.2 names
+    GENERAL_TOPIC_HIDDEN = GENERAL_FORUM_TOPIC_HIDDEN
+    "Deprecated alias of GENERAL_FORUM_TOPIC_HIDDEN"
+
+    GENERAL_TOPIC_UNHIDDEN = GENERAL_FORUM_TOPIC_UNHIDDEN
+    "Deprecated alias of GENERAL_FORUM_TOPIC_UNHIDDEN"
+
     SUCCESSFUL_PAYMENT = auto()
     "Successful payment"
 
     REFUNDED_PAYMENT = auto()
     "Refunded payment"
+
+    # Alias for pyroblack <= 2.7.2
+    PAYMENT_REFUNDED = REFUNDED_PAYMENT
+    "Deprecated alias of REFUNDED_PAYMENT"
 
     CONTACT_REGISTERED = auto()
     "A contact has registered with Telegram"

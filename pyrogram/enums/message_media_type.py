@@ -67,6 +67,10 @@ class MessageMediaType(AutoName):
     WEB_PAGE = auto()
     "Web page media"
 
+    # Alias for pyroblack <= 2.7.2
+    WEB_PAGE_PREVIEW = WEB_PAGE
+    "Deprecated alias of WEB_PAGE"
+
     DICE = auto()
     "Dice media"
 
@@ -78,6 +82,10 @@ class MessageMediaType(AutoName):
 
     GIVEAWAY = auto()
     "Giveaway"
+
+    # Alias for pyroblack <= 2.7.2 (results now use GIVEAWAY_WINNERS)
+    GIVEAWAY_RESULT = auto()
+    "Giveaway result media (compat)"
 
     GIVEAWAY_WINNERS = auto()
     "Giveaway Winners"

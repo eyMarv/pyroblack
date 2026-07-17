@@ -30,7 +30,8 @@ class ViewMessages:
     async def view_messages(
         self: "pyrogram.Client",
         chat_id: Union[int, str],
-        message_ids: Union[int, list[int]],
+        message_ids: Union[int, list[int]] = None,
+        message_id: Union[int, list[int]] = None,  # alias for <=2.7.2
         force_read: bool = True
     ) -> bool:
         """Informs the server that messages are being viewed by the current user.
@@ -56,6 +57,10 @@ class ViewMessages:
                 # Increment message views
                 await app.view_messages(chat_id, 1)
         """
+        if message_ids is None and message_id is not None:
+            message_ids = message_id
+        if message_ids is None:
+            raise ValueError("message_ids (or message_id) is required")
         ids = [message_ids] if not isinstance(message_ids, list) else message_ids
 
         r = await self.invoke(

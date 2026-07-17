@@ -37,11 +37,11 @@ class SendPaidMedia:
     async def send_paid_media(
         self: "pyrogram.Client",
         chat_id: Union[int, str],
-        star_count: int,
+        star_count: int = None,
         media: list[Union[
             "types.InputPaidMediaPhoto",
             "types.InputPaidMediaVideo"
-        ]],
+        ]] = None,
         payload: str = None,
         caption: str = "",
         parse_mode: Optional["enums.ParseMode"] = None,
@@ -52,6 +52,13 @@ class SendPaidMedia:
         allow_paid_broadcast: bool = None,
         paid_message_star_count: int = None,
         reply_parameters: "types.ReplyParameters" = None,
+        reply_to_chat_id: Union[int, str] = None,
+        reply_to_story_id: int = None,
+        reply_to_monoforum_id: Union[int, str] = None,
+        quote_text: str = None,
+        quote_entities: list = None,
+        invert_media: bool = None,
+        stars_amount: int = None,  # alias for star_count (pyroblack <= 2.7.2)
         business_connection_id: str = None,
         send_as: Union[int, str] = None,
         reply_markup: Union[
@@ -129,6 +136,27 @@ class SendPaidMedia:
             :obj:`~pyrogram.types.Message`: On success, the sent message is returned.
 
         """
+        if star_count is None and stars_amount is not None:
+            star_count = stars_amount
+        if star_count is None:
+            raise ValueError("star_count (or stars_amount) is required")
+        if invert_media is not None and show_caption_above_media is None:
+            show_caption_above_media = invert_media
+        reply_parameters = utils.resolve_legacy_reply_parameters(
+            reply_parameters=reply_parameters,
+            reply_to_story_id=reply_to_story_id,
+            reply_to_chat_id=reply_to_chat_id,
+            reply_to_monoforum_id=reply_to_monoforum_id,
+            quote_text=quote_text,
+            quote_entities=quote_entities,
+            chat_id=chat_id,
+        )
+        reply_to = await utils._get_reply_message_parameters(
+            self,
+            None,
+            reply_parameters
+        )
+
         multi_media = []
 
         peer = await self.resolve_peer(chat_id)
@@ -322,6 +350,7 @@ class SendPaidMedia:
         
         rpc = raw.functions.messages.SendMedia(
             peer=await self.resolve_peer(chat_id),
+            reply_to=reply_to,
             media=raw.types.InputMediaPaidMedia(
                 stars_amount=star_count,
                 extended_media=multi_media,

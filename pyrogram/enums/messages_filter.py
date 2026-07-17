@@ -57,6 +57,10 @@ class MessagesFilter(AutoName):
     VOICE_VIDEO_NOTE = raw.types.InputMessagesFilterRoundVoice
     "Voice and video note messages"
 
+    # Alias for pyroblack <= 2.7.2
+    AUDIO_VIDEO_NOTE = VOICE_VIDEO_NOTE
+    "Deprecated alias of VOICE_VIDEO_NOTE"
+
     AUDIO = raw.types.InputMessagesFilterMusic
     "Audio messages (music)"
 

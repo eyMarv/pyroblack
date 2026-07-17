@@ -55,6 +55,7 @@ from .reuse_star_subscription import ReuseStarSubscription
 from .search_gifts_for_resale import SearchGiftsForResale
 from .send_gift_purchase_offer import SendGiftPurchaseOffer
 from .send_gift import SendGift
+from .send_paid_reaction import SendPaidReaction
 from .send_payment_form import SendPaymentForm
 from .send_resold_gift import SendResoldGift
 from .set_gift_collection_name import SetGiftCollectionName
@@ -102,6 +103,7 @@ class Payments(
     SearchGiftsForResale,
     SendGiftPurchaseOffer,
     SendGift,
+    SendPaidReaction,
     SendPaymentForm,
     SendResoldGift,
     SetGiftCollectionName,

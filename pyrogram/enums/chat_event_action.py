@@ -130,6 +130,10 @@ class ChatEventAction(AutoName):
     MESSAGE_PINNED = auto()
     "a message has been pinned (see ``pinned_message``)"
 
+    # Alias for pyroblack <= 2.7.2
+    MESSAGE_PIN_CHANGED = auto()
+    "a message has been pinned or unpinned but actual message is not received (compat)"
+
     MESSAGE_UNPINNED = auto()
     "a message has been unpinned (see ``unpinned_message``)"
 
@@ -152,14 +156,26 @@ class ChatEventAction(AutoName):
     """A new forum topic was created.
     ``new_topic_info`` Information about the topic"""
 
+    # Alias for pyroblack <= 2.7.2
+    CREATED_FORUM_TOPIC = CHAT_FORUM_TOPIC_CREATED
+    "Deprecated alias of CHAT_FORUM_TOPIC_CREATED"
+
     CHAT_FORUM_TOPIC_EDITED = auto()
     """A forum topic was edited.
     ``old_topic_info`` Old information about the topic
     ``new_topic_info`` New information about the topic"""
 
+    # Alias for pyroblack <= 2.7.2
+    EDITED_FORUM_TOPIC = CHAT_FORUM_TOPIC_EDITED
+    "Deprecated alias of CHAT_FORUM_TOPIC_EDITED"
+
     CHAT_FORUM_TOPIC_DELETED = auto()
     """A forum topic was deleted.
     ``new_topic_info`` Information about the topic"""
+
+    # Alias for pyroblack <= 2.7.2
+    DELETED_FORUM_TOPIC = CHAT_FORUM_TOPIC_DELETED
+    "Deprecated alias of CHAT_FORUM_TOPIC_DELETED"
 
     CHAT_FORUM_TOPIC_PINNED = auto()
     """A pinned forum topic was changed.

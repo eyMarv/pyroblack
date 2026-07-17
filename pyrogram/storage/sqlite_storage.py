@@ -158,31 +158,111 @@ class SQLiteStorage(Storage):
         with self.conn:
             self.conn.execute("VACUUM")
 
-    def _update_from_one_impl(self):
-        with self.conn:
-            self.conn.execute("DELETE FROM peers")
+    def _table_exists(self, name: str) -> bool:
+        return (
+            self.conn.execute(
+                "SELECT 1 FROM sqlite_master WHERE type='table' AND name=?",
+                (name,),
+            ).fetchone()
+            is not None
+        )
 
-    def _update_from_two_impl(self):
-        with self.conn:
-            self.conn.execute("ALTER TABLE sessions ADD api_id INTEGER")
+    def _column_names(self, table: str) -> list[str]:
+        return [
+            row[1]
+            for row in self.conn.execute(f"PRAGMA table_info({table})").fetchall()
+        ]
 
-    def _update_from_three_impl(self):
-        with self.conn:
-            self.conn.executescript("""
+    def _migrate_usernames_table(self):
+        """Ensure ``usernames`` uses the modern (peer_id, username) layout.
+
+        pyroblack <= 2.7.2 stored usernames as::
+
+            id TEXT PRIMARY KEY  -- username
+            peer_id INTEGER
+
+        while current code expects::
+
+            id INTEGER           -- peer id
+            username TEXT
+
+        Also copies legacy ``peers.username`` values into the modern table.
+        """
+        if not self._table_exists("usernames"):
+            self.conn.executescript(
+                """
 CREATE TABLE usernames
 (
     id       INTEGER,
     username TEXT,
     FOREIGN KEY (id) REFERENCES peers(id)
 );
+CREATE INDEX IF NOT EXISTS idx_usernames_username ON usernames (username);
+CREATE INDEX IF NOT EXISTS idx_usernames_id ON usernames (id);
+"""
+            )
+        else:
+            cols = set(self._column_names("usernames"))
+            # Old pyroblack / pyrofork-era layout used username as PK and peer_id.
+            if "peer_id" in cols and "username" not in cols:
+                self.conn.executescript(
+                    """
+CREATE TABLE usernames_new
+(
+    id       INTEGER,
+    username TEXT,
+    FOREIGN KEY (id) REFERENCES peers(id)
+);
+INSERT OR IGNORE INTO usernames_new (id, username)
+    SELECT peer_id, id FROM usernames
+    WHERE peer_id IS NOT NULL AND id IS NOT NULL;
+DROP TABLE usernames;
+ALTER TABLE usernames_new RENAME TO usernames;
+CREATE INDEX IF NOT EXISTS idx_usernames_username ON usernames (username);
+CREATE INDEX IF NOT EXISTS idx_usernames_id ON usernames (id);
+"""
+                )
 
-CREATE INDEX idx_usernames_username ON usernames (username);
-""")
+        # Legacy peers.username column (pyroblack 2.7.x SCHEMA)
+        if self._table_exists("peers"):
+            peer_cols = set(self._column_names("peers"))
+            if "username" in peer_cols:
+                self.conn.execute(
+                    """
+INSERT OR IGNORE INTO usernames (id, username)
+SELECT id, username FROM peers
+WHERE username IS NOT NULL AND TRIM(username) != ''
+"""
+                )
+
+    def _update_from_one_impl(self):
+        with self.conn:
+            self.conn.execute("DELETE FROM peers")
+
+    def _update_from_two_impl(self):
+        with self.conn:
+            cols = set(self._column_names("sessions"))
+            if "api_id" not in cols:
+                self.conn.execute("ALTER TABLE sessions ADD api_id INTEGER")
+
+    def _update_from_three_impl(self):
+        # v3 -> v4: introduce modern usernames table
+        with self.conn:
+            self._migrate_usernames_table()
+            self.conn.execute(
+                "CREATE INDEX IF NOT EXISTS idx_usernames_username ON usernames (username)"
+            )
 
     def _update_from_four_impl(self):
+        # v4 -> v5: introduce update_state.
+        #
+        # IMPORTANT: pyroblack 2.7.x shipped with VERSION=4 *and* already had
+        # the update_state table in SCHEMA. Using plain CREATE TABLE crashed
+        # with: sqlite3.OperationalError: table update_state already exists
         with self.conn:
-            self.conn.executescript("""
-CREATE TABLE update_state
+            self.conn.executescript(
+                """
+CREATE TABLE IF NOT EXISTS update_state
 (
     id   INTEGER PRIMARY KEY,
     pts  INTEGER,
@@ -190,14 +270,34 @@ CREATE TABLE update_state
     date INTEGER,
     seq  INTEGER
 );
-""")
+"""
+            )
 
     def _update_from_five_impl(self):
         with self.conn:
-            self.conn.executescript("CREATE INDEX idx_usernames_id ON usernames (id);")
+            # pyroblack 2.7.x sessions jump 4->5->6 without ever running the
+            # v3 usernames migration, so re-run the usernames normalizer here.
+            self._migrate_usernames_table()
+            self.conn.execute(
+                "CREATE INDEX IF NOT EXISTS idx_usernames_id ON usernames (id)"
+            )
+            self.conn.execute(
+                "CREATE INDEX IF NOT EXISTS idx_usernames_username ON usernames (username)"
+            )
 
     async def update(self):
         version = await self.version()
+
+        if version is None:
+            # Corrupt / empty version table — treat as brand new schema.
+            log.warning("Session version missing; recreating schema metadata")
+            await self.loop.run_in_executor(
+                self.executor,
+                lambda: self.conn.execute(
+                    "INSERT OR REPLACE INTO version VALUES (?)", (self.VERSION,)
+                ),
+            )
+            return
 
         if version == 1:
             await self.loop.run_in_executor(self.executor, self._update_from_one_impl)
@@ -219,7 +319,18 @@ CREATE TABLE update_state
             await self.loop.run_in_executor(self.executor, self._update_from_five_impl)
             version += 1
 
+        # Final safety net: if a session was already at VERSION (or jumped
+        # through IF NOT EXISTS paths), still normalize usernames for 2.7.x files.
+        if version >= self.VERSION:
+            await self.loop.run_in_executor(
+                self.executor, lambda: self._migrate_usernames_table_locked()
+            )
+
         await self.version(version)
+
+    def _migrate_usernames_table_locked(self):
+        with self.conn:
+            self._migrate_usernames_table()
 
     def _connect_impl(self, path):
         self.conn = sqlite3.connect(str(path), timeout=1, check_same_thread=False)

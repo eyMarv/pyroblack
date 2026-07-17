@@ -36,6 +36,7 @@ class EditMessageCaption:
         parse_mode: Optional["enums.ParseMode"] = None,
         caption_entities: list["types.MessageEntity"] = None,
         show_caption_above_media: bool = None,
+        invert_media: bool = None,
         reply_markup: "types.InlineKeyboardMarkup" = None,
         schedule_date: datetime = None,
         business_connection_id: str = None

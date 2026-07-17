@@ -56,6 +56,12 @@ class SendMessage:
         ] = None,
         schedule_date: datetime = None,
         disable_web_page_preview: bool = None,
+        reply_to_chat_id: Union[int, str] = None,
+        reply_to_story_id: int = None,
+        reply_to_monoforum_id: Union[int, str] = None,
+        quote_text: str = None,
+        quote_entities: list = None,
+        invert_media: bool = None,
         reply_to_message_id: int = None
     ) -> "types.Message":
         """Send text messages.
@@ -180,18 +186,23 @@ class SendMessage:
 
         link_preview_options = link_preview_options or self.link_preview_options
 
-        if reply_to_message_id and reply_parameters:
-            raise ValueError(
-                "Parameters `reply_to_message_id` and `reply_parameters` are mutually "
-                "exclusive."
-            )
-        
-        if reply_to_message_id is not None:
-            log.warning(
-                "This property is deprecated. "
-                "Please use reply_parameters instead"
-            )
-            reply_parameters = types.ReplyParameters(message_id=reply_to_message_id)
+        if invert_media is not None:
+            if link_preview_options is None:
+                link_preview_options = types.LinkPreviewOptions(show_above_text=invert_media)
+            elif link_preview_options.show_above_text is None:
+                link_preview_options.show_above_text = invert_media
+
+
+        reply_parameters = utils.resolve_legacy_reply_parameters(
+            reply_parameters=reply_parameters,
+            reply_to_message_id=reply_to_message_id,
+            reply_to_story_id=reply_to_story_id,
+            reply_to_chat_id=reply_to_chat_id,
+            reply_to_monoforum_id=reply_to_monoforum_id,
+            quote_text=quote_text,
+            quote_entities=quote_entities,
+            chat_id=chat_id,
+        )
 
         reply_to = await utils._get_reply_message_parameters(
             self,
