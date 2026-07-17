@@ -1416,8 +1416,9 @@ class Client(Methods):
 
                             chunk = r2.bytes
 
-                            # Offload CDN AES to the multi-worker crypto pool
-                            # so large CDN payloads don't block the event loop.
+                            # Offload CDN AES + hash verify to the crypto pool
+                            # (wzgram pattern) so large CDN payloads don't block
+                            # the event loop.
                             decrypted_chunk = await self.loop.run_in_executor(
                                 pyrogram.crypto_executor,
                                 aes.ctr256_decrypt,
@@ -1436,12 +1437,19 @@ class Client(Methods):
                                 )
                             )
 
-                            for i, h in enumerate(hashes):
-                                cdn_chunk = decrypted_chunk[h.limit * i: h.limit * (i + 1)]
-                                CDNFileHashMismatch.check(
-                                    h.hash == sha256(cdn_chunk).digest(),
-                                    "h.hash == sha256(cdn_chunk).digest()"
-                                )
+                            def _check_all_hashes():
+                                for i, h in enumerate(hashes):
+                                    cdn_chunk = decrypted_chunk[
+                                        h.limit * i : h.limit * (i + 1)
+                                    ]
+                                    CDNFileHashMismatch.check(
+                                        h.hash == sha256(cdn_chunk).digest(),
+                                        "h.hash == sha256(cdn_chunk).digest()",
+                                    )
+
+                            await self.loop.run_in_executor(
+                                pyrogram.crypto_executor, _check_all_hashes
+                            )
 
                             yield decrypted_chunk
 

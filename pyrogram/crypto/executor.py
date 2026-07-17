@@ -20,20 +20,32 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+"""Shared crypto thread pool.
+
+* **TgCrypto-pyroblack** with ``pack_message`` / ``unpack_message`` releases the
+  GIL for the whole MTProto frame → ``cpu_count`` workers (true parallel crypto
+  across media sessions).
+* Pure-Python crypto holds the GIL → keep **1** worker.
+"""
+
 import os
 from concurrent.futures.thread import ThreadPoolExecutor
 
-
 _crypto_pool = None
 
-# Number of crypto worker threads. v2.8.6 (peak ~27 MB/s uploads) used a single
-# thread: pack/unpack were serialized in order and the event loop pipelined
-# cleanly against them. The multi-worker pool added in 2.8.7 dispatched every
-# 512 KB part to a different thread, so N threads contended the GIL against the
-# loop while the send side stayed serial (TCP.send holds a lock) — paying the
-# thread-coordination cost with no parallelism gain, which halved throughput.
-# Hard-reverted to 1 to match 2.8.6.
-CRYPTO_WORKERS = 1
+
+def _has_native_mtproto() -> bool:
+    try:
+        import tgcrypto
+
+        return hasattr(tgcrypto, "pack_message") and hasattr(
+            tgcrypto, "unpack_message"
+        )
+    except ImportError:
+        return False
+
+
+CRYPTO_WORKERS = max(1, (os.cpu_count() or 4)) if _has_native_mtproto() else 1
 
 
 def get_crypto_executor() -> ThreadPoolExecutor:

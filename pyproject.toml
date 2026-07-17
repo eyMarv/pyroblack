@@ -99,6 +99,8 @@ docs = [
 ]
 
 fast = [
-    "PyTgCrypto>1.2.9.2,<=1.4",
-    "uvloop>0.18.0,<=0.19.0"
+    # Official pyroblack speedup: TgCrypto-pyroblack
+    # (pack_message/unpack_message + AES).
+    "TgCrypto-pyroblack>=1.3.0",
+    "uvloop>0.18.0,<=0.22.1; sys_platform == 'darwin' or sys_platform == 'linux'",
 ]
