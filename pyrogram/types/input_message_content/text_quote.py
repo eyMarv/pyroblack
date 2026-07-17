@@ -69,24 +69,27 @@ class TextQuote(Object):
         users: dict,
         reply_to: "raw.types.MessageReplyHeader"
     ) -> "TextQuote":
-        if isinstance(reply_to, raw.types.MessageReplyHeader):
-            if not reply_to.quote:
-                return None
-            quote_text = reply_to.quote_text
-            quote_entities = reply_to.quote_entities
-            position = reply_to.quote_offset or 0
+        if not isinstance(reply_to, raw.types.MessageReplyHeader):
+            return None
 
-            entities = [
-                types.MessageEntity._parse(client, entity, users)
-                for entity in quote_entities
-            ]
-            entities = types.List(
-                filter(lambda x: x is not None, entities)
-            )
-            
-            return TextQuote(
-                text=Str(quote_text).init(entities) or None,
-                entities=entities,
-                position=position,
-                is_manual=bool(reply_to.quote) or None
-            )
+        if not reply_to.quote and not reply_to.quote_text:
+            return None
+
+        quote_text = reply_to.quote_text
+        quote_entities = reply_to.quote_entities or []
+        position = reply_to.quote_offset or 0
+
+        entities = [
+            types.MessageEntity._parse(client, entity, users)
+            for entity in quote_entities
+        ]
+        entities = types.List(
+            filter(lambda x: x is not None, entities)
+        )
+
+        return TextQuote(
+            text=Str(quote_text).init(entities) if quote_text else None,
+            entities=entities or None,
+            position=position,
+            is_manual=bool(reply_to.quote) or None
+        )

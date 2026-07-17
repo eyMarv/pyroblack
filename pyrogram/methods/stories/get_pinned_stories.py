@@ -94,10 +94,13 @@ class GetPinnedStories:
             for story in r.stories:
                 yield await types.Story._parse(
                     self,
-                    story,
-                    peer,
                     users,
-                    chats
+                    chats,
+                    None,
+                    None,
+                    None,
+                    story,
+                    peer
                 )
 
                 current += 1

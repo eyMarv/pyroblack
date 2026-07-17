@@ -227,10 +227,10 @@ class ExternalReplyInfo(Object):
                 giveaway_result = await types.GiveawayResult._parse(client, media)
                 media_type = enums.MessageMediaType.GIVEAWAY_RESULT
             elif isinstance(media, raw.types.MessageMediaInvoice):
-                invoice = types.Invoice._parse(media)
+                invoice = types.Invoice._parse(client, media)
                 media_type = enums.MessageMediaType.INVOICE
             elif isinstance(media, raw.types.MessageMediaStory):
-                story = await types.Story._parse(client, media, media.peer)
+                story = await types.Story._parse(client, {}, {}, media, None, None, None, media.peer)
                 media_type = enums.MessageMediaType.STORY
             elif isinstance(media, raw.types.MessageMediaDocument):
                 doc = media.document
@@ -267,12 +267,10 @@ class ExternalReplyInfo(Object):
                         else:
                             video = types.Video._parse(
                                 client,
-                                doc,
+                                media,
                                 video_attributes,
                                 file_name,
                                 media.ttl_seconds,
-                                media.video_cover,
-                                media.video_timestamp,
                             )
                             media_type = enums.MessageMediaType.VIDEO
                             has_media_spoiler = media.spoiler
@@ -291,7 +289,7 @@ class ExternalReplyInfo(Object):
                         document = types.Document._parse(client, doc, file_name)
                         media_type = enums.MessageMediaType.DOCUMENT
             elif isinstance(media, raw.types.MessageMediaPoll):
-                poll = types.Poll._parse(client, media)
+                poll = await types.Poll._parse(client, media, users, chats)
                 media_type = enums.MessageMediaType.POLL
             elif isinstance(media, raw.types.MessageMediaDice):
                 dice = types.Dice._parse(client, media)

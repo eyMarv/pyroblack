@@ -212,12 +212,15 @@ class EditStoryMedia:
                     for i in r.updates:
                         if isinstance(i, raw.types.UpdateStory):
                             return await types.Story._parse(
-                                self,
-                                i.story,
-                                i.peer,
-                                {i.id: i for i in r.users},
-                                {i.id: i for i in r.chats}
-                            )
+                    self,
+                    {i.id: i for i in r.users},
+                    {i.id: i for i in r.chats},
+                    None,
+                    None,
+                    i,
+                    None,
+                    i.peer
+                )
         except StopTransmission:
             return None
 

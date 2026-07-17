@@ -39,11 +39,12 @@ class MediaArea(Object):
 
         self.coordinates = coordinates
 
+    @staticmethod
     async def _parse(
-        self: "pyrogram.Client", media_area: "raw.base.MediaArea"
+        client: "pyrogram.Client", media_area: "raw.base.MediaArea"
     ) -> "MediaArea":
         if isinstance(media_area, raw.types.MediaAreaChannelPost):
             try:
-                return await types.MediaAreaChannelPost._parse(self, media_area)
+                return await types.MediaAreaChannelPost._parse(client, media_area)
             except Exception:
                 return None

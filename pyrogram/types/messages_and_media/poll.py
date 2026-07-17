@@ -222,7 +222,7 @@ class Poll(Object, Update):
             open_period=poll.close_period,
             close_date=utils.timestamp_to_datetime(poll.close_date),
             has_open_answers=poll.open_answers,
-            description=None, #types.FormattedText._parse(client, ),
+            description=None,
             client=client
         )
 

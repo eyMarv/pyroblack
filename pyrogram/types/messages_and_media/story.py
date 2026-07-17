@@ -242,7 +242,7 @@ class Story(Object, Update):
                         )
                         video = types.Video._parse(
                             client,
-                            doc,
+                            stories.media,
                             video_attributes,
                             None,
                             stories.media.ttl_seconds,

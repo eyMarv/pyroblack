@@ -92,11 +92,11 @@ class GetChatArchivedStories:
                     self,
                     users,
                     chats,
-                    None, None, None,
-                    # TODO
+                    None,
+                    None,
+                    None,
                     story,
-                    None, #
-                    # TODO
+                    peer,
                 )
 
                 current += 1

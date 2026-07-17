@@ -59,4 +59,21 @@ class ResolveBusinessChatLink:
             )
         )
 
-        return types.Message._parse(self, r)
+        # API returns account.ResolvedBusinessChatLinks (peer + message text),
+        # not a raw Message. Build a high-level Message-like reply content via Chat.
+        from pyrogram import utils
+
+        users = {i.id: i for i in r.users}
+        chats = {i.id: i for i in r.chats}
+        peer_id = utils.get_raw_peer_id(r.peer)
+        if peer_id in users:
+            chat = types.Chat._parse_user_chat(self, users[peer_id])
+        else:
+            chat = types.Chat._parse_chat(self, chats[peer_id])
+        # Synthetic message so callers can still use .text / .chat
+        return types.Message(
+            id=0,
+            chat=chat,
+            text=r.message or None,
+            client=self,
+        )

@@ -83,11 +83,11 @@ class GetStories:
                     self,
                     users,
                     chats,
-                    None, None, None,
-                    # TODO
+                    None,
+                    None,
+                    None,
                     story,
-                    None, #
-                    # TODO
+                    peer,
                 )
             )
 

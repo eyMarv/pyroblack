@@ -237,7 +237,7 @@ class RichBlock(Object):
             )
         if isinstance(rich_block, raw.types.PageBlockMap):
             return RichBlockMap(
-                location=types.Location._parse(rich_block.geo),
+                location=types.Location._parse(client, rich_block.geo),
                 zoom=rich_block.zoom,
                 width=rich_block.w,
                 height=rich_block.h,
@@ -263,7 +263,7 @@ class RichBlock(Object):
                 video_attributes = attributes[raw.types.DocumentAttributeVideo]
 
                 return RichBlockVideo(
-                    video=types.Video._parse(client, doc, video_attributes, file_name),
+                    video=types.Video._parse(client, None, video_attributes, file_name, video=doc),
                     has_spoiler=rich_block.spoiler,
                     caption=await types.RichBlockCaption._parse(client, rich_block.caption),
                 )

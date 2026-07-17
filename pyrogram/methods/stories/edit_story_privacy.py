@@ -127,9 +127,12 @@ class EditStoryPrivacy:
             if isinstance(i, raw.types.UpdateStory):
                 return await types.Story._parse(
                     self,
-                    i.story,
-                    i.peer,
                     {i.id: i for i in r.users},
-                    {i.id: i for i in r.chats}
+                    {i.id: i for i in r.chats},
+                    None,
+                    None,
+                    i,
+                    None,
+                    i.peer
                 )
 

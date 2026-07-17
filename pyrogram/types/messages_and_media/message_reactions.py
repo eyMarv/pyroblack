@@ -48,8 +48,11 @@ class MessageReactions(Object):
     @staticmethod
     def _parse(
         client: "pyrogram.Client",
-        message_reactions: Optional["raw.base.MessageReactions"] = None
+        message_reactions: Optional["raw.base.MessageReactions"] = None,
+        users: dict = None,
+        chats: dict = None,
     ) -> Optional["MessageReactions"]:
+        # users/chats accepted for call-site compatibility (send_reaction etc.)
         if not message_reactions:
             return None
 

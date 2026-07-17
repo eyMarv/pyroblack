@@ -67,23 +67,34 @@ class TextQuote(Object):
     @staticmethod
     def _parse(
         client: "pyrogram.Client",
+        chats: dict,
         users: Dict[int, "raw.types.User"],
         reply_to: "raw.types.MessageReplyHeader",
-    ) -> "TextQuote":
-        if isinstance(reply_to, raw.types.MessageReplyHeader):
-            entities = types.List(
-                filter(
-                    lambda x: x is not None,
-                    [
-                        types.MessageEntity._parse(client, entity, users)
-                        for entity in getattr(reply_to, "quote_entities", [])
-                    ],
-                )
-            )
+    ) -> Optional["TextQuote"]:
+        # Signature matches Message._parse call site:
+        #   TextQuote._parse(client, chats, users, message.reply_to)
+        # (chats is unused here but required for call-site consistency with
+        # other reply header parsers; older 3-arg form crashed with
+        # TypeError: takes 3 positional arguments but 4 were given.)
+        if not isinstance(reply_to, raw.types.MessageReplyHeader):
+            return None
 
-            return TextQuote(
-                text=Str(reply_to.quote_text).init(entities) or None,
-                entities=entities or None,
-                position=reply_to.quote_offset or 0,
-                is_manual=reply_to.quote,
+        if not reply_to.quote and not reply_to.quote_text:
+            return None
+
+        entities = types.List(
+            filter(
+                lambda x: x is not None,
+                [
+                    types.MessageEntity._parse(client, entity, users)
+                    for entity in getattr(reply_to, "quote_entities", []) or []
+                ],
             )
+        )
+
+        return TextQuote(
+            text=Str(reply_to.quote_text).init(entities) if reply_to.quote_text else None,
+            entities=entities or None,
+            position=reply_to.quote_offset or 0,
+            is_manual=bool(reply_to.quote) or None,
+        )
