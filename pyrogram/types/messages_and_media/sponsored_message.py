@@ -101,7 +101,8 @@ class SponsoredMessage(Object):
         self.additional_info = additional_info
 
     @staticmethod
-    def _parse(client, sponsored_message: "raw.types.SponsoredMessage"):
+    def _parse(client, sponsored_message: "raw.types.SponsoredMessage", users: dict = None):
+        users = users or {}
         entities = [
             types.MessageEntity._parse(client, entity, users)
             for entity in getattr(sponsored_message, "entities", [])

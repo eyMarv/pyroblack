@@ -4746,6 +4746,7 @@ class Message(Object, Update):
         allow_paid_broadcast: bool = None,
         message_effect_id: int = None,
         reply_parameters: "types.ReplyParameters" = None,
+        reply_to_message_id: int = None,
         send_as: Union[int, str] = None,
         reply_markup: Union[
             "types.InlineKeyboardMarkup",

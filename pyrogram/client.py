@@ -58,7 +58,7 @@ from pyrogram.handlers.handler import Handler
 from pyrogram.methods import Methods
 from pyrogram.session import Auth, Session
 from pyrogram.storage import SQLiteStorage, Storage
-from pyrogram.types import User, TermsOfService
+from pyrogram.types import User, TermsOfService, SentCode
 from pyrogram.utils import MIN_MONOFORUM_CHANNEL_ID, ainput
 from .connection import Connection
 from .connection.transport import TCP, TCPAbridged, TCPFull
@@ -548,7 +548,7 @@ class Client(Methods):
                     )
 
                     if isinstance(email_sent_code, raw.types.account.EmailVerifiedLogin):
-                        sent_code = types.SentCode._parse(email_sent_code.sent_code)
+                        sent_code = SentCode._parse(email_sent_code.sent_code)
                 except BadRequest as e:
                     print(e.MESSAGE)
                     self.phone_number = None

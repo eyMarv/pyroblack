@@ -59,7 +59,9 @@ class GetChatSponsoredMessages:
         if isinstance(r, raw.types.messages.SponsoredMessagesEmpty):
             return None
 
+        users = {i.id: i for i in r.users}
+
         return types.List([
-            types.SponsoredMessage._parse(self, sm)
+            types.SponsoredMessage._parse(self, sm, users)
             for sm in r.messages
         ])

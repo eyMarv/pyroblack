@@ -68,7 +68,7 @@ class AnswerShippingQuery:
         if ok:
             r = await self.invoke(
                 raw.functions.messages.SetBotShippingResults(
-                    query_id=int(pre_checkout_query_id),
+                    query_id=int(shipping_query_id),
                     shipping_options=[
                         so.write()
                         for so in shipping_options
@@ -78,7 +78,7 @@ class AnswerShippingQuery:
         else:
             r = await self.invoke(
                 raw.functions.messages.SetBotShippingResults(
-                    query_id=int(pre_checkout_query_id),
+                    query_id=int(shipping_query_id),
                     error=error_message or None
                 )
             )
