@@ -25,7 +25,7 @@ from datetime import datetime
 from typing import Union, Optional
 
 import pyrogram
-from pyrogram import types, enums
+from pyrogram import types, enums, utils
 
 log = logging.getLogger(__name__)
 
