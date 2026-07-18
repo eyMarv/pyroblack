@@ -28,7 +28,8 @@ class GetDialogsCount:
     async def get_dialogs_count(
         self: "pyrogram.Client",
         pinned_only: bool = False,
-        chat_list: int = 0
+        chat_list: int = 0,
+        **kwargs
     ) -> int:
         """Get the total count of your dialogs.
 

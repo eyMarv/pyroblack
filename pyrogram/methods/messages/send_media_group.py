@@ -61,7 +61,8 @@ class SendMediaGroup:
         quote_text: str = None,
         quote_entities: list = None,
         invert_media: bool = None,
-        reply_to_message_id: int = None
+        reply_to_message_id: int = None,
+        **kwargs
     ) -> list["types.Message"]:
         """Use this method to send a group of photos, videos, documents or audios as an album.
         

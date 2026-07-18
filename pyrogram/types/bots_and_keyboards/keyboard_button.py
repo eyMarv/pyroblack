@@ -90,6 +90,7 @@ class KeyboardButton(Object):
         request_users: "types.KeyboardButtonRequestUsers" = None,
         request_chat: "types.KeyboardButtonRequestChat" = None,
         request_managed_bot: "types.KeyboardButtonRequestManagedBot" = None,
+        **kwargs
     ):
         super().__init__()
 
@@ -99,6 +100,8 @@ class KeyboardButton(Object):
         self.request_poll = request_poll
         self.web_app = web_app
         self.request_users = request_users
+        # pyroblack <= 2.7.2 singular name
+        self.request_user = request_users
         self.request_chat = request_chat
         self.request_managed_bot = request_managed_bot
         self.icon_custom_emoji_id = icon_custom_emoji_id

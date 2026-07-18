@@ -42,7 +42,8 @@ class SendInlineBotResult:
         paid_message_star_count: int = None,
         message_thread_id: int = None,
         schedule_date: datetime = None,
-        reply_to_message_id: int = None
+        reply_to_message_id: int = None,
+        **kwargs
     ) -> Union["types.Message", bool]:
         """Send an inline bot result.
         Bot results can be retrieved using :meth:`~pyrogram.Client.get_inline_bot_results`

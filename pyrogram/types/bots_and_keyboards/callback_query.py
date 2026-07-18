@@ -215,7 +215,8 @@ class CallbackQuery(Object, Update):
         entities: list["types.MessageEntity"] = None,
         link_preview_options: "types.LinkPreviewOptions" = None,
         reply_markup: "types.InlineKeyboardMarkup" = None,
-        disable_web_page_preview: bool = None
+        disable_web_page_preview: bool = None,
+        **kwargs
     ) -> Union["types.Message", bool]:
         """Edit the text of messages attached to callback queries.
 
@@ -274,7 +275,8 @@ class CallbackQuery(Object, Update):
         caption: str,
         parse_mode: Optional["enums.ParseMode"] = None,
         caption_entities: list["types.MessageEntity"] = None,
-        reply_markup: "types.InlineKeyboardMarkup" = None
+        reply_markup: "types.InlineKeyboardMarkup" = None,
+        **kwargs
     ) -> Union["types.Message", bool]:
         """Edit the caption of media messages attached to callback queries.
 
@@ -313,6 +315,7 @@ class CallbackQuery(Object, Update):
         self,
         media: "types.InputMedia",
         reply_markup: "types.InlineKeyboardMarkup" = None,
+        **kwargs
     ) -> Union["types.Message", bool]:
         """Edit animation, audio, document, photo or video messages attached to callback queries.
 
@@ -350,7 +353,8 @@ class CallbackQuery(Object, Update):
 
     async def edit_message_reply_markup(
         self,
-        reply_markup: "types.InlineKeyboardMarkup" = None
+        reply_markup: "types.InlineKeyboardMarkup" = None,
+        **kwargs
     ) -> Union["types.Message", bool]:
         """Edit only the reply markup of messages attached to callback queries.
 

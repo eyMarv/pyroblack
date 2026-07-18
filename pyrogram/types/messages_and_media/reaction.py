@@ -50,12 +50,20 @@ class Reaction(Object):
         type: "types.ReactionType" = None,
         count: Optional[int] = None,
         chosen_order: Optional[int] = None,
+        **kwargs
     ):
         super().__init__(client)
 
         self.type = type
         self.count = count
         self.chosen_order = chosen_order
+        # pyroblack <= 2.7.2 flat fields (derived from ReactionType)
+        self.emoji = getattr(type, "emoji", None) if type is not None else None
+        self.custom_emoji_id = getattr(type, "custom_emoji_id", None) if type is not None else None
+        # avoid forward-ref to ReactionTypePaid (defined below)
+        self.is_paid = (
+            type is not None and type.__class__.__name__ == "ReactionTypePaid"
+        ) or None
 
     @staticmethod
     def _parse(
@@ -90,8 +98,17 @@ class Reaction(Object):
         reaction_count: "raw.base.ReactionCount"
     ) -> "Reaction":
         reaction = Reaction._parse(client, reaction_count.reaction)
+        if reaction is None:
+            return None
         reaction.count = reaction_count.count
         reaction.chosen_order = reaction_count.chosen_order
+        # keep dual flat fields in sync
+        reaction.emoji = getattr(reaction.type, "emoji", None)
+        reaction.custom_emoji_id = getattr(reaction.type, "custom_emoji_id", None)
+        reaction.is_paid = (
+            reaction.type is not None
+            and reaction.type.__class__.__name__ == "ReactionTypePaid"
+        ) or None
 
         return reaction
 
@@ -110,7 +127,8 @@ class ReactionType(Object):
         *,
         type: str = None,
         emoji: str = None,
-        custom_emoji_id: str = None
+        custom_emoji_id: str = None,
+        **kwargs
     ):
         super().__init__()
         self.type = type
@@ -151,7 +169,8 @@ class ReactionTypeEmoji(ReactionType):
     def __init__(
         self,
         *,
-        emoji: str = None
+        emoji: str = None,
+        **kwargs
     ):
         super().__init__(
             type="emoji",
@@ -176,7 +195,8 @@ class ReactionTypeCustomEmoji(ReactionType):
     def __init__(
         self,
         *,
-        custom_emoji_id: str = None
+        custom_emoji_id: str = None,
+        **kwargs
     ):
         super().__init__(
             type="custom_emoji",
@@ -223,7 +243,8 @@ class ReactionCount(Object):
         *,
         type: ReactionType,
         total_count: int,
-        chosen_order: int
+        chosen_order: int,
+        **kwargs
     ):
         super().__init__()
         self.type = type

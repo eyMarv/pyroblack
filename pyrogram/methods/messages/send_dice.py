@@ -57,7 +57,8 @@ class SendDice:
         quote_text: str = None,
         quote_entities: list = None,
         invert_media: bool = None,
-        reply_to_message_id: int = None
+        reply_to_message_id: int = None,
+        **kwargs
     ) -> Optional["types.Message"]:
         """Send a dice with a random value from 1 to 6.
 

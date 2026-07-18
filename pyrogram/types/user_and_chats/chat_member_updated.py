@@ -83,6 +83,8 @@ class ChatMemberUpdated(Object, Update):
         self.via_join_request = via_join_request
         self.via_chat_folder_invite_link = via_chat_folder_invite_link
         self._raw = _raw
+        # pyroblack <= 2.7.2 alias
+        self.raw = _raw
 
     @staticmethod
     def _parse(

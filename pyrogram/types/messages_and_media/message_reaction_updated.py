@@ -70,7 +70,8 @@ class MessageReactionUpdated(Object, Update):
         actor_chat: "types.Chat",
         date: datetime,
         old_reaction: list["types.ReactionType"],
-        new_reaction: list["types.ReactionType"]
+        new_reaction: list["types.ReactionType"],
+        **kwargs
     ):
         super().__init__(client)
 
@@ -81,6 +82,9 @@ class MessageReactionUpdated(Object, Update):
         self.date = date
         self.old_reaction = old_reaction
         self.new_reaction = new_reaction
+        # pyroblack <= 2.7.2 aliases
+        self.id = message_id
+        self.from_user = user
 
     @staticmethod
     def _parse(

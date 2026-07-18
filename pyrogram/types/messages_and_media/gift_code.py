@@ -82,7 +82,8 @@ class GiftCode(Object):
         cryptocurrency: str = None,
         cryptocurrency_amount: int = None,
         caption: Str = None,
-        caption_entities: list["types.MessageEntity"] = None
+        caption_entities: list["types.MessageEntity"] = None,
+        **kwargs
     ):
         super().__init__()
 
@@ -97,6 +98,10 @@ class GiftCode(Object):
         self.cryptocurrency_amount = cryptocurrency_amount
         self.caption = caption
         self.caption_entities = caption_entities
+        # pyroblack <= 2.7.2 names
+        self.unclaimed = is_unclaimed
+        self.boost_peer = boosted_chat
+        self.months = premium_subscription_month_count
 
     @staticmethod
     def _parse(

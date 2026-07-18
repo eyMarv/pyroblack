@@ -109,7 +109,8 @@ class ActiveSession(Object):
         is_unconfirmed: bool = None,
         can_accept_secret_chats: bool = None,
         can_accept_calls: bool = None,
-        is_official_application: bool = None
+        is_official_application: bool = None,
+        **kwargs
     ):
         super().__init__(client)
 
@@ -125,6 +126,8 @@ class ActiveSession(Object):
         self.ip_address = ip_address
         self.location = location
         self.country = country
+        # pyroblack <= 2.7.2 name
+        self.region = location
         self.is_current = is_current
         self.is_password_pending = is_password_pending
         self.is_unconfirmed = is_unconfirmed
@@ -160,7 +163,7 @@ class ActiveSession(Object):
         )
 
     async def terminate(self):
-        """Bound method *reset* of :obj:`~pyrogram.types.ActiveSession`.
+        """Bound method *terminate* of :obj:`~pyrogram.types.ActiveSession`.
 
         Use as a shortcut for:
 
@@ -172,7 +175,7 @@ class ActiveSession(Object):
 
         .. code-block:: python
 
-            await session.reset()
+            await session.terminate()
 
         Returns:
             True on success.
@@ -183,3 +186,7 @@ class ActiveSession(Object):
         """
 
         return await self._client.terminate_session(self.id)
+
+    async def reset(self):
+        """Alias of :meth:`terminate` (pyroblack <= 2.7.2 name)."""
+        return await self.terminate()

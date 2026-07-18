@@ -76,6 +76,16 @@ class InputTextMessageContent(InputMessageContent):
         self.parse_mode = parse_mode
         self.entities = entities
         self.link_preview_options = link_preview_options
+        # pyroblack <= 2.7.2 name
+        self.disable_web_page_preview = (
+            disable_web_page_preview
+            if disable_web_page_preview is not None
+            else (
+                getattr(link_preview_options, "is_disabled", None)
+                if link_preview_options is not None
+                else None
+            )
+        )
 
     async def write(self, client: "pyrogram.Client", reply_markup):
         message, entities = (await utils.parse_text_entities(

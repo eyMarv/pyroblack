@@ -21,7 +21,7 @@
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
 __fork_name__ = "pyroblack"
-__version__ = "2.9.5"
+__version__ = "2.9.6"
 __license__ = "GNU Lesser General Public License v3.0 (LGPL-3.0)"
 __copyright__ = "#  Copyright (C) 2024-present eyMarv <https://github.com/eyMarv>"
 
@@ -47,6 +47,11 @@ from . import raw, types, filters, handlers, emoji, enums
 from .client import Client
 from .sync import idle, compose
 from .crypto.executor import get_crypto_executor
+
+# Accept pyroblack <= 2.7.2 kwargs on Client/Message methods
+from .legacy_compat import install_legacy_kwargs
+
+install_legacy_kwargs()
 
 # Single-worker crypto executor (see crypto/executor.py for why one thread beats
 # a multi-worker pool here). Keep the public name `crypto_executor` for

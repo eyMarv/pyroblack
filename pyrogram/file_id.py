@@ -162,6 +162,35 @@ class FileId:
     def __new__(cls, **kwargs) -> "FileIdCached":
         return FileIdCached(**kwargs)
 
+    # pyroblack <= 2.7.2 API surface (real storage is FileIdCached via __new__)
+    def __init__(
+        self,
+        *,
+        major: int = MAJOR,
+        minor: int = MINOR,
+        file_type: FileType = None,
+        dc_id: int = None,
+        file_reference: bytes = b"",
+        url: str = None,
+        media_id: int = None,
+        access_hash: int = None,
+        volume_id: int = None,
+        thumbnail_source: ThumbnailSource = None,
+        thumbnail_file_type: FileType = None,
+        thumbnail_size: str = "",
+        secret: int = None,
+        local_id: int = None,
+        chat_id: int = None,
+        chat_access_hash: int = None,
+        sticker_set_id: int = None,
+        sticker_set_access_hash: int = None
+    ):
+        # Not used when __new__ returns FileIdCached; kept for API/AST parity.
+        pass
+
+    def encode(self, *, major: int = None, minor: int = None):
+        return FileIdCached.encode(self, major=major, minor=minor)
+
     @staticmethod
     def decode(file_id: str):
         decoded = rle_decode(b64_decode(file_id))
@@ -437,6 +466,21 @@ class FileUniqueId:
     @functools.lru_cache(maxsize=8128)
     def __new__(cls, **kwargs) -> "FileUniqueIdCached":
         return FileUniqueIdCached(**kwargs)
+
+    # pyroblack <= 2.7.2 API surface
+    def __init__(
+        self,
+        *,
+        file_unique_type: FileUniqueType = None,
+        url: str = None,
+        media_id: int = None,
+        volume_id: int = None,
+        local_id: int = None
+    ):
+        pass
+
+    def encode(self):
+        return FileUniqueIdCached.encode(self)
 
     @staticmethod
     def decode(file_unique_id: str):

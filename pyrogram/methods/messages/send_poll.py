@@ -90,6 +90,7 @@ class SendPoll:
             "types.ReplyKeyboardRemove",
             "types.ForceReply"
         ] = None,
+        **kwargs
     ) -> "types.Message":
         """Send a native poll.
 

@@ -117,6 +117,7 @@ class InlineQueryResultPhoto(InlineQueryResult):
 
         self.photo_url = photo_url
         self.thumbnail_url = thumbnail_url
+        self.thumb_url = thumbnail_url  # <=2.7.2
         self.photo_width = photo_width
         self.photo_height = photo_height
         self.title = title

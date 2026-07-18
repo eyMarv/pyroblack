@@ -119,6 +119,7 @@ class InlineKeyboardButton(Object):
         callback_game: Optional["types.CallbackGame"] = None,
         pay: Optional[bool] = None,
         callback_data_with_password: Optional[bytes] = None,
+        **kwargs
     ):
         super().__init__()
 
@@ -137,6 +138,8 @@ class InlineKeyboardButton(Object):
         self.callback_data_with_password = callback_data_with_password
         self.icon_custom_emoji_id = icon_custom_emoji_id
         self.style = style
+        # pyroblack <= 2.7.2: requires_password flag (now implied by callback_data_with_password)
+        self.requires_password = bool(callback_data_with_password) if callback_data_with_password is not None else None
 
     @staticmethod
     def read(b: "raw.base.KeyboardButton"):

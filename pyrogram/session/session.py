@@ -224,10 +224,11 @@ class Session:
 
         log.info("Session stopped")
 
-    async def restart(self):
+    async def restart(self, stop: bool = None, **kwargs):
         # Coordinated restart: the first caller performs the restart; any other
         # caller that arrives while it's running simply waits for it to finish
         # rather than kicking off a competing restart or timing out on a lock.
+        # *stop* accepted for pyroblack <= 2.7.2 call sites (ignored).
         if self._restart_lock.locked():
             await self._restart_done.wait()
             return
@@ -364,6 +365,10 @@ class Session:
                 pass
 
         log.info("PingTask stopped")
+
+    async def recv_worker(self):
+        """Alias of :meth:`network_worker` (pyroblack <= 2.7.2 name)."""
+        return await self.network_worker()
 
     async def network_worker(self):
         log.info("NetworkTask started")

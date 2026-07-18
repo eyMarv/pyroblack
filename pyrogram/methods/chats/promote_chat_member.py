@@ -32,6 +32,7 @@ class PromoteChatMember:
         chat_id: Union[int, str],
         user_id: Union[int, str],
         privileges: "types.ChatPrivileges" = None,
+        **kwargs
     ) -> Union["types.Message", bool]:
         """Promote or demote a user in a supergroup or a channel.
 

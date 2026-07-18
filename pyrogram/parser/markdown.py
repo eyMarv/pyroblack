@@ -82,6 +82,30 @@ class Markdown:
         self.html = HTML(client)
 
     @staticmethod
+    def blockquote_parser(text):
+        """Legacy blockquote normalizer (pyroblack <= 2.7.2)."""
+        text = re.sub(r"\n&gt;", "\n>", re.sub(r"^&gt;", ">", text))
+        lines = text.split("\n")
+        result = []
+        in_blockquote = False
+        for line in lines:
+            if line.startswith(">"):
+                if not in_blockquote:
+                    line = re.sub(r"^> ?", OPENING_TAG.format("blockquote"), line)
+                    in_blockquote = True
+                    result.append(line.strip())
+                else:
+                    result.append(line[1:].lstrip())
+            else:
+                if in_blockquote:
+                    result[-1] = result[-1] + CLOSING_TAG.format("blockquote")
+                    in_blockquote = False
+                result.append(line)
+        if in_blockquote and result:
+            result[-1] = result[-1] + CLOSING_TAG.format("blockquote")
+        return "\n".join(result)
+
+    @staticmethod
     def escape_and_create_quotes(text: str, strict: bool):
         text_lines: list[Union[str, None]] = text.splitlines()
         html_escaped_list: list[int] = []

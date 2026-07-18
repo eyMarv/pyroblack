@@ -87,7 +87,8 @@ class Dialog(Object):
         message_auto_delete_time: int,
         view_as_topics: bool,
         draft: "types.DraftMessage" = None,
-        _raw: "raw.types.Dialog" = None
+        _raw: "raw.types.Dialog" = None,
+        **kwargs
     ):
         super().__init__(client)
 
@@ -104,6 +105,10 @@ class Dialog(Object):
         self.view_as_topics = view_as_topics
         self.draft = draft
         self._raw = _raw
+        # pyroblack <= 2.7.2 aliases
+        self.raw = _raw
+        self.folder_id = chat_list
+        self.ttl_period = message_auto_delete_time
 
     @staticmethod
     def _parse(client, dialog: "raw.types.Dialog", messages, users, chats) -> "Dialog":

@@ -114,6 +114,7 @@ class Poll(Object, Update):
         close_date: Optional[datetime] = None,
         has_open_answers: Optional[bool] = None,
         description: Optional["types.FormattedText"] = None,
+        **kwargs
     ):
         super().__init__(client)
 
@@ -133,6 +134,15 @@ class Poll(Object, Update):
         self.close_date = close_date
         self.has_open_answers = has_open_answers
         self.description = description
+        # pyroblack <= 2.7.2
+        self.correct_option_id = (
+            correct_option_ids[0]
+            if correct_option_ids
+            else None
+        )
+        # question/explanation may be FormattedText or str
+        self.question_entities = getattr(question, "entities", None)
+        self.explanation_entities = getattr(explanation, "entities", None)
 
     @staticmethod
     async def _parse(

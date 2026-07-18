@@ -20,6 +20,8 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from typing import Optional, Union
+
 import pyrogram
 from pyrogram import raw, types
 
@@ -27,45 +29,71 @@ from pyrogram import raw, types
 class GetPaymentForm:
     async def get_payment_form(
         self: "pyrogram.Client",
-        input_invoice: "types.InputInvoice"
+        input_invoice: "types.InputInvoice" = None,
+        chat_id: Union[int, str] = None,
+        message_id: Union[int, str] = None,
+        invoice_link: str = None,
+        **kwargs
     ) -> "types.PaymentForm":
         """Get an invoice payment form.
 
-        This method must be called when the user presses inline button of the type InlineKeyboardButton with buy parameter,
-        or wants to buy access to media in a paid media message.
+        Supports both modern ``input_invoice`` and pyroblack <= 2.7.2
+        ``chat_id`` + ``message_id`` (or invoice link) call styles.
 
         .. include:: /_includes/usable-by/users.rst
 
         Parameters:
-            input_invoice (:obj:`~pyrogram.types.InputInvoice`):
-                The invoice.
+            input_invoice (:obj:`~pyrogram.types.InputInvoice`, *optional*):
+                The invoice (modern API).
+
+            chat_id (``int`` | ``str``, *optional*):
+                Target chat (pyroblack <= 2.7.2 / positional style).
+
+            message_id (``int`` | ``str``, *optional*):
+                Message id with the invoice, or a ``t.me/$...`` link / slug
+                (pyroblack <= 2.7.2 style).
+
+            invoice_link (``str``, *optional*):
+                Invoice link or slug.
 
         Returns:
             :obj:`~pyrogram.types.PaymentForm`: On success, a payment form is returned.
-
-        Example:
-            .. code-block:: python
-
-                # Get payment form from message
-                await app.get_payment_form(
-                    types.InputInvoiceMessage(
-                        chat_id=chat_id,
-                        message_id=123
-                    )
-                )
-
-                # Get payment form from link
-                await app.get_payment_form(
-                    types.InputInvoiceName(
-                        name="https://t.me/$xvbzUtt5sUlJCAAATqZrWRy9Yzk"
-                    )
-                )
         """
-        r = await self.invoke(
-            raw.functions.payments.GetPaymentForm(
-                invoice=await input_invoice.write(self)
+        # Positional legacy: get_payment_form(chat_id, message_id)
+        # First param may be chat_id (int/str) rather than InputInvoice.
+        if input_invoice is not None and not hasattr(input_invoice, "write"):
+            # get_payment_form(chat_id, message_id) binds as input_invoice=chat_id, chat_id=message_id
+            if message_id is None and chat_id is not None:
+                message_id = chat_id
+                chat_id = input_invoice
+            elif chat_id is None:
+                chat_id = input_invoice
+            input_invoice = None
+
+        invoice = None
+
+        if input_invoice is not None:
+            invoice = await input_invoice.write(self)
+        elif message_id is not None and isinstance(message_id, int) and chat_id is not None:
+            invoice = raw.types.InputInvoiceMessage(
+                peer=await self.resolve_peer(chat_id),
+                msg_id=message_id
             )
+        elif message_id is not None and isinstance(message_id, str):
+            match = self.INVOICE_LINK_RE.match(message_id)
+            slug = match.group(1) if match else message_id
+            invoice = raw.types.InputInvoiceSlug(slug=slug)
+        elif invoice_link is not None:
+            match = self.INVOICE_LINK_RE.match(invoice_link)
+            slug = match.group(1) if match else invoice_link
+            invoice = raw.types.InputInvoiceSlug(slug=slug)
+        else:
+            raise ValueError(
+                "Provide input_invoice, or chat_id+message_id, or invoice_link / message_id link."
+            )
+
+        r = await self.invoke(
+            raw.functions.payments.GetPaymentForm(invoice=invoice)
         )
 
         return types.PaymentForm._parse(self, r)
-

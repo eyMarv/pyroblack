@@ -95,6 +95,16 @@ class User(Object, Update):
         is_deleted(``bool``, *optional*):
             True, if this user is deleted.
 
+        is_frozen (``bool``, *optional*):
+            True, if this user account is frozen.
+            Present for pyroblack <= 2.7.2 compatibility (derived from frozen_icon / bot_verification_icon).
+
+        is_contacts_only (``bool``, *optional*):
+            True, if this user only accepts messages from contacts (alias of *restricts_new_chats*; pyroblack <= 2.7.2).
+
+        is_bot_business (``bool``, *optional*):
+            True, if this bot can be connected to a business account (pyroblack <= 2.7.2).
+
         is_verified (``bool``, *optional*):
             True, if this user has been verified by Telegram.
 
@@ -141,6 +151,9 @@ class User(Object, Update):
         active_usernames (List of :obj:`~pyrogram.types.Username`, *optional*):
             If non-empty, the list of all `active chat usernames <https://telegram.org/blog/topics-in-groups-collectible-usernames#collectible-usernames>`_; for private chats, supergroups and channels.
 
+        usernames (List of :obj:`~pyrogram.types.Username`, *optional*):
+            Alias of *active_usernames* for pyroblack <= 2.7.2.
+
         restrictions (List of :obj:`~pyrogram.types.Restriction`, *optional*):
             The list of reasons why this bot might be unavailable to some users.
             This field is available only in case *is_restricted* is True.
@@ -181,6 +194,9 @@ class User(Object, Update):
         accent_color (:obj:`~pyrogram.types.ChatColor`, *optional*):
             Chat accent color.
 
+        reply_color (:obj:`~pyrogram.types.ChatColor`, *optional*):
+            Alias of *accent_color* for pyroblack <= 2.7.2.
+
         profile_color (:obj:`~pyrogram.types.ChatColor`, *optional*):
             Chat profile color.
         
@@ -192,6 +208,9 @@ class User(Object, Update):
 
         active_user_count (``int``, *optional*):
             The number of recently active users of the bot.
+
+        active_users_count (``int``, *optional*):
+            Alias of *active_user_count* for pyroblack <= 2.7.2.
         
         paid_message_star_count (``int``, *optional*):
             Number of Telegram Stars that must be paid by general user for each sent message to the user. If positive and userFullInfo is unknown, use ``canSendMessageToUser`` to check whether the current user must pay.
@@ -204,6 +223,10 @@ class User(Object, Update):
 
         can_manage_bots (``bool``, *optional*):
             True, if other bots can be created to be controlled by the bot. Returned only in get_me.
+
+        frozen_icon (``int``, *optional*):
+            Frozen account icon (custom emoji id).
+            Available only when *is_frozen* is True (pyroblack <= 2.7.2 field).
 
         mention (``str``, *property*):
             Generate a text mention for this user.
@@ -225,6 +248,9 @@ class User(Object, Update):
         is_contact: bool = None,
         is_mutual_contact: bool = None,
         is_deleted: bool = None,
+        is_frozen: bool = None,
+        is_contacts_only: bool = None,
+        is_bot_business: bool = None,
         is_bot: bool = None,
         is_verified: bool = None,
         is_restricted: bool = None,
@@ -244,6 +270,7 @@ class User(Object, Update):
         phone_number: str = None,
         photo: "types.ChatPhoto" = None,
         active_usernames: list["types.Username"] = None,
+        usernames: list["types.Username"] = None,
         restrictions: list["types.Restriction"] = None,
         added_to_attachment_menu: bool = None,
         can_be_added_to_attachment_menu: bool = None,
@@ -257,15 +284,19 @@ class User(Object, Update):
         inline_query_placeholder: str = None,
         is_close_friend: bool = None,
         accent_color: "types.ChatColor" = None,
+        reply_color: "types.ChatColor" = None,
         profile_color: "types.ChatColor" = None,
         have_access: bool = None,
         has_main_web_app: bool = None,
         active_user_count: int = None,
+        active_users_count: int = None,
         paid_message_star_count: int = None,
         has_topics_enabled: bool = None,
         allows_users_to_create_topics: bool = None,
         can_manage_bots: bool = None,
-        _raw: "raw.base.User" = None
+        frozen_icon: int = None,
+        _raw: "raw.base.User" = None,
+        raw: "raw.base.User" = None,
     ):
         super().__init__(client)
 
@@ -274,6 +305,7 @@ class User(Object, Update):
         self.is_contact = is_contact
         self.is_mutual_contact = is_mutual_contact
         self.is_deleted = is_deleted
+        self.is_frozen = is_frozen if is_frozen is not None else False
         self.is_bot = is_bot
         self.is_verified = is_verified
         self.is_restricted = is_restricted
@@ -299,29 +331,55 @@ class User(Object, Update):
         self.can_read_all_group_messages = can_read_all_group_messages
         self.supports_inline_queries = supports_inline_queries
         self.restricts_new_chats = restricts_new_chats
+        # pyroblack <= 2.7.2: is_contacts_only
+        self.is_contacts_only = (
+            is_contacts_only if is_contacts_only is not None else restricts_new_chats
+        )
         self.inline_need_location = inline_need_location
         self.can_be_edited = can_be_edited
         self.can_connect_to_business = can_connect_to_business
+        # pyroblack <= 2.7.2: is_bot_business
+        self.is_bot_business = (
+            is_bot_business if is_bot_business is not None else can_connect_to_business
+        )
         self.inline_query_placeholder = inline_query_placeholder
         self.active_usernames = active_usernames
+        # Alias: old pyroblack used ``usernames``
+        self.usernames = usernames if usernames is not None else active_usernames
         self.is_close_friend = is_close_friend
         self.accent_color = accent_color
+        # Alias: old pyroblack used ``reply_color``
+        self.reply_color = reply_color if reply_color is not None else accent_color
         self.profile_color = profile_color
         self.have_access = have_access
         self.has_main_web_app = has_main_web_app
         self.active_user_count = active_user_count
+        # Alias: old pyroblack used ``active_users_count``
+        self.active_users_count = (
+            active_users_count if active_users_count is not None else active_user_count
+        )
         self.paid_message_star_count = paid_message_star_count
         self.has_topics_enabled = has_topics_enabled
         self.allows_users_to_create_topics = allows_users_to_create_topics
         self.can_manage_bots = can_manage_bots
-        self._raw = _raw
+        self.frozen_icon = frozen_icon
+        self._raw = _raw if _raw is not None else raw
+        # Alias: old pyroblack used ``raw`` instead of ``_raw``
+        self.raw = self._raw
 
     @property
     def mention(self):
+        # Works even when User is unbound (no client) — common after deserialize
+        # or when bots build synthetic User objects. AttributeError from a
+        # property is re-raised via Object.__getattr__ as "no attribute mention".
+        parse_mode = None
+        client = getattr(self, "_client", None)
+        if client is not None:
+            parse_mode = getattr(client, "parse_mode", None)
         return Link(
             f"tg://user?id={self.id}",
             self.first_name or "Deleted Account",
-            self._client.parse_mode
+            parse_mode
         )
 
     @property
@@ -345,6 +403,7 @@ class User(Object, Update):
             return User(
                 id=user.id,
                 client=client,
+                is_frozen=False,
                 _raw=user
             )
 
@@ -361,12 +420,21 @@ class User(Object, Update):
         ):
             _tmp_username = active_usernames[0].username
 
+        # pyroblack <= 2.7.2 / pyrofork: frozen accounts expose bot_verification_icon
+        frozen_icon = getattr(user, "bot_verification_icon", None)
+
+        accent = types.ChatColor._parse(user.color)
+        active_count = getattr(user, "bot_active_users", None)
+
         parsed_user = User(
             id=user.id,
             is_self=user.is_self,
             is_contact=user.contact,
             is_mutual_contact=user.mutual_contact,
             is_deleted=user.deleted,
+            is_frozen=True if frozen_icon else False,
+            is_contacts_only=user.contact_require_premium or None,
+            is_bot_business=user.bot_business or None,
             is_bot=user.bot,
             is_verified=user.verified,
             is_restricted=user.restricted,
@@ -383,16 +451,25 @@ class User(Object, Update):
             dc_id=getattr(user.photo, "dc_id", None),
             phone_number=user.phone,
             photo=types.ChatPhoto._parse(client, user.photo, user.id, user.access_hash),
-            restrictions=types.List([types.Restriction._parse(r) for r in user.restriction_reason]) or None,
+            restrictions=types.List(
+                [types.Restriction._parse(r) for r in user.restriction_reason or []]
+            )
+            or None,
             client=client,
             restricts_new_chats=user.contact_require_premium or None,
             active_usernames=active_usernames,
+            usernames=active_usernames,
             is_close_friend=user.close_friend or None,
-            accent_color=types.ChatColor._parse(user.color),
+            accent_color=accent,
+            reply_color=accent,
             profile_color=types.ChatColor._parse_profile_color(user.profile_color),
             have_access=not bool(user.min or None),  # apply_min_photo
             paid_message_star_count=user.send_paid_messages_stars,
-            _raw=user
+            frozen_icon=frozen_icon,
+            active_user_count=active_count,
+            active_users_count=active_count,
+            _raw=user,
+            raw=user,
         )
         if parsed_user.is_bot:
             parsed_user.added_to_attachment_menu = user.attach_menu_enabled or None
@@ -403,18 +480,14 @@ class User(Object, Update):
             parsed_user.supports_inline_queries = bool(parsed_user.inline_query_placeholder)
             parsed_user.inline_need_location = user.bot_inline_geo or None
             parsed_user.can_connect_to_business = user.bot_business or None
+            # Keep <=2.7.2 dual in sync after bot-only fields
+            parsed_user.is_bot_business = parsed_user.can_connect_to_business
             parsed_user.has_main_web_app = user.bot_has_main_app or None
-            parsed_user.active_user_count = user. bot_active_users or None
+            parsed_user.active_user_count = active_count
+            parsed_user.active_users_count = active_count
             parsed_user.has_topics_enabled = user.bot_forum_view or None
             parsed_user.allows_users_to_create_topics = user.bot_forum_can_manage_topics or None
             parsed_user.can_manage_bots = user.bot_can_manage_bots or None
-        # stories_hidden:flags2.3?true
-        # stories_unavailable:flags2.4?true 
-        # stories_max_id:flags2.5?RecentStory  
-        # access_hash:flags.0?long  
-        # bot_info_version:flags.14?int 
-        # bot_verification_icon:flags2.14?long 
-        if parsed_user.is_bot:  # TODO
             parsed_user.can_be_edited = user.bot_can_edit or None
         return parsed_user
 

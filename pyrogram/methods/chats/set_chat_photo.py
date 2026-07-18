@@ -38,6 +38,7 @@ class SetChatPhoto:
         photo: Union[str, "io.BytesIO"] = None,
         video: Union[str, "io.BytesIO"] = None,
         photo_frame_start_timestamp: float = None,
+        **kwargs
     ) -> Union["types.Message", bool]:
         """Set a new chat photo or video (H.264/MPEG-4 AVC video, max 5 seconds).
 

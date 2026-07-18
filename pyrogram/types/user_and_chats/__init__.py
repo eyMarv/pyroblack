@@ -65,6 +65,8 @@ from .restriction import Restriction
 from .user import User
 from .username import Username
 from .users_shared import UsersShared
+# pyroblack <= 2.7.2 name (was List[int] on Message.user_shared; type export for imports)
+UserShared = UsersShared
 from .video_chat_ended import VideoChatEnded
 from .video_chat_members_invited import VideoChatMembersInvited
 from .video_chat_participants_invited import VideoChatParticipantsInvited
@@ -129,6 +131,7 @@ __all__ = [
     "User",
     "Username",
     "UsersShared",
+    "UserShared",
     "VideoChatEnded",
     "VideoChatMembersInvited",
     "VideoChatParticipantsInvited",

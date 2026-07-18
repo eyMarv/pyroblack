@@ -1021,6 +1021,17 @@ class Client(Methods):
                         except Exception as e:
                             print(e)
 
+    @staticmethod
+    def is_excluded(exclude, module):
+        """Return True if *module* matches an exclude pattern (pyroblack <= 2.7.2)."""
+        for e in exclude or []:
+            # exclude entries may be (module, funcs) tuples or plain strings
+            if isinstance(e, (list, tuple)):
+                e = e[0]
+            if module == e or str(module).startswith(str(e) + "."):
+                return True
+        return False
+
     def load_plugins(self):
         if self.plugins:
             plugins = self.plugins.copy()
@@ -1044,6 +1055,13 @@ class Client(Methods):
             if not include:
                 for path in sorted(Path(root.replace(".", "/")).rglob("*.py")):
                     module_path = '.'.join(path.parent.parts + (path.stem,))
+                    if self.is_excluded(exclude, module_path):
+                        log.warning(
+                            '[%s] [LOAD] Ignoring namespace "%s"',
+                            self.name,
+                            module_path,
+                        )
+                        continue
                     module = import_module(module_path)
 
                     for name in vars(module).keys():

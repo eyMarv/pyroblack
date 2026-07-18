@@ -98,7 +98,8 @@ class ChatInviteLink(Object):
         pending_join_request_count: int = None,
         expired_member_count: int = None,
         subscription_period: int = None,
-        subscription_price: int = None
+        subscription_price: int = None,
+        **kwargs
     ):
         super().__init__()
 
@@ -117,6 +118,8 @@ class ChatInviteLink(Object):
         self.expired_member_count = expired_member_count
         self.subscription_period = subscription_period
         self.subscription_price = subscription_price
+        # pyroblack <= 2.7.2 name (raw field was subscription_expired)
+        self.subscription_expired = expired_member_count
 
     @staticmethod
     def _parse(

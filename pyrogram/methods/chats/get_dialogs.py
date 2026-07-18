@@ -36,6 +36,7 @@ class GetDialogs:
         chat_list: int = 0,
         offset_date: datetime = utils.zero_datetime(),
         offset_message_id: int = 0,
+        **kwargs
     ) -> Optional[AsyncGenerator["types.Dialog", None]]:
         """Get a user's dialogs sequentially.
 

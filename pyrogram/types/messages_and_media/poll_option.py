@@ -67,6 +67,7 @@ class PollOption(Object):
         added_by_user: "types.User" = None,
         added_by_chat: "types.Chat" = None,
         addition_date: datetime = None,
+        **kwargs
     ):
         super().__init__(client)
 
@@ -77,3 +78,27 @@ class PollOption(Object):
         self.added_by_user = added_by_user
         self.added_by_chat = added_by_chat
         self.addition_date = addition_date
+        # pyrogram.types.FormattedText may be str in older call sites
+        self.entities = getattr(text, "entities", None)
+
+    async def write(self, client, i):
+        """Serialize this option for MTProto (pyroblack <= 2.7.2)."""
+        if isinstance(self.text, str):
+            option, entities = (
+                await pyrogram.utils.parse_text_entities(
+                    client, self.text, None, self.entities
+                )
+            ).values()
+        else:
+            option = getattr(self.text, "text", self.text)
+            entities = getattr(self.text, "entities", None) or []
+            if entities and hasattr(entities[0], "write"):
+                entities = [await e.write() for e in entities]
+            else:
+                entities = entities or []
+        return pyrogram.raw.types.PollAnswer(
+            text=pyrogram.raw.types.TextWithEntities(
+                text=option, entities=entities or []
+            ),
+            option=self.data if self.data is not None else bytes([i]),
+        )

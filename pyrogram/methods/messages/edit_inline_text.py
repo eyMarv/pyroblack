@@ -39,7 +39,8 @@ class EditInlineText:
         entities: list["types.MessageEntity"] = None,
         link_preview_options: "types.LinkPreviewOptions" = None,
         reply_markup: "types.InlineKeyboardMarkup" = None,
-        disable_web_page_preview: bool = None
+        disable_web_page_preview: bool = None,
+        **kwargs
     ) -> bool:
         """Edit the text of inline messages.
 

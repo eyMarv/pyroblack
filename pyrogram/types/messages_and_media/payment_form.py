@@ -86,7 +86,8 @@ class PaymentForm(Object):
             # native_params
             # additional_params
             # saved_info
-            # saved_credentials
+            # saved_credentials,
+            **kwargs
     ):
         super().__init__(client)
 
@@ -101,6 +102,8 @@ class PaymentForm(Object):
         self.is_password_missing = is_password_missing
         self.native_provider = native_provider
         self._raw = _raw
+        # pyroblack <= 2.7.2 alias
+        self.raw = _raw
 
     @staticmethod
     def _parse(client, payment_form: "raw.base.payments.PaymentForm") -> "PaymentForm":

@@ -116,7 +116,8 @@ class Folder(Object):
         include_bots: Optional[bool] = None,
         include_groups: Optional[bool] = None,
         include_channels: Optional[bool] = None,
-        raw: Optional["raw.base.DialogFilter"] = None
+        raw: Optional["raw.base.DialogFilter"] = None,
+        **kwargs
     ):
         super().__init__(client)
 
@@ -139,6 +140,15 @@ class Folder(Object):
         self.include_groups = include_groups
         self.include_channels = include_channels
         self.raw = raw
+        # pyroblack <= 2.7.2 short filter flags / title
+        self.title = name
+        self.emoji = icon
+        self.contacts = include_contacts
+        self.non_contacts = include_non_contacts
+        self.bots = include_bots
+        self.groups = include_groups
+        self.channels = include_channels
+        self.has_my_invites = is_shareable
 
     @staticmethod
     async def _parse(client: "pyrogram.Client", folder: "raw.base.DialogFilter", users, chats) -> Optional["Folder"]:
@@ -204,6 +214,49 @@ class Folder(Object):
             True on success.
         """
         return await self._client.delete_folder(self.id)
+
+    async def update(
+        self,
+        included_chats: List[Union[int, str]] = None,
+        excluded_chats: List[Union[int, str]] = None,
+        pinned_chats: List[Union[int, str]] = None,
+        title: str = None,
+        contacts: bool = None,
+        non_contacts: bool = None,
+        groups: bool = None,
+        channels: bool = None,
+        bots: bool = None,
+        exclude_muted: bool = None,
+        exclude_read: bool = None,
+        exclude_archived: bool = None,
+        emoji: str = None,
+        color: "enums.FolderColor" = None,
+        **kwargs
+    ) -> bool:
+        """Alias of :meth:`edit` (pyroblack <= 2.7.2 name/params)."""
+        return await self.edit(
+            name=title if title is not None else kwargs.get("name"),
+            icon=emoji if emoji is not None else kwargs.get("icon"),
+            color=color,
+            pinned_chats=pinned_chats,
+            included_chats=included_chats,
+            excluded_chats=excluded_chats,
+            exclude_muted=exclude_muted,
+            exclude_read=exclude_read,
+            exclude_archived=exclude_archived,
+            include_contacts=contacts if contacts is not None else kwargs.get("include_contacts"),
+            include_non_contacts=non_contacts if non_contacts is not None else kwargs.get("include_non_contacts"),
+            include_bots=bots if bots is not None else kwargs.get("include_bots"),
+            include_groups=groups if groups is not None else kwargs.get("include_groups"),
+            include_channels=channels if channels is not None else kwargs.get("include_channels"),
+            parse_mode=kwargs.get("parse_mode"),
+            entities=kwargs.get("entities"),
+            animate_custom_emoji=kwargs.get("animate_custom_emoji"),
+        )
+
+    async def export_link(self):
+        """Alias of :meth:`create_invite_link` (pyroblack <= 2.7.2 name)."""
+        return await self.create_invite_link()
 
     async def edit(
         self,

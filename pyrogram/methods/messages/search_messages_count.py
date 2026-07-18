@@ -39,7 +39,8 @@ class SearchMessagesCount:
         max_date: datetime = utils.zero_datetime(),
         min_id: int = 0,
         max_id: int = 0,
-        saved_messages_topic_id: Optional[Union[int, str]] = None
+        saved_messages_topic_id: Optional[Union[int, str]] = None,
+        **kwargs
     ) -> int:
         """Get the count of messages resulting from a search inside a chat.
 

@@ -1201,6 +1201,24 @@ class thread(Filter, set):
         return message.message_thread_id and message.message_thread_id in self
 
 
+# noinspection PyPep8Naming
+class topic(Filter, set):
+    """Filter messages coming from one or more forum topics (pyroblack <= 2.7.2 name).
+
+    Same as :class:`~pyrogram.filters.thread`. Pass topic ids (use ``1`` for General).
+
+    Parameters:
+        topics (``int`` | ``list``):
+            One or more forum topic / message_thread ids.
+    """
+
+    def __init__(self, topics: Optional[Union[int, list[int]]] = None):
+        topics = [] if topics is None else topics if isinstance(topics, list) else [topics]
+        super().__init__(t for t in topics)
+
+    async def __call__(self, _, message: Message):
+        return bool(message.message_thread_id and message.message_thread_id in self)
+
 # region self_destruct_filter
 
 async def self_destruct_filter(_, __, m: Message):
@@ -1222,4 +1240,170 @@ self_destruct = create(self_destruct_filter)
 """Filter self destruct media messages."""
 
 
+# endregion
+
+
+# ---------------------------------------------------------------------------
+# pyroblack <= 2.7.2 filter aliases / restored filters
+# ---------------------------------------------------------------------------
+
+# region self_destruction (alias of self_destruct) — real def for AST/API parity
+async def self_destruction_filter(_, __, m: Message):
+    return bool(
+        m.media and
+        getattr(
+            getattr(
+                m,
+                m.media.value,
+                None
+            ),
+            "ttl_seconds",
+            None
+        )
+    )
+
+
+self_destruction = create(self_destruction_filter)
+"""Deprecated alias of :obj:`~pyrogram.filters.self_destruct` (pyroblack <= 2.7.2)."""
+# endregion
+
+
+# region video_chat_members_invited (alias)
+async def video_chat_members_invited_filter(_, __, m: Message) -> bool:
+    return bool(m.video_chat_members_invited or m.video_chat_participants_invited)
+
+
+video_chat_members_invited = create(video_chat_members_invited_filter)
+"""Filter messages for voice chat invited members (pyroblack <= 2.7.2 name)."""
+# endregion
+
+
+# region reaction / react filter
+async def reaction_filter(_, __, m: Message) -> bool:
+    # In <=2.7.2 reactions-only edits set edit_hide=True
+    return bool(getattr(m, "edit_hide", None) or m.reactions)
+
+
+react = create(reaction_filter)
+"""Filter reaction updates / reaction-only message edits (pyroblack <= 2.7.2)."""
+# endregion
+
+
+# region forum topic filters
+async def forum_topic_created_filter(_, __, m: Message) -> bool:
+    return bool(m.forum_topic_created)
+
+
+forum_topic_created = create(forum_topic_created_filter)
+"""Filter service messages for created forum topics."""
+
+
+async def forum_topic_closed_filter(_, __, m: Message) -> bool:
+    return bool(m.forum_topic_closed)
+
+
+forum_topic_closed = create(forum_topic_closed_filter)
+"""Filter service messages for closed forum topics."""
+
+
+async def forum_topic_reopened_filter(_, __, m: Message) -> bool:
+    return bool(m.forum_topic_reopened)
+
+
+forum_topic_reopened = create(forum_topic_reopened_filter)
+"""Filter service messages for reopened forum topics."""
+
+
+async def forum_topic_edited_filter(_, __, m: Message) -> bool:
+    return bool(m.forum_topic_edited)
+
+
+forum_topic_edited = create(forum_topic_edited_filter)
+"""Filter service messages for edited forum topics."""
+
+
+async def general_forum_topic_hidden_filter(_, __, m: Message) -> bool:
+    return bool(m.general_forum_topic_hidden or m.general_topic_hidden)
+
+
+general_forum_topic_hidden = create(general_forum_topic_hidden_filter)
+"""Filter service messages for hidden general forum topics."""
+
+
+async def general_forum_topic_unhidden_filter(_, __, m: Message) -> bool:
+    return bool(m.general_forum_topic_unhidden or m.general_topic_unhidden)
+
+
+general_forum_topic_unhidden = create(general_forum_topic_unhidden_filter)
+"""Filter service messages for unhidden general forum topics."""
+
+# <=2.7.2 short names + real function defs for AST/API parity
+async def general_topic_hidden_filter(_, __, m: Message) -> bool:
+    return bool(m.general_forum_topic_hidden or m.general_topic_hidden)
+
+
+async def general_topic_unhidden_filter(_, __, m: Message) -> bool:
+    return bool(m.general_forum_topic_unhidden or m.general_topic_unhidden)
+
+
+general_topic_hidden = create(general_topic_hidden_filter)
+general_topic_unhidden = create(general_topic_unhidden_filter)
+# endregion
+
+
+# region extra service-message filters used by old bots
+async def bot_allowed_filter(_, __, m: Message) -> bool:
+    return bool(m.bot_allowed or m.write_access_allowed)
+
+
+bot_allowed = create(bot_allowed_filter)
+"""Filter bot-allowed / write-access-allowed service messages."""
+
+
+async def write_access_allowed_filter(_, __, m: Message) -> bool:
+    return bool(m.write_access_allowed or m.bot_allowed)
+
+
+write_access_allowed = create(write_access_allowed_filter)
+"""Filter write-access-allowed service messages."""
+
+
+async def boosts_applied_filter(_, __, m: Message) -> bool:
+    return bool(m.boost_added or m.boosts_applied)
+
+
+boosts_applied = create(boosts_applied_filter)
+"""Filter chat-boost-applied service messages (pyroblack <= 2.7.2 name)."""
+
+
+async def giveaway_launched_filter(_, __, m: Message) -> bool:
+    return bool(m.giveaway_launched or m.giveaway_created)
+
+
+giveaway_launched = create(giveaway_launched_filter)
+"""Filter giveaway-launched service messages (pyroblack <= 2.7.2 name)."""
+
+
+async def requested_chats_filter(_, __, m: Message) -> bool:
+    return bool(m.requested_chats or m.chat_shared or m.users_shared or m.user_shared)
+
+
+requested_chats = create(requested_chats_filter)
+"""Filter requested chats / users shared service messages."""
+
+
+async def chat_ttl_period_filter(_, __, m: Message) -> bool:
+    return bool(m.chat_ttl_period or m.message_auto_delete_timer_changed)
+
+
+chat_ttl_period = create(chat_ttl_period_filter)
+"""Filter chat TTL / auto-delete timer changed service messages."""
+
+
+async def join_request_approved_filter(_, __, m: Message) -> bool:
+    return bool(m.join_request_approved or m.chat_joined_by_request)
+
+
+join_request_approved = create(join_request_approved_filter)
+"""Filter join-request-approved service messages."""
 # endregion

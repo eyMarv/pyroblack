@@ -38,6 +38,8 @@ class GetMessages:
         replies: int = 1,
         is_scheduled: bool = False,
         link: str = None,
+        reply_to_message_ids: Union[int, Iterable[int]] = None,
+        **kwargs
     ) -> Union[
         "types.Message",
         list["types.Message"],
@@ -50,7 +52,7 @@ class GetMessages:
         You must use exactly one of ``message_ids`` OR (``chat_id``, ``message_ids``) OR ``link``.
 
         Parameters:
-            chat_id (``int`` | ``str``, *optional*):
+            chat_id (``int`` | ``str``, *optional*, **kwargs):
                 Unique identifier (int) or username (str) of the target chat.
                 For your personal cloud (Saved Messages) you can simply use "me" or "self".
                 For a contact that exists in your Telegram address book you can use his phone number (str).
@@ -94,6 +96,9 @@ class GetMessages:
         Raises:
             ValueError: In case of invalid arguments.
         """
+        # pyroblack <= 2.7.2 alias
+        if reply_to_message_ids is not None and message_ids is None:
+            message_ids = reply_to_message_ids
 
         if message_ids:
             is_iterable = utils.is_list_like(message_ids)

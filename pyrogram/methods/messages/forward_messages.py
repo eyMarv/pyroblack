@@ -44,7 +44,8 @@ class ForwardMessages:
         video_start_timestamp: int = None,
         send_as: Union[int, str] = None,
         message_effect_id: int = None,
-        schedule_date: datetime = None
+        schedule_date: datetime = None,
+        **kwargs
     ) -> Union["types.Message", list["types.Message"]]:
         """Forward messages of any kind.
 

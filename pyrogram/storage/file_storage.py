@@ -52,3 +52,13 @@ class FileStorage(SQLiteStorage):
             is_telethon_string=is_telethon_string,
             in_memory=False,
         )
+
+    # Explicit wrappers so v2.7.2 call sites / AST see these on FileStorage
+    async def open(self):
+        return await super().open()
+
+    async def delete(self):
+        return await super().delete()
+
+    async def update(self):
+        return await super().update()

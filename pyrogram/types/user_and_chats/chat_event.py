@@ -257,6 +257,7 @@ class ChatEvent(Object):
 
         old_member_tag: str = None,
         new_member_tag: str = None,
+        **kwargs
     ):
         super().__init__()
 
@@ -334,6 +335,13 @@ class ChatEvent(Object):
 
         self.old_topic_info = old_topic_info
         self.new_topic_info = new_topic_info
+
+        # pyroblack <= 2.7.2 forum topic field names
+        # create → new_topic_info only; delete → old_topic_info only; edit → both
+        self.created_forum_topic = new_topic_info if old_topic_info is None else None
+        self.deleted_forum_topic = old_topic_info if new_topic_info is None else None
+        self.old_forum_topic = old_topic_info
+        self.new_forum_topic = new_topic_info
 
         self.old_member_tag = old_member_tag
         self.new_member_tag = new_member_tag

@@ -106,6 +106,7 @@ class ChatPermissions(Object):
         can_send_media_messages: bool = None,  # Audio files, documents, photos, videos, video notes and voice notes
         can_edit_tag: bool = None,
         can_react_to_messages: bool = None,
+        **kwargs
     ):
         super().__init__(None)
 
@@ -126,6 +127,26 @@ class ChatPermissions(Object):
         self.can_send_media_messages = can_send_media_messages
         self.can_edit_tag = can_edit_tag
         self.can_react_to_messages = can_react_to_messages
+
+        # pyroblack <= 2.7.2 short / granular names
+        self.can_send_docs = can_send_documents
+        self.can_send_roundvideos = can_send_video_notes
+        self.can_send_voices = can_send_voice_notes
+        self.can_send_plain = can_send_messages
+        # gifs/games/stickers/inline were separate flags; modern API collapses them
+        self.can_send_gifs = can_send_other_messages
+        self.can_send_games = can_send_other_messages
+        self.can_send_stickers = can_send_other_messages
+        self.can_send_inline = can_send_other_messages
+        # True when every known permission is unrestricted
+        perms = (
+            can_send_messages, can_send_audios, can_send_documents, can_send_photos,
+            can_send_videos, can_send_video_notes, can_send_voice_notes, can_send_polls,
+            can_send_other_messages, can_add_web_page_previews, can_change_info,
+            can_invite_users, can_pin_messages, can_manage_topics,
+        )
+        known = [p for p in perms if p is not None]
+        self.all_perms = all(known) if known else None
 
     @staticmethod
     def _parse(denied_permissions: "raw.base.ChatBannedRights") -> "ChatPermissions":

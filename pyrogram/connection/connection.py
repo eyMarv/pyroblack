@@ -51,6 +51,7 @@ class Connection:
         mode: int = 3,
         crypto_executor=None,
         loop: Optional[asyncio.AbstractEventLoop] = None,
+        **kwargs
     ):
         self.dc_id = dc_id
         self.test_mode = test_mode

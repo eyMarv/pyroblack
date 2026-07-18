@@ -148,8 +148,11 @@ class InlineQueryResultLocation(InlineQueryResult):
         self.heading = heading
         self.proximity_alert_radius = proximity_alert_radius
         self.thumbnail_url = thumbnail_url
+        self.thumb_url = thumbnail_url  # <=2.7.2
         self.thumbnail_width = thumbnail_width
+        self.thumb_width = thumbnail_width  # <=2.7.2
         self.thumbnail_height = thumbnail_height
+        self.thumb_height = thumbnail_height  # <=2.7.2
 
     async def write(self, client: "pyrogram.Client"):
         return raw.types.InputBotInlineResult(

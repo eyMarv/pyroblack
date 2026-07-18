@@ -48,6 +48,18 @@ PyromodConfig = SimpleNamespace(
 )
 
 
+async def run_sync(func, *args, **kwargs):
+    """Run a sync function in the default thread-pool executor.
+
+    Restored for pyroblack <= 2.7.2 bots that call ``pyrogram.utils.run_sync``.
+    Prefer ``Client.run_sync`` when a client instance is available.
+    """
+    loop = get_event_loop()
+    return await loop.run_in_executor(
+        None, functools.partial(func, *args, **kwargs)
+    )
+
+
 def get_event_loop() -> asyncio.AbstractEventLoop:
     try:
         loop = asyncio.get_event_loop()
@@ -436,7 +448,7 @@ async def parse_text_entities(
     }
 
 
-async def parse_deleted_messages(client, update, users, chats) -> list["types.Message"]:
+async def parse_deleted_messages(client, update, users, chats, **kwargs) -> list["types.Message"]:
     messages = update.messages
     channel_id = getattr(update, "channel_id", None)
     business_connection_id = getattr(update, "connection_id", None)
@@ -715,7 +727,8 @@ def get_first_url(
     message: Union[
         "raw.types.Message",
         "raw.types.DraftMessage"
-    ]
+    ],
+**kwargs
 ) -> str:
     text = message.message
     entities = message.entities

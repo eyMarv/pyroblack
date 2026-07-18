@@ -622,9 +622,88 @@ class Message(Object, Update):
         managed_bot_created: "types.ManagedBotCreated" = None,
         poll_option_added: "types.PollOptionAdded" = None,
         poll_option_deleted: "types.PollOptionDeleted" = None,
-        _raw = None
+        _raw = None,
+        # --- pyroblack <= 2.7.2 dual / legacy constructor kwargs ---
+        topic: int = None,
+        reply_to_chat_id: int = None,
+        reply_to_story_id: int = None,
+        reply_to_story_user_id: int = None,
+        reply_to_story_chat_id: int = None,
+        reply_to_top_message_id: int = None,
+        edit_hide: bool = None,
+        invert_media: bool = None,
+        giveaway_result=None,
+        boosts_applied: int = None,
+        video_processing_pending: bool = None,
+        alternative_videos=None,
+        web_page_preview=None,
+        chat_joined_by_request=None,
+        bot_allowed=None,
+        user_shared=None,
+        general_topic_hidden=None,
+        general_topic_unhidden=None,
+        giveaway_launched=None,
+        video_chat_members_invited=None,
+        payment_refunded=None,
+        requested_chats=None,
+        chat_ttl_period: int = None,
+        join_request_approved: bool = None,
+        raw=None,
+        **kwargs
     ):
         super().__init__(client)
+        # Accept legacy kwargs that map onto modern fields when provided
+        if invert_media is not None and show_caption_above_media is None:
+            show_caption_above_media = invert_media
+        if giveaway_launched is not None and giveaway_created is None:
+            giveaway_created = giveaway_launched
+        if giveaway_result is not None and giveaway_completed is None:
+            giveaway_completed = giveaway_result
+        if bot_allowed is not None and write_access_allowed is None:
+            write_access_allowed = bot_allowed
+        if payment_refunded is not None and refunded_payment is None:
+            refunded_payment = payment_refunded
+        if video_chat_members_invited is not None and video_chat_participants_invited is None:
+            video_chat_participants_invited = video_chat_members_invited
+        if general_topic_hidden is not None and general_forum_topic_hidden is None:
+            general_forum_topic_hidden = general_topic_hidden
+        if general_topic_unhidden is not None and general_forum_topic_unhidden is None:
+            general_forum_topic_unhidden = general_topic_unhidden
+        if raw is not None and _raw is None:
+            _raw = raw
+        if topic is not None and message_thread_id is None:
+            message_thread_id = topic
+        # stash explicit legacy kwargs for _install_legacy_attrs
+        if reply_to_chat_id is not None:
+            kwargs["reply_to_chat_id"] = reply_to_chat_id
+        if reply_to_story_id is not None:
+            kwargs["reply_to_story_id"] = reply_to_story_id
+        if reply_to_story_user_id is not None:
+            kwargs["reply_to_story_user_id"] = reply_to_story_user_id
+        if reply_to_story_chat_id is not None:
+            kwargs["reply_to_story_chat_id"] = reply_to_story_chat_id
+        if reply_to_top_message_id is not None:
+            kwargs["reply_to_top_message_id"] = reply_to_top_message_id
+        if edit_hide is not None:
+            kwargs["edit_hide"] = edit_hide
+        if boosts_applied is not None:
+            kwargs["boosts_applied"] = boosts_applied
+        if video_processing_pending is not None:
+            kwargs["video_processing_pending"] = video_processing_pending
+        if alternative_videos is not None:
+            kwargs["alternative_videos"] = alternative_videos
+        if web_page_preview is not None:
+            kwargs["web_page_preview"] = web_page_preview
+        if chat_joined_by_request is not None:
+            kwargs["chat_joined_by_request"] = chat_joined_by_request
+        if user_shared is not None:
+            kwargs["user_shared"] = user_shared
+        if requested_chats is not None:
+            kwargs["requested_chats"] = requested_chats
+        if chat_ttl_period is not None:
+            kwargs["chat_ttl_period"] = chat_ttl_period
+        if join_request_approved is not None:
+            kwargs["join_request_approved"] = join_request_approved
 
         self.id = id
         self.from_user = from_user
@@ -750,6 +829,173 @@ class Message(Object, Update):
         self.poll_option_added = poll_option_added
         self.poll_option_deleted = poll_option_deleted
         self._raw = _raw
+        # pyroblack <= 2.7.2 alias
+        self.raw = _raw
+
+        # Install dual attribute names used by pyroblack <= 2.7.2 bots
+        self._install_legacy_attrs()
+
+    def _install_legacy_attrs(self):
+        """Dual-set pyroblack <= 2.7.2 Message field names.
+
+        Modern 2.9 fields remain the source of truth; old names are mirrored so
+        bots written against 2.7.x keep working without AttributeError / wrong shapes.
+        """
+        # Same-shape renames (prefer dual type classes when they exist separately)
+        self.invert_media = self.show_caption_above_media
+        self.payment_refunded = self.refunded_payment
+
+        try:
+            from pyrogram import types as _types
+
+            # Video chat invite: dual type with same .users field
+            vcp = self.video_chat_participants_invited
+            if vcp is not None:
+                self.video_chat_members_invited = _types.VideoChatMembersInvited(
+                    users=getattr(vcp, "users", None) or []
+                )
+            else:
+                self.video_chat_members_invited = None
+
+            # General topic hidden/unhidden: empty marker objects
+            self.general_topic_hidden = (
+                _types.GeneralTopicHidden() if self.general_forum_topic_hidden else None
+            )
+            self.general_topic_unhidden = (
+                _types.GeneralTopicUnhidden() if self.general_forum_topic_unhidden else None
+            )
+
+            # Giveaway launched / result duals
+            gc = self.giveaway_created
+            if gc is not None:
+                # GiveawayLaunched(stars=...) if available, else mirror object
+                stars = getattr(gc, "prize_star_count", None) or getattr(gc, "stars", None)
+                try:
+                    self.giveaway_launched = _types.GiveawayLaunched(stars=stars)
+                except TypeError:
+                    self.giveaway_launched = gc
+            else:
+                self.giveaway_launched = None
+
+            # giveaway_result: completed service OR media winners
+            self.giveaway_result = self.giveaway_completed or self.giveaway_winners
+
+            # bot_allowed dual (WriteAccessAllowed -> BotAllowed field map)
+            waa = self.write_access_allowed
+            if waa is not None:
+                try:
+                    self.bot_allowed = _types.BotAllowed(
+                        from_request=getattr(waa, "from_request", None),
+                        attach_menu=getattr(waa, "from_attachment_menu", None),
+                        domain=None,
+                        app=None,
+                    )
+                except TypeError:
+                    self.bot_allowed = waa
+            else:
+                self.bot_allowed = None
+        except Exception:
+            self.video_chat_members_invited = self.video_chat_participants_invited
+            self.general_topic_hidden = self.general_forum_topic_hidden
+            self.general_topic_unhidden = self.general_forum_topic_unhidden
+            self.giveaway_launched = self.giveaway_created
+            self.giveaway_result = self.giveaway_completed or self.giveaway_winners
+            self.bot_allowed = self.write_access_allowed
+
+        # boosts_applied was a plain int in <=2.7.2
+        ba = self.boost_added
+        self.boosts_applied = getattr(ba, "boost_count", None) if ba is not None else None
+
+        # user_shared was List[int] user ids in <=2.7.2
+        us = self.users_shared
+        if us is not None and getattr(us, "users", None):
+            ids = []
+            for u in us.users:
+                ids.append(u.id if hasattr(u, "id") else u)
+            self.user_shared = ids
+        else:
+            self.user_shared = None
+
+        # chat_ttl_period was a plain int in <=2.7.2
+        mad = self.message_auto_delete_timer_changed
+        self.chat_ttl_period = (
+            getattr(mad, "message_auto_delete_time", None) if mad is not None else None
+        )
+
+        # Join-request approved service (bool + empty marker object)
+        try:
+            from pyrogram import enums as _enums
+            from pyrogram import types as _types
+            if self.chat_join_type == _enums.ChatJoinType.BY_REQUEST:
+                self.join_request_approved = True
+                self.chat_joined_by_request = _types.ChatJoinedByRequest()
+            else:
+                self.join_request_approved = None
+                self.chat_joined_by_request = None
+        except Exception:
+            self.join_request_approved = None
+            self.chat_joined_by_request = None
+
+        # requested_chats: single container used in <=2.7.2 for peer-share service msgs
+        try:
+            from pyrogram import types as _types
+            if self.chat_shared is not None:
+                self.requested_chats = _types.RequestedChats(
+                    button_id=getattr(self.chat_shared, "request_id", 0),
+                    chats=getattr(self.chat_shared, "chats", None) or [],
+                    client=self._client,
+                )
+            elif self.users_shared is not None:
+                # Users shared — expose as chats list of private chats when possible
+                chats = getattr(self.users_shared, "users", None) or []
+                self.requested_chats = _types.RequestedChats(
+                    button_id=getattr(self.users_shared, "request_id", 0),
+                    chats=chats,
+                    client=self._client,
+                )
+            else:
+                self.requested_chats = None
+        except Exception:
+            self.requested_chats = None
+
+        # web_page_preview wrapper around web_page
+        try:
+            from pyrogram import types as _types
+            if self.web_page is not None:
+                lpo = self.link_preview_options
+                self.web_page_preview = _types.WebPagePreview(
+                    webpage=self.web_page,
+                    invert_media=self.show_caption_above_media,
+                    force_large_media=getattr(lpo, "prefer_large_media", None) if lpo else None,
+                    force_small_media=getattr(lpo, "prefer_small_media", None) if lpo else None,
+                )
+            else:
+                self.web_page_preview = None
+        except Exception:
+            self.web_page_preview = None
+
+        # alternative_videos: mirror video.qualities (VideoQuality ~ AlternativeVideo shape)
+        if self.video is not None and getattr(self.video, "qualities", None):
+            self.alternative_videos = self.video.qualities
+        else:
+            self.alternative_videos = None
+
+        # reply-to id fields (set defaults only if parse has not already assigned)
+        if "reply_to_top_message_id" not in self.__dict__ or self.reply_to_top_message_id is None:
+            self.reply_to_top_message_id = self.message_thread_id
+        if "reply_to_chat_id" not in self.__dict__:
+            self.reply_to_chat_id = None
+        if "reply_to_story_id" not in self.__dict__:
+            story = self.reply_to_story
+            self.reply_to_story_id = getattr(story, "id", None) if story else None
+        if "reply_to_story_user_id" not in self.__dict__:
+            self.reply_to_story_user_id = None
+        if "reply_to_story_chat_id" not in self.__dict__:
+            self.reply_to_story_chat_id = None
+        if "edit_hide" not in self.__dict__:
+            self.edit_hide = None
+        if "video_processing_pending" not in self.__dict__:
+            self.video_processing_pending = None
 
     @staticmethod
     async def _parse(
@@ -1546,6 +1792,12 @@ class Message(Object, Update):
 
             parsed_message.is_from_offline = getattr(message, "offline", None)
 
+            # pyroblack <= 2.7.2 fields
+            parsed_message.edit_hide = getattr(message, "edit_hide", None)
+            parsed_message.video_processing_pending = getattr(
+                message, "video_processing_pending", None
+            )
+
             if (
                 forward_header and
                 forward_header.saved_from_peer and
@@ -1565,6 +1817,15 @@ class Message(Object, Update):
 
             if isinstance(message.reply_to, raw.types.MessageReplyStoryHeader):
                 parsed_message.reply_to_story = await types.Story._parse(client, users, chats, None, message.reply_to, None, None, None)
+                # pyroblack <= 2.7.2 story reply id fields
+                parsed_message.reply_to_story_id = getattr(message.reply_to, "story_id", None)
+                peer = getattr(message.reply_to, "peer", None)
+                if isinstance(peer, raw.types.PeerUser):
+                    parsed_message.reply_to_story_user_id = peer.user_id
+                elif isinstance(peer, raw.types.PeerChannel):
+                    parsed_message.reply_to_story_chat_id = utils.get_channel_id(peer.channel_id)
+                elif isinstance(peer, raw.types.PeerChat):
+                    parsed_message.reply_to_story_chat_id = -peer.chat_id
 
             if isinstance(message.reply_to, raw.types.MessageReplyHeader):
                 parsed_message.reply_to_checklist_task_id = message.reply_to.todo_item_id
@@ -1577,16 +1838,25 @@ class Message(Object, Update):
                 parsed_message.reply_to_poll_option_id = poll_option_id
                 parsed_message.reply_to_message_id = message.reply_to.reply_to_msg_id
                 parsed_message.message_thread_id = message.reply_to.reply_to_top_id
+                # pyroblack <= 2.7.2
+                parsed_message.reply_to_top_message_id = message.reply_to.reply_to_top_id
                 if message.reply_to.forum_topic:
                     parsed_message.is_topic_message = True
                     if not message.reply_to.reply_to_top_id:
                         parsed_message.message_thread_id = message.reply_to.reply_to_msg_id
+                        parsed_message.reply_to_top_message_id = message.reply_to.reply_to_msg_id
                 parsed_message.quote = types.TextQuote._parse(
                     client,
                     chats,
                     users,
                     message.reply_to
                 )
+                # Cross-chat replies
+                rtci = getattr(message.reply_to, "reply_to_peer_id", None)
+                if rtci is not None:
+                    reply_to_chat_id = utils.get_peer_id(rtci)
+                    if parsed_message.chat and parsed_message.chat.id != reply_to_chat_id:
+                        parsed_message.reply_to_chat_id = reply_to_chat_id
 
             if replies:
                 try:
@@ -1622,6 +1892,9 @@ class Message(Object, Update):
                 message,
                 users, chats
             )
+
+        # Re-sync pyroblack <= 2.7.2 dual attrs after parse mutations
+        parsed_message._install_legacy_attrs()
 
         if not parsed_message.poll:  # Do not cache poll messages
             client.message_cache[(parsed_message.chat.id, parsed_message.id)] = parsed_message
@@ -1722,7 +1995,8 @@ class Message(Object, Update):
         send_as: Union[int, str] = None,
         schedule_date: datetime = None,
         disable_web_page_preview: bool = None,
-        reply_to_message_id: int = None
+        reply_to_message_id: int = None,
+        **kwargs
     ) -> "Message":
         """Bound method *reply_text* of :obj:`~pyrogram.types.Message`.
 
@@ -1865,7 +2139,8 @@ class Message(Object, Update):
         send_as: Union[int, str] = None,
         reply_to_message_id: int = None,
         progress: Callable = None,
-        progress_args: tuple = ()
+        progress_args: tuple = (),
+        **kwargs
     ) -> "Message":
         """Bound method *reply_animation* :obj:`~pyrogram.types.Message`.
 
@@ -2067,7 +2342,8 @@ class Message(Object, Update):
         ] = None,
         reply_to_message_id: int = None,
         progress: Callable = None,
-        progress_args: tuple = ()
+        progress_args: tuple = (),
+        **kwargs
     ) -> "Message":
         """Bound method *reply_audio* of :obj:`~pyrogram.types.Message`.
 
@@ -2244,7 +2520,8 @@ class Message(Object, Update):
             "types.ReplyKeyboardRemove",
             "types.ForceReply"
         ] = None,
-        reply_to_message_id: int = None
+        reply_to_message_id: int = None,
+        **kwargs
     ) -> "Message":
         """Bound method *reply_cached_media* of :obj:`~pyrogram.types.Message`.
 
@@ -2357,7 +2634,8 @@ class Message(Object, Update):
         progress: int = 0,
         emoji: str = None,
         emoji_message_id: int = None,
-        emoji_message_interaction: "raw.types.DataJSON" = None
+        emoji_message_interaction: "raw.types.DataJSON" = None,
+        **kwargs
     ) -> bool:
         """Bound method *reply_chat_action* of :obj:`~pyrogram.types.Message`.
 
@@ -2434,7 +2712,8 @@ class Message(Object, Update):
             "types.ReplyKeyboardRemove",
             "types.ForceReply"
         ] = None,
-        reply_to_message_id: int = None
+        reply_to_message_id: int = None,
+        **kwargs
     ) -> "Message":
         """Bound method *reply_contact* of :obj:`~pyrogram.types.Message`.
 
@@ -2565,7 +2844,8 @@ class Message(Object, Update):
         reply_to_message_id: int = None,
         force_document: bool = None,
         progress: Callable = None,
-        progress_args: tuple = ()
+        progress_args: tuple = (),
+        **kwargs
     ) -> "Message":
         """Bound method *reply_document* of :obj:`~pyrogram.types.Message`.
 
@@ -2738,7 +3018,8 @@ class Message(Object, Update):
             "types.ReplyKeyboardRemove",
             "types.ForceReply"
         ] = None,
-        reply_to_message_id: int = None
+        reply_to_message_id: int = None,
+        **kwargs
     ) -> "Message":
         """Bound method *reply_game* of :obj:`~pyrogram.types.Message`.
 
@@ -2833,7 +3114,8 @@ class Message(Object, Update):
         disable_notification: bool = None,
         reply_parameters: "types.ReplyParameters" = None,
         send_as: Union[int, str] = None,
-        reply_to_message_id: int = None
+        reply_to_message_id: int = None,
+        **kwargs
     ) -> "Message":
         """Bound method *reply_inline_bot_result* of :obj:`~pyrogram.types.Message`.
 
@@ -2925,7 +3207,8 @@ class Message(Object, Update):
             "types.ReplyKeyboardRemove",
             "types.ForceReply"
         ] = None,
-        reply_to_message_id: int = None
+        reply_to_message_id: int = None,
+        **kwargs
     ) -> "Message":
         """Bound method *reply_location* of :obj:`~pyrogram.types.Message`.
 
@@ -3036,7 +3319,8 @@ class Message(Object, Update):
         schedule_date: datetime = None,
         protect_content: bool = None,
         allow_paid_broadcast: bool = None,
-        reply_to_message_id: int = None
+        reply_to_message_id: int = None,
+        **kwargs
     ) -> list["types.Message"]:
         """Bound method *reply_media_group* of :obj:`~pyrogram.types.Message`.
 
@@ -3148,7 +3432,8 @@ class Message(Object, Update):
         ] = None,
         reply_to_message_id: int = None,
         progress: Callable = None,
-        progress_args: tuple = ()
+        progress_args: tuple = (),
+        **kwargs
     ) -> "Message":
         """Bound method *reply_photo* of :obj:`~pyrogram.types.Message`.
 
@@ -3346,7 +3631,8 @@ class Message(Object, Update):
             "types.ReplyKeyboardRemove",
             "types.ForceReply"
         ] = None,
-        reply_to_message_id: int = None
+        reply_to_message_id: int = None,
+        **kwargs
     ) -> "Message":
         """Bound method *reply_poll* of :obj:`~pyrogram.types.Message`.
 
@@ -3564,7 +3850,8 @@ class Message(Object, Update):
         schedule_date: datetime = None,
         reply_to_message_id: int = None,
         progress: Callable = None,
-        progress_args: tuple = ()
+        progress_args: tuple = (),
+        **kwargs
     ) -> "Message":
         """Bound method *reply_sticker* of :obj:`~pyrogram.types.Message`.
 
@@ -3724,7 +4011,8 @@ class Message(Object, Update):
             "types.ReplyKeyboardRemove",
             "types.ForceReply"
         ] = None,
-        reply_to_message_id: int = None
+        reply_to_message_id: int = None,
+        **kwargs
     ) -> "Message":
         """Bound method *reply_venue* of :obj:`~pyrogram.types.Message`.
 
@@ -3874,7 +4162,8 @@ class Message(Object, Update):
         schedule_date: datetime = None,
         reply_to_message_id: int = None,
         progress: Callable = None,
-        progress_args: tuple = ()
+        progress_args: tuple = (),
+        **kwargs
     ) -> "Message":
         """Bound method *reply_video* of :obj:`~pyrogram.types.Message`.
 
@@ -4092,7 +4381,8 @@ class Message(Object, Update):
         view_once: bool = None,
         reply_to_message_id: int = None,
         progress: Callable = None,
-        progress_args: tuple = ()
+        progress_args: tuple = (),
+        **kwargs
     ) -> "Message":
         """Bound method *reply_video_note* of :obj:`~pyrogram.types.Message`.
 
@@ -4275,7 +4565,8 @@ class Message(Object, Update):
         waveform: bytes = None,
         reply_to_message_id: int = None,
         progress: Callable = None,
-        progress_args: tuple = ()
+        progress_args: tuple = (),
+        **kwargs
     ) -> "Message":
         """Bound method *reply_voice* of :obj:`~pyrogram.types.Message`.
 
@@ -4638,7 +4929,8 @@ class Message(Object, Update):
         entities: list["types.MessageEntity"] = None,
         link_preview_options: "types.LinkPreviewOptions" = None,
         reply_markup: "types.InlineKeyboardMarkup" = None,
-        disable_web_page_preview: bool = None
+        disable_web_page_preview: bool = None,
+        **kwargs
     ) -> "Message":
         """Bound method *edit_text* of :obj:`~pyrogram.types.Message`.
 
@@ -4703,7 +4995,8 @@ class Message(Object, Update):
         caption: str,
         parse_mode: Optional["enums.ParseMode"] = None,
         caption_entities: list["types.MessageEntity"] = None,
-        reply_markup: "types.InlineKeyboardMarkup" = None
+        reply_markup: "types.InlineKeyboardMarkup" = None,
+        **kwargs
     ) -> "Message":
         """Bound method *edit_caption* of :obj:`~pyrogram.types.Message`.
 
@@ -4757,6 +5050,7 @@ class Message(Object, Update):
         self,
         media: "types.InputMedia",
         reply_markup: "types.InlineKeyboardMarkup" = None,
+        **kwargs
     ) -> "Message":
         """Bound method *edit_media* of :obj:`~pyrogram.types.Message`.
 
@@ -4798,7 +5092,7 @@ class Message(Object, Update):
             business_connection_id=self.business_connection_id
         )
 
-    async def edit_reply_markup(self, reply_markup: "types.InlineKeyboardMarkup" = None) -> "Message":
+    async def edit_reply_markup(self, reply_markup: "types.InlineKeyboardMarkup" = None, **kwargs) -> "Message":
         """Bound method *edit_reply_markup* of :obj:`~pyrogram.types.Message`.
 
         Use as a shortcut for:
@@ -4910,7 +5204,8 @@ class Message(Object, Update):
         video_start_timestamp: int = None,
         send_as: Union[int, str] = None,
         message_effect_id: int = None,
-        schedule_date: datetime = None
+        schedule_date: datetime = None,
+        **kwargs
     ) -> Union["types.Message", list["types.Message"]]:
         """Bound method *forward* of :obj:`~pyrogram.types.Message`.
 
@@ -5021,7 +5316,8 @@ class Message(Object, Update):
         allow_paid_broadcast: bool = None,
         paid_message_star_count: int = None,
         message_thread_id: int = None,
-        reply_to_message_id: int = None
+        reply_to_message_id: int = None,
+        **kwargs
     ) -> Union["types.Message", list["types.Message"]]:
         """Bound method *copy* of :obj:`~pyrogram.types.Message`.
 
@@ -5597,7 +5893,8 @@ class Message(Object, Update):
             list[Union[int, str, "types.ReactionType"]]
         ] = None,
         is_big: bool = False,
-        add_to_recent: bool = True
+        add_to_recent: bool = True,
+        **kwargs
     ) -> "types.MessageReactions":
         """Bound method *react* of :obj:`~pyrogram.types.Message`.
 

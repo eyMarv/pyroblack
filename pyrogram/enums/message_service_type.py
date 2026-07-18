@@ -67,8 +67,16 @@ class MessageServiceType(AutoName):
     GIVEAWAY_CREATED = auto()
     "Giveaway Created"
 
+    # Alias for pyroblack <= 2.7.2
+    GIVEAWAY_LAUNCHED = GIVEAWAY_CREATED
+    "Deprecated alias of GIVEAWAY_CREATED"
+
     GIVEAWAY_COMPLETED = auto()
     "Giveaway Completed"
+
+    # Alias for pyroblack <= 2.7.2
+    GIVEAWAY_RESULT = GIVEAWAY_COMPLETED
+    "Deprecated alias of GIVEAWAY_COMPLETED"
 
     GIFT_CODE = auto()
     "Gift code"
@@ -114,23 +122,16 @@ class MessageServiceType(AutoName):
     BOOST_APPLY = CHAT_BOOST_ADDED
     "Deprecated alias of CHAT_BOOST_ADDED"
 
-    GIVEAWAY_LAUNCHED = auto()
-    "Giveaway launched (compat)"
-
-    GIVEAWAY_RESULT = auto()
-    "Giveaway result service message (compat)"
-
+    # REQUESTED_CHAT covers both user and chat share flows in <=2.7.2
     REQUESTED_CHAT = auto()
-    "Requested chat (compat)"
+    "Requested chat (compat; also see USERS_SHARED / CHAT_SHARED)"
 
     CHAT_TTL_CHANGED = MESSAGE_AUTO_DELETE_TIMER_CHANGED
     "Deprecated alias of MESSAGE_AUTO_DELETE_TIMER_CHANGED"
 
+    # Maps onto NEW_CHAT_MEMBERS + chat_join_type=BY_REQUEST in modern API
     JOIN_REQUEST_APPROVED = auto()
     "Join request approved (compat)"
-
-    BOT_ALLOWED = auto()
-    "Bot allowed (compat)"
 
     CUSTOM_ACTION = auto()
     "Custom action"
@@ -181,6 +182,10 @@ class MessageServiceType(AutoName):
 
     WRITE_ACCESS_ALLOWED = auto()
     "The user accepted webapp bot's request to send messages"
+
+    # Alias for pyroblack <= 2.7.2
+    BOT_ALLOWED = WRITE_ACCESS_ALLOWED
+    "Deprecated alias of WRITE_ACCESS_ALLOWED"
 
     PAID_MESSAGE_PRICE_CHANGED = auto()
     "The price for paid messages has changed in the chat"

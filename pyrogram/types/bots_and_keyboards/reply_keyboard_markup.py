@@ -92,6 +92,8 @@ class ReplyKeyboardMarkup(Object):
         self.one_time_keyboard = one_time_keyboard
         self.input_field_placeholder = input_field_placeholder
         self.selective = selective
+        # pyroblack <= 2.7.2 name
+        self.placeholder = input_field_placeholder
 
     @staticmethod
     def read(kb: "raw.base.ReplyMarkup"):

@@ -148,7 +148,9 @@ class InlineQueryResultAnimation(InlineQueryResult):
         self.animation_height = animation_height
         self.animation_duration = animation_duration
         self.thumbnail_url = thumbnail_url
+        self.thumb_url = thumbnail_url  # <=2.7.2
         self.thumbnail_mime_type = thumbnail_mime_type
+        self.thumb_mime_type = thumbnail_mime_type  # <=2.7.2
         self.title = title
         self.description = description
         self.caption = caption

@@ -48,3 +48,10 @@ class MemoryStorage(SQLiteStorage):
             is_telethon_string=is_telethon_string,
             in_memory=True,
         )
+
+    # Explicit wrappers for pyroblack <= 2.7.2
+    async def open(self):
+        return await super().open()
+
+    async def delete(self):
+        return await super().delete()

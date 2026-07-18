@@ -42,7 +42,8 @@ async def get_chunk(
     offset_id: int = 0,
     from_date: datetime = utils.zero_datetime(),
     reverse: bool = False,
-    is_scheduled: bool = False
+    is_scheduled: bool = False,
+**kwargs
 ) -> list[types.Message]:
     if is_scheduled:
         r = await client.invoke(

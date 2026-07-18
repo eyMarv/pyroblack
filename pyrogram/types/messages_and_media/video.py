@@ -99,7 +99,8 @@ class Video(Object):
         thumbs: list["types.Thumbnail"] = None,
         cover: Optional["types.Photo"] = None,
         start_timestamp: Optional[int] = None,
-        qualities: list["types.VideoQuality"] = None
+        qualities: list["types.VideoQuality"] = None,
+        **kwargs
     ):
         super().__init__(client)
 
@@ -118,6 +119,8 @@ class Video(Object):
         self.cover = cover
         self.start_timestamp = start_timestamp
         self.qualities = qualities
+        # pyroblack <= 2.7.2 (codec rarely set at Video level; kept for attr access)
+        self.codec = None
 
     @staticmethod
     def _parse(

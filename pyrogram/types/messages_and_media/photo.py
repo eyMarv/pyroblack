@@ -58,7 +58,8 @@ class Photo(Object):
         date: datetime,
         ttl_seconds: int = None,
         has_spoiler: bool = None,
-        thumbs: list["types.Thumbnail"] = None
+        thumbs: list["types.Thumbnail"] = None,
+        **kwargs
     ):
         super().__init__(client)
 

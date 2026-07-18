@@ -41,7 +41,8 @@ class EditMessageMedia:
         media: "types.InputMedia",
         reply_markup: "types.InlineKeyboardMarkup" = None,
         schedule_date: datetime = None,
-        business_connection_id: str = None
+        business_connection_id: str = None,
+        **kwargs
     ) -> "types.Message":
         """Edit animation, audio, document, photo or video messages, or to add media to text messages.
 

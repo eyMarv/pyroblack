@@ -130,6 +130,7 @@ class InlineQueryResultVideo(InlineQueryResult):
 
         self.video_url = video_url
         self.thumbnail_url = thumbnail_url
+        self.thumb_url = thumbnail_url  # <=2.7.2
         self.title = title
         self.video_width = video_width
         self.video_height = video_height

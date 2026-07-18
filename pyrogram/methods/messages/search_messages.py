@@ -43,7 +43,8 @@ async def get_chunk(
     max_date: datetime = utils.zero_datetime(),
     min_id: int = 0,
     max_id: int = 0,
-    saved_messages_topic_id: Optional[Union[int, str]] = None
+    saved_messages_topic_id: Optional[Union[int, str]] = None,
+**kwargs
 ) -> list["types.Message"]:
     r = await client.invoke(
         raw.functions.messages.Search(
@@ -89,7 +90,8 @@ class SearchMessages:
         max_date: datetime = utils.zero_datetime(),
         min_id: int = 0,
         max_id: int = 0,
-        saved_messages_topic_id: Optional[Union[int, str]] = None
+        saved_messages_topic_id: Optional[Union[int, str]] = None,
+        **kwargs
     ) -> Optional[AsyncGenerator["types.Message", None]]:
         """Search for text and media messages inside a specific chat.
 

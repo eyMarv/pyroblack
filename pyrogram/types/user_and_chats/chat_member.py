@@ -99,7 +99,8 @@ class ChatMember(Object):
         is_member: bool = None,
         can_be_edited: bool = None,
         permissions: "types.ChatPermissions" = None,
-        privileges: "types.ChatPrivileges" = None
+        privileges: "types.ChatPrivileges" = None,
+        **kwargs
     ):
         super().__init__(client)
 
@@ -117,6 +118,8 @@ class ChatMember(Object):
         self.can_be_edited = can_be_edited
         self.permissions = permissions
         self.privileges = privileges
+        # pyroblack <= 2.7.2: subscription_until_date (now folded into until_date for members)
+        self.subscription_until_date = until_date
 
     @staticmethod
     def _parse(

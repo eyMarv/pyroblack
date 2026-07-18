@@ -91,7 +91,8 @@ class InlineQueryResultAudio(InlineQueryResult):
         input_message_content: "types.InputMessageContent" = None,
         thumbnail_url: str = None,
         thumbnail_width: int = 0,
-        thumbnail_height: int = 0
+        thumbnail_height: int = 0,
+        **kwargs
     ):
         super().__init__("audio", id, input_message_content, reply_markup)
 
@@ -103,8 +104,11 @@ class InlineQueryResultAudio(InlineQueryResult):
         self.parse_mode = parse_mode
         self.caption_entities = caption_entities
         self.thumbnail_url = thumbnail_url
+        self.thumb_url = thumbnail_url  # <=2.7.2
         self.thumbnail_width = thumbnail_width
+        self.thumb_width = thumbnail_width  # <=2.7.2
         self.thumbnail_height = thumbnail_height
+        self.thumb_height = thumbnail_height  # <=2.7.2
 
     async def write(self, client: "pyrogram.Client"):
         audio = raw.types.InputWebDocument(

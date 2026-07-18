@@ -74,7 +74,8 @@ class Giveaway(Object):
         prize_description: str = None,
         country_codes: list[str] = None,
         prize_star_count: int = None,
-        premium_subscription_month_count: int = None
+        premium_subscription_month_count: int = None,
+        **kwargs
     ):
         super().__init__(client)
 
@@ -87,6 +88,17 @@ class Giveaway(Object):
         self.country_codes = country_codes
         self.prize_star_count = prize_star_count
         self.premium_subscription_month_count = premium_subscription_month_count
+        # pyroblack <= 2.7.2 field names
+        self.quantity = winner_count
+        self.expire_date = winners_selection_date
+        self.new_subscribers = only_new_members
+        self.is_winners_hidden = (
+            (not has_public_winners) if has_public_winners is not None else None
+        )
+        self.allowed_countries = country_codes
+        self.additional_price = prize_description
+        self.stars = prize_star_count
+        self.months = premium_subscription_month_count
 
 
     @staticmethod

@@ -40,10 +40,13 @@ class MessageReactions(Object):
         *,
         client: "pyrogram.Client" = None,
         reactions: Optional[list["types.Reaction"]] = None,
+        top_reactors: Optional[list] = None,
     ):
         super().__init__(client)
 
         self.reactions = reactions
+        # pyroblack <= 2.7.2
+        self.top_reactors = top_reactors
 
     @staticmethod
     def _parse(
@@ -56,10 +59,24 @@ class MessageReactions(Object):
         if not message_reactions:
             return None
 
+        top_reactors = None
+        raw_top = getattr(message_reactions, "top_reactors", None) or getattr(
+            message_reactions, "recent_reactions", None
+        )
+        if raw_top:
+            try:
+                top_reactors = types.List([
+                    types.MessageReactor._parse(client, r, users or {}, chats or {})
+                    for r in raw_top
+                ])
+            except Exception:
+                top_reactors = None
+
         return MessageReactions(
             client=client,
             reactions=[
                 types.Reaction._parse_count(client, reaction)
                 for reaction in message_reactions.results
-            ]
+            ],
+            top_reactors=top_reactors,
         )

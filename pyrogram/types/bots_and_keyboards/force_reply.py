@@ -71,6 +71,8 @@ class ForceReply(Object):
 
         self.selective = selective
         self.input_field_placeholder = input_field_placeholder
+        # pyroblack <= 2.7.2 name
+        self.placeholder = input_field_placeholder
 
     @staticmethod
     def read(b):

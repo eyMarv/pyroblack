@@ -40,13 +40,17 @@ class Username(Object):
         self, *,
         username: str,
         is_editable: bool = None,
-        is_active: bool = None
+        is_active: bool = None,
+        **kwargs
     ):
         super().__init__()
 
         self.username = username
         self.is_editable = is_editable
         self.is_active = is_active
+        # pyroblack <= 2.7.2 short names
+        self.editable = is_editable
+        self.active = is_active
 
     @staticmethod
     def _parse(username: "raw.types.Username") -> "Username":

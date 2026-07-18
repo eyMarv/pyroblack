@@ -60,7 +60,8 @@ class SendContact:
         quote_text: str = None,
         quote_entities: list = None,
         invert_media: bool = None,
-        reply_to_message_id: int = None
+        reply_to_message_id: int = None,
+        **kwargs
     ) -> "types.Message":
         """Send phone contacts.
 

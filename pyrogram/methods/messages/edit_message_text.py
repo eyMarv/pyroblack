@@ -44,7 +44,8 @@ class EditMessageText:
         reply_markup: "types.InlineKeyboardMarkup" = None,
         schedule_date: datetime = None,
         business_connection_id: str = None,
-        disable_web_page_preview: bool = None
+        disable_web_page_preview: bool = None,
+        **kwargs
     ) -> "types.Message":
         """Edit the text of messages.
 

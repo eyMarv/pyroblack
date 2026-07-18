@@ -33,6 +33,7 @@ class TranslateText:
         chat_id: Union[int, str],
         message_ids: Union[int, list[int]],
         tone: str = "",
+        **kwargs
     ) -> Union["types.FormattedText", list["types.FormattedText"]]:
         """Extracts text or caption of the given message and translates it to the given language. If the current user is a Telegram Premium user, then text formatting is preserved.
 

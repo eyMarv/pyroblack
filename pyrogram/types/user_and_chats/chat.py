@@ -349,7 +349,8 @@ class Chat(Object):
             "raw.types.User",
             "raw.types.messages.ChatFull",
             "raw.types.users.UserFull"
-        ] = None
+        ] = None,
+        **kwargs
     ):
         super().__init__(client)
 
@@ -424,6 +425,38 @@ class Chat(Object):
         self.note = note
         self.uses_unofficial_app = uses_unofficial_app
         self._raw = _raw
+
+        # --- pyroblack <= 2.7.2 aliases ---
+        self.raw = _raw
+        self.usernames = active_usernames
+        self.reply_color = accent_color
+        # has_hidden_members is inverted participants_hidden in full-chat parse
+        self.is_participants_hidden = (
+            (not has_hidden_members) if has_hidden_members is not None else None
+        )
+        self.is_members_hidden = self.is_participants_hidden
+        self.is_antispam = has_aggressive_anti_spam_enabled
+        self.is_auto_translation_enabled = has_automatic_translation
+        self.is_slowmode_enabled = bool(slow_mode_delay) if slow_mode_delay else None
+        self.birthday = birthdate
+        # wallpaper was Document in <=2.7.2; background is ChatBackground now
+        self.wallpaper = background
+        self.is_paid_reactions_available = can_enable_paid_reaction
+        # set later when known on full-chat parse (defaults avoid AttributeError)
+        if not hasattr(self, "is_join_request"):
+            self.is_join_request = None
+        if not hasattr(self, "is_join_to_send"):
+            self.is_join_to_send = None
+        if not hasattr(self, "folder_id"):
+            self.folder_id = None
+        if not hasattr(self, "business_info"):
+            self.business_info = None
+        if not hasattr(self, "stories"):
+            self.stories = None
+        if not hasattr(self, "linked_forum"):
+            self.linked_forum = None
+        if not hasattr(self, "subscription_until_date"):
+            self.subscription_until_date = None
 
     @staticmethod
     def _parse_user_chat(client, user: raw.types.User) -> "Chat":
@@ -547,7 +580,7 @@ class Chat(Object):
         active_usernames = types.List(
             [
                 types.Username._parse(u)
-                for u in getattr(channel, "usernames", [])
+                for u in getattr(channel, "usernames", None) or []
             ]
         ) or None
         _tmp_username = None
@@ -557,7 +590,7 @@ class Chat(Object):
         ):
             _tmp_username = active_usernames[0].username
 
-        return Chat(
+        chat = Chat(
             id=peer_id,
             type=enums.ChatType.SUPERGROUP if channel.megagroup else enums.ChatType.CHANNEL,
             is_verified=channel.verified,
@@ -576,7 +609,7 @@ class Chat(Object):
             restrictions=types.List(
                 [
                     types.Restriction._parse(r)
-                    for r in getattr(channel, "restriction_reason", None)
+                    for r in getattr(channel, "restriction_reason", None) or []
                 ]
             ) or None,
             permissions=types.ChatPermissions._parse(getattr(channel, "default_banned_rights", None)),
@@ -596,6 +629,13 @@ class Chat(Object):
             direct_messages_chat_id=utils.get_channel_id(channel.linked_monoforum_id) if channel.linked_monoforum_id else None,
             _raw=channel
         )
+        # pyroblack <= 2.7.2 channel flags
+        chat.is_join_request = getattr(channel, "join_request", None)
+        chat.is_join_to_send = getattr(channel, "join_to_send", None)
+        chat.subscription_until_date = utils.timestamp_to_datetime(
+            getattr(channel, "subscription_until_date", None)
+        )
+        return chat
 
     @staticmethod
     def _parse(
@@ -686,8 +726,43 @@ class Chat(Object):
                     full_user.business_work_hours
                 )
 
+            # pyroblack <= 2.7.2 composite business_info
+            parsed_chat.business_info = types.BusinessInfo._parse(
+                client, full_user, users
+            )
+
+            if getattr(full_user, "stories", None):
+                peer_stories = full_user.stories
+                story_list = []
+                for story in getattr(peer_stories, "stories", None) or []:
+                    try:
+                        story_list.append(
+                            await types.Story._parse(
+                                client,
+                                users,
+                                chats,
+                                None,  # story_media
+                                None,  # reply_story
+                                None,  # story_update
+                                story,  # story_item
+                                getattr(peer_stories, "peer", None),
+                            )
+                        )
+                    except Exception:
+                        pass
+                parsed_chat.stories = types.List(story_list) if story_list else None
+
             if getattr(full_user, "wallpaper", None):
                 parsed_chat.background = types.ChatBackground._parse(client, full_user.wallpaper)
+                # <=2.7.2 wallpaper was a Document
+                if isinstance(full_user.wallpaper, raw.types.WallPaper) and getattr(
+                    full_user.wallpaper, "document", None
+                ):
+                    parsed_chat.wallpaper = types.Document._parse(
+                        client, full_user.wallpaper.document, "wallpaper.jpg"
+                    )
+                else:
+                    parsed_chat.wallpaper = parsed_chat.background
             parsed_chat.gift_count = full_user.stargifts_count
             
             if full_user.saved_music:
@@ -755,6 +830,8 @@ class Chat(Object):
 
                 parsed_chat.can_send_paid_media = getattr(full_chat, "paid_media_allowed", None)
                 parsed_chat.can_enable_paid_reaction = full_chat.paid_reactions_available
+                # pyroblack <= 2.7.2 alias
+                parsed_chat.is_paid_reactions_available = full_chat.paid_reactions_available
                 parsed_chat.gift_count = full_chat.stargifts_count
 
                 parsed_chat.can_send_gift = full_chat.stargifts_available
@@ -762,6 +839,29 @@ class Chat(Object):
                 parent_chat_raw = chats.get(chat_raw.linked_monoforum_id, None)
                 if parent_chat_raw:
                     parsed_chat.parent_chat = Chat._parse_channel_chat(client, parent_chat_raw)
+                    # <=2.7.2 linked_forum (monoforum link)
+                    parsed_chat.linked_forum = parsed_chat.parent_chat
+
+                if getattr(full_chat, "stories", None):
+                    peer_stories = full_chat.stories
+                    story_list = []
+                    for story in getattr(peer_stories, "stories", None) or []:
+                        try:
+                            story_list.append(
+                                await types.Story._parse(
+                                    client,
+                                    users,
+                                    chats,
+                                    None,
+                                    None,
+                                    None,
+                                    story,
+                                    getattr(peer_stories, "peer", None),
+                                )
+                            )
+                        except Exception:
+                            pass
+                    parsed_chat.stories = types.List(story_list) if story_list else None
 
                 if full_chat.location:
                     parsed_chat.location = types.ChatLocation(
@@ -800,10 +900,34 @@ class Chat(Object):
 
             if getattr(full_chat, "wallpaper", None):
                 parsed_chat.background = types.ChatBackground._parse(client, full_chat.wallpaper)
+                if isinstance(full_chat.wallpaper, raw.types.WallPaper) and getattr(
+                    full_chat.wallpaper, "document", None
+                ):
+                    parsed_chat.wallpaper = types.Document._parse(
+                        client, full_chat.wallpaper.document, "wallpaper.jpg"
+                    )
+                else:
+                    parsed_chat.wallpaper = parsed_chat.background
 
         parsed_chat.personal_chat = personal_chat
         parsed_chat.personal_chat_message = personal_chat_message
         parsed_chat._raw = chat_full
+        # Keep raw alias in sync
+        parsed_chat.raw = chat_full
+
+        # Re-sync simple aliases after full-chat mutations
+        if parsed_chat.background is not None and parsed_chat.wallpaper is None:
+            parsed_chat.wallpaper = parsed_chat.background
+        if parsed_chat.can_enable_paid_reaction is not None:
+            parsed_chat.is_paid_reactions_available = parsed_chat.can_enable_paid_reaction
+        parsed_chat.birthday = parsed_chat.birthdate
+        parsed_chat.usernames = parsed_chat.active_usernames
+        parsed_chat.reply_color = parsed_chat.accent_color
+        parsed_chat.is_antispam = parsed_chat.has_aggressive_anti_spam_enabled
+        parsed_chat.is_auto_translation_enabled = parsed_chat.has_automatic_translation
+        if parsed_chat.has_hidden_members is not None:
+            parsed_chat.is_participants_hidden = not parsed_chat.has_hidden_members
+            parsed_chat.is_members_hidden = parsed_chat.is_participants_hidden
 
         return parsed_chat
 
@@ -990,6 +1114,7 @@ class Chat(Object):
         photo: Union[str, "io.BytesIO"] = None,
         video: Union[str, "io.BytesIO"] = None,
         photo_frame_start_timestamp: float = None,
+        **kwargs
     ) -> Union["types.Message", bool]:
         """Bound method *set_photo* of :obj:`~pyrogram.types.Chat`.
 
@@ -1324,7 +1449,7 @@ class Chat(Object):
 
         return await self._client.leave_chat(self.id)
 
-    async def export_invite_link(self):
+    async def export_invite_link(self, **kwargs):
         """Bound method *export_invite_link* of :obj:`~pyrogram.types.Chat`.
 
         Use as a shortcut for:

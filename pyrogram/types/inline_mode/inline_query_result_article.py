@@ -125,6 +125,10 @@ class InlineQueryResultArticle(InlineQueryResult):
         self.thumbnail_url = thumbnail_url
         self.thumbnail_width = thumbnail_width
         self.thumbnail_height = thumbnail_height
+        # pyroblack <= 2.7.2 names
+        self.thumb_url = thumbnail_url
+        self.thumb_width = thumbnail_width
+        self.thumb_height = thumbnail_height
 
     async def write(self, client: "pyrogram.Client"):
         return raw.types.InputBotInlineResult(

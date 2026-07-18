@@ -36,7 +36,8 @@ class SetProfilePhoto:
         video: Union[str, "io.BytesIO"] = None,
         public: bool = False,
         for_my_bot: Union[int, str] = None,
-        photo_frame_start_timestamp: float = None
+        photo_frame_start_timestamp: float = None,
+        **kwargs
     ) -> bool:
         """Set a new profile photo or video (H.264/MPEG-4 AVC video, max 5 seconds).
 

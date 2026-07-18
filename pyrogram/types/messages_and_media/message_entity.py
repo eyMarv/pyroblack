@@ -77,6 +77,7 @@ class MessageEntity(Object):
         custom_emoji_id: str = None,
         unix_time: int = None,
         date_time_format: str = None,
+        collapsed: bool = None,
     ):
         super().__init__(client)
 
@@ -89,6 +90,8 @@ class MessageEntity(Object):
         self.custom_emoji_id = custom_emoji_id
         self.unix_time = unix_time
         self.date_time_format = date_time_format
+        # pyroblack <= 2.7.2 (blockquote collapsed)
+        self.collapsed = collapsed
 
     @staticmethod
     def _parse(client, entity: "raw.base.MessageEntity", users: dict) -> Optional["MessageEntity"]:
@@ -147,6 +150,7 @@ class MessageEntity(Object):
             custom_emoji_id=str(custom_emoji_id) if custom_emoji_id else None,
             unix_time=unix_time,
             date_time_format=date_time_format,
+            collapsed=getattr(entity, "collapsed", None),
             client=client
         )
 
@@ -172,8 +176,12 @@ class MessageEntity(Object):
         if self.custom_emoji_id is not None:
             args["document_id"] = int(self.custom_emoji_id)
 
+        # collapsed only valid for blockquote TL constructors
+        collapsed = args.pop("collapsed", None)
         if self.type == enums.MessageEntityType.EXPANDABLE_BLOCKQUOTE:
             args["collapsed"] = True
+        elif self.type == enums.MessageEntityType.BLOCKQUOTE and collapsed:
+            args["collapsed"] = collapsed
 
         entity = self.type.value
 
