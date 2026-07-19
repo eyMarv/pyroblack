@@ -20,21 +20,25 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import html
-from datetime import datetime
-from typing import Optional
+from typing import TYPE_CHECKING
 
 import pyrogram
-from pyrogram import enums, utils, raw, types
-from ..object import Object
-from ..update import Update
+from pyrogram import enums, raw, types, utils
+from pyrogram.types.object import Object
+from pyrogram.types.update import Update
+
+if TYPE_CHECKING:
+    from datetime import datetime
 
 
 class Link(str):
     HTML = "<a href={url}>{text}</a>"
     MARKDOWN = "[{text}]({url})"
 
-    def __init__(self, url: str, text: str, style: enums.ParseMode):
+    def __init__(self, url: str, text: str, style: enums.ParseMode) -> None:
         super().__init__()
 
         self.url = url
@@ -43,10 +47,7 @@ class Link(str):
 
     @staticmethod
     def format(url: str, text: str, style: enums.ParseMode):
-        if style == enums.ParseMode.MARKDOWN:
-            fmt = Link.MARKDOWN
-        else:
-            fmt = Link.HTML
+        fmt = Link.MARKDOWN if style == enums.ParseMode.MARKDOWN else Link.HTML
 
         return fmt.format(url=url, text=html.escape(text))
 
@@ -54,17 +55,18 @@ class Link(str):
     def __new__(cls, url, text, style):
         return str.__new__(cls, Link.format(url, text, style))
 
-    def __call__(self, other: str = None, *, style: str = None):
+    def __call__(self, other: str | None = None, *, style: str | None = None):
         return Link.format(self.url, other or self.text, style or self.style)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return Link.format(self.url, self.text, self.style)
 
 
 class User(Object, Update):
     """A Telegram user or bot.
 
-    Parameters:
+    Parameters
+    ----------
         id (``int``):
             Unique identifier for this user or bot.
 
@@ -184,7 +186,7 @@ class User(Object, Update):
 
         inline_need_location (``bool``, *optional*):
             True, if the bot supports inline `user location <https://core.telegram.org/bots/inline#location-based-results>`_ requests. Returned only in get_me.
-        
+
         can_be_edited (``bool``, *optional*):
             True, if the current user can edit this bot's profile picture.
 
@@ -199,7 +201,7 @@ class User(Object, Update):
 
         profile_color (:obj:`~pyrogram.types.ChatColor`, *optional*):
             Chat profile color.
-        
+
         have_access (``bool``, *optional*):
             If False, the user is inaccessible, and the only information known about the user is inside this class. Identifier of the user can't be passed to any method.
 
@@ -211,7 +213,7 @@ class User(Object, Update):
 
         active_users_count (``int``, *optional*):
             Alias of *active_user_count* for pyroblack <= 2.7.2.
-        
+
         paid_message_star_count (``int``, *optional*):
             Number of Telegram Stars that must be paid by general user for each sent message to the user. If positive and userFullInfo is unknown, use ``canSendMessageToUser`` to check whether the current user must pay.
 
@@ -233,7 +235,7 @@ class User(Object, Update):
             You can use ``user.mention()`` to mention the user using their first name (styled using html), or
             ``user.mention("another name")`` for a custom name. To choose a different style
             ("HTML" or "MARKDOWN") use ``user.mention(style=ParseMode.MARKDOWN)``.
-        
+
         full_name (``str``, *property*):
             Full name of the other party in a private chat, for private chats and bots.
 
@@ -242,62 +244,62 @@ class User(Object, Update):
     def __init__(
         self,
         *,
-        client: "pyrogram.Client" = None,
+        client: pyrogram.Client = None,
         id: int,
-        is_self: bool = None,
-        is_contact: bool = None,
-        is_mutual_contact: bool = None,
-        is_deleted: bool = None,
-        is_frozen: bool = None,
-        is_contacts_only: bool = None,
-        is_bot_business: bool = None,
-        is_bot: bool = None,
-        is_verified: bool = None,
-        is_restricted: bool = None,
-        is_scam: bool = None,
-        is_fake: bool = None,
-        is_support: bool = None,
-        is_premium: bool = None,
-        first_name: str = None,
-        last_name: str = None,
-        status: "enums.UserStatus" = None,
-        last_online_date: datetime = None,
-        next_offline_date: datetime = None,
-        username: str = None,
-        language_code: str = None,
-        emoji_status: Optional["types.EmojiStatus"] = None,
-        dc_id: int = None,
-        phone_number: str = None,
-        photo: "types.ChatPhoto" = None,
-        active_usernames: list["types.Username"] = None,
-        usernames: list["types.Username"] = None,
-        restrictions: list["types.Restriction"] = None,
-        added_to_attachment_menu: bool = None,
-        can_be_added_to_attachment_menu: bool = None,
-        can_join_groups: bool = None,
-        can_read_all_group_messages: bool = None,
-        supports_inline_queries: bool = None,
-        restricts_new_chats: bool = None,
-        inline_need_location: bool = None,
-        can_be_edited: bool = None,
-        can_connect_to_business: bool = None,
-        inline_query_placeholder: str = None,
-        is_close_friend: bool = None,
-        accent_color: "types.ChatColor" = None,
-        reply_color: "types.ChatColor" = None,
-        profile_color: "types.ChatColor" = None,
-        have_access: bool = None,
-        has_main_web_app: bool = None,
-        active_user_count: int = None,
-        active_users_count: int = None,
-        paid_message_star_count: int = None,
-        has_topics_enabled: bool = None,
-        allows_users_to_create_topics: bool = None,
-        can_manage_bots: bool = None,
-        frozen_icon: int = None,
-        _raw: "raw.base.User" = None,
-        raw: "raw.base.User" = None,
-    ):
+        is_self: bool | None = None,
+        is_contact: bool | None = None,
+        is_mutual_contact: bool | None = None,
+        is_deleted: bool | None = None,
+        is_frozen: bool | None = None,
+        is_contacts_only: bool | None = None,
+        is_bot_business: bool | None = None,
+        is_bot: bool | None = None,
+        is_verified: bool | None = None,
+        is_restricted: bool | None = None,
+        is_scam: bool | None = None,
+        is_fake: bool | None = None,
+        is_support: bool | None = None,
+        is_premium: bool | None = None,
+        first_name: str | None = None,
+        last_name: str | None = None,
+        status: enums.UserStatus = None,
+        last_online_date: datetime | None = None,
+        next_offline_date: datetime | None = None,
+        username: str | None = None,
+        language_code: str | None = None,
+        emoji_status: types.EmojiStatus | None = None,
+        dc_id: int | None = None,
+        phone_number: str | None = None,
+        photo: types.ChatPhoto = None,
+        active_usernames: list[types.Username] | None = None,
+        usernames: list[types.Username] | None = None,
+        restrictions: list[types.Restriction] | None = None,
+        added_to_attachment_menu: bool | None = None,
+        can_be_added_to_attachment_menu: bool | None = None,
+        can_join_groups: bool | None = None,
+        can_read_all_group_messages: bool | None = None,
+        supports_inline_queries: bool | None = None,
+        restricts_new_chats: bool | None = None,
+        inline_need_location: bool | None = None,
+        can_be_edited: bool | None = None,
+        can_connect_to_business: bool | None = None,
+        inline_query_placeholder: str | None = None,
+        is_close_friend: bool | None = None,
+        accent_color: types.ChatColor = None,
+        reply_color: types.ChatColor = None,
+        profile_color: types.ChatColor = None,
+        have_access: bool | None = None,
+        has_main_web_app: bool | None = None,
+        active_user_count: int | None = None,
+        active_users_count: int | None = None,
+        paid_message_star_count: int | None = None,
+        has_topics_enabled: bool | None = None,
+        allows_users_to_create_topics: bool | None = None,
+        can_manage_bots: bool | None = None,
+        frozen_icon: int | None = None,
+        _raw: raw.base.User = None,
+        raw: raw.base.User = None,
+    ) -> None:
         super().__init__(client)
 
         self.id = id
@@ -379,23 +381,26 @@ class User(Object, Update):
         return Link(
             f"tg://user?id={self.id}",
             self.first_name or "Deleted Account",
-            parse_mode
+            parse_mode,
         )
 
     @property
     def full_name(self) -> str:
-        return " ".join(
-            filter(
-                None,
-                [
-                    self.first_name,
-                    self.last_name
-                ]
+        return (
+            " ".join(
+                filter(
+                    None,
+                    [
+                        self.first_name,
+                        self.last_name,
+                    ],
+                ),
             )
-        ) or None
+            or None
+        )
 
     @staticmethod
-    def _parse(client, user: "raw.base.User") -> Optional["User"]:
+    def _parse(client, user: raw.base.User) -> User | None:
         if user is None:
             return None
 
@@ -404,20 +409,17 @@ class User(Object, Update):
                 id=user.id,
                 client=client,
                 is_frozen=False,
-                _raw=user
+                _raw=user,
             )
 
-        active_usernames = types.List(
-            [
-                types.Username._parse(u)
-                for u in user.usernames or []
-            ]
-        ) or None
+        active_usernames = (
+            types.List(
+                [types.Username._parse(u) for u in user.usernames or []],
+            )
+            or None
+        )
         _tmp_username = None
-        if (
-            active_usernames and
-            len(active_usernames) > 0
-        ):
+        if active_usernames and len(active_usernames) > 0:
             _tmp_username = active_usernames[0].username
 
         # pyroblack <= 2.7.2 / pyrofork: frozen accounts expose bot_verification_icon
@@ -432,7 +434,7 @@ class User(Object, Update):
             is_contact=user.contact,
             is_mutual_contact=user.mutual_contact,
             is_deleted=user.deleted,
-            is_frozen=True if frozen_icon else False,
+            is_frozen=bool(frozen_icon),
             is_contacts_only=user.contact_require_premium or None,
             is_bot_business=user.bot_business or None,
             is_bot=user.bot,
@@ -452,7 +454,7 @@ class User(Object, Update):
             phone_number=user.phone,
             photo=types.ChatPhoto._parse(client, user.photo, user.id, user.access_hash),
             restrictions=types.List(
-                [types.Restriction._parse(r) for r in user.restriction_reason or []]
+                [types.Restriction._parse(r) for r in user.restriction_reason or []],
             )
             or None,
             client=client,
@@ -477,7 +479,9 @@ class User(Object, Update):
             parsed_user.can_join_groups = not bool(user.bot_nochats or None)
             parsed_user.can_read_all_group_messages = user.bot_chat_history or None
             parsed_user.inline_query_placeholder = user.bot_inline_placeholder or None
-            parsed_user.supports_inline_queries = bool(parsed_user.inline_query_placeholder)
+            parsed_user.supports_inline_queries = bool(
+                parsed_user.inline_query_placeholder
+            )
             parsed_user.inline_need_location = user.bot_inline_geo or None
             parsed_user.can_connect_to_business = user.bot_business or None
             # Keep <=2.7.2 dual in sync after bot-only fields
@@ -486,13 +490,15 @@ class User(Object, Update):
             parsed_user.active_user_count = active_count
             parsed_user.active_users_count = active_count
             parsed_user.has_topics_enabled = user.bot_forum_view or None
-            parsed_user.allows_users_to_create_topics = user.bot_forum_can_manage_topics or None
+            parsed_user.allows_users_to_create_topics = (
+                user.bot_forum_can_manage_topics or None
+            )
             parsed_user.can_manage_bots = user.bot_can_manage_bots or None
             parsed_user.can_be_edited = user.bot_can_edit or None
         return parsed_user
 
     @staticmethod
-    def _parse_status(user_status: "raw.base.UserStatus", is_bot: bool = False):
+    def _parse_status(user_status: raw.base.UserStatus, is_bot: bool = False):
         # TODO
         if isinstance(user_status, raw.types.UserStatusOnline):
             status, date = enums.UserStatus.ONLINE, user_status.expires
@@ -522,15 +528,15 @@ class User(Object, Update):
         return {
             "status": status,
             "last_online_date": last_online_date,
-            "next_offline_date": next_offline_date
+            "next_offline_date": next_offline_date,
         }
 
     @staticmethod
-    def _parse_user_status(client, user_status: "raw.types.UpdateUserStatus"):
+    def _parse_user_status(client, user_status: raw.types.UpdateUserStatus):
         return User(
             id=user_status.user_id,
             **User._parse_status(user_status.status),
-            client=client
+            client=client,
         )
 
     async def archive(self) -> bool:
@@ -554,7 +560,6 @@ class User(Object, Update):
             :obj:`~pyrogram.errors.RPCError`: In case of a Telegram RPC error.
 
         """
-
         return await self._client.archive_chats(self.id)
 
     async def unarchive(self) -> bool:
@@ -578,7 +583,6 @@ class User(Object, Update):
             :obj:`~pyrogram.errors.RPCError`: In case of a Telegram RPC error.
 
         """
-
         return await self._client.unarchive_chats(self.id)
 
     async def block(self) -> bool:
@@ -602,7 +606,6 @@ class User(Object, Update):
             :obj:`~pyrogram.errors.RPCError`: In case of a Telegram RPC error.
 
         """
-
         return await self._client.block_user(self.id)
 
     async def unblock(self) -> bool:
@@ -626,10 +629,9 @@ class User(Object, Update):
             :obj:`~pyrogram.errors.RPCError`: In case of a Telegram RPC error.
 
         """
-
         return await self._client.unblock_user(self.id)
 
-    async def get_common_chats(self) -> list["types.Chat"]:
+    async def get_common_chats(self) -> list[types.Chat]:
         """Bound method *get_common_chats* of :obj:`~pyrogram.types.User`.
 
         Use as a shortcut for:
@@ -650,7 +652,6 @@ class User(Object, Update):
             :obj:`~pyrogram.errors.RPCError`: In case of a Telegram RPC error.
 
         """
-
         return await self._client.get_common_chats(self.id)
 
     def listen(self, *args, **kwargs):
@@ -662,7 +663,8 @@ class User(Object, Update):
 
             client.wait_for_message(user_id)
 
-        Parameters:
+        Parameters
+        ----------
             args (*optional*):
                 The arguments to pass to the :meth:`~pyrogram.Client.listen` method.
 
@@ -674,11 +676,15 @@ class User(Object, Update):
 
                 user.listen()
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.Message`: On success, the reply message is returned.
-        Raises:
+
+        Raises
+        ------
             RPCError: In case of a Telegram RPC error.
             asyncio.TimeoutError: In case reply not received within the timeout.
+
         """
         return self._client.listen(*args, user_id=self.id, **kwargs)
 
@@ -693,7 +699,8 @@ class User(Object, Update):
 
             client.wait_for_message(user_id)
 
-        Parameters:
+        Parameters
+        ----------
             text (``str``):
                 Text of the message to be sent.
 
@@ -708,11 +715,15 @@ class User(Object, Update):
 
                 user.ask("What is your name?")
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.Message`: On success, the reply message is returned.
-        Raises:
+
+        Raises
+        ------
             RPCError: In case of a Telegram RPC error.
             asyncio.TimeoutError: In case reply not received within the timeout.
+
         """
         return self._client.ask(self.id, text, *args, user_id=self.id, **kwargs)
 
@@ -725,7 +736,8 @@ class User(Object, Update):
 
             client.stop_listening(user_id=user_id)
 
-        Parameters:
+        Parameters
+        ----------
             args (*optional*):
                 The arguments to pass to the :meth:`~pyrogram.Client.listen` method.
 
@@ -736,6 +748,6 @@ class User(Object, Update):
             .. code-block:: python
 
                 user.stop_listen()
+
         """
         return self._client.stop_listening(*args, user_id=self.id, **kwargs)
-

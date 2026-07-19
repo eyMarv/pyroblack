@@ -20,47 +20,45 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import datetime
 
-import pyrogram
-from pyrogram import raw, types, utils
+from __future__ import annotations
 
-from ..object import Object
+from pyrogram import raw, types
+from pyrogram.types.object import Object
 
 
 class BusinessLocation(Object):
-    """
+    """Parameters
+    address (``str``):
+        Address of the business.
 
-    Parameters:
-        address (``str``):
-            Address of the business
-
-        location (:obj:`~pyrogram.types.Location`, *optional*):
-            Location of the business
+    location (:obj:`~pyrogram.types.Location`, *optional*):
+        Location of the business
 
     """
 
     def __init__(
         self,
         *,
-        address: str = None,
-        location: "types.Location" = None
-    ):
+        address: str | None = None,
+        location: types.Location = None,
+    ) -> None:
         super().__init__()
 
         self.address = address
         self.location = location
 
-
     @staticmethod
     def _parse(
         client,
-        business_location: "raw.types.BusinessLocation"
-    ) -> "BusinessLocation":
+        business_location: raw.types.BusinessLocation,
+    ) -> BusinessLocation:
         return BusinessLocation(
             address=getattr(business_location, "address", None),
             location=types.Location._parse(
                 client,
-                business_location.geo_point
-            ) if getattr(business_location, "geo_point", None) else None
+                business_location.geo_point,
+            )
+            if getattr(business_location, "geo_point", None)
+            else None,
         )

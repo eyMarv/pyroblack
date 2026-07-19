@@ -20,7 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw
@@ -28,8 +28,8 @@ from pyrogram import raw
 
 class SetUsername:
     async def set_username(
-        self: "pyrogram.Client",
-        username: Optional[str]
+        self: pyrogram.Client,
+        username: str | None,
     ) -> bool:
         """Changes the editable username of the current user.
 
@@ -39,24 +39,26 @@ class SetUsername:
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             username (``str`` | ``None``):
                 Username to set. "" (empty string) or None to remove it.
                 The username can't be completely removed if there is another active or disabled username.
 
-        Returns:
+        Returns
+        -------
             ``bool``: True on success.
 
         Example:
             .. code-block:: python
 
                 await app.set_username("new_username")
-        """
 
+        """
         return bool(
             await self.invoke(
                 raw.functions.account.UpdateUsername(
-                    username=username or ""
-                )
-            )
+                    username=username or "",
+                ),
+            ),
         )

@@ -20,7 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union, Optional
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw
@@ -28,8 +28,8 @@ from pyrogram import raw
 
 class SetPersonalChannel:
     async def set_personal_channel(
-        self: "pyrogram.Client",
-        chat_id: Optional[Union[int, str]] = None
+        self: pyrogram.Client,
+        chat_id: int | str | None = None,
     ) -> bool:
         """Set a personal channel in bio.
 
@@ -38,11 +38,13 @@ class SetPersonalChannel:
         To get all available channels you can use
         :meth:`~pyrogram.Client.get_personal_channels`.
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target user or None to remove it.
 
-        Returns:
+        Returns
+        -------
             ``bool``: True on success.
 
         Example:
@@ -53,6 +55,7 @@ class SetPersonalChannel:
 
                 # Remove personal channel from your profile
                 await app.set_personal_channel()
+
         """
         if chat_id is None:
             peer = raw.types.InputChannelEmpty()
@@ -65,7 +68,7 @@ class SetPersonalChannel:
         return bool(
             await self.invoke(
                 raw.functions.account.UpdatePersonalChannel(
-                    channel=peer
-                )
-            )
+                    channel=peer,
+                ),
+            ),
         )

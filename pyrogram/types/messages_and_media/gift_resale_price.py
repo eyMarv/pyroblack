@@ -21,8 +21,7 @@
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
 from pyrogram import raw
-
-from ..object import Object
+from pyrogram.types.object import Object
 
 
 class GiftResalePrice(Object):
@@ -36,7 +35,7 @@ class GiftResalePrice(Object):
 
     def __init__(
         self,
-    ):
+    ) -> None:
         super().__init__()
 
     def write(self) -> "raw.base.StarsAmount":
@@ -46,15 +45,18 @@ class GiftResalePrice(Object):
 class GiftResalePriceStar(GiftResalePrice):
     """Describes price of a resold gift in Telegram Stars.
 
-    Parameters:
+    Parameters
+    ----------
         star_count (``int``):
             The amount of Telegram Stars expected to be paid for the gift.
+
     """
+
     def __init__(
         self,
         *,
-        star_count: int
-    ):
+        star_count: int,
+    ) -> None:
         super().__init__()
 
         self.star_count = star_count
@@ -62,22 +64,25 @@ class GiftResalePriceStar(GiftResalePrice):
     def write(self) -> "raw.types.StarsAmount":
         return raw.types.StarsAmount(
             amount=self.star_count,
-            nanos=0
+            nanos=0,
         )
 
 
 class GiftResalePriceTon(GiftResalePrice):
     """Describes price of a resold gift in Toncoins.
 
-    Parameters:
+    Parameters
+    ----------
         toncoin_cent_count (``int``):
             The amount of 1/100 of Toncoin expected to be paid for the gift.
+
     """
+
     def __init__(
         self,
         *,
-        toncoin_cent_count: int
-    ):
+        toncoin_cent_count: int,
+    ) -> None:
         super().__init__()
 
         self.toncoin_cent_count = toncoin_cent_count
@@ -86,4 +91,3 @@ class GiftResalePriceTon(GiftResalePrice):
         return raw.types.StarsTonAmount(
             amount=self.toncoin_cent_count,
         )
-

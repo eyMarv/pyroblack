@@ -20,19 +20,18 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union
+from __future__ import annotations
 
 import pyrogram
-from pyrogram import raw
-from pyrogram import types
+from pyrogram import raw, types
 
 
 class RevokeChatInviteLink:
     async def revoke_chat_invite_link(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
+        self: pyrogram.Client,
+        chat_id: int | str,
         invite_link: str,
-    ) -> "types.ChatInviteLink":
+    ) -> types.ChatInviteLink:
         """Revoke a previously created invite link.
 
         If the primary link is revoked, a new link is automatically generated.
@@ -41,7 +40,8 @@ class RevokeChatInviteLink:
 
         .. include:: /_includes/usable-by/users-bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier for the target chat or username of the target channel/supergroup
                 (in the format @username).
@@ -49,16 +49,17 @@ class RevokeChatInviteLink:
             invite_link (``str``):
                The invite link to revoke.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.ChatInviteLink`: On success, the invite link object is returned.
-        """
 
+        """
         r = await self.invoke(
             raw.functions.messages.EditExportedChatInvite(
                 peer=await self.resolve_peer(chat_id),
                 link=invite_link,
-                revoked=True
-            )
+                revoked=True,
+            ),
         )
 
         users = {i.id: i for i in r.users}

@@ -20,19 +20,23 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import datetime
-from typing import Optional
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import pyrogram
-from pyrogram import raw
-from pyrogram import utils
-from ..object import Object
+from pyrogram import raw, utils
+from pyrogram.types.object import Object
+
+if TYPE_CHECKING:
+    from datetime import datetime
 
 
 class EmojiStatus(Object):
     """A user emoji status.
 
-    Parameters:
+    Parameters
+    ----------
         custom_emoji_id (``str``):
             Custom emoji id.
 
@@ -44,11 +48,11 @@ class EmojiStatus(Object):
     def __init__(
         self,
         *,
-        client: "pyrogram.Client" = None,
+        client: pyrogram.Client = None,
         custom_emoji_id: str,
-        until_date: Optional[datetime] = None,
-        _raw: "raw.base.EmojiStatus" = None,
-    ):
+        until_date: datetime | None = None,
+        _raw: raw.base.EmojiStatus = None,
+    ) -> None:
         super().__init__(client)
 
         self.custom_emoji_id = custom_emoji_id
@@ -56,13 +60,13 @@ class EmojiStatus(Object):
         self._raw = _raw
 
     @staticmethod
-    def _parse(client, emoji_status: "raw.base.EmojiStatus") -> Optional["EmojiStatus"]:
+    def _parse(client, emoji_status: raw.base.EmojiStatus) -> EmojiStatus | None:
         if isinstance(emoji_status, raw.types.EmojiStatus):
             return EmojiStatus(
                 client=client,
                 custom_emoji_id=str(emoji_status.document_id),
                 until_date=utils.timestamp_to_datetime(emoji_status.until),
-                _raw=emoji_status
+                _raw=emoji_status,
             )
 
         if isinstance(emoji_status, raw.types.EmojiStatusCollectible):
@@ -70,7 +74,7 @@ class EmojiStatus(Object):
                 client=client,
                 custom_emoji_id=str(emoji_status.document_id),
                 until_date=utils.timestamp_to_datetime(emoji_status.until),
-                _raw=emoji_status
+                _raw=emoji_status,
             )
 
         return None
@@ -79,9 +83,9 @@ class EmojiStatus(Object):
         if self.until_date:
             return raw.types.EmojiStatusUntil(
                 document_id=int(self.custom_emoji_id),
-                until=utils.datetime_to_timestamp(self.until_date)
+                until=utils.datetime_to_timestamp(self.until_date),
             )
 
         return raw.types.EmojiStatus(
-            document_id=int(self.custom_emoji_id)
+            document_id=int(self.custom_emoji_id),
         )

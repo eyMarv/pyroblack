@@ -22,19 +22,22 @@
 
 import pyrogram
 from pyrogram import raw, types
-from ..object import Object
+from pyrogram.types.object import Object
 
 
 class InlineKeyboardMarkup(Object):
     """An inline keyboard that appears right next to the message it belongs to.
 
-    Parameters:
+    Parameters
+    ----------
         inline_keyboard (List of List of :obj:`~pyrogram.types.InlineKeyboardButton`):
             List of button rows, each represented by a List of InlineKeyboardButton objects.
 
     """
 
-    def __init__(self, inline_keyboard: list[list["types.InlineKeyboardButton"]]):
+    def __init__(
+        self, inline_keyboard: list[list["types.InlineKeyboardButton"]]
+    ) -> None:
         super().__init__()
 
         self.inline_keyboard = inline_keyboard
@@ -52,7 +55,7 @@ class InlineKeyboardMarkup(Object):
             inline_keyboard.append(row)
 
         return InlineKeyboardMarkup(
-            inline_keyboard=inline_keyboard
+            inline_keyboard=inline_keyboard,
         )
 
     async def write(self, client: "pyrogram.Client"):

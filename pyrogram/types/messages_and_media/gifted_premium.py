@@ -20,18 +20,21 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 from random import choice
-from typing import Optional
 
 from pyrogram import raw, types, utils
-from ..object import Object
+from pyrogram.types.object import Object
+
 from .message import Str
 
 
 class GiftedPremium(Object):
-    """Telegram Premium was gifted to the user
+    """Telegram Premium was gifted to the user.
 
-    Parameters:
+    Parameters
+    ----------
         gifter_user_id (``int``):
             The identifier of a user that gifted Telegram Premium; 0 if the gift was anonymous
 
@@ -67,17 +70,17 @@ class GiftedPremium(Object):
     def __init__(
         self,
         *,
-        gifter_user_id: Optional[int] = None,
-        currency: Optional[str] = None,
-        amount: Optional[int] = None,
-        cryptocurrency: Optional[str] = None,
-        cryptocurrency_amount: Optional[int] = None,
-        month_count: Optional[int] = None,
-        day_count: Optional[int] = None,
-        sticker: Optional["types.Sticker"] = None,
-        caption: Optional[Str] = None,
-        caption_entities: Optional[list["types.MessageEntity"]] = None
-    ):
+        gifter_user_id: int | None = None,
+        currency: str | None = None,
+        amount: int | None = None,
+        cryptocurrency: str | None = None,
+        cryptocurrency_amount: int | None = None,
+        month_count: int | None = None,
+        day_count: int | None = None,
+        sticker: types.Sticker | None = None,
+        caption: Str | None = None,
+        caption_entities: list[types.MessageEntity] | None = None,
+    ) -> None:
         super().__init__()
 
         self.gifter_user_id = gifter_user_id
@@ -90,16 +93,16 @@ class GiftedPremium(Object):
         self.sticker = sticker
         self.caption = caption
         self.caption_entities = caption_entities
-  
+
     @staticmethod
     async def _parse(
         client,
-        gifted_premium: "raw.types.MessageActionGiftPremium",
-        gifter_user_id: int
-    ) -> "GiftedPremium":
+        gifted_premium: raw.types.MessageActionGiftPremium,
+        gifter_user_id: int,
+    ) -> GiftedPremium:
         sticker = None
         stickers, _ = await client._get_raw_stickers(
-            raw.types.InputStickerSetPremiumGifts()
+            raw.types.InputStickerSetPremiumGifts(),
         )
         sticker = choice(stickers)
 
@@ -110,7 +113,9 @@ class GiftedPremium(Object):
                 types.MessageEntity._parse(client, entity, {})
                 for entity in gifted_premium.message.entities
             ]
-            caption_entities = types.List(filter(lambda x: x is not None, caption_entities))
+            caption_entities = types.List(
+                filter(lambda x: x is not None, caption_entities)
+            )
             caption = Str(gifted_premium.message.text).init(caption_entities) or None
 
         return GiftedPremium(
@@ -123,5 +128,5 @@ class GiftedPremium(Object):
             month_count=utils.get_premium_duration_month_count(gifted_premium.days),
             sticker=sticker,
             caption=caption,
-            caption_entities=caption_entities or None
+            caption_entities=caption_entities or None,
         )

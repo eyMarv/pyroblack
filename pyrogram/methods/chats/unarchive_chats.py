@@ -20,7 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw
@@ -28,19 +28,21 @@ from pyrogram import raw
 
 class UnarchiveChats:
     async def unarchive_chats(
-        self: "pyrogram.Client",
-        chat_ids: Union[int, str, list[Union[int, str]]],
+        self: pyrogram.Client,
+        chat_ids: int | str | list[int | str],
     ) -> bool:
         """Unarchive one or more chats.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_ids (``int`` | ``str`` | List[``int``, ``str``]):
                 Unique identifier (int) or username (str) of the target chat.
                 You can also pass a list of ids (int) or usernames (str).
 
-        Returns:
+        Returns
+        -------
             ``bool``: On success, True is returned.
 
         Example:
@@ -51,8 +53,8 @@ class UnarchiveChats:
 
                 # Unarchive multiple chats at once
                 await app.unarchive_chats([chat_id1, chat_id2, chat_id3])
-        """
 
+        """
         if not isinstance(chat_ids, list):
             chat_ids = [chat_ids]
 
@@ -62,14 +64,14 @@ class UnarchiveChats:
             folder_peers.append(
                 raw.types.InputFolderPeer(
                     peer=await self.resolve_peer(chat),
-                    folder_id=0
-                )
+                    folder_id=0,
+                ),
             )
 
         await self.invoke(
             raw.functions.folders.EditPeerFolders(
-                folder_peers=folder_peers
-            )
+                folder_peers=folder_peers,
+            ),
         )
 
         return True

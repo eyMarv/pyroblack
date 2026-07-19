@@ -20,11 +20,13 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import logging
-from typing import Optional
 
 import pyrogram
-from pyrogram import raw, types, utils, enums
+from pyrogram import enums, raw, types, utils
+
 from .inline_query_result import InlineQueryResult
 
 log = logging.getLogger(__name__)
@@ -37,7 +39,8 @@ class InlineQueryResultAnimation(InlineQueryResult):
     Alternatively, you can use *input_message_content* to send a message with the specified content instead of the
     animation.
 
-    Parameters:
+    Parameters
+    ----------
         animation_url (``str``):
             A valid URL for the animated GIF file.
             File size must not exceed 1 MB.
@@ -100,43 +103,44 @@ class InlineQueryResultAnimation(InlineQueryResult):
         animation_width: int = 0,
         animation_height: int = 0,
         animation_duration: int = 0,
-        thumbnail_url: str = None,
+        thumbnail_url: str | None = None,
         thumbnail_mime_type: str = "image/jpeg",
-        id: str = None,
-        title: str = None,
-        description: str = None,
+        id: str | None = None,
+        title: str | None = None,
+        description: str | None = None,
         caption: str = "",
-        parse_mode: Optional["enums.ParseMode"] = None,
-        caption_entities: list["types.MessageEntity"] = None,
-        show_caption_above_media: bool = None,
-        reply_markup: "types.InlineKeyboardMarkup" = None,
-        input_message_content: "types.InputMessageContent" = None,
-        thumb_url: str = None,
-        thumb_mime_type: str = None,
-    ):
+        parse_mode: enums.ParseMode | None = None,
+        caption_entities: list[types.MessageEntity] | None = None,
+        show_caption_above_media: bool | None = None,
+        reply_markup: types.InlineKeyboardMarkup = None,
+        input_message_content: types.InputMessageContent = None,
+        thumb_url: str | None = None,
+        thumb_mime_type: str | None = None,
+    ) -> None:
         if thumb_url and thumbnail_url:
+            msg = "Parameters `thumb_url` and `thumbnail_url` are mutually exclusive."
             raise ValueError(
-                "Parameters `thumb_url` and `thumbnail_url` are mutually "
-                "exclusive."
+                msg,
             )
-        
+
         if thumb_url is not None:
             log.warning(
-                "This property is deprecated. "
-                "Please use thumbnail_url instead"
+                "This property is deprecated. Please use thumbnail_url instead",
             )
             thumbnail_url = thumb_url
 
         if thumb_mime_type and thumbnail_mime_type:
-            raise ValueError(
+            msg = (
                 "Parameters `thumb_mime_type` and `thumbnail_mime_type` are mutually "
                 "exclusive."
             )
-        
+            raise ValueError(
+                msg,
+            )
+
         if thumb_mime_type is not None:
             log.warning(
-                "This property is deprecated. "
-                "Please use thumbnail_mime_type instead"
+                "This property is deprecated. Please use thumbnail_mime_type instead",
             )
             thumbnail_mime_type = thumb_mime_type
 
@@ -160,7 +164,7 @@ class InlineQueryResultAnimation(InlineQueryResult):
         self.reply_markup = reply_markup
         self.input_message_content = input_message_content
 
-    async def write(self, client: "pyrogram.Client"):
+    async def write(self, client: pyrogram.Client):
         animation = raw.types.InputWebDocument(
             url=self.animation_url,
             size=0,
@@ -169,9 +173,9 @@ class InlineQueryResultAnimation(InlineQueryResult):
                 raw.types.DocumentAttributeVideo(
                     w=self.animation_width,
                     h=self.animation_height,
-                    duration=self.animation_duration
-                )
-            ]
+                    duration=self.animation_duration,
+                ),
+            ],
         )
 
         if self.thumbnail_url is None:
@@ -181,12 +185,17 @@ class InlineQueryResultAnimation(InlineQueryResult):
                 url=self.thumbnail_url,
                 size=0,
                 mime_type=self.thumbnail_mime_type,
-                attributes=[]
+                attributes=[],
             )
 
-        message, entities = (await utils.parse_text_entities(
-            client, self.caption, self.parse_mode, self.caption_entities
-        )).values()
+        message, entities = (
+            await utils.parse_text_entities(
+                client,
+                self.caption,
+                self.parse_mode,
+                self.caption_entities,
+            )
+        ).values()
 
         return raw.types.InputBotInlineResult(
             id=self.id,
@@ -199,10 +208,12 @@ class InlineQueryResultAnimation(InlineQueryResult):
                 await self.input_message_content.write(client, self.reply_markup)
                 if self.input_message_content
                 else raw.types.InputBotInlineMessageMediaAuto(
-                    reply_markup=await self.reply_markup.write(client) if self.reply_markup else None,
+                    reply_markup=await self.reply_markup.write(client)
+                    if self.reply_markup
+                    else None,
                     message=message,
                     entities=entities,
-                    invert_media=self.show_caption_above_media
+                    invert_media=self.show_caption_above_media,
                 )
-            )
+            ),
         )

@@ -20,6 +20,8 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import base64
 import inspect
 import logging
@@ -29,11 +31,11 @@ import time
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
-from pyrogram import raw
+from pyrogram import raw, utils
+
 from .storage import Storage
-from .. import utils
 
 log = logging.getLogger(__name__)
 
@@ -101,21 +103,22 @@ def get_input_peer(peer_id: int, access_hash: int, peer_type: str):
     if peer_type in ["user", "bot"]:
         return raw.types.InputPeerUser(
             user_id=peer_id,
-            access_hash=access_hash
+            access_hash=access_hash,
         )
 
     if peer_type == "group":
         return raw.types.InputPeerChat(
-            chat_id=-peer_id
+            chat_id=-peer_id,
         )
 
     if peer_type in ["channel", "supergroup"]:
         return raw.types.InputPeerChannel(
             channel_id=utils.get_channel_id(peer_id),
-            access_hash=access_hash
+            access_hash=access_hash,
         )
 
-    raise ValueError(f"Invalid peer type: {peer_type}")
+    msg = f"Invalid peer type: {peer_type}"
+    raise ValueError(msg)
 
 
 class SQLiteStorage(Storage):
@@ -127,18 +130,22 @@ class SQLiteStorage(Storage):
         self,
         name: str,
         workdir: Path,
-        session_string: Optional[str] = None,
-        is_telethon_string: Optional[bool] = False,
-        in_memory: Optional[bool] = False,
-        use_wal: Optional[bool] = True,
-    ):
+        session_string: str | None = None,
+        is_telethon_string: bool | None = False,
+        in_memory: bool | None = False,
+        use_wal: bool | None = True,
+    ) -> None:
         super().__init__(name)
 
         self._executor = None
         self.loop = utils.get_event_loop()
         self.conn = None  # type: sqlite3.Connection | None
 
-        self.session_string = session_string.strip() if isinstance(session_string, str) else session_string
+        self.session_string = (
+            session_string.strip()
+            if isinstance(session_string, str)
+            else session_string
+        )
         self.is_telethon_string = is_telethon_string
         self.in_memory = in_memory
         self.use_wal = use_wal
@@ -154,7 +161,7 @@ class SQLiteStorage(Storage):
             self._executor = ThreadPoolExecutor(1)
         return self._executor
 
-    def _vacuum(self):
+    def _vacuum(self) -> None:
         with self.conn:
             self.conn.execute("VACUUM")
 
@@ -173,7 +180,7 @@ class SQLiteStorage(Storage):
             for row in self.conn.execute(f"PRAGMA table_info({table})").fetchall()
         ]
 
-    def _migrate_usernames_table(self):
+    def _migrate_usernames_table(self) -> None:
         """Ensure ``usernames`` uses the modern (peer_id, username) layout.
 
         pyroblack <= 2.7.2 stored usernames as::
@@ -199,7 +206,7 @@ CREATE TABLE usernames
 );
 CREATE INDEX IF NOT EXISTS idx_usernames_username ON usernames (username);
 CREATE INDEX IF NOT EXISTS idx_usernames_id ON usernames (id);
-"""
+""",
             )
         else:
             cols = set(self._column_names("usernames"))
@@ -220,7 +227,7 @@ DROP TABLE usernames;
 ALTER TABLE usernames_new RENAME TO usernames;
 CREATE INDEX IF NOT EXISTS idx_usernames_username ON usernames (username);
 CREATE INDEX IF NOT EXISTS idx_usernames_id ON usernames (id);
-"""
+""",
                 )
 
         # Legacy peers.username column (pyroblack 2.7.x SCHEMA)
@@ -232,28 +239,28 @@ CREATE INDEX IF NOT EXISTS idx_usernames_id ON usernames (id);
 INSERT OR IGNORE INTO usernames (id, username)
 SELECT id, username FROM peers
 WHERE username IS NOT NULL AND TRIM(username) != ''
-"""
+""",
                 )
 
-    def _update_from_one_impl(self):
+    def _update_from_one_impl(self) -> None:
         with self.conn:
             self.conn.execute("DELETE FROM peers")
 
-    def _update_from_two_impl(self):
+    def _update_from_two_impl(self) -> None:
         with self.conn:
             cols = set(self._column_names("sessions"))
             if "api_id" not in cols:
                 self.conn.execute("ALTER TABLE sessions ADD api_id INTEGER")
 
-    def _update_from_three_impl(self):
+    def _update_from_three_impl(self) -> None:
         # v3 -> v4: introduce modern usernames table
         with self.conn:
             self._migrate_usernames_table()
             self.conn.execute(
-                "CREATE INDEX IF NOT EXISTS idx_usernames_username ON usernames (username)"
+                "CREATE INDEX IF NOT EXISTS idx_usernames_username ON usernames (username)",
             )
 
-    def _update_from_four_impl(self):
+    def _update_from_four_impl(self) -> None:
         # v4 -> v5: introduce update_state.
         #
         # IMPORTANT: pyroblack 2.7.x shipped with VERSION=4 *and* already had
@@ -270,22 +277,22 @@ CREATE TABLE IF NOT EXISTS update_state
     date INTEGER,
     seq  INTEGER
 );
-"""
+""",
             )
 
-    def _update_from_five_impl(self):
+    def _update_from_five_impl(self) -> None:
         with self.conn:
             # pyroblack 2.7.x sessions jump 4->5->6 without ever running the
             # v3 usernames migration, so re-run the usernames normalizer here.
             self._migrate_usernames_table()
             self.conn.execute(
-                "CREATE INDEX IF NOT EXISTS idx_usernames_id ON usernames (id)"
+                "CREATE INDEX IF NOT EXISTS idx_usernames_id ON usernames (id)",
             )
             self.conn.execute(
-                "CREATE INDEX IF NOT EXISTS idx_usernames_username ON usernames (username)"
+                "CREATE INDEX IF NOT EXISTS idx_usernames_username ON usernames (username)",
             )
 
-    async def update(self):
+    async def update(self) -> None:
         version = await self.version()
 
         if version is None:
@@ -294,7 +301,8 @@ CREATE TABLE IF NOT EXISTS update_state
             await self.loop.run_in_executor(
                 self.executor,
                 lambda: self.conn.execute(
-                    "INSERT OR REPLACE INTO version VALUES (?)", (self.VERSION,)
+                    "INSERT OR REPLACE INTO version VALUES (?)",
+                    (self.VERSION,),
                 ),
             )
             return
@@ -323,16 +331,17 @@ CREATE TABLE IF NOT EXISTS update_state
         # through IF NOT EXISTS paths), still normalize usernames for 2.7.x files.
         if version >= self.VERSION:
             await self.loop.run_in_executor(
-                self.executor, lambda: self._migrate_usernames_table_locked()
+                self.executor,
+                self._migrate_usernames_table_locked,
             )
 
         await self.version(version)
 
-    def _migrate_usernames_table_locked(self):
+    def _migrate_usernames_table_locked(self) -> None:
         with self.conn:
             self._migrate_usernames_table()
 
-    def _connect_impl(self, path):
+    def _connect_impl(self, path) -> None:
         self.conn = sqlite3.connect(str(path), timeout=1, check_same_thread=False)
 
         with self.conn:
@@ -343,26 +352,28 @@ CREATE TABLE IF NOT EXISTS update_state
             self.conn.execute("PRAGMA synchronous=NORMAL").close()
             self.conn.execute("PRAGMA temp_store=1").close()
 
-    def _create_impl(self):
+    def _create_impl(self) -> None:
         with self.conn:
             self.conn.executescript(SCHEMA)
 
             self.conn.execute(
                 "INSERT INTO version VALUES (?)",
-                (self.VERSION,)
+                (self.VERSION,),
             )
 
             self.conn.execute(
                 "INSERT INTO sessions VALUES (?, ?, ?, ?, ?, ?, ?)",
-                (2, None, None, None, 0, None, None)
+                (2, None, None, None, 0, None, None),
             )
 
-    async def _unpack_if_session_string(self):
+    async def _unpack_if_session_string(self) -> None:
         if not self.session_string:
             return
 
         string_length = len(self.session_string)
-        b64_string_unpack = base64.urlsafe_b64decode(self.session_string + "=" * (-string_length % 4))
+        b64_string_unpack = base64.urlsafe_b64decode(
+            self.session_string + "=" * (-string_length % 4)
+        )
 
         # Old format
         if string_length in [self.SESSION_STRING_SIZE, self.SESSION_STRING_SIZE_64]:
@@ -371,7 +382,9 @@ CREATE TABLE IF NOT EXISTS update_state
             else:
                 string_format = self.OLD_SESSION_STRING_FORMAT_64
 
-            dc_id, test_mode, auth_key, user_id, is_bot = struct.unpack(string_format, b64_string_unpack)
+            dc_id, test_mode, auth_key, user_id, is_bot = struct.unpack(
+                string_format, b64_string_unpack
+            )
 
             await self.dc_id(dc_id)
             await self.test_mode(test_mode)
@@ -381,7 +394,7 @@ CREATE TABLE IF NOT EXISTS update_state
             await self.date(0)
 
             log.warning(
-                "You are using an old session string format. Use export_session_string to update"
+                "You are using an old session string format. Use export_session_string to update",
             )
             return
 
@@ -389,8 +402,9 @@ CREATE TABLE IF NOT EXISTS update_state
         if self.is_telethon_string:
             string = self.session_string[1:]
             ip_len = 4 if len(string) == 352 else 16
-            dc_id, ip, port, auth_key = struct.unpack(
-                ">B{}sH256s".format(ip_len), base64.urlsafe_b64decode(string)
+            dc_id, _ip, _port, auth_key = struct.unpack(
+                f">B{ip_len}sH256s",
+                base64.urlsafe_b64decode(string),
             )
             api_id = 0
             test_mode = False
@@ -398,7 +412,9 @@ CREATE TABLE IF NOT EXISTS update_state
             is_bot = False
         else:
             # pyroblack / Pyrogram format (standard)
-            dc_id, api_id, test_mode, auth_key, user_id, is_bot = struct.unpack(self.SESSION_STRING_FORMAT, b64_string_unpack)
+            dc_id, api_id, test_mode, auth_key, user_id, is_bot = struct.unpack(
+                self.SESSION_STRING_FORMAT, b64_string_unpack
+            )
 
         await self.dc_id(dc_id)
         await self.api_id(api_id)
@@ -411,9 +427,11 @@ CREATE TABLE IF NOT EXISTS update_state
     async def create(self):
         return await self.loop.run_in_executor(self.executor, self._create_impl)
 
-    async def open(self):
+    async def open(self) -> None:
         if self.in_memory:
-            conn_func = partial(sqlite3.connect, self.database, timeout=1, check_same_thread=False)
+            conn_func = partial(
+                sqlite3.connect, self.database, timeout=1, check_same_thread=False
+            )
             self.conn = await self.loop.run_in_executor(self.executor, conn_func)
             await self.create()
             await self._unpack_if_session_string()
@@ -433,20 +451,20 @@ CREATE TABLE IF NOT EXISTS update_state
 
         await self.loop.run_in_executor(self.executor, self._vacuum)
 
-    async def save(self):
+    async def save(self) -> None:
         await self.date(int(time.time()))
         await self.loop.run_in_executor(self.executor, self.conn.commit)
 
-    async def close(self):
+    async def close(self) -> None:
         await self.loop.run_in_executor(self.executor, self.conn.close)
         self.executor.shutdown()
-        self._executor = None 
-        
-    async def delete(self):
+        self._executor = None
+
+    async def delete(self) -> None:
         if not self.in_memory:
             Path(self.database).unlink()
 
-    def _update_peers_impl(self, peers):
+    def _update_peers_impl(self, peers) -> None:
         with self.conn:
             peers_data = []
             usernames_data = []
@@ -460,70 +478,84 @@ CREATE TABLE IF NOT EXISTS update_state
 
             self.conn.executemany(
                 "REPLACE INTO peers (id, access_hash, type, phone_number) VALUES (?, ?, ?, ?)",
-                peers_data
+                peers_data,
             )
 
             self.conn.executemany(
                 "DELETE FROM usernames WHERE id = ?",
-                ids_to_delete
+                ids_to_delete,
             )
 
             if usernames_data:
                 self.conn.executemany(
                     "REPLACE INTO usernames (id, username) VALUES (?, ?)",
-                    usernames_data
+                    usernames_data,
                 )
 
     async def update_peers(self, peers: list[tuple[int, int, str, list[str], str]]):
-        return await self.loop.run_in_executor(self.executor, self._update_peers_impl, peers)
+        return await self.loop.run_in_executor(
+            self.executor, self._update_peers_impl, peers
+        )
 
-    def _update_usernames_impl(self, usernames: list[tuple[int, list[str]]]):
+    def _update_usernames_impl(self, usernames: list[tuple[int, list[str]]]) -> None:
         with self.conn:
-            self.conn.executemany("DELETE FROM usernames WHERE id = ?", [(id,) for id, _ in usernames])
+            self.conn.executemany(
+                "DELETE FROM usernames WHERE id = ?", [(id,) for id, _ in usernames]
+            )
 
             self.conn.executemany(
                 "REPLACE INTO usernames (id, username) VALUES (?, ?)",
-                [(id, username) for id, usernames in usernames for username in usernames],
+                [
+                    (id, username)
+                    for id, usernames in usernames
+                    for username in usernames
+                ],
             )
 
     async def update_usernames(self, usernames: list[tuple[int, list[str]]]):
-        return await self.loop.run_in_executor(self.executor, self._update_usernames_impl, usernames)
+        return await self.loop.run_in_executor(
+            self.executor, self._update_usernames_impl, usernames
+        )
 
     def _update_state_impl(self, value: tuple[int, int, int, int, int] = object):
         if value == object:
             return self.conn.execute(
-                "SELECT id, pts, qts, date, seq FROM update_state "
-                "ORDER BY date ASC"
+                "SELECT id, pts, qts, date, seq FROM update_state ORDER BY date ASC",
             ).fetchall()
-        else:
-            with self.conn:
-                if isinstance(value, int):
-                    self.conn.execute(
-                        "DELETE FROM update_state WHERE id = ?",
-                        (value,)
-                    )
-                else:
-                    self.conn.execute(
-                        "REPLACE INTO update_state (id, pts, qts, date, seq)"
-                        "VALUES (?, ?, ?, ?, ?)",
-                        value
-                    )
+        with self.conn:
+            if isinstance(value, int):
+                self.conn.execute(
+                    "DELETE FROM update_state WHERE id = ?",
+                    (value,),
+                )
+            else:
+                self.conn.execute(
+                    "REPLACE INTO update_state (id, pts, qts, date, seq)"
+                    "VALUES (?, ?, ?, ?, ?)",
+                    value,
+                )
+        return None
 
     async def update_state(self, value: tuple[int, int, int, int, int] = object):
-        return await self.loop.run_in_executor(self.executor, self._update_state_impl, value)
+        return await self.loop.run_in_executor(
+            self.executor, self._update_state_impl, value
+        )
 
     def _get_peer_by_id_impl(self, peer_id: int):
         with self.conn:
             return self.conn.execute(
                 "SELECT id, access_hash, type FROM peers WHERE id = ?",
-                (peer_id,)
+                (peer_id,),
             ).fetchone()
 
     async def get_peer_by_id(self, peer_id: int):
-        r = await self.loop.run_in_executor(self.executor, self._get_peer_by_id_impl, peer_id)
+        r = await self.loop.run_in_executor(
+            self.executor, self._get_peer_by_id_impl, peer_id
+        )
 
         if r is None:
-            raise KeyError(f"ID not found: {peer_id}")
+            msg = f"ID not found: {peer_id}"
+            raise KeyError(msg)
 
         return get_input_peer(*r)
 
@@ -534,17 +566,21 @@ CREATE TABLE IF NOT EXISTS update_state
                 "JOIN usernames u ON p.id = u.id "
                 "WHERE u.username = ? "
                 "ORDER BY p.last_update_on DESC",
-                (username,)
+                (username,),
             ).fetchone()
 
     async def get_peer_by_username(self, username: str):
-        r = await self.loop.run_in_executor(self.executor, self._get_peer_by_username_impl, username)
+        r = await self.loop.run_in_executor(
+            self.executor, self._get_peer_by_username_impl, username
+        )
 
         if r is None:
-            raise KeyError(f"Username not found: {username}")
+            msg = f"Username not found: {username}"
+            raise KeyError(msg)
 
         if abs(time.time() - r[3]) > self.USERNAME_TTL:
-            raise KeyError(f"Username expired: {username}")
+            msg = f"Username expired: {username}"
+            raise KeyError(msg)
 
         return get_input_peer(*r[:3])
 
@@ -552,14 +588,17 @@ CREATE TABLE IF NOT EXISTS update_state
         with self.conn:
             return self.conn.execute(
                 "SELECT id, access_hash, type FROM peers WHERE phone_number = ?",
-                (phone_number,)
+                (phone_number,),
             ).fetchone()
 
     async def get_peer_by_phone_number(self, phone_number: str):
-        r = await self.loop.run_in_executor(self.executor, self._get_peer_by_phone_number_impl, phone_number)
+        r = await self.loop.run_in_executor(
+            self.executor, self._get_peer_by_phone_number_impl, phone_number
+        )
 
         if r is None:
-            raise KeyError(f"Phone number not found: {phone_number}")
+            msg = f"Phone number not found: {phone_number}"
+            raise KeyError(msg)
 
         return get_input_peer(*r)
 
@@ -584,12 +623,14 @@ CREATE TABLE IF NOT EXISTS update_state
     async def _set(self, value: Any):
         attr = inspect.stack()[2].function
 
-        return await self.loop.run_in_executor(self.executor, self._set_impl, attr, value)
+        return await self.loop.run_in_executor(
+            self.executor, self._set_impl, attr, value
+        )
 
     async def _accessor(self, value: Any = object):
         # return await self._get(attr) if value == object else await self._set(attr, value)
         return await self._get() if value == object else await self._set(value)
-    
+
     def _get_version_impl(self):
         with self.conn:
             return self.conn.execute("SELECT number FROM version").fetchone()[0]
@@ -621,6 +662,9 @@ CREATE TABLE IF NOT EXISTS update_state
 
     async def version(self, value: int = object):
         if value == object:
-            return await self.loop.run_in_executor(self.executor, self._get_version_impl)
-        else:
-            return await self.loop.run_in_executor(self.executor, self._set_version_impl, value)
+            return await self.loop.run_in_executor(
+                self.executor, self._get_version_impl
+            )
+        return await self.loop.run_in_executor(
+            self.executor, self._set_version_impl, value
+        )

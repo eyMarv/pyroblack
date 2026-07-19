@@ -20,7 +20,9 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Callable, Optional, Union
+from __future__ import annotations
+
+from typing import Callable
 
 import pyrogram
 from pyrogram.filters import Filter
@@ -28,8 +30,8 @@ from pyrogram.filters import Filter
 
 class OnStory:
     def on_story(
-        self: Union["OnStory", Filter, None] = None,
-        filters: Optional[Filter] = None,
+        self: OnStory | Filter | None = None,
+        filters: Filter | None = None,
         group: int = 0,
     ) -> Callable:
         """Decorator for handling new stories.
@@ -39,7 +41,8 @@ class OnStory:
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             filters (:obj:`~pyrogram.filters`, *optional*):
                 Pass one or more filters to allow only a subset of stories to be passed
                 in your function.
@@ -59,8 +62,8 @@ class OnStory:
                 func.handlers.append(
                     (
                         pyrogram.handlers.StoryHandler(func, self),
-                        group if filters is None else filters
-                    )
+                        group if filters is None else filters,
+                    ),
                 )
 
             return func

@@ -21,18 +21,18 @@
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from typing import Optional, Union
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw
-
-from ..object import Object
+from pyrogram.types.object import Object
 
 
 class Location(Object):
     """A point on the map.
 
-    Parameters:
+    Parameters
+    ----------
         longitude (``float``):
             Longitude as defined by sender.
 
@@ -47,11 +47,11 @@ class Location(Object):
     def __init__(
         self,
         *,
-        client: "pyrogram.Client" = None,
+        client: pyrogram.Client = None,
         longitude: float,
         latitude: float,
-        accuracy_radius: Optional[int] = None,
-    ):
+        accuracy_radius: int | None = None,
+    ) -> None:
         super().__init__(client)
 
         self.longitude = longitude
@@ -59,16 +59,17 @@ class Location(Object):
         self.accuracy_radius = accuracy_radius
 
     @staticmethod
-    def _parse(client, geo_point: "raw.base.GeoPoint") -> "Location":
+    def _parse(client, geo_point: raw.base.GeoPoint) -> Location:
         if isinstance(geo_point, raw.types.GeoPoint):
             return Location(
                 longitude=geo_point.long,
                 latitude=geo_point.lat,
                 accuracy_radius=geo_point.accuracy_radius,
-                client=client
+                client=client,
             )
+        return None
 
-    async def write(self) -> "raw.types.InputMediaGeoPoint":
+    async def write(self) -> raw.types.InputMediaGeoPoint:
         return raw.types.InputMediaGeoPoint(
             geo_point=raw.types.InputGeoPoint(
                 lat=self.latitude,
@@ -80,11 +81,12 @@ class Location(Object):
 
 class ChatLocation(Object):
     """Represents a location to which a chat is connected.
-    
-    Parameters:
+
+    Parameters
+    ----------
         location (:obj:`~pyrogram.types.Location`):
             The location to which the supergroup is connected. Can't be a live location.
-        
+
         address (``string``):
             Location address; 1-64 characters, as defined by the chat owner.
 
@@ -93,10 +95,10 @@ class ChatLocation(Object):
     def __init__(
         self,
         *,
-        client: "pyrogram.Client" = None,
-        location: "Location",
-        address: str
-    ):
+        client: pyrogram.Client = None,
+        location: Location,
+        address: str,
+    ) -> None:
         super().__init__(client)
 
         self.location = location

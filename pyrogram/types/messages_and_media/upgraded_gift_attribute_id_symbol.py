@@ -28,20 +28,22 @@ from .upgraded_gift_attribute_id import UpgradedGiftAttributeId
 class UpgradedGiftAttributeIdSymbol(UpgradedGiftAttributeId):
     """Identifier of a gift symbol.
 
-    Parameters:
+    Parameters
+    ----------
         sticker_id (``int``):
             Identifier of the sticker representing the symbol.
+
     """
+
     def __init__(
         self,
         sticker_id: int,
-    ):
+    ) -> None:
         super().__init__()
 
         self.sticker_id = sticker_id
 
     def write(self) -> "raw.types.StarGiftAttributeIdPattern":
         return raw.types.StarGiftAttributeIdPattern(
-            document_id=self.sticker_id
+            document_id=self.sticker_id,
         )
-

@@ -20,18 +20,19 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import List, Union
+from __future__ import annotations
+
 import pyrogram
 from pyrogram import raw, types
 
 
 class CreateFolderInviteLink:
     async def create_folder_invite_link(
-        self: "pyrogram.Client",
+        self: pyrogram.Client,
         chat_folder_id: int,
-        chat_ids: List[Union[int, str]],
-        name: str = None,
-    ) -> "types.FolderInviteLink":
+        chat_ids: list[int | str],
+        name: str | None = None,
+    ) -> types.FolderInviteLink:
         """Create a new invite link for a chat folder.
 
         .. note::
@@ -40,7 +41,8 @@ class CreateFolderInviteLink:
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_folder_id (``int``):
                 Unique identifier (int) of the target folder.
 
@@ -51,7 +53,8 @@ class CreateFolderInviteLink:
             name (``str``, *optional*):
                 Name of the link, 0-32 characters.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.FolderInviteLink`: On success, information about the invite link is returned.
 
         Example:
@@ -59,13 +62,14 @@ class CreateFolderInviteLink:
 
                 # Create new folder link
                 await app.create_folder_invite_link(folder_id, [123456789, 987654321])
+
         """
         r = await self.invoke(
             raw.functions.chatlists.ExportChatlistInvite(
                 chatlist=raw.types.InputChatlistDialogFilter(filter_id=chat_folder_id),
                 title=name or "",
                 peers=[await self.resolve_peer(i) for i in chat_ids],
-            )
+            ),
         )
 
         return types.FolderInviteLink._parse(r.invite)

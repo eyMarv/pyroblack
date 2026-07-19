@@ -20,12 +20,17 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-import re
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import pyrogram
-from pyrogram import raw, types, enums
-from ..object import Object
-from ..update import Update
+from pyrogram import enums, raw, types
+from pyrogram.types.object import Object
+from pyrogram.types.update import Update
+
+if TYPE_CHECKING:
+    import re
 
 
 class InlineQuery(Object, Update):
@@ -33,7 +38,8 @@ class InlineQuery(Object, Update):
 
     When the user sends an empty query, your bot could return some default or trending results.
 
-    Parameters:
+    Parameters
+    ----------
         id (``str``):
             Unique identifier for this query.
 
@@ -55,20 +61,21 @@ class InlineQuery(Object, Update):
         matches (List of regex Matches, *optional*):
             A list containing all `Match Objects <https://docs.python.org/3/library/re.html#match-objects>`_ that match
             the query of this inline query. Only applicable when using :obj:`Filters.regex <pyrogram.Filters.regex>`.
+
     """
 
     def __init__(
         self,
         *,
-        client: "pyrogram.Client" = None,
+        client: pyrogram.Client = None,
         id: str,
-        from_user: "types.User",
+        from_user: types.User,
         query: str,
         offset: str,
-        chat_type: "enums.ChatType",
-        location: "types.Location" = None,
-        matches: list[re.Match] = None
-    ):
+        chat_type: enums.ChatType,
+        location: types.Location = None,
+        matches: list[re.Match] | None = None,
+    ) -> None:
         super().__init__(client)
 
         self.id = id
@@ -80,7 +87,9 @@ class InlineQuery(Object, Update):
         self.matches = matches
 
     @staticmethod
-    def _parse(client, inline_query: raw.types.UpdateBotInlineQuery, users: dict) -> "InlineQuery":
+    def _parse(
+        client, inline_query: raw.types.UpdateBotInlineQuery, users: dict
+    ) -> InlineQuery:
         peer_type = inline_query.peer_type
         chat_type = None
 
@@ -104,20 +113,22 @@ class InlineQuery(Object, Update):
             location=types.Location(
                 longitude=inline_query.geo.long,
                 latitude=inline_query.geo.lat,
-                client=client
-            ) if inline_query.geo else None,
-            client=client
+                client=client,
+            )
+            if inline_query.geo
+            else None,
+            client=client,
         )
 
     async def answer(
         self,
-        results: list["types.InlineQueryResult"],
+        results: list[types.InlineQueryResult],
         cache_time: int = 300,
         is_gallery: bool = False,
         is_personal: bool = False,
         next_offset: str = "",
         switch_pm_text: str = "",
-        switch_pm_parameter: str = ""
+        switch_pm_parameter: str = "",
     ):
         """Bound method *answer* of :obj:`~pyrogram.types.InlineQuery`.
 
@@ -135,7 +146,8 @@ class InlineQuery(Object, Update):
 
                 await inline_query.answer([...])
 
-        Parameters:
+        Parameters
+        ----------
             results (List of :obj:`~pyrogram.types.InlineQueryResult`):
                 A list of results for the inline query.
 
@@ -170,8 +182,8 @@ class InlineQuery(Object, Update):
                 chat with the bot and, in doing so, passes a start parameter that instructs the bot to return an oauth
                 link. Once done, the bot can offer a switch_inline button so that the user can easily return to the chat
                 where they wanted to use the bot's inline capabilities.
-        """
 
+        """
         return await self._client.answer_inline_query(
             inline_query_id=self.id,
             results=results,
@@ -180,5 +192,5 @@ class InlineQuery(Object, Update):
             is_personal=is_personal,
             next_offset=next_offset,
             switch_pm_text=switch_pm_text,
-            switch_pm_parameter=switch_pm_parameter
+            switch_pm_parameter=switch_pm_parameter,
         )

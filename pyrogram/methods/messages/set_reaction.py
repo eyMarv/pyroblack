@@ -20,8 +20,9 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import logging
-from typing import Union
 
 import pyrogram
 from pyrogram import raw, types
@@ -31,14 +32,14 @@ log = logging.getLogger(__name__)
 
 class SetReaction:
     async def set_reaction(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
-        message_id: int = None,
-        story_id: int = None,
-        reaction: list["types.ReactionType"] = [],
+        self: pyrogram.Client,
+        chat_id: int | str,
+        message_id: int | None = None,
+        story_id: int | None = None,
+        reaction: list[types.ReactionType] | None = None,
         is_big: bool = False,
-        add_to_recent: bool = True
-    ) -> "types.MessageReactions":
+        add_to_recent: bool = True,
+    ) -> types.MessageReactions:
         """Use this method to change the chosen reactions on a message.
         Service messages of some types can't be reacted to. Use :obj:`~pyrogram.types.Message._raw.reactions_are_possible` to check if it is possible to react to the message.
         Automatically forwarded messages from a channel to its discussion group have the same available reactions as messages in the channel.
@@ -54,7 +55,8 @@ class SetReaction:
 
                 .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
 
@@ -78,7 +80,8 @@ class SetReaction:
                 This option is applicable only for users.
                 Defaults to True.
 
-        Returns:
+        Returns
+        -------
             On success, :obj:`~pyrogram.types.MessageReactions`: is returned.
 
         Example:
@@ -92,17 +95,19 @@ class SetReaction:
 
                 # Retract a reaction
                 await app.set_reaction(chat_id, message_id=message_id)
-        """
 
+        """
+        if reaction is None:
+            reaction = []
         raw_reactions = []
         if not reaction:
             raw_reactions = [raw.types.ReactionEmpty()]
         else:
             for r in reaction:
                 if isinstance(r, types.ReactionTypePaid):
-                    raise ValueError("This type of reaction is not supported using this method")
-                else:
-                    raw_reactions.append(r.write(self))
+                    msg = "This type of reaction is not supported using this method"
+                    raise ValueError(msg)
+                raw_reactions.append(r.write(self))
 
         if message_id is not None:
             r = await self.invoke(
@@ -111,8 +116,8 @@ class SetReaction:
                     msg_id=message_id,
                     reaction=raw_reactions,
                     big=is_big,
-                    add_to_recent=add_to_recent
-                )
+                    add_to_recent=add_to_recent,
+                ),
             )
             for i in r.updates:
                 if isinstance(i, raw.types.UpdateMessageReactions):
@@ -120,42 +125,41 @@ class SetReaction:
             # TODO
             return r
 
-        elif story_id is not None:
-            r = await self.invoke(
+        if story_id is not None:
+            return await self.invoke(
                 raw.functions.stories.SendReaction(
                     peer=await self.resolve_peer(chat_id),
                     story_id=story_id,
                     reaction=raw_reactions[0],
-                    add_to_recent=add_to_recent
-                )
+                    add_to_recent=add_to_recent,
+                ),
             )
             # TODO
-            return r
 
-        else:
-            raise ValueError("You need to pass one of message_id OR story_id!")
-
+        msg = "You need to pass one of message_id OR story_id!"
+        raise ValueError(msg)
 
     async def send_reaction(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
+        self: pyrogram.Client,
+        chat_id: int | str,
         message_id: int,
         emoji: str = "",
         big: bool = False,
-        add_to_recent: bool = True
+        add_to_recent: bool = True,
     ) -> bool:
         log.warning(
-            "This property is deprecated. "
-            "Please use set_reaction instead"
+            "This property is deprecated. Please use set_reaction instead",
         )
         return bool(
             await self.invoke(
                 raw.functions.messages.SendReaction(
-                    reaction=[raw.types.ReactionEmoji(emoticon=emoji)] if emoji else None,
+                    reaction=[raw.types.ReactionEmoji(emoticon=emoji)]
+                    if emoji
+                    else None,
                     big=big,
                     peer=await self.resolve_peer(chat_id),
                     msg_id=message_id,
-                    add_to_recent=add_to_recent
-                )
-            )
+                    add_to_recent=add_to_recent,
+                ),
+            ),
         )

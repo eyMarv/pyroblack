@@ -27,7 +27,8 @@ from .can_post_story_result import CanPostStoryResult
 class CanPostStoryResultWeeklyLimitExceeded(CanPostStoryResult):
     """The weekly limit for the number of posted stories exceeded. The user needs to buy Telegram Premium or wait specified time.
 
-    Parameters:
+    Parameters
+    ----------
         retry_after (``int``):
             Time left before the user can post the next story.
 
@@ -36,7 +37,7 @@ class CanPostStoryResultWeeklyLimitExceeded(CanPostStoryResult):
     def __init__(
         self,
         retry_after: int,
-    ):
+    ) -> None:
         super().__init__()
 
         self.retry_after = retry_after

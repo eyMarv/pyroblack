@@ -20,27 +20,28 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union
+from __future__ import annotations
 
 import pyrogram
-from pyrogram import types, utils, raw
+from pyrogram import raw, types
 
 
 class EditForumTopic:
     async def edit_forum_topic(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
+        self: pyrogram.Client,
+        chat_id: int | str,
         message_thread_id: int,
-        name: str = None,
-        icon_custom_emoji_id: str = None
-    ) -> "types.Message":
+        name: str | None = None,
+        icon_custom_emoji_id: str | None = None,
+    ) -> types.Message:
         """Use this method to edit name and icon of a topic in a forum supergroup chat or a private chat with a user.
-        
+
         In the case of a supergroup chat the bot must be an administrator in the chat for this to work and must have the ``can_manage_topics`` administrator rights, unless it is the creator of the topic.
 
         .. include:: /_includes/usable-by/users-bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
                 For your personal cloud (Saved Messages) you can simply use "me" or "self".
@@ -55,7 +56,8 @@ class EditForumTopic:
             icon_custom_emoji_id (``str``, *optional*):
                 New unique identifier of the custom emoji shown as the topic icon. Use :meth:`~pyrogram.Client.get_forum_topic_icon_stickers` to get all allowed custom emoji identifiers. Pass an empty string to remove the icon. If not specified, the current icon will be kept
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.Message`: On success, the edited message is returned.
 
         Example:
@@ -67,14 +69,13 @@ class EditForumTopic:
                 await app.edit_forum_topic(chat, message.id, "New Topic Title")
 
         """
-
         r = await self.invoke(
             raw.functions.messages.EditForumTopic(
                 peer=await self.resolve_peer(chat_id),
                 topic_id=message_thread_id,
                 title=name,
-                icon_emoji_id=icon_custom_emoji_id
-            )
+                icon_emoji_id=icon_custom_emoji_id,
+            ),
         )
 
         for i in r.updates:
@@ -85,8 +86,8 @@ class EditForumTopic:
                     raw.types.UpdateEditChannelMessage,
                     raw.types.UpdateNewMessage,
                     raw.types.UpdateNewChannelMessage,
-                    raw.types.UpdateNewScheduledMessage
-                )
+                    raw.types.UpdateNewScheduledMessage,
+                ),
             ):
                 return await types.Message._parse(
                     self,
@@ -94,5 +95,6 @@ class EditForumTopic:
                     {i.id: i for i in r.users},
                     {i.id: i for i in r.chats},
                     is_scheduled=isinstance(i, raw.types.UpdateNewScheduledMessage),
-                    replies=self.fetch_replies
+                    replies=self.fetch_replies,
                 )
+        return None

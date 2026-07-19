@@ -20,18 +20,23 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import datetime
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import pyrogram
 from pyrogram import types
+from pyrogram.types.object import Object
 
-from ..object import Object
+if TYPE_CHECKING:
+    from datetime import datetime
 
 
 class PollOption(Object):
     """Contains information about one answer option in a poll.
 
-    Parameters:
+    Parameters
+    ----------
         persistent_id (``str``):
             Unique identifier of the option, persistent on option addition and deletion.
 
@@ -44,10 +49,10 @@ class PollOption(Object):
 
         added_by_user (:obj:`~pyrogram.types.User`, *optional*):
             User who added the option; omitted if the option wasn't added by a user after poll creation.
-        
+
         added_by_chat (:obj:`~pyrogram.types.Chat`, *optional*):
             Chat that added the option; omitted if the option wasn't added by a chat after poll creation.
-        
+
         addition_date (:py:obj:`~datetime.datetime`, *optional*):
             Date the message was last edited.
 
@@ -59,16 +64,16 @@ class PollOption(Object):
     def __init__(
         self,
         *,
-        client: "pyrogram.Client" = None,
+        client: pyrogram.Client = None,
         persistent_id: str,
-        text: "types.FormattedText",
+        text: types.FormattedText,
         voter_count: int,
         data: bytes,
-        added_by_user: "types.User" = None,
-        added_by_chat: "types.Chat" = None,
-        addition_date: datetime = None,
-        **kwargs
-    ):
+        added_by_user: types.User = None,
+        added_by_chat: types.Chat = None,
+        addition_date: datetime | None = None,
+        **kwargs,
+    ) -> None:
         super().__init__(client)
 
         self.persistent_id = persistent_id
@@ -86,7 +91,10 @@ class PollOption(Object):
         if isinstance(self.text, str):
             option, entities = (
                 await pyrogram.utils.parse_text_entities(
-                    client, self.text, None, self.entities
+                    client,
+                    self.text,
+                    None,
+                    self.entities,
                 )
             ).values()
         else:
@@ -98,7 +106,8 @@ class PollOption(Object):
                 entities = entities or []
         return pyrogram.raw.types.PollAnswer(
             text=pyrogram.raw.types.TextWithEntities(
-                text=option, entities=entities or []
+                text=option,
+                entities=entities or [],
             ),
             option=self.data if self.data is not None else bytes([i]),
         )

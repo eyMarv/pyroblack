@@ -20,33 +20,40 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import logging
-from typing import Union, Iterable
+from typing import TYPE_CHECKING
 
 import pyrogram
 from pyrogram import raw, types, utils
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
 
 log = logging.getLogger(__name__)
 
 
 class GetForumTopic:
     async def get_forum_topic(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
-        message_thread_ids: Union[int, Iterable[int]]
-    ) -> Union["types.ForumTopic", list["types.ForumTopic"]]:
+        self: pyrogram.Client,
+        chat_id: int | str,
+        message_thread_ids: int | Iterable[int],
+    ) -> types.ForumTopic | list[types.ForumTopic]:
         """Get one or more topic from a chat by using topic identifiers.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
 
             message_thread_ids (``int`` | Iterable of ``int``, *optional*):
                 Pass a single message thread identifier or an iterable of message thread identifiers (as integers) to get the information of the topic themselves.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.ForumTopic` | List of :obj:`~pyrogram.types.ForumTopic`: In case *message_thread_ids* was not
             a list, a single topic is returned, otherwise a list of topics is returned.
 
@@ -59,18 +66,19 @@ class GetForumTopic:
                 # Get more than one topic (list of topics)
                 await app.get_forum_topic(chat_id, [12345, 12346])
 
-        Raises:
+        Raises
+        ------
             ValueError: In case of invalid arguments.
-        """
 
+        """
         is_iterable = utils.is_list_like(message_thread_ids)
         ids = list(message_thread_ids) if is_iterable else [message_thread_ids]
 
         r = await self.invoke(
             raw.functions.messages.GetForumTopicsByID(
                 peer=await self.resolve_peer(chat_id),
-                topics=ids
-            )
+                topics=ids,
+            ),
         )
         # TODO order_by_create_date:flags.0?true count:int pts:int
 
@@ -84,15 +92,19 @@ class GetForumTopic:
                 message,
                 users,
                 chats,
-                replies=self.fetch_replies
+                replies=self.fetch_replies,
             )
 
         topics = types.List()
-        for i in getattr(r, "topics"):
+        for i in r.topics:
             topics.append(
                 types.ForumTopic._parse(
-                    self, i, messages, users, chats
-                )
+                    self,
+                    i,
+                    messages,
+                    users,
+                    chats,
+                ),
             )
 
         return topics if is_iterable else topics[0] if topics else None

@@ -21,14 +21,10 @@
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
 import asyncio
-import io
-import os
-import re
 
 import pyrogram
 from pyrogram import raw, types, utils
-from pyrogram.errors import RPCError, MediaEmpty
-from pyrogram.file_id import FileType
+from pyrogram.errors import MediaEmpty, RPCError
 
 from .inline_session import get_session
 
@@ -40,7 +36,7 @@ class EditInlineMedia:
         self: "pyrogram.Client",
         inline_message_id: str,
         media: "types.InputMedia",
-        reply_markup: "types.InlineKeyboardMarkup" = None
+        reply_markup: "types.InlineKeyboardMarkup" = None,
     ) -> bool:
         """Edit inline animation, audio, document, photo or video messages, or to add media to text messages.
 
@@ -48,7 +44,8 @@ class EditInlineMedia:
 
         .. include:: /_includes/usable-by/bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             inline_message_id (``str``):
                 Required if *chat_id* and *message_id* are not specified.
                 Identifier of the inline message.
@@ -59,7 +56,8 @@ class EditInlineMedia:
             reply_markup (:obj:`~pyrogram.types.InlineKeyboardMarkup`, *optional*):
                 An InlineKeyboardMarkup object.
 
-        Returns:
+        Returns
+        -------
             ``bool``: On success, True is returned.
 
         Example:
@@ -77,6 +75,7 @@ class EditInlineMedia:
 
                 # Replace the current media with a local audio
                 await app.edit_inline_media(inline_message_id, InputMediaAudio("new_audio.mp3"))
+
         """
         caption = media.caption
         parse_mode = media.parse_mode
@@ -85,7 +84,11 @@ class EditInlineMedia:
         message, entities = None, None
 
         if caption is not None:
-            message, entities = (await utils.parse_text_entities(self, caption, parse_mode, caption_entities)).values()
+            message, entities = (
+                await utils.parse_text_entities(
+                    self, caption, parse_mode, caption_entities
+                )
+            ).values()
 
         if media is not None and not isinstance(
             media,
@@ -97,7 +100,8 @@ class EditInlineMedia:
                 types.InputMediaDocument,
             ),
         ):
-            raise ValueError(f"Unsupported media type: {type(media)}")
+            msg = f"Unsupported media type: {type(media)}"
+            raise ValueError(msg)
 
         raw_media, _show_caption_above_media = await media.write(client=self)
 
@@ -112,11 +116,13 @@ class EditInlineMedia:
                         id=unpacked,
                         media=raw_media,
                         invert_media=_show_caption_above_media,
-                        reply_markup=await reply_markup.write(self) if reply_markup else None,
+                        reply_markup=await reply_markup.write(self)
+                        if reply_markup
+                        else None,
                         message=message,
                         entities=entities,
                     ),
-                    sleep_threshold=self.sleep_threshold
+                    sleep_threshold=self.sleep_threshold,
                 )
             except RPCError as e:
                 if i == self.MAX_RETRIES - 1:
@@ -125,3 +131,4 @@ class EditInlineMedia:
                 if isinstance(e, MediaEmpty):
                     # Must wait due to a server race condition
                     await asyncio.sleep(1)
+        return None

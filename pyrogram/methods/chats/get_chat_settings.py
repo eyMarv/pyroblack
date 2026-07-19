@@ -20,7 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw, types
@@ -28,23 +28,26 @@ from pyrogram import raw, types
 
 class GetChatSettings:
     async def get_chat_settings(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str]
-    ) -> "types.ChatSettings":
+        self: pyrogram.Client,
+        chat_id: int | str,
+    ) -> types.ChatSettings:
         """Get information about a chat settings.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
                 Unique identifier for the target chat in form of a *t.me/joinchat/* link, identifier (int) or username
                 of the target channel/supergroup (in the format @username).
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.ChatSettings`: On success, a chat settings object is returned.
 
-        Raises:
+        Raises
+        ------
             ValueError: In case the chat invite link points to a chat you haven't joined yet.
 
         Example:
@@ -52,14 +55,15 @@ class GetChatSettings:
 
                 settings = await app.get_chat_settings("pyrogram")
                 print(settings)
+
         """
         r = await self.invoke(
             raw.functions.messages.GetPeerSettings(
-                peer=await self.resolve_peer(chat_id)
-            )
+                peer=await self.resolve_peer(chat_id),
+            ),
         )
 
         users = {i.id: i for i in r.users}
-        chats = {i.id: i for i in r.chats}
+        {i.id: i for i in r.chats}
 
         return types.ChatSettings._parse(self, r.settings, users)

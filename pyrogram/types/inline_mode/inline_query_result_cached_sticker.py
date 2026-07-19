@@ -20,21 +20,23 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import enums, raw, types, utils
+from pyrogram.file_id import FileId
+
 from .inline_query_result import InlineQueryResult
-from ...file_id import FileId
 
 
 class InlineQueryResultCachedSticker(InlineQueryResult):
-    """A link to a sticker stored on the Telegram servers
+    """A link to a sticker stored on the Telegram servers.
 
     By default, this sticker will be sent by the user. Alternatively, you can use *input_message_content* to send a
     message with the specified content instead of the sticker.
 
-    Parameters:
+    Parameters
+    ----------
         sticker_file_id (``str``):
             A valid file identifier of the sticker.
 
@@ -44,7 +46,7 @@ class InlineQueryResultCachedSticker(InlineQueryResult):
 
         caption (``str``, *optional*):
             Caption of the audio to be sent, 0-1024 characters.
-            
+
         parse_mode (:obj:`~pyrogram.enums.ParseMode`, *optional*):
             By default, texts are parsed using both Markdown and HTML styles.
             You can combine both syntaxes together.
@@ -57,18 +59,19 @@ class InlineQueryResultCachedSticker(InlineQueryResult):
 
         input_message_content (:obj:`~pyrogram.types.InputMessageContent`):
             Content of the message to be sent instead of the photo.
+
     """
 
     def __init__(
         self,
         sticker_file_id: str,
-        id: str = None,
+        id: str | None = None,
         caption: str = "",
-        parse_mode: Optional["enums.ParseMode"] = None,
-        caption_entities: list["types.MessageEntity"] = None,
-        reply_markup: "types.InlineKeyboardMarkup" = None,
-        input_message_content: "types.InputMessageContent" = None
-    ):
+        parse_mode: enums.ParseMode | None = None,
+        caption_entities: list[types.MessageEntity] | None = None,
+        reply_markup: types.InlineKeyboardMarkup = None,
+        input_message_content: types.InputMessageContent = None,
+    ) -> None:
         super().__init__("sticker", id, input_message_content, reply_markup)
 
         self.sticker_file_id = sticker_file_id
@@ -78,12 +81,17 @@ class InlineQueryResultCachedSticker(InlineQueryResult):
         self.reply_markup = reply_markup
         self.input_message_content = input_message_content
 
-    async def write(self, client: "pyrogram.Client"):
+    async def write(self, client: pyrogram.Client):
         file_id = FileId.decode(self.sticker_file_id)
 
-        message, entities = (await utils.parse_text_entities(
-            client, self.caption, self.parse_mode, self.caption_entities
-        )).values()
+        message, entities = (
+            await utils.parse_text_entities(
+                client,
+                self.caption,
+                self.parse_mode,
+                self.caption_entities,
+            )
+        ).values()
 
         return raw.types.InputBotInlineResultDocument(
             id=self.id,
@@ -97,9 +105,11 @@ class InlineQueryResultCachedSticker(InlineQueryResult):
                 await self.input_message_content.write(client, self.reply_markup)
                 if self.input_message_content
                 else raw.types.InputBotInlineMessageMediaAuto(
-                    reply_markup=await self.reply_markup.write(client) if self.reply_markup else None,
+                    reply_markup=await self.reply_markup.write(client)
+                    if self.reply_markup
+                    else None,
                     message=message,
-                    entities=entities
+                    entities=entities,
                 )
-            )
+            ),
         )

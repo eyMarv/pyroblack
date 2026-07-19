@@ -23,13 +23,14 @@
 from datetime import datetime
 
 from pyrogram import raw, utils
-from ..object import Object
+from pyrogram.types.object import Object
 
 
 class CollectibleItemInfo(Object):
     """Contains information about a collectible item and its last purchase.
 
-    Parameters:
+    Parameters
+    ----------
         purchase_date (``datetime``):
             Point in time (Unix timestamp) when the item was purchased
 
@@ -47,23 +48,23 @@ class CollectibleItemInfo(Object):
 
         url (``str``):
             Individual URL for the item on https://fragment.com
-            
+
     """
 
     def __init__(
         self,
         *,
-        purchase_date : datetime,
-        currency : str,
+        purchase_date: datetime,
+        currency: str,
         amount: float,
         cryptocurrency: str,
         cryptocurrency_amount: float,
-        url: str
-    ):
+        url: str,
+    ) -> None:
         super().__init__()
 
         self.purchase_date = purchase_date
-        self.currency= currency
+        self.currency = currency
         self.amount = amount
         self.cryptocurrency = cryptocurrency
         self.cryptocurrency_amount = cryptocurrency_amount
@@ -71,7 +72,7 @@ class CollectibleItemInfo(Object):
 
     @staticmethod
     def _parse(
-        collectible_info: "raw.types.fragment.CollectibleInfo"
+        collectible_info: "raw.types.fragment.CollectibleInfo",
     ) -> "CollectibleItemInfo":
         return CollectibleItemInfo(
             purchase_date=utils.timestamp_to_datetime(collectible_info.purchase_date),
@@ -79,5 +80,5 @@ class CollectibleItemInfo(Object):
             amount=collectible_info.amount,
             cryptocurrency=collectible_info.crypto_currency,
             cryptocurrency_amount=collectible_info.crypto_amount,
-            url=collectible_info.url
+            url=collectible_info.url,
         )

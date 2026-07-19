@@ -22,21 +22,22 @@
 
 from inspect import iscoroutinefunction
 from typing import Callable
-import pyrogram
 
-from pyrogram.types import Message, Identifier
+import pyrogram
+from pyrogram.types import Identifier, Message
 
 from .handler import Handler
 
 
 class BotBusinessMessageHandler(Handler):
     """The Bot Business Message handler class. Used to handle new bot business messages.
-    It is intended to be used with :meth:`~pyrogram.Client.add_handler`
+    It is intended to be used with :meth:`~pyrogram.Client.add_handler`.
 
     For a nicer way to register this handler, have a look at the
     :meth:`~pyrogram.Client.on_bot_business_message` decorator.
 
-    Parameters:
+    Parameters
+    ----------
         callback (``Callable``):
             Pass a function that will be called when a new Message arrives. It takes *(client, message)*
             as positional arguments (look at the section below for a detailed description).
@@ -45,24 +46,26 @@ class BotBusinessMessageHandler(Handler):
             Pass one or more filters to allow only a subset of messages to be passed
             in your callback function.
 
-    Other parameters:
+    Other Parameters
+    ----------------
         client (:obj:`~pyrogram.Client`):
             The Client itself, useful when you want to call other API methods inside the message handler.
 
         message (:obj:`~pyrogram.types.Message`):
             The received message.
+
     """
 
-    def __init__(self, callback: Callable, filters=None):
+    def __init__(self, callback: Callable, filters=None) -> None:
         self.original_callback = callback
         super().__init__(self.resolve_future_or_callback, filters)
 
     @staticmethod
     async def check_if_has_matching_listener(
-        client: "pyrogram.Client", message: Message
+        client: "pyrogram.Client",
+        message: Message,
     ):
-        """
-        Checks if the message has a matching listener.
+        """Checks if the message has a matching listener.
 
         :param client: The Client object to check with.
         :param message: The Message object to check with.
@@ -85,7 +88,8 @@ class BotBusinessMessageHandler(Handler):
         )
 
         listener = client.get_listener_matching_with_data(
-            data, pyrogram.enums.ListenerTypes.MESSAGE
+            data,
+            pyrogram.enums.ListenerTypes.MESSAGE,
         )
 
         listener_does_match = False
@@ -97,7 +101,10 @@ class BotBusinessMessageHandler(Handler):
                     listener_does_match = await filters(client, message)
                 else:
                     listener_does_match = await client.loop.run_in_executor(
-                        None, filters, client, message
+                        None,
+                        filters,
+                        client,
+                        message,
                     )
             else:
                 listener_does_match = True
@@ -105,8 +112,7 @@ class BotBusinessMessageHandler(Handler):
         return listener_does_match, listener
 
     async def check(self, client: "pyrogram.Client", message: Message):
-        """
-        Checks if the message has a matching listener or handler and its filters does match with the Message.
+        """Checks if the message has a matching listener or handler and its filters does match with the Message.
 
         :param client: Client object to check with.
         :param message: Message object to check with.
@@ -121,7 +127,10 @@ class BotBusinessMessageHandler(Handler):
                 handler_does_match = await self.filters(client, message)
             else:
                 handler_does_match = await client.loop.run_in_executor(
-                    None, self.filters, client, message
+                    None,
+                    self.filters,
+                    client,
+                    message,
                 )
         else:
             handler_does_match = True
@@ -131,10 +140,12 @@ class BotBusinessMessageHandler(Handler):
         return listener_does_match or handler_does_match
 
     async def resolve_future_or_callback(
-        self, client: "pyrogram.Client", message: Message, *args
-    ):
-        """
-        Resolves the future or calls the callback of the listener if the message has a matching listener.
+        self,
+        client: "pyrogram.Client",
+        message: Message,
+        *args,
+    ) -> None:
+        """Resolves the future or calls the callback of the listener if the message has a matching listener.
 
         :param client: Client object to resolve or call with.
         :param message: Message object to resolve or call with.
@@ -142,7 +153,8 @@ class BotBusinessMessageHandler(Handler):
         :return: None
         """
         listener_does_match, listener = await self.check_if_has_matching_listener(
-            client, message
+            client,
+            message,
         )
 
         if listener and listener_does_match:
@@ -152,14 +164,13 @@ class BotBusinessMessageHandler(Handler):
                 listener.future.set_result(message)
 
                 raise pyrogram.StopPropagation
-            elif listener.callback:
+            if listener.callback:
                 if iscoroutinefunction(listener.callback):
                     await listener.callback(client, message, *args)
                 else:
                     listener.callback(client, message, *args)
 
                 raise pyrogram.StopPropagation
-            else:
-                raise ValueError("Listener must have either a future or a callback")
-        else:
-            await self.original_callback(client, message, *args)
+            msg = "Listener must have either a future or a callback"
+            raise ValueError(msg)
+        await self.original_callback(client, message, *args)

@@ -20,7 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw
@@ -28,29 +28,32 @@ from pyrogram import raw
 
 class DeleteChannel:
     async def delete_channel(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str]
+        self: pyrogram.Client,
+        chat_id: int | str,
     ) -> bool:
         """Delete a channel.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 The id of the channel to be deleted.
 
-        Returns:
+        Returns
+        -------
             ``bool``: On success, True is returned.
 
         Example:
             .. code-block:: python
 
                 await app.delete_channel(channel_id)
+
         """
         await self.invoke(
             raw.functions.channels.DeleteChannel(
-                channel=await self.resolve_peer(chat_id)
-            )
+                channel=await self.resolve_peer(chat_id),
+            ),
         )
 
         return True

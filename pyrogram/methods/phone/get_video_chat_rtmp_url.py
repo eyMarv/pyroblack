@@ -20,30 +20,32 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union
+from __future__ import annotations
 
 import pyrogram
-from pyrogram import types, raw
+from pyrogram import raw, types
 
 
 class GetVideoChatRtmpUrl:
     async def get_video_chat_rtmp_url(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
-        replace: bool = False
-    ) -> "types.RtmpUrl":
+        self: pyrogram.Client,
+        chat_id: int | str,
+        replace: bool = False,
+    ) -> types.RtmpUrl:
         """Returns RTMP URL for streaming to the chat; requires owner privileges.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat. A chat can be either a basic group, supergroup or a channel.
 
             replace (``bool``, *optional*):
                 Whether to replace the previous stream key or simply return the existing one. Defaults to False, i.e., return the existing one.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.RtmpUrl`: On success, the RTMP URL and stream key is returned.
 
         Example:
@@ -55,13 +57,14 @@ class GetVideoChatRtmpUrl:
         peer = await self.resolve_peer(chat_id)
 
         if not isinstance(peer, (raw.types.InputPeerChat, raw.types.InputPeerChannel)):
-            raise ValueError("Target chat should be group, supergroup or channel.")
+            msg = "Target chat should be group, supergroup or channel."
+            raise ValueError(msg)
 
         r = await self.invoke(
             raw.functions.phone.GetGroupCallStreamRtmpUrl(
                 peer=peer,
-                revoke=replace
-            )
+                revoke=replace,
+            ),
         )
 
         return types.RtmpUrl._parse(r)

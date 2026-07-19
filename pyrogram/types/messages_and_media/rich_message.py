@@ -20,26 +20,29 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Dict, List, Optional
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw, types
-
-from ..object import Object
+from pyrogram.types.object import Object
 
 
 class RichMessage(Object):
     """Rich formatted message.
 
-    Parameters:
+    Parameters
+    ----------
         blocks (List of :obj:`pyrogram.types.RichBlock`):
             Content of the message.
 
         is_rtl (``bool``, *optional*):
             True, if the rich message must be shown right-to-left.
+
     """
 
-    def __init__(self, *, blocks: List["types.RichBlock"], is_rtl: Optional[bool] = None):
+    def __init__(
+        self, *, blocks: list[types.RichBlock], is_rtl: bool | None = None
+    ) -> None:
         super().__init__()
 
         self.blocks = blocks
@@ -47,11 +50,15 @@ class RichMessage(Object):
 
     @staticmethod
     async def _parse(
-        client: "pyrogram.Client",
-        rich_message: "raw.types.RichMessage",
-        users: Dict[int, "raw.base.User"] = {},
-        chats: Dict[int, "raw.base.Chat"] = {},
-    ) -> "RichMessage":
+        client: pyrogram.Client,
+        rich_message: raw.types.RichMessage,
+        users: dict[int, raw.base.User] | None = None,
+        chats: dict[int, raw.base.Chat] | None = None,
+    ) -> RichMessage:
+        if chats is None:
+            chats = {}
+        if users is None:
+            users = {}
         if isinstance(rich_message, raw.types.RichMessage):
             photos = {photo.id: photo for photo in rich_message.photos}
             documents = {document.id: document for document in rich_message.documents}
@@ -69,7 +76,8 @@ class RichMessage(Object):
                             chats,
                         )
                         for block in rich_message.blocks
-                    ]
+                    ],
                 ),
                 is_rtl=rich_message.rtl,
             )
+        return None

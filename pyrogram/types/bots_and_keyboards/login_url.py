@@ -20,9 +20,10 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from pyrogram import raw
+from __future__ import annotations
 
-from ..object import Object
+from pyrogram import raw
+from pyrogram.types.object import Object
 
 
 class LoginUrl(Object):
@@ -31,7 +32,8 @@ class LoginUrl(Object):
     Serves as a great replacement for the Telegram Login Widget when the user is coming from Telegram.
     All the user needs to do is tap/click a button and confirm that they want to log in.
 
-    Parameters:
+    Parameters
+    ----------
         url (``str``):
             An HTTP URL to be opened with user authorization data added to the query string when the button is pressed.
             If the user refuses to provide authorization data, the original URL without information about the user will
@@ -39,7 +41,7 @@ class LoginUrl(Object):
             `Receiving authorization data <https://core.telegram.org/widgets/login#receiving-authorization-data>`.
 
             .. note::
-            
+
                 You **must** always check the hash of the received data to verify the authentication
                 and the integrity of the data as described in `Checking authorization <https://core.telegram.org/widgets/login#checking-authorization>`_.
 
@@ -59,16 +61,18 @@ class LoginUrl(Object):
 
         button_id (``int``):
             Button identifier.
+
     """
 
     def __init__(
-        self, *,
+        self,
+        *,
         url: str,
-        forward_text: str = None,
-        bot_username: str = None,
-        request_write_access: str = None,
-        button_id: int = None
-    ):
+        forward_text: str | None = None,
+        bot_username: str | None = None,
+        request_write_access: str | None = None,
+        button_id: int | None = None,
+    ) -> None:
         super().__init__()
 
         self.url = url
@@ -78,19 +82,21 @@ class LoginUrl(Object):
         self.button_id = button_id
 
     @staticmethod
-    def read(b: "raw.types.KeyboardButtonUrlAuth") -> "LoginUrl":
+    def read(b: raw.types.KeyboardButtonUrlAuth) -> LoginUrl:
         return LoginUrl(
             url=b.url,
             forward_text=b.fwd_text,
-            button_id=b.button_id
+            button_id=b.button_id,
         )
 
-    def write(self, text: str, bot: "raw.types.InputUser", style: "raw.types.KeyboardButtonStyle"):
+    def write(
+        self, text: str, bot: raw.types.InputUser, style: raw.types.KeyboardButtonStyle
+    ):
         return raw.types.InputKeyboardButtonUrlAuth(
             text=text,
             url=self.url,
             bot=bot,
             fwd_text=self.forward_text,
             request_write_access=self.request_write_access,
-            style=style
+            style=style,
         )

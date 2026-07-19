@@ -20,7 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw
@@ -28,8 +28,8 @@ from pyrogram import raw
 
 class ApproveChatJoinRequest:
     async def approve_chat_join_request(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
+        self: pyrogram.Client,
+        chat_id: int | str,
         user_id: int,
     ) -> bool:
         """Approve a chat join request.
@@ -39,7 +39,8 @@ class ApproveChatJoinRequest:
 
         .. include:: /_includes/usable-by/users-bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier for the target chat or username of the target channel/supergroup
                 (in the format @username).
@@ -47,15 +48,17 @@ class ApproveChatJoinRequest:
             user_id (``int``):
                 Unique identifier of the target user.
 
-        Returns:
+        Returns
+        -------
             ``bool``: True on success.
+
         """
         await self.invoke(
             raw.functions.messages.HideChatJoinRequest(
                 peer=await self.resolve_peer(chat_id),
                 user_id=await self.resolve_peer(user_id),
-                approved=True
-            )
+                approved=True,
+            ),
         )
 
         return True

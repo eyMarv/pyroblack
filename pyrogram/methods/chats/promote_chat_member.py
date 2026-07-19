@@ -20,20 +20,20 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union
+from __future__ import annotations
 
 import pyrogram
-from pyrogram import raw, types, errors
+from pyrogram import errors, raw, types
 
 
 class PromoteChatMember:
     async def promote_chat_member(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
-        user_id: Union[int, str],
-        privileges: "types.ChatPrivileges" = None,
-        **kwargs
-    ) -> Union["types.Message", bool]:
+        self: pyrogram.Client,
+        chat_id: int | str,
+        user_id: int | str,
+        privileges: types.ChatPrivileges = None,
+        **kwargs,
+    ) -> types.Message | bool:
         """Promote or demote a user in a supergroup or a channel.
 
         You must be an administrator in the chat for this to work and must have the appropriate admin rights.
@@ -41,7 +41,8 @@ class PromoteChatMember:
 
         .. include:: /_includes/usable-by/users-bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
 
@@ -52,7 +53,8 @@ class PromoteChatMember:
             privileges (:obj:`~pyrogram.types.ChatPrivileges`, *optional*):
                 New user privileges.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.Message` | ``bool``: On success, a service message will be returned (when applicable),
             otherwise, in case a message object couldn't be returned, True is returned.
 
@@ -61,6 +63,7 @@ class PromoteChatMember:
 
                 # Promote chat member to admin
                 await app.promote_chat_member(chat_id, user_id)
+
         """
         chat_id = await self.resolve_peer(chat_id)
         user_id = await self.resolve_peer(user_id)
@@ -70,12 +73,14 @@ class PromoteChatMember:
             privileges = types.ChatPrivileges()
 
         try:
-            raw_chat_member = (await self.invoke(
-                raw.functions.channels.GetParticipant(
-                    channel=chat_id,
-                    participant=user_id
+            raw_chat_member = (
+                await self.invoke(
+                    raw.functions.channels.GetParticipant(
+                        channel=chat_id,
+                        participant=user_id,
+                    ),
                 )
-            )).participant
+            ).participant
         except errors.RPCError:
             raw_chat_member = None
 
@@ -88,8 +93,8 @@ class PromoteChatMember:
                 channel=chat_id,
                 user_id=user_id,
                 admin_rights=privileges.write(),
-                rank=rank or ""
-            )
+                rank=rank or "",
+            ),
         )
 
         for i in r.updates:
@@ -97,14 +102,14 @@ class PromoteChatMember:
                 i,
                 (
                     raw.types.UpdateNewMessage,
-                    raw.types.UpdateNewChannelMessage
-                )
+                    raw.types.UpdateNewChannelMessage,
+                ),
             ):
                 return await types.Message._parse(
-                    self, i.message,
+                    self,
+                    i.message,
                     {i.id: i for i in r.users},
                     {i.id: i for i in r.chats},
-                    replies=self.fetch_replies
+                    replies=self.fetch_replies,
                 )
-        else:
-            return True
+        return True

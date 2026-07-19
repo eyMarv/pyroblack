@@ -24,14 +24,14 @@ from typing import Optional
 
 import pyrogram
 from pyrogram import raw, types
-
-from ..object import Object
+from pyrogram.types.object import Object
 
 
 class GiftCollection(Object):
     """Describes collection of gifts.
 
-    Parameters:
+    Parameters
+    ----------
         id (``int``):
             Unique identifier of the collection.
 
@@ -43,14 +43,17 @@ class GiftCollection(Object):
 
         icon (:obj:`~pyrogram.types.Sticker`, *optional*):
             Icon of the collection.
+
     """
+
     def __init__(
-        self, *,
+        self,
+        *,
         id: int,
         name: str,
         gift_count: int,
-        icon: Optional["types.Sticker"] = None
-    ):
+        icon: Optional["types.Sticker"] = None,
+    ) -> None:
         super().__init__()
 
         self.id = id
@@ -61,7 +64,7 @@ class GiftCollection(Object):
     @staticmethod
     async def _parse(
         client: "pyrogram.Client",
-        collection: "raw.types.StarGiftCollection"
+        collection: "raw.types.StarGiftCollection",
     ) -> "GiftCollection":
         sticker = None
 
@@ -74,6 +77,5 @@ class GiftCollection(Object):
             id=collection.collection_id,
             name=collection.title,
             gift_count=collection.gifts_count,
-            icon=sticker
+            icon=sticker,
         )
-

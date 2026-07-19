@@ -20,19 +20,25 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from pyrogram import raw
-from ..object import Object
+from typing import TYPE_CHECKING
+
+from pyrogram.types.object import Object
+
+if TYPE_CHECKING:
+    from pyrogram import raw
 
 
 class BusinessWeeklyOpen(Object):
     """Business weekly open hours.
 
-    Parameters:
+    Parameters
+    ----------
         start_minute (``int``):
             Start minute of the working day.
 
         end_minute (``int``):
             End minute of the working day.
+
     """
 
     def __init__(
@@ -40,7 +46,7 @@ class BusinessWeeklyOpen(Object):
         *,
         start_minute: int,
         end_minute: int,
-    ):
+    ) -> None:
         self.start_minute = start_minute
         self.end_minute = end_minute
 

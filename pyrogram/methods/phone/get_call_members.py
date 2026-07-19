@@ -20,32 +20,39 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union, AsyncGenerator
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import pyrogram
-from pyrogram import types, raw
+from pyrogram import raw, types
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncGenerator
 
 
 class GetCallMembers:
     async def get_call_members(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
-        limit: int = 0
-    ) -> AsyncGenerator["types.GroupCallMember", None]:
+        self: pyrogram.Client,
+        chat_id: int | str,
+        limit: int = 0,
+    ) -> AsyncGenerator[types.GroupCallMember, None]:
         """Get the members list of a chat call.
 
         A chat can be either a basic group or a supergroup.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
 
             limit (``int``, *optional*):
                 Limits the number of members to be retrieved.
 
-        Returns:
+        Returns
+        -------
             ``Generator``: On success, a generator yielding :obj:`~pyrogram.types.GroupCallMember` objects is returned.
 
         Example:
@@ -54,20 +61,25 @@ class GetCallMembers:
                 # Get members
                 async for member in app.get_call_members(chat_id):
                     print(member)
+
         """
         peer = await self.resolve_peer(chat_id)
 
         if isinstance(peer, raw.types.InputPeerChannel):
             r = await self.invoke(raw.functions.channels.GetFullChannel(channel=peer))
         elif isinstance(peer, raw.types.InputPeerChat):
-            r = await self.invoke(raw.functions.messages.GetFullChat(chat_id=peer.chat_id))
+            r = await self.invoke(
+                raw.functions.messages.GetFullChat(chat_id=peer.chat_id)
+            )
         else:
-            raise ValueError("Target chat should be group, supergroup or channel.")
+            msg = "Target chat should be group, supergroup or channel."
+            raise ValueError(msg)
 
         full_chat = r.full_chat
 
         if not getattr(full_chat, "call", None):
-            raise ValueError("There is no active call in this chat.")
+            msg = "There is no active call in this chat."
+            raise ValueError(msg)
 
         current = 0
         offset = ""
@@ -81,9 +93,9 @@ class GetCallMembers:
                     ids=[],
                     sources=[],
                     offset=offset,
-                    limit=limit
+                    limit=limit,
                 ),
-                sleep_threshold=60
+                sleep_threshold=60,
             )
 
             users = {u.id: u for u in r.users}
@@ -105,4 +117,3 @@ class GetCallMembers:
 
                 if current >= total:
                     return
-

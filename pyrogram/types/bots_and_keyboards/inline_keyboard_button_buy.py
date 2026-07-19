@@ -20,23 +20,24 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from ..object import Object
-
-from pyrogram import raw
 import pyrogram
+from pyrogram import raw
+from pyrogram.types.object import Object
 
 
 class InlineKeyboardButtonBuy(Object):
     """One button of the inline keyboard.
     For simple invoice buttons.
 
-    Parameters:
+    Parameters
+    ----------
         text (``str``):
             Text of the button. If none of the optional fields are used, it will be sent as a message when
             the button is pressed.
+
     """
 
-    def __init__(self, text: str):
+    def __init__(self, text: str) -> None:
         super().__init__()
 
         self.text = str(text)

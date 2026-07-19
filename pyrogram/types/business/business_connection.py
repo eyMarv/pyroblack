@@ -20,15 +20,16 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import logging
-from datetime import datetime
-from typing import Optional
+from typing import TYPE_CHECKING
 
-import pyrogram
 from pyrogram import raw, types, utils
+from pyrogram.types.object import Object
 
-from ..object import Object
-
+if TYPE_CHECKING:
+    from datetime import datetime
 
 log = logging.getLogger(__name__)
 
@@ -36,10 +37,11 @@ log = logging.getLogger(__name__)
 class BusinessConnection(Object):
     """Describes the connection of the bot with a business account.
 
-    Parameters:
+    Parameters
+    ----------
         id (``str``):
             Unique identifier of the business connection
-        
+
         user (:obj:`~pyrogram.types.User`):
             Business account user that created the business connection
 
@@ -60,14 +62,14 @@ class BusinessConnection(Object):
     def __init__(
         self,
         *,
-        id: str = None,
-        user: "types.User" = None,
-        user_chat_id: int = None,
+        id: str | None = None,
+        user: types.User = None,
+        user_chat_id: int | None = None,
         date: datetime,
-        rights: Optional["types.BusinessBotRights"] = None,
-        is_enabled: bool = None,
-        _raw: "raw.types.UpdateBotBusinessConnect" = None,
-    ):
+        rights: types.BusinessBotRights | None = None,
+        is_enabled: bool | None = None,
+        _raw: raw.types.UpdateBotBusinessConnect = None,
+    ) -> None:
         super().__init__()
 
         self.id = id
@@ -78,38 +80,35 @@ class BusinessConnection(Object):
         self.is_enabled = is_enabled
         self._raw = _raw
 
-
     @staticmethod
     def _parse(
         client,
-        business_connect_update: "raw.types.UpdateBotBusinessConnect",
+        business_connect_update: raw.types.UpdateBotBusinessConnect,
         users: dict,
-        chats: dict
-    ) -> "BusinessConnection":
+        chats: dict,
+    ) -> BusinessConnection:
         return BusinessConnection(
             _raw=business_connect_update,
             id=business_connect_update.connection.connection_id,
             user=types.User._parse(
                 client,
-                users[
-                    business_connect_update.connection.user_id
-                ]
+                users[business_connect_update.connection.user_id],
             ),
             user_chat_id=business_connect_update.connection.user_id,
             date=utils.timestamp_to_datetime(business_connect_update.connection.date),
             rights=types.BusinessBotRights._parse(
                 client,
-                business_connect_update.connection.rights
+                business_connect_update.connection.rights,
             ),
-            is_enabled=not bool(getattr(business_connect_update.connection, "disabled", None))
+            is_enabled=not bool(
+                getattr(business_connect_update.connection, "disabled", None)
+            ),
         )
-
 
     @property
     def can_reply(self) -> str:
         log.warning(
-            "This property is deprecated. "
-            "Please use rights instead"
+            "This property is deprecated. Please use rights instead",
         )
         if self.rights:
             return self.rights.can_reply

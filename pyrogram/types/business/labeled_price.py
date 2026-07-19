@@ -20,16 +20,15 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-import pyrogram
 from pyrogram import raw
-
-from ..object import Object
+from pyrogram.types.object import Object
 
 
 class LabeledPrice(Object):
     """This object represents a portion of the price for goods or services.
 
-    Parameters:
+    Parameters
+    ----------
         label (``str``):
             Portion label.
 
@@ -41,8 +40,8 @@ class LabeledPrice(Object):
     def __init__(
         self,
         label: str,
-        amount: int
-    ):
+        amount: int,
+    ) -> None:
         super().__init__()
 
         self.label = label
@@ -53,11 +52,12 @@ class LabeledPrice(Object):
         if isinstance(labeled_price, raw.types.LabeledPrice):
             return LabeledPrice(
                 label=labeled_price.label,
-                amount=labeled_price.amount
+                amount=labeled_price.amount,
             )
+        return None
 
     def write(self):
         return raw.types.LabeledPrice(
             label=self.label,
-            amount=self.amount
+            amount=self.amount,
         )

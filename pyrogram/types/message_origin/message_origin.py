@@ -20,17 +20,21 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import datetime
+from __future__ import annotations
 
-from ..object import Object
+from typing import TYPE_CHECKING
 
 import pyrogram
 from pyrogram import raw, types, utils
+from pyrogram.types.object import Object
+
+if TYPE_CHECKING:
+    from datetime import datetime
 
 
 class MessageOrigin(Object):
     """This object describes the origin of a message.
-    
+
     It can be one of:
 
     - :obj:`~pyrogram.types.MessageOriginUser`
@@ -44,8 +48,8 @@ class MessageOrigin(Object):
     def __init__(
         self,
         type: str,
-        date: datetime = None
-    ):
+        date: datetime | None = None,
+    ) -> None:
         super().__init__()
 
         self.type = type
@@ -53,11 +57,11 @@ class MessageOrigin(Object):
 
     @staticmethod
     def _parse(
-        client: "pyrogram.Client",
-        forward_header: "raw.types.MessageFwdHeader",
-        users: dict, # raw
-        chats: dict, # raw 
-    ) -> "MessageOrigin":
+        client: pyrogram.Client,
+        forward_header: raw.types.MessageFwdHeader,
+        users: dict,  # raw
+        chats: dict,  # raw
+    ) -> MessageOrigin:
         if not forward_header:
             return None
         forward_date = utils.timestamp_to_datetime(forward_header.date)
@@ -69,32 +73,33 @@ class MessageOrigin(Object):
                 forward_from = types.User._parse(client, users[raw_peer_id])
                 return types.MessageOriginUser(
                     date=forward_date,
-                    sender_user=forward_from
+                    sender_user=forward_from,
                 )
-            else:
-                forward_from_chat = types.Chat._parse_channel_chat(client, chats[raw_peer_id])
-                forward_from_message_id = forward_header.channel_post
-                if forward_from_message_id:
-                    return types.MessageOriginChannel(
-                        date=forward_date,
-                        chat=forward_from_chat,
-                        message_id=forward_from_message_id,
-                        author_signature=forward_signature
-                    )
-                else:
-                    return types.MessageOriginChat(
-                        date=forward_date,
-                        sender_chat=forward_from_chat,
-                        author_signature=forward_signature
-                    )
-        elif forward_header.imported:
+            forward_from_chat = types.Chat._parse_channel_chat(
+                client, chats[raw_peer_id]
+            )
+            forward_from_message_id = forward_header.channel_post
+            if forward_from_message_id:
+                return types.MessageOriginChannel(
+                    date=forward_date,
+                    chat=forward_from_chat,
+                    message_id=forward_from_message_id,
+                    author_signature=forward_signature,
+                )
+            return types.MessageOriginChat(
+                date=forward_date,
+                sender_chat=forward_from_chat,
+                author_signature=forward_signature,
+            )
+        if forward_header.imported:
             return types.MessageImportInfo(
                 date=forward_date,
-                sender_user_name=forward_header.from_name or forward_signature
+                sender_user_name=forward_header.from_name or forward_signature,
             )
-        elif forward_header.from_name:
+        if forward_header.from_name:
             forward_sender_name = forward_header.from_name
             return types.MessageOriginHiddenUser(
                 date=forward_date,
-                sender_user_name=forward_sender_name
+                sender_user_name=forward_sender_name,
             )
+        return None

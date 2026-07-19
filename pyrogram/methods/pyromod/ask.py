@@ -20,24 +20,28 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import List, Optional, Union
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import pyrogram
-from pyrogram.filters import Filter
+
+if TYPE_CHECKING:
+    from pyrogram.filters import Filter
 
 
 class Ask:
     async def ask(
-        self: "pyrogram.Client",
-        chat_id: Union[Union[int, str], List[Union[int, str]]],
+        self: pyrogram.Client,
+        chat_id: int | str | list[int | str],
         text: str,
-        filters: Optional[Filter] = None,
-        listener_type: "pyrogram.enums.ListenerTypes" = pyrogram.enums.ListenerTypes.MESSAGE,
-        timeout: Optional[int] = None,
+        filters: Filter | None = None,
+        listener_type: pyrogram.enums.ListenerTypes = pyrogram.enums.ListenerTypes.MESSAGE,
+        timeout: int | None = None,
         unallowed_click_alert: bool = True,
-        user_id: Union[Union[int, str], List[Union[int, str]]] = None,
-        message_id: Union[int, List[int]] = None,
-        inline_message_id: Union[str, List[str]] = None,
+        user_id: int | str | list[int | str] | None = None,
+        message_id: int | list[int] | None = None,
+        inline_message_id: str | list[str] | None = None,
         *args,
         **kwargs,
     ):
@@ -51,7 +55,8 @@ class Ask:
 
         .. include:: /_includes/usable-by/bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str`` | Iterable of ``int`` | Iterable of ``str``):
                 Unique identifier (int) or username (str) of the target chat.
 
@@ -81,13 +86,15 @@ class Ask:
             inline_message_id (``str``, *optional*):
                 The inline message ID to listen for.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.Message` | :obj:`~pyrogram.types.CallbackQuery`: On success, a message/callbackquery is returned.
 
         Example:
             .. code-block:: python
 
                 await app.ask(chat_id, "Tell me your name:")
+
         """
         sent_message = None
         if text and isinstance(text, str):

@@ -20,7 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw
@@ -28,13 +28,16 @@ from pyrogram import raw
 
 class EditGeneralTopic:
     async def edit_general_topic(
-        self: "pyrogram.Client", chat_id: Union[int, str], title: str
+        self: pyrogram.Client,
+        chat_id: int | str,
+        title: str,
     ) -> bool:
         """Edit a general forum topic.
 
         .. include:: /_includes/usable-by/users-bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
                 You can also use chat public link in form of *t.me/<username>* (str).
@@ -42,17 +45,21 @@ class EditGeneralTopic:
             title (``str``):
                 The general forum topic title.
 
-        Returns:
+        Returns
+        -------
             `bool`: On success, a True is returned.
 
         Example:
             .. code-block:: python
 
                 await app.edit_general_topic(chat_id,"New Topic Title")
+
         """
         await self.invoke(
             raw.functions.channels.EditForumTopic(
-                channel=await self.resolve_peer(chat_id), topic_id=1, title=title
-            )
+                channel=await self.resolve_peer(chat_id),
+                topic_id=1,
+                title=title,
+            ),
         )
         return True

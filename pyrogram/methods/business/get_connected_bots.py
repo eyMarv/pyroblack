@@ -25,11 +25,9 @@
 # Source: tl:account.getConnectedBots
 # ***************************
 
-from typing import Union, Optional
 
 import pyrogram
-from pyrogram import raw
-from pyrogram import types
+from pyrogram import raw, types
 
 
 class GetConnectedBots:
@@ -47,12 +45,10 @@ class GetConnectedBots:
             .. code-block:: python
 
                 await app.get_connected_bots(...)
+
         """
-
         r = await self.invoke(
-            raw.functions.account.getConnectedBots(
-
-            )
+            raw.functions.account.getConnectedBots(),
         )
 
         return types.ConnectedBots._parse(self, r)

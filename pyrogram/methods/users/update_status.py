@@ -33,17 +33,20 @@ class UpdateStatus:
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             offline (``bool``):
                 If (True) is transmitted, user status will change to (UserStatusOffline), Otherwise user status will change to (UserStatusOnline).
 
-        Returns:
+        Returns
+        -------
             `bool`: True On success.
 
         Example:
             .. code-block:: python
 
                 await app.update_status()
+
         """
         r = await self.invoke(raw.functions.account.UpdateStatus(offline=offline))
 

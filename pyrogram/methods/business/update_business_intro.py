@@ -25,36 +25,37 @@
 # Source: tl:account.updateBusinessIntro
 # ***************************
 
-from typing import Union, Optional
+from __future__ import annotations
 
 import pyrogram
-from pyrogram import raw
-from pyrogram import types
+from pyrogram import raw, types
 
 
 class UpdateBusinessIntro:
     async def update_business_intro(
-        self: "pyrogram.Client",
-        intro: Optional[raw.types.InputBusinessIntro] = None,
-    ) -> "types.Message":
+        self: pyrogram.Client,
+        intro: raw.types.InputBusinessIntro | None = None,
+    ) -> types.Message:
         """Update your business intro (title, description, sticker).
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             intro (raw.types.InputBusinessIntro): Business intro with title, description, and optional sticker
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.Message`
 
         Example:
             .. code-block:: python
 
                 await app.update_business_intro(...)
-        """
 
-        r = await self.invoke(
+        """
+        await self.invoke(
             raw.functions.account.updateBusinessIntro(
                 intro=intro,
-            )
+            ),
         )

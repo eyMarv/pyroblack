@@ -20,24 +20,29 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import List, Union, Iterable
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import pyrogram
-from pyrogram import raw
-from pyrogram import types
+from pyrogram import raw, types
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
 
 
 class UnpinChatStories:
     async def unpin_chat_stories(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
-        stories_ids: Union[int, Iterable[int]]
-    ) -> List[int]:
+        self: pyrogram.Client,
+        chat_id: int | str,
+        stories_ids: int | Iterable[int],
+    ) -> list[int]:
         """Unpin one or more stories in a chat by using stories identifiers.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
                 For your personal cloud (Saved Messages) you can simply use "me" or "self".
@@ -45,7 +50,8 @@ class UnpinChatStories:
             stories_ids (``int`` | Iterable of ``int``, *optional*):
                 List of unique identifiers of the target stories.
 
-        Returns:
+        Returns
+        -------
             List of ``int``: List of pinned stories identifiers.
 
         Example:
@@ -62,9 +68,8 @@ class UnpinChatStories:
             raw.functions.stories.TogglePinned(
                 peer=await self.resolve_peer(chat_id),
                 id=stories_ids,
-                pinned=False
-            )
+                pinned=False,
+            ),
         )
 
         return types.List(r)
-

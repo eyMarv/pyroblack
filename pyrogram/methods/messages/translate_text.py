@@ -20,26 +20,27 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional, Union
+from __future__ import annotations
 
 import pyrogram
-from pyrogram import enums, raw, types, utils
+from pyrogram import raw, types
 
 
 class TranslateText:
     async def translate_message_text(
-        self: "pyrogram.Client",
+        self: pyrogram.Client,
         to_language_code: str,
-        chat_id: Union[int, str],
-        message_ids: Union[int, list[int]],
+        chat_id: int | str,
+        message_ids: int | list[int],
         tone: str = "",
-        **kwargs
-    ) -> Union["types.FormattedText", list["types.FormattedText"]]:
+        **kwargs,
+    ) -> types.FormattedText | list[types.FormattedText]:
         """Extracts text or caption of the given message and translates it to the given language. If the current user is a Telegram Premium user, then text formatting is preserved.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             to_language_code (``str``):
                 Language code of the language to which the message is translated.
                 Must be one of "af", "sq", "am", "ar", "hy", "az", "eu", "be", "bn", "bs", "bg", "ca", "ceb", "zh-CN", "zh", "zh-Hans", "zh-TW", "zh-Hant", "co", "hr", "cs", "da", "nl", "en", "eo", "et", "fi", "fr", "fy", "gl", "ka", "de", "el", "gu", "ht", "ha", "haw", "he", "iw", "hi", "hmn", "hu", "is", "ig", "id", "in", "ga", "it", "ja", "jv", "kn", "kk", "km", "rw", "ko", "ku", "ky", "lo", "la", "lv", "lt", "lb", "mk", "mg", "ms", "ml", "mt", "mi", "mr", "mn", "my", "ne", "no", "ny", "or", "ps", "fa", "pl", "pt", "pa", "ro", "ru", "sm", "gd", "sr", "st", "sn", "sd", "si", "sk", "sl", "so", "es", "su", "sw", "sv", "tl", "tg", "ta", "tt", "te", "th", "tr", "tk", "uk", "ur", "ug", "uz", "vi", "cy", "xh", "yi", "ji", "yo", "zu".
@@ -53,7 +54,8 @@ class TranslateText:
             tone (``str``, *optional*):
                 Tone of the translation.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.FormattedText` | List of :obj:`~pyrogram.types.FormattedText`: In case *message_ids* was not
             a list, a single result is returned, otherwise a list of results is returned.
 
@@ -61,6 +63,7 @@ class TranslateText:
             .. code-block:: python
 
                 await app.translate_message_text("en", chat_id, message_id)
+
         """
         ids = [message_ids] if not isinstance(message_ids, list) else message_ids
 
@@ -70,30 +73,27 @@ class TranslateText:
                 peer=await self.resolve_peer(chat_id),
                 id=ids,
                 tone=tone,
-            )
+            ),
         )
 
         return (
             types.FormattedText._parse(self, r.result[0])
             if len(r.result) == 1
-            else [
-                types.FormattedText._parse(self, i)
-                for i in r.result
-            ]
+            else [types.FormattedText._parse(self, i) for i in r.result]
         )
 
-
     async def translate_text(
-        self: "pyrogram.Client",
+        self: pyrogram.Client,
         to_language_code: str,
-        text: "types.FormattedText",
+        text: types.FormattedText,
         tone: str = "",
-    ) -> Union["types.FormattedText", list["types.FormattedText"]]:
+    ) -> types.FormattedText | list[types.FormattedText]:
         """Translates a text to the given language. If the current user is a Telegram Premium user, then text formatting is preserved.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             to_language_code (``str``):
                 Language code of the language to which the message is translated.
                 Must be one of "af", "sq", "am", "ar", "hy", "az", "eu", "be", "bn", "bs", "bg", "ca", "ceb", "zh-CN", "zh", "zh-Hans", "zh-TW", "zh-Hant", "co", "hr", "cs", "da", "nl", "en", "eo", "et", "fi", "fr", "fy", "gl", "ka", "de", "el", "gu", "ht", "ha", "haw", "he", "iw", "hi", "hmn", "hu", "is", "ig", "id", "in", "ga", "it", "ja", "jv", "kn", "kk", "km", "rw", "ko", "ku", "ky", "lo", "la", "lv", "lt", "lb", "mk", "mg", "ms", "ml", "mt", "mi", "mr", "mn", "my", "ne", "no", "ny", "or", "ps", "fa", "pl", "pt", "pa", "ro", "ru", "sm", "gd", "sr", "st", "sn", "sd", "si", "sk", "sl", "so", "es", "su", "sw", "sv", "tl", "tg", "ta", "tt", "te", "th", "tr", "tk", "uk", "ur", "ug", "uz", "vi", "cy", "xh", "yi", "ji", "yo", "zu".
@@ -104,7 +104,8 @@ class TranslateText:
             tone (``str``, *optional*):
                 Tone of the translation.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.FormattedText` | List of :obj:`~pyrogram.types.FormattedText`: In case *message_ids* was not
             a list, a single result is returned, otherwise a list of results is returned.
 
@@ -112,6 +113,7 @@ class TranslateText:
             .. code-block:: python
 
                 await app.translate_text("fa", "Pyrogram")
+
         """
         if isinstance(text, str):
             text = types.FormattedText(text=text)
@@ -120,14 +122,11 @@ class TranslateText:
                 to_lang=to_language_code,
                 text=[await text.write(self)],
                 tone=tone,
-            )
+            ),
         )
 
         return (
             types.FormattedText._parse(self, r.result[0])
             if len(r.result) == 1
-            else [
-                types.FormattedText._parse(self, i)
-                for i in r.result
-            ]
+            else [types.FormattedText._parse(self, i) for i in r.result]
         )

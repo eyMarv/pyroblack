@@ -20,11 +20,12 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import TYPE_CHECKING, Optional
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 from pyrogram.file_id import FileId, FileType, FileUniqueId, FileUniqueType
-
-from ..object import Object
+from pyrogram.types.object import Object
 
 if TYPE_CHECKING:
     import pyrogram
@@ -34,7 +35,8 @@ if TYPE_CHECKING:
 class LivePhoto(Object):
     """A live photo.
 
-    Parameters:
+    Parameters
+    ----------
         file_id (``str``):
             Identifier for this file, which can be used to download or reuse the file.
 
@@ -56,19 +58,21 @@ class LivePhoto(Object):
 
         file_size (``int``, *optional*):
             File size.
+
     """
+
     def __init__(
         self,
         *,
-        client: "pyrogram.Client" = None,
+        client: pyrogram.Client = None,
         file_id: str,
         file_unique_id: str,
         width: int,
         height: int,
         duration: int,
-        mime_type: Optional[str] = None,
-        file_size: Optional[int] = None,
-    ):
+        mime_type: str | None = None,
+        file_size: int | None = None,
+    ) -> None:
         super().__init__(client)
 
         self.file_id = file_id
@@ -82,25 +86,25 @@ class LivePhoto(Object):
     @staticmethod
     def _parse(
         client,
-        video: "raw.types.Document",
-        video_attributes: "raw.types.DocumentAttributeVideo",
-    ) -> "LivePhoto":
+        video: raw.types.Document,
+        video_attributes: raw.types.DocumentAttributeVideo,
+    ) -> LivePhoto:
         return LivePhoto(
             file_id=FileId(
                 file_type=FileType.VIDEO,
                 dc_id=video.dc_id,
                 media_id=video.id,
                 access_hash=video.access_hash,
-                file_reference=video.file_reference
+                file_reference=video.file_reference,
             ).encode(),
             file_unique_id=FileUniqueId(
                 file_unique_type=FileUniqueType.DOCUMENT,
-                media_id=video.id
+                media_id=video.id,
             ).encode(),
             width=getattr(video_attributes, "w", None),
             height=getattr(video_attributes, "h", None),
             duration=video_attributes.duration,
             mime_type=video.mime_type,
             file_size=video.size,
-            client=client
+            client=client,
         )

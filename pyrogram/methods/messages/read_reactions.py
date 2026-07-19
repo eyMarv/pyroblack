@@ -20,7 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw
@@ -28,15 +28,16 @@ from pyrogram import raw
 
 class ReadReactions:
     async def read_reactions(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
-        topic_id: bool = None
+        self: pyrogram.Client,
+        chat_id: int | str,
+        topic_id: bool | None = None,
     ) -> bool:
         """Mark a reaction in the chat as read.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
                 For your personal cloud (Saved Messages) you can simply use "me" or "self".
@@ -46,7 +47,8 @@ class ReadReactions:
                 Mark as read only reactions to messages within the specified forum topic.
                 By default, no topic is applied and all reactions marked as read.
 
-        Returns:
+        Returns
+        -------
             ``bool`` - On success, True is returned.
 
         Example:
@@ -57,12 +59,13 @@ class ReadReactions:
 
                 # Mark the chat reaction as read in specified topic
                 await app.read_reactions(chat_id, topic_id)
+
         """
         r = await self.invoke(
             raw.functions.messages.ReadReactions(
                 peer=await self.resolve_peer(chat_id),
-                top_msg_id=topic_id
-            )
+                top_msg_id=topic_id,
+            ),
         )
 
         return bool(r)

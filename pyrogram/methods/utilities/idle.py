@@ -21,21 +21,24 @@
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
 import asyncio
+import contextlib
 import logging
 import signal
 import sys
-from signal import signal as signal_fn, SIGINT, SIGTERM, SIGABRT
+from signal import SIGABRT, SIGINT, SIGTERM
+from signal import signal as signal_fn
 
 log = logging.getLogger(__name__)
 
 # Signal number to name
 signals = {
-    k: v for v, k in signal.__dict__.items()
+    k: v
+    for v, k in signal.__dict__.items()
     if v.startswith("SIG") and not v.startswith("SIG_")
 }
 
 
-async def idle():
+async def idle() -> None:
     """Block the main script execution until a signal is received.
 
     This function will run indefinitely in order to block the main script execution and prevent it from
@@ -73,12 +76,12 @@ async def idle():
 
 
             asyncio.run(main())
-    """
 
+    """
     if sys.platform.startswith("win") or sys.version_info <= (3, 10):
         task = None
 
-        def signal_handler(signum, __):
+        def signal_handler(signum, __) -> None:
             log.info(f"Stop signal received ({signals[signum]}). Exiting...")
             asyncio.get_event_loop().run_in_executor(None, task.cancel)
 
@@ -96,7 +99,7 @@ async def idle():
         loop = asyncio.get_event_loop()
         sig_event = asyncio.Event()
 
-        def signal_handler(signum):
+        def signal_handler(signum) -> None:
             log.info(f"Stop signal received ({signals[signum]}). Exiting...")
             if not sig_event.is_set():
                 loop.call_soon_threadsafe(sig_event.set)
@@ -104,7 +107,5 @@ async def idle():
         for s in (SIGINT, SIGTERM, SIGABRT):
             loop.add_signal_handler(s, signal_handler, s)
 
-        try:
+        with contextlib.suppress(asyncio.CancelledError):
             await sig_event.wait()
-        except asyncio.CancelledError:
-            pass

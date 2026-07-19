@@ -20,7 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional, Union
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw, types
@@ -28,15 +28,15 @@ from pyrogram import raw, types
 
 class SendPaymentForm:
     async def send_payment_form(
-        self: "pyrogram.Client",
-        payment_form_id: int = None,
-        input_invoice: "types.InputInvoice" = None,
-        credentials: Optional["types.InputCredentials"] = None,
-        chat_id: Union[int, str] = None,
-        message_id: Union[int, str] = None,
-        invoice_link: str = None,
-        **kwargs
-    ) -> Union[bool, "types.PaymentResult", list]:
+        self: pyrogram.Client,
+        payment_form_id: int | None = None,
+        input_invoice: types.InputInvoice = None,
+        credentials: types.InputCredentials | None = None,
+        chat_id: int | str | None = None,
+        message_id: int | str | None = None,
+        invoice_link: str | None = None,
+        **kwargs,
+    ) -> bool | types.PaymentResult | list:
         """Send a filled-out payment form / pay an invoice.
 
         Supports modern ``payment_form_id`` + ``input_invoice`` and pyroblack
@@ -44,7 +44,8 @@ class SendPaymentForm:
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             payment_form_id (``int``, *optional*):
                 Payment form id from :meth:`~pyrogram.Client.get_payment_form`.
 
@@ -63,8 +64,10 @@ class SendPaymentForm:
             invoice_link (``str``, *optional*):
                 Invoice link or slug.
 
-        Returns:
+        Returns
+        -------
             ``bool`` | :obj:`~pyrogram.types.PaymentResult` | list: On success.
+
         """
         # Legacy positional: send_payment_form(chat_id, message_id)
         # Detect when first arg is chat id (not form id) — hard to distinguish ints.
@@ -80,32 +83,42 @@ class SendPaymentForm:
                     raw.functions.payments.SendStarsForm(
                         form_id=payment_form_id,
                         invoice=await input_invoice.write(self),
-                    )
+                    ),
                 )
             else:
                 await self.invoke(
                     raw.functions.payments.SendPaymentForm(
                         form_id=payment_form_id,
                         invoice=await input_invoice.write(self),
-                        credentials=await credentials.write(self)
-                    )
+                        credentials=await credentials.write(self),
+                    ),
                 )
             return True
 
         # pyroblack <= 2.7.2: chat_id + message_id (or link)
-        if not any((chat_id is not None and message_id is not None, invoice_link, message_id)):
+        if not any(
+            (chat_id is not None and message_id is not None, invoice_link, message_id)
+        ):
             # maybe positional legacy: first param was chat_id stored in payment_form_id wrongly
-            if payment_form_id is not None and input_invoice is not None and not hasattr(input_invoice, "write"):
+            if (
+                payment_form_id is not None
+                and input_invoice is not None
+                and not hasattr(input_invoice, "write")
+            ):
                 chat_id = payment_form_id
                 message_id = input_invoice
                 payment_form_id = None
                 input_invoice = None
 
         invoice = None
-        if message_id is not None and isinstance(message_id, int) and chat_id is not None:
+        if (
+            message_id is not None
+            and isinstance(message_id, int)
+            and chat_id is not None
+        ):
             invoice = raw.types.InputInvoiceMessage(
                 peer=await self.resolve_peer(chat_id),
-                msg_id=message_id
+                msg_id=message_id,
             )
         elif message_id is not None and isinstance(message_id, str):
             match = self.INVOICE_LINK_RE.match(message_id)
@@ -116,20 +129,21 @@ class SendPaymentForm:
             slug = match.group(1) if match else invoice_link
             invoice = raw.types.InputInvoiceSlug(slug=slug)
         else:
+            msg = "Provide payment_form_id+input_invoice, or chat_id+message_id, or invoice_link."
             raise ValueError(
-                "Provide payment_form_id+input_invoice, or chat_id+message_id, or invoice_link."
+                msg,
             )
 
         form = await self.get_payment_form(
             chat_id=chat_id,
             message_id=message_id,
-            invoice_link=invoice_link
+            invoice_link=invoice_link,
         )
 
         await self.invoke(
             raw.functions.payments.SendStarsForm(
                 form_id=form.id,
-                invoice=invoice
-            )
+                invoice=invoice,
+            ),
         )
         return True

@@ -20,19 +20,21 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import pyrogram
 from pyrogram import raw
 
 
 class AnswerPreCheckoutQuery:
     async def answer_pre_checkout_query(
-        self: "pyrogram.Client",
+        self: pyrogram.Client,
         pre_checkout_query_id: str,
         ok: bool,
-        error_message: str = None
+        error_message: str | None = None,
     ):
         """Once the user has confirmed their payment and shipping details, the API sends the final confirmation in the form of an :obj:`~pyrogram.handlers.PreCheckoutQueryHandler`.
-        
+
         Use this method to respond to such pre-checkout queries.
 
         .. note::
@@ -41,7 +43,8 @@ class AnswerPreCheckoutQuery:
 
         .. include:: /_includes/usable-by/bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             pre_checkout_query_id (``str``):
                 Unique identifier for the query to be answered.
 
@@ -51,7 +54,8 @@ class AnswerPreCheckoutQuery:
             error_message (``str``, *optional*):
                 Required if ok is False. Error message in human readable form that explains the reason for failure to proceed with the checkout (e.g. "Sorry, somebody just bought the last of our amazing black T-shirts while you were busy filling out your payment details. Please choose a different color or garment!"). Telegram will display this message to the user.
 
-        Returns:
+        Returns
+        -------
             ``bool``: True, on success.
 
         Example:
@@ -68,6 +72,6 @@ class AnswerPreCheckoutQuery:
             raw.functions.messages.SetBotPrecheckoutResults(
                 query_id=int(pre_checkout_query_id),
                 success=ok or None,
-                error=error_message or None
-            )
+                error=error_message or None,
+            ),
         )

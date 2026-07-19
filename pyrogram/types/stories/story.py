@@ -20,17 +20,22 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-import io
+from __future__ import annotations
+
+import contextlib
 import logging
-from datetime import datetime
-from typing import Callable, Optional, Union
+from typing import TYPE_CHECKING, Callable
 
 import pyrogram
-from pyrogram import raw, utils, types, enums
-from ..object import Object
-from ..update import Update
-from ..messages_and_media.message import Str
+from pyrogram import enums, raw, types, utils
 from pyrogram.errors import RPCError
+from pyrogram.types.messages_and_media.message import Str
+from pyrogram.types.object import Object
+from pyrogram.types.update import Update
+
+if TYPE_CHECKING:
+    import io
+    from datetime import datetime
 
 log = logging.getLogger(__name__)
 
@@ -38,19 +43,20 @@ log = logging.getLogger(__name__)
 class Story(Object, Update):
     """This object represents a story.
 
-    Parameters:
+    Parameters
+    ----------
         id (``int``):
             Unique story identifier among stories of the given sender.
 
         chat (:obj:`~pyrogram.types.Chat`):
             Identifier of the chat that posted the story.
-        
+
         date (:py:obj:`~datetime.datetime`, *optional*):
             Date the story was published.
-        
+
         expire_date (:py:obj:`~datetime.datetime`, *optional*):
             Date the story will be expired.
-        
+
         is_edited (``bool``, *optional*):
             True, if the story was edited.
 
@@ -105,7 +111,7 @@ class Story(Object, Update):
         deleted (``bool``, *optional*):
             The story is deleted.
             A story can be deleted in case it was deleted or you tried to retrieve a story that doesn't exist yet.
-        
+
         album_ids (List of ``int``):
             Identifiers of story albums to which the story is added; only for manageable stories.
 
@@ -117,31 +123,31 @@ class Story(Object, Update):
     def __init__(
         self,
         *,
-        client: "pyrogram.Client" = None,
-        id: int = None,
-        chat: "types.Chat" = None,
-        date: datetime = None,
-        expire_date: datetime = None,
-        is_edited: bool = None,
-        is_posted_to_chat_page: bool = None,
-        is_visible_only_for_self: bool = None,
-        repost_info: "types.StoryRepostInfo" = None,
-        privacy_settings: "types.StoryPrivacySettings" = None,
-        media: "enums.MessageMediaType" = None,
-        photo: "types.Photo" = None,
-        video: "types.Video" = None,
+        client: pyrogram.Client = None,
+        id: int | None = None,
+        chat: types.Chat = None,
+        date: datetime | None = None,
+        expire_date: datetime | None = None,
+        is_edited: bool | None = None,
+        is_posted_to_chat_page: bool | None = None,
+        is_visible_only_for_self: bool | None = None,
+        repost_info: types.StoryRepostInfo = None,
+        privacy_settings: types.StoryPrivacySettings = None,
+        media: enums.MessageMediaType = None,
+        photo: types.Photo = None,
+        video: types.Video = None,
         caption: Str = None,
-        caption_entities: list["types.MessageEntity"] = None,
-        areas: list["types.StoryArea"] = None,
-        has_protected_content: bool = None,
-        reactions: list["types.Reaction"] = None,
-        views: int = None,
-        forwards: int = None,
-        skipped: bool = None,
-        deleted: bool = None,
-        album_ids: list[int] = None,
-        _raw = None
-    ):
+        caption_entities: list[types.MessageEntity] | None = None,
+        areas: list[types.StoryArea] | None = None,
+        has_protected_content: bool | None = None,
+        reactions: list[types.Reaction] | None = None,
+        views: int | None = None,
+        forwards: int | None = None,
+        skipped: bool | None = None,
+        deleted: bool | None = None,
+        album_ids: list[int] | None = None,
+        _raw=None,
+    ) -> None:
         super().__init__(client)
 
         self.id = id
@@ -171,7 +177,7 @@ class Story(Object, Update):
     @staticmethod
     def _parse_story_item(
         client,
-        story_item: "raw.types.StoryItem"
+        story_item: raw.types.StoryItem,
     ):
         date = None
         expire_date = None
@@ -211,25 +217,38 @@ class Story(Object, Update):
 
             # out:flags.16?true
             if story_item.privacy:
-                privacy_settings = types.StoryPrivacySettings._parse(client, story_item.privacy)
+                privacy_settings = types.StoryPrivacySettings._parse(
+                    client, story_item.privacy
+                )
 
             # sent_reaction:flags.15?Reaction = StoryItem;
 
             if isinstance(story_item.media, raw.types.MessageMediaPhoto):
-                photo = types.Photo._parse(client, story_item.media.photo, story_item.media.ttl_seconds)
+                photo = types.Photo._parse(
+                    client, story_item.media.photo, story_item.media.ttl_seconds
+                )
                 media = enums.MessageMediaType.PHOTO
             elif isinstance(story_item.media, raw.types.MessageMediaDocument):
                 doc = story_item.media.document
                 attributes = {type(i): i for i in doc.attributes}
-                video_attributes = attributes.get(raw.types.DocumentAttributeVideo, None)
-                video = types.Video._parse(client, story_item.media, video_attributes, None)
+                video_attributes = attributes.get(raw.types.DocumentAttributeVideo)
+                video = types.Video._parse(
+                    client, story_item.media, video_attributes, None
+                )
                 media = enums.MessageMediaType.VIDEO
             else:
                 media = enums.MessageMediaType.UNKNOWN
             has_protected_content = story_item.noforwards
             is_edited = story_item.edited
             is_posted_to_chat_page = story_item.pinned
-            entities = [e for e in (types.MessageEntity._parse(client, entity, {}) for entity in story_item.entities) if e]
+            entities = [
+                e
+                for e in (
+                    types.MessageEntity._parse(client, entity, {})
+                    for entity in story_item.entities
+                )
+                if e
+            ]
             caption = Str(story_item.caption or "").init(entities) or None
             caption_entities = entities or None
             if story_item.views:
@@ -239,15 +258,16 @@ class Story(Object, Update):
                     types.Reaction._parse_count(client, reaction)
                     for reaction in getattr(story_item.views, "reactions", [])
                 ] or None
-            
+
             if story_item.media_areas:
                 areas = [
                     types.StoryArea._parse(
                         client,
                         area,
-                    ) for area in story_item.media_areas
+                    )
+                    for area in story_item.media_areas
                 ]
-            
+
             album_ids = story_item.albums
 
         return (
@@ -277,12 +297,12 @@ class Story(Object, Update):
         client,
         users: dict,
         chats: dict,
-        story_media: "raw.types.MessageMediaStory",
-        reply_story: "raw.types.MessageReplyStoryHeader",
-        story_update: "raw.types.UpdateStory",
-        story_item: "raw.types.StoryItem",
-        peer: "raw.base.peer"
-    ) -> "Story":
+        story_media: raw.types.MessageMediaStory,
+        reply_story: raw.types.MessageReplyStoryHeader,
+        story_update: raw.types.UpdateStory,
+        story_item: raw.types.StoryItem,
+        peer: raw.base.peer,
+    ) -> Story:
         story_id = None
         chat = None
 
@@ -319,7 +339,7 @@ class Story(Object, Update):
                 else:
                     chat = types.Chat._parse_chat(client, chats.get(raw_peer_id))
             story_id = getattr(story_media, "id", None)
-        
+
         if reply_story:
             rawupdate = reply_story
 
@@ -330,7 +350,7 @@ class Story(Object, Update):
                 else:
                     chat = types.Chat._parse_chat(client, chats.get(raw_peer_id))
             story_id = getattr(reply_story, "story_id", None)
-        
+
         if story_update:
             rawupdate = story_update
 
@@ -339,26 +359,20 @@ class Story(Object, Update):
                 chat = types.Chat._parse_chat(client, users.get(raw_peer_id))
             else:
                 chat = types.Chat._parse_chat(client, chats.get(raw_peer_id))
-            
+
             story_id = getattr(story_update.story, "id", None)
             story_item = story_update.story
 
-        if (
-            not story_item and
-            story_id and
-            not (client.me and client.me.is_bot)
-        ):
-            try:
+        if not story_item and story_id and not (client.me and client.me.is_bot):
+            with contextlib.suppress(RPCError, IndexError):
                 story_item = (
                     await client.invoke(
                         raw.functions.stories.GetStoriesByID(
                             peer=await client.resolve_peer(raw_peer_id),
-                            id=[story_id]
-                        )
+                            id=[story_id],
+                        ),
                     )
                 ).stories[0]
-            except (RPCError, IndexError):
-                pass
 
         if peer:
             raw_peer_id = utils.get_raw_peer_id(peer)
@@ -397,16 +411,18 @@ class Story(Object, Update):
             if not chat and story_item.from_id:
                 peer_id = utils.get_peer_id(story_item.from_id)
                 if isinstance(story_item.from_id, raw.types.PeerUser):
-                    chat = types.Chat._parse_user_chat(client, users.get(peer_id, None))
+                    chat = types.Chat._parse_user_chat(client, users.get(peer_id))
                 elif isinstance(story_item.from_id, raw.types.PeerChat):
-                    chat = types.Chat._parse_chat_chat(client, chats.get(peer_id, None))
+                    chat = types.Chat._parse_chat_chat(client, chats.get(peer_id))
                 else:
-                    chat = types.Chat._parse_channel_chat(client, chats.get(peer_id, None))
+                    chat = types.Chat._parse_channel_chat(client, chats.get(peer_id))
 
             if getattr(story_item, "fwd_from", None):
                 repost_info = types.StoryRepostInfo._parse(
-                    client, story_item.fwd_from,
-                    users, chats
+                    client,
+                    story_item.fwd_from,
+                    users,
+                    chats,
                 )
 
         return Story(
@@ -438,12 +454,9 @@ class Story(Object, Update):
 
     async def react(
         self,
-        reaction: Union[
-            int,
-            str
-        ] = None,
-        add_to_recent: bool = True
-    ) -> "types.MessageReactions":
+        reaction: int | str | None = None,
+        add_to_recent: bool = True,
+    ) -> types.MessageReactions:
         """Bound method *react* of :obj:`~pyrogram.types.Story`.
 
         Use as a shortcut for:
@@ -465,7 +478,8 @@ class Story(Object, Update):
                 # Retract a reaction
                 await story.react()
 
-        Parameters:
+        Parameters
+        ----------
             reaction (``int`` | ``str``, *optional*):
                 New list of reaction types to set on the message.
                 Pass None as emoji (default) to retract the reaction.
@@ -474,10 +488,13 @@ class Story(Object, Update):
                 Pass True if the reaction should appear in the recently used reactions.
                 This option is applicable only for users.
                 Defaults to True.
-        Returns:
+
+        Returns
+        -------
             On success, :obj:`~pyrogram.types.MessageReactions`: is returned.
 
-        Raises:
+        Raises
+        ------
             :obj:`~pyrogram.errors.RPCError`: In case of a Telegram RPC error.
 
         """
@@ -489,33 +506,37 @@ class Story(Object, Update):
                 if isinstance(i, types.ReactionType):
                     sr.append(i)
                 elif isinstance(i, int):
-                    sr.append(types.ReactionTypeCustomEmoji(
-                        custom_emoji_id=str(i)
-                    ))
+                    sr.append(
+                        types.ReactionTypeCustomEmoji(
+                            custom_emoji_id=str(i),
+                        )
+                    )
                 else:
-                    sr.append(types.ReactionTypeEmoji(
-                        emoji=i
-                    ))
+                    sr.append(
+                        types.ReactionTypeEmoji(
+                            emoji=i,
+                        )
+                    )
 
         elif isinstance(reaction, int):
             sr = [
                 types.ReactionTypeCustomEmoji(
-                    custom_emoji_id=str(reaction)
-                )
+                    custom_emoji_id=str(reaction),
+                ),
             ]
 
         elif isinstance(reaction, str):
             sr = [
                 types.ReactionTypeEmoji(
-                    emoji=reaction
-                )
+                    emoji=reaction,
+                ),
             ]
 
         return await self._client.set_reaction(
             chat_id=self.chat.id,
             story_id=self.id,
             reaction=sr,
-            add_to_recent=add_to_recent
+            add_to_recent=add_to_recent,
         )
 
     async def download(
@@ -523,9 +544,9 @@ class Story(Object, Update):
         file_name: str = "",
         in_memory: bool = False,
         block: bool = True,
-        progress: Callable = None,
-        progress_args: tuple = ()
-    ) -> Optional[Union[str, "io.BytesIO"]]:
+        progress: Callable | None = None,
+        progress_args: tuple = (),
+    ) -> str | io.BytesIO | None:
         """Bound method *download* of :obj:`~pyrogram.types.Story`.
 
         Use as a shortcut for:
@@ -539,7 +560,8 @@ class Story(Object, Update):
 
                 await story.download()
 
-        Parameters:
+        Parameters
+        ----------
             file_name (``str``, *optional*):
                 A custom *file_name* to be used instead of the one provided by Telegram.
                 By default, all files are downloaded in the *downloads* folder in your working directory.
@@ -566,7 +588,8 @@ class Story(Object, Update):
                 You can pass anything you need to be available in the progress callback scope; for example, a Message
                 object or a Client instance in order to edit the message with the updated progress status.
 
-        Other Parameters:
+        Other Parameters
+        ----------------
             current (``int``):
                 The amount of bytes transmitted so far.
 
@@ -577,13 +600,15 @@ class Story(Object, Update):
                 Extra custom arguments as defined in the ``progress_args`` parameter.
                 You can either keep ``*args`` or add every single extra argument in your function signature.
 
-        Returns:
+        Returns
+        -------
             ``str`` | ``None`` | :obj:`io.BytesIO`: On success, the absolute path of the downloaded file is returned,
             otherwise, in case the download failed or was deliberately stopped with
             :meth:`~pyrogram.Client.stop_transmission`, None is returned.
             Otherwise, in case ``in_memory=True``, a binary file-like object with its attribute ".name" set is returned.
 
-        Raises:
+        Raises
+        ------
             ValueError: If the message doesn't contain any downloadable media.
             :obj:`~pyrogram.errors.RPCError`: In case of a Telegram RPC error.
 
@@ -601,19 +626,18 @@ class Story(Object, Update):
     def link(self) -> str:
         if self.chat and self.chat.username:
             return f"https://t.me/{self.chat.username}/s/{self.id}"
+        return None
 
     @property
     def edited(self) -> bool:
         log.warning(
-            "This property is deprecated. "
-            "Please use is_edited instead"
+            "This property is deprecated. Please use is_edited instead",
         )
         return self.is_edited
 
     @property
     def pinned(self) -> bool:
         log.warning(
-            "This property is deprecated. "
-            "Please use is_posted_to_chat_page instead"
+            "This property is deprecated. Please use is_posted_to_chat_page instead",
         )
         return self.is_posted_to_chat_page

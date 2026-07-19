@@ -20,24 +20,30 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 from asyncio import sleep
-from typing import AsyncGenerator, Optional, Union
+from typing import TYPE_CHECKING
 
 import pyrogram
 from pyrogram import raw, types, utils
 
+if TYPE_CHECKING:
+    from collections.abc import AsyncGenerator
+
 
 class GetDirectMessagesTopics:
     async def get_direct_messages_topics(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
-        limit: int = 0
-    ) -> AsyncGenerator["types.DirectMessagesTopic", None]:
+        self: pyrogram.Client,
+        chat_id: int | str,
+        limit: int = 0,
+    ) -> AsyncGenerator[types.DirectMessagesTopic, None]:
         """Get one or more topic from a direct messages channel chat.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
 
@@ -45,7 +51,8 @@ class GetDirectMessagesTopics:
                 Limits the number of topics to be retrieved.
                 By default, no limit is applied and all topics are returned.
 
-        Returns:
+        Returns
+        -------
             ``Generator``: A generator yielding :obj:`~pyrogram.types.DirectMessagesTopic` objects.
 
         Example:
@@ -73,8 +80,8 @@ class GetDirectMessagesTopics:
                     limit=limit,
                     hash=0,
                     exclude_pinned=None,
-                    parent_peer=await self.resolve_peer(chat_id)
-                )
+                    parent_peer=await self.resolve_peer(chat_id),
+                ),
             )
 
             users = {i.id: i for i in r.users}
@@ -91,7 +98,7 @@ class GetDirectMessagesTopics:
                     message,
                     users,
                     chats,
-                    replies=self.fetch_replies
+                    replies=self.fetch_replies,
                 )
 
             topics = []
@@ -103,8 +110,8 @@ class GetDirectMessagesTopics:
                         topic=topic,
                         messages=messages,
                         users=users,
-                        chats=chats
-                    )
+                        chats=chats,
+                    ),
                 )
 
             if not topics:

@@ -20,15 +20,19 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-import pyrogram
-from pyrogram import types
-from ..object import Object
+from typing import TYPE_CHECKING
+
+from pyrogram.types.object import Object
+
+if TYPE_CHECKING:
+    from pyrogram import types
 
 
 class ChatShared(Object):
     """This object contains information about a chat that was shared with the bot using a :obj:`~pyrogram.types.KeyboardButtonRequestChat` button.
 
-    Parameters:
+    Parameters
+    ----------
         request_id (``int``):
             Identifier of the request.
 
@@ -41,8 +45,8 @@ class ChatShared(Object):
         self,
         *,
         request_id: int,
-        chats: list["types.Chat"]
-    ):
+        chats: list["types.Chat"],
+    ) -> None:
         super().__init__()
 
         self.request_id = request_id

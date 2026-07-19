@@ -20,28 +20,34 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import List, Optional, AsyncGenerator
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import pyrogram
 from pyrogram import enums, raw, types
 
+if TYPE_CHECKING:
+    from collections.abc import AsyncGenerator
+
 
 class SearchGiftsForResale:
     async def search_gifts_for_resale(
-        self: "pyrogram.Client",
+        self: pyrogram.Client,
         gift_id: int,
-        order: "enums.GiftForResaleOrder" = enums.GiftForResaleOrder.CHANGE_DATE,
-        for_crafting: Optional[bool] = None,
-        for_stars: Optional[bool] = None,
-        attributes: Optional[List["types.UpgradedGiftAttributeId"]] = None,
+        order: enums.GiftForResaleOrder = enums.GiftForResaleOrder.CHANGE_DATE,
+        for_crafting: bool | None = None,
+        for_stars: bool | None = None,
+        attributes: list[types.UpgradedGiftAttributeId] | None = None,
         limit: int = 0,
-        offset: str = ""
-    ) -> AsyncGenerator["types.Gift", None]:
+        offset: str = "",
+    ) -> AsyncGenerator[types.Gift, None]:
         """Get upgraded gifts that can be bought from other owners.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             gift_id (``int``):
                 Identifier of the regular gift that was upgraded to a unique gift.
 
@@ -65,7 +71,8 @@ class SearchGiftsForResale:
             offset (``str``, *optional*):
                 The offset from which to start returning results. Default is "" (no offset).
 
-        Returns:
+        Returns
+        -------
             ``Generator``: A generator yielding :obj:`~pyrogram.types.Gift` objects.
 
         Example:
@@ -77,6 +84,7 @@ class SearchGiftsForResale:
                 # Buy first gift from resale market
                 async for gift in app.search_gifts_for_resale(gift_id=123456, limit=1):
                     await app.send_resold_gift(gift_link=gift.link, new_owner_chat_id="me") # or just use await gift.buy()
+
         """
         current = 0
         total = abs(limit) or (1 << 31) - 1
@@ -92,10 +100,11 @@ class SearchGiftsForResale:
                     sort_by_num=order == enums.GiftForResaleOrder.NUMBER,
                     for_craft=for_crafting,
                     stars_only=for_stars,
-                    attributes=[attr.write() for attr in attributes] if attributes else None,
-
+                    attributes=[attr.write() for attr in attributes]
+                    if attributes
+                    else None,
                 ),
-                sleep_threshold=60
+                sleep_threshold=60,
             )
 
             users = {i.id: i for i in r.users}
@@ -121,4 +130,3 @@ class SearchGiftsForResale:
 
             if not offset:
                 return
-

@@ -20,17 +20,18 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional, Union
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw, types
-from ..object import Object
+from pyrogram.types.object import Object
 
 
 class Invoice(Object):
     """This object contains basic information about an invoice.
 
-    Parameters:
+    Parameters
+    ----------
         currency (``str``):
             Three-letter ISO 4217 `currency <https://core.telegram.org/bots/payments#supported-currencies>`_ code.
 
@@ -91,32 +92,33 @@ class Invoice(Object):
 
         _raw (:obj:`~raw.base.payments.MessageMediaInvoice` | :obj:`~raw.base.Invoice`, *optional*):
             The raw object, as received from the Telegram API.
+
     """
 
     def __init__(
-            self,
-            *,
-            client: "pyrogram.Client" = None,
-            currency: str,
-            is_test: bool,
-            title: Optional[str] = None,
-            description: Optional[str] = None,
-            total_amount: Optional[int] = None,
-            start_parameter: Optional[str] = None,
-            prices: Optional[list["types.LabeledPrice"]] = None,
-            is_name_requested: Optional[bool] = None,
-            is_phone_requested: Optional[bool] = None,
-            is_email_requested: Optional[bool] = None,
-            is_shipping_address_requested: Optional[bool] = None,
-            is_flexible: Optional[bool] = None,
-            is_phone_to_provider: Optional[bool] = None,
-            is_email_to_provider: Optional[bool] = None,
-            is_recurring: Optional[bool] = None,
-            max_tip_amount: Optional[int] = None,
-            suggested_tip_amounts: Optional[list[int]] = None,
-            terms_url: Optional[str] = None,
-            _raw: Union["raw.types.MessageMediaInvoice", "raw.types.Invoice"] = None
-    ):
+        self,
+        *,
+        client: pyrogram.Client = None,
+        currency: str,
+        is_test: bool,
+        title: str | None = None,
+        description: str | None = None,
+        total_amount: int | None = None,
+        start_parameter: str | None = None,
+        prices: list[types.LabeledPrice] | None = None,
+        is_name_requested: bool | None = None,
+        is_phone_requested: bool | None = None,
+        is_email_requested: bool | None = None,
+        is_shipping_address_requested: bool | None = None,
+        is_flexible: bool | None = None,
+        is_phone_to_provider: bool | None = None,
+        is_email_to_provider: bool | None = None,
+        is_recurring: bool | None = None,
+        max_tip_amount: int | None = None,
+        suggested_tip_amounts: list[int] | None = None,
+        terms_url: str | None = None,
+        _raw: raw.types.MessageMediaInvoice | raw.types.Invoice = None,
+    ) -> None:
         super().__init__(client)
 
         self.currency = currency
@@ -140,7 +142,9 @@ class Invoice(Object):
         self._raw = _raw
 
     @staticmethod
-    def _parse(client, invoice: Union["raw.types.MessageMediaInvoice", "raw.types.Invoice"]) -> "Invoice":
+    def _parse(
+        client, invoice: raw.types.MessageMediaInvoice | raw.types.Invoice
+    ) -> Invoice:
         return Invoice(
             currency=invoice.currency,
             is_test=invoice.test,
@@ -148,19 +152,24 @@ class Invoice(Object):
             description=getattr(invoice, "description", None),
             total_amount=getattr(invoice, "total_amount", None),
             start_parameter=getattr(invoice, "start_param", None) or None,
-            prices=types.List(types.LabeledPrice._parse(lp) for lp in invoice.prices) if getattr(invoice, "prices", None) else None,
+            prices=types.List(types.LabeledPrice._parse(lp) for lp in invoice.prices)
+            if getattr(invoice, "prices", None)
+            else None,
             is_name_requested=getattr(invoice, "name_requested", None),
             is_phone_requested=getattr(invoice, "phone_requested", None),
             is_email_requested=getattr(invoice, "email_requested", None),
-            is_shipping_address_requested=getattr(invoice, "shipping_address_requested", None),
+            is_shipping_address_requested=getattr(
+                invoice, "shipping_address_requested", None
+            ),
             is_flexible=getattr(invoice, "flexible", None),
             is_phone_to_provider=getattr(invoice, "phone_to_provider", None),
             is_email_to_provider=getattr(invoice, "email_to_provider", None),
             is_recurring=getattr(invoice, "recurring", None),
             max_tip_amount=getattr(invoice, "max_tip_amount", None),
-            suggested_tip_amounts=getattr(invoice, "suggested_tip_amounts", None) or None,
+            suggested_tip_amounts=getattr(invoice, "suggested_tip_amounts", None)
+            or None,
             terms_url=getattr(invoice, "terms_url", None),
             _raw=invoice,
-            client=client
+            client=client,
             # TODO: Add photo and extended media
         )

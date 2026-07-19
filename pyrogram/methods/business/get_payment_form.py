@@ -20,7 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw, types
@@ -28,16 +28,18 @@ from pyrogram import raw, types
 
 class GetPaymentForm:
     async def get_payment_form(
-        self: "pyrogram.Client", *,
-        chat_id: Union[int, str] = None,
-        message_id: int = None,
-        invoice_link: str = None
-    ) -> "types.PaymentForm":
+        self: pyrogram.Client,
+        *,
+        chat_id: int | str | None = None,
+        message_id: int | None = None,
+        invoice_link: str | None = None,
+    ) -> types.PaymentForm:
         """Get information about a invoice or paid media.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
                 of the target channel/supergroup (in the format @username).
@@ -48,7 +50,8 @@ class GetPaymentForm:
             invoice_link (``str``):
                 Pass a invoice link in form of a *t.me/$...* link or slug itself to get the payment form from link.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.PaymentForm`: On success, a payment form is returned.
 
         Example:
@@ -59,33 +62,32 @@ class GetPaymentForm:
 
                 # get payment form from link
                 app.get_payment_form(invoice_link="https://t.me/$xvbzUtt5sUlJCAAATqZrWRy9Yzk")
+
         """
         if not any((all((chat_id, message_id)), invoice_link)):
-            raise ValueError("You should pass at least one parameter to this method.")
+            msg = "You should pass at least one parameter to this method."
+            raise ValueError(msg)
 
         invoice = None
 
         if message_id:
             invoice = raw.types.InputInvoiceMessage(
                 peer=await self.resolve_peer(chat_id),
-                msg_id=message_id
+                msg_id=message_id,
             )
         elif invoice_link:
             match = self.INVOICE_LINK_RE.match(invoice_link)
 
-            if match:
-                slug = match.group(1)
-            else:
-                slug = invoice_link
+            slug = match.group(1) if match else invoice_link
 
             invoice = raw.types.InputInvoiceSlug(
-                slug=slug
+                slug=slug,
             )
 
         r = await self.invoke(
             raw.functions.payments.GetPaymentForm(
-                invoice=invoice
-            )
+                invoice=invoice,
+            ),
         )
 
         return types.PaymentForm._parse(self, r)

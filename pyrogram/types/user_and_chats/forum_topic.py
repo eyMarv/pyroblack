@@ -20,20 +20,20 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union
+from __future__ import annotations
 
 from pyrogram import raw, types
-from ..object import Object
+from pyrogram.types.object import Object
 
 
 class ForumTopic(Object):
-    # todo
+    # TODO
     # notify_settings: `~pyrogram.types.PeerNotifySettings`
     # draft: `~pyrogram.types.DraftMessage`
     """A forum topic.
 
-
-    Parameters:
+    Parameters
+    ----------
         id (``Integer``):
             Id of the topic
 
@@ -97,15 +97,15 @@ class ForumTopic(Object):
         unread_count: int,
         unread_mentions_count: int,
         unread_reactions_count: int,
-        from_id: Union["types.PeerChannel", "types.PeerUser"],
+        from_id: types.PeerChannel | types.PeerUser,
         # notify_settings: "types.PeerNotifySettings", //todo
-        my: bool = None,
-        closed: bool = None,
-        pinned: bool = None,
-        short: bool = None,
-        icon_emoji_id: int = None,
+        my: bool | None = None,
+        closed: bool | None = None,
+        pinned: bool | None = None,
+        short: bool | None = None,
+        icon_emoji_id: int | None = None,
         # draft: "types.DraftMessage" = None //todo
-    ):
+    ) -> None:
         super().__init__()
 
         self.id = id
@@ -128,7 +128,7 @@ class ForumTopic(Object):
         # self.draft = draft //todo
 
     @staticmethod
-    def _parse(forum_topic: "raw.types.ForumTopic") -> "ForumTopic":
+    def _parse(forum_topic: raw.types.ForumTopic) -> ForumTopic:
         if isinstance(forum_topic, raw.types.ForumTopicDeleted):
             return types.ForumTopicDeleted._parse(forum_topic)
         from_id = forum_topic.from_id

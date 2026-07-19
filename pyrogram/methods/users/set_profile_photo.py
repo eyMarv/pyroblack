@@ -20,24 +20,28 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-import io
-from typing import Union
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import pyrogram
 from pyrogram import raw
+
+if TYPE_CHECKING:
+    import io
 
 
 class SetProfilePhoto:
     # TODO: FIXME!
     async def set_profile_photo(
-        self: "pyrogram.Client",
+        self: pyrogram.Client,
         *,
-        photo: Union[str, "io.BytesIO"] = None,
-        video: Union[str, "io.BytesIO"] = None,
+        photo: str | io.BytesIO | None = None,
+        video: str | io.BytesIO | None = None,
         public: bool = False,
-        for_my_bot: Union[int, str] = None,
-        photo_frame_start_timestamp: float = None,
-        **kwargs
+        for_my_bot: int | str | None = None,
+        photo_frame_start_timestamp: float | None = None,
+        **kwargs,
     ) -> bool:
         """Set a new profile photo or video (H.264/MPEG-4 AVC video, max 5 seconds).
 
@@ -46,7 +50,8 @@ class SetProfilePhoto:
 
         .. include:: /_includes/usable-by/users-bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             photo (``str`` | :obj:`io.BytesIO`, *optional*):
                 Profile photo to set.
                 Pass a file path as string to upload a new photo that exists on your local machine or
@@ -68,7 +73,8 @@ class SetProfilePhoto:
             photo_frame_start_timestamp (``float``, *optional*):
                 Floating point UNIX timestamp in seconds, indicating the frame of the video/sticker that should be used as static preview; can only be used if ``video`` is set.
 
-        Returns:
+        Returns
+        -------
             ``bool``: True on success.
 
         Example:
@@ -79,8 +85,8 @@ class SetProfilePhoto:
 
                 # Set a new profile video
                 await app.set_profile_photo(video="new_video.mp4")
-        """
 
+        """
         return bool(
             await self.invoke(
                 raw.functions.photos.UploadProfilePhoto(
@@ -88,7 +94,7 @@ class SetProfilePhoto:
                     file=await self.save_file(photo),
                     video=await self.save_file(video),
                     bot=await self.resolve_peer(for_my_bot) if for_my_bot else None,
-                    video_start_ts=photo_frame_start_timestamp
-                )
-            )
+                    video_start_ts=photo_frame_start_timestamp,
+                ),
+            ),
         )

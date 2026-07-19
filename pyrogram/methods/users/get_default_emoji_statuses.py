@@ -21,8 +21,7 @@
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
 import pyrogram
-from pyrogram import raw
-from pyrogram import types
+from pyrogram import raw, types
 
 
 class GetDefaultEmojiStatuses:
@@ -41,9 +40,10 @@ class GetDefaultEmojiStatuses:
 
                 default_emoji_statuses = await app.get_default_emoji_statuses()
                 print(default_emoji_statuses)
+
         """
         r = await self.invoke(
-            raw.functions.account.GetDefaultEmojiStatuses(hash=0)
+            raw.functions.account.GetDefaultEmojiStatuses(hash=0),
         )
 
         return types.List([types.EmojiStatus._parse(self, i) for i in r.statuses])

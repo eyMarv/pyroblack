@@ -21,13 +21,14 @@
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
 from pyrogram import raw
-from ..object import Object
+from pyrogram.types.object import Object
 
 
 class ChatPrivileges(Object):
     """Describes privileged actions an administrator is able to take in a chat.
 
-    Parameters:
+    Parameters
+    ----------
         is_anonymous (``bool``, *optional*):
             True, if the user's presence in the chat is hidden.
 
@@ -60,7 +61,7 @@ class ChatPrivileges(Object):
 
         can_pin_messages (``bool``, *optional*):
             True, if the user is allowed to pin messages; for groups and supergroups only.
-        
+
         can_post_stories (``bool``, *optional*):
             True, if the administrator can post stories to the chat.
 
@@ -72,7 +73,7 @@ class ChatPrivileges(Object):
 
         can_manage_topics (``bool``, *optional*):
             True, if the user is allowed to create, rename, close, and reopen forum topics; for supergroups only.
-        
+
         can_manage_direct_messages (``bool``, *optional*):
             True, if the administrator can manage direct messages of the channel and decline suggested posts; for channels only.
 
@@ -101,7 +102,7 @@ class ChatPrivileges(Object):
         can_manage_topics: bool = False,  # supergroups only
         can_manage_direct_messages: bool = False,
         can_manage_tags: bool = False,
-    ):
+    ) -> None:
         super().__init__(None)
 
         self.is_anonymous: bool = is_anonymous
@@ -147,22 +148,26 @@ class ChatPrivileges(Object):
         )
 
     def write(self):
-        return raw.types.ChatAdminRights(
-            change_info=self.can_change_info,
-            post_messages=self.can_post_messages,
-            edit_messages=self.can_edit_messages,
-            delete_messages=self.can_delete_messages,
-            ban_users=self.can_restrict_members,
-            invite_users=self.can_invite_users,
-            pin_messages=self.can_pin_messages,
-            add_admins=self.can_promote_members,
-            anonymous=self.is_anonymous,
-            manage_call=self.can_manage_video_chats,
-            other=self.can_manage_chat,
-            manage_topics=self.can_manage_topics,
-            post_stories=self.can_post_stories,
-            edit_stories=self.can_edit_stories,
-            delete_stories=self.can_delete_stories,
-            manage_direct_messages=self.can_manage_direct_messages,
-            manage_ranks=self.can_manage_tags,
-        ) if self else raw.types.ChatAdminRights()
+        return (
+            raw.types.ChatAdminRights(
+                change_info=self.can_change_info,
+                post_messages=self.can_post_messages,
+                edit_messages=self.can_edit_messages,
+                delete_messages=self.can_delete_messages,
+                ban_users=self.can_restrict_members,
+                invite_users=self.can_invite_users,
+                pin_messages=self.can_pin_messages,
+                add_admins=self.can_promote_members,
+                anonymous=self.is_anonymous,
+                manage_call=self.can_manage_video_chats,
+                other=self.can_manage_chat,
+                manage_topics=self.can_manage_topics,
+                post_stories=self.can_post_stories,
+                edit_stories=self.can_edit_stories,
+                delete_stories=self.can_delete_stories,
+                manage_direct_messages=self.can_manage_direct_messages,
+                manage_ranks=self.can_manage_tags,
+            )
+            if self
+            else raw.types.ChatAdminRights()
+        )

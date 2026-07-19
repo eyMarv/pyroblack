@@ -20,25 +20,25 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union
+from __future__ import annotations
 
 import pyrogram
-from pyrogram import raw
-from pyrogram import enums
+from pyrogram import enums, raw
 
 
 class UpdateColor:
     async def update_color(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
-        color: Union["enums.ReplyColor", "enums.ProfileColor"],
-        background_emoji_id: int = None,
+        self: pyrogram.Client,
+        chat_id: int | str,
+        color: enums.ReplyColor | enums.ProfileColor,
+        background_emoji_id: int | None = None,
     ) -> bool:
-        """Update color
+        """Update color.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
                 You can also use chat public link in form of *t.me/<username>* (str).
@@ -50,13 +50,15 @@ class UpdateColor:
             background_emoji_id (``int``, *optional*):
                 Unique identifier of the custom emoji.
 
-        Returns:
+        Returns
+        -------
             ``bool``: On success, in case the passed-in session is authorized, True is returned.
 
         Example:
             .. code-block:: python
 
                 await app.update_color(chat_id, enums.ReplyColor.RED)
+
         """
         peer = await self.resolve_peer(chat_id)
 
@@ -66,7 +68,7 @@ class UpdateColor:
                     for_profile=isinstance(color, enums.ProfileColor),
                     color=color.value,
                     background_emoji_id=background_emoji_id,
-                )
+                ),
             )
         else:
             r = await self.invoke(
@@ -74,7 +76,7 @@ class UpdateColor:
                     channel=peer,
                     color=color.value,
                     background_emoji_id=background_emoji_id,
-                )
+                ),
             )
 
         return bool(r)

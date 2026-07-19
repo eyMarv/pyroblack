@@ -20,24 +20,24 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import List, Union
+from typing import Union
 
 import pyrogram
-
-from ..object import Object
-from pyrogram import raw, types, utils, enums
-from typing import Union, List
+from pyrogram import enums, raw, types, utils
+from pyrogram.types.object import Object
 
 
 class RequestedChats(Object):
     """Contains information about requested chats.
 
-    Parameters:
+    Parameters
+    ----------
         button_id (``int``):
             Identifier of button.
 
         chats (List of :obj:`~pyrogram.types.Chat`):
             List of requested chats.
+
     """
 
     def __init__(
@@ -45,8 +45,8 @@ class RequestedChats(Object):
         *,
         client: "pyrogram.Client" = None,
         button_id: int,
-        chats: List["types.Chat"],
-    ):
+        chats: list["types.Chat"],
+    ) -> None:
         super().__init__(client)
 
         self.button_id = button_id
@@ -81,10 +81,13 @@ class RequestedChats(Object):
                     last_name=getattr(requested_peer, "last_name", None),
                     username=getattr(requested_peer, "username", None),
                     photo=types.ChatPhoto._parse(
-                        client, getattr(requested_peer, "photo", None), peer_id, 0
+                        client,
+                        getattr(requested_peer, "photo", None),
+                        peer_id,
+                        0,
                     ),
                     client=client,
-                )
+                ),
             )
 
         return RequestedChats(

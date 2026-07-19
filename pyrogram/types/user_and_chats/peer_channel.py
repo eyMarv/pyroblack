@@ -20,20 +20,25 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from pyrogram import raw
-from ..object import Object
+from typing import TYPE_CHECKING
+
+from pyrogram.types.object import Object
+
+if TYPE_CHECKING:
+    from pyrogram import raw
 
 
 class PeerChannel(Object):
     """A PeerChannel.
 
-
-    Parameters:
+    Parameters
+    ----------
         channel_id (``Integer``):
             Id of the channel.
+
     """
 
-    def __init__(self, *, channel_id: int):
+    def __init__(self, *, channel_id: int) -> None:
         super().__init__()
 
         self.channel_id = channel_id

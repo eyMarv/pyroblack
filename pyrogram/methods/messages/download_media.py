@@ -20,55 +20,56 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-import asyncio
-import io
+from __future__ import annotations
+
 import os
 import re
 from datetime import datetime
-from typing import Callable, Optional, Union 
+from typing import TYPE_CHECKING, Callable
 
 import pyrogram
-from pyrogram import enums, types, utils
-from pyrogram.file_id import FileId, FileType, PHOTO_TYPES
+from pyrogram import types, utils
+from pyrogram.file_id import PHOTO_TYPES, FileId, FileType
+
+if TYPE_CHECKING:
+    import io
 
 DEFAULT_DOWNLOAD_DIR = "downloads/"
 
 
 class DownloadMedia:
     async def download_media(
-        self: "pyrogram.Client",
-        message: Union[
-            "types.Message",
-            "types.Audio",
-            "types.Document",
-            "types.Photo",
-            "types.Sticker",
-            "types.Video",
-            "types.Animation",
-            "types.Voice",
-            "types.VideoNote",
-            # TODO
-            "types.Story",
-            "types.PaidMediaInfo",
-            "types.PaidMediaPhoto",
-            "types.PaidMediaVideo",
-            "types.Thumbnail",
-            "types.StrippedThumbnail",
-            "types.PaidMediaPreview",
-            str,
-        ],
+        self: pyrogram.Client,
+        message: types.Message
+        | types.Audio
+        | types.Document
+        | types.Photo
+        | types.Sticker
+        | types.Video
+        | types.Animation
+        | types.Voice
+        | types.VideoNote
+        | types.Story
+        | types.PaidMediaInfo
+        | types.PaidMediaPhoto
+        | types.PaidMediaVideo
+        | types.Thumbnail
+        | types.StrippedThumbnail
+        | types.PaidMediaPreview
+        | str,
         file_name: str = DEFAULT_DOWNLOAD_DIR,
         in_memory: bool = False,
         block: bool = True,
-        idx: int = None,
-        progress: Callable = None,
-        progress_args: tuple = ()
-    ) -> Optional[Union[str, "io.BytesIO", list[str], list["io.BytesIO"]]]:
+        idx: int | None = None,
+        progress: Callable | None = None,
+        progress_args: tuple = (),
+    ) -> str | io.BytesIO | list[str] | list[io.BytesIO] | None:
         """Download the media from a message.
 
         .. include:: /_includes/usable-by/users-bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             message (:obj:`~pyrogram.types.Message` | :obj:`~pyrogram.types.Audio` | :obj:`~pyrogram.types.Document` | :obj:`~pyrogram.types.Photo` | :obj:`~pyrogram.types.Sticker` | :obj:`~pyrogram.types.Video` | :obj:`~pyrogram.types.Animation` | :obj:`~pyrogram.types.Voice` | :obj:`~pyrogram.types.VideoNote` | :obj:`~pyrogram.types.Story` | :obj:`~pyrogram.types.PaidMediaInfo` | :obj:`~pyrogram.types.PaidMediaPhoto` | :obj:`~pyrogram.types.PaidMediaVideo` | :obj:`~pyrogram.types.Thumbnail` | :obj:`~pyrogram.types.StrippedThumbnail` | :obj:`~pyrogram.types.PaidMediaPreview` | :obj:`~pyrogram.types.Story` | ``str``):
                 Pass a Message containing the media, the media itself (message.audio, message.video, ...) or a file id
                 as string.
@@ -102,7 +103,8 @@ class DownloadMedia:
                 You can pass anything you need to be available in the progress callback scope; for example, a Message
                 object or a Client instance in order to edit the message with the updated progress status.
 
-        Other Parameters:
+        Other Parameters
+        ----------------
             current (``int``):
                 The amount of bytes transmitted so far.
 
@@ -113,14 +115,16 @@ class DownloadMedia:
                 Extra custom arguments as defined in the ``progress_args`` parameter.
                 You can either keep ``*args`` or add every single extra argument in your function signature.
 
-        Returns:
+        Returns
+        -------
             ``str`` | ``None`` | :obj:`io.BytesIO`: On success, the absolute path of the downloaded file is returned,
             otherwise, in case the download failed or was deliberately stopped with
             :meth:`~pyrogram.Client.stop_transmission`, None is returned.
             Otherwise, in case ``in_memory=True``, a binary file-like object with its attribute ".name" set is returned.
             If the message is a :obj:`~pyrogram.types.PaidMediaInfo` with more than one ``paid_media`` containing ``minithumbnail`` and ``idx`` is not specified, then a list of paths or binary file-like objects is returned.
 
-        Raises:
+        Raises
+        ------
             IndexError: In case of wrong value of ``idx``.
             ValueError: If the message doesn't contain any downloadable media.
             :obj:`~pyrogram.errors.RPCError`: In case of a Telegram RPC error.
@@ -150,8 +154,8 @@ class DownloadMedia:
 
                 file_name = file.name
                 file_bytes = bytes(file.getbuffer())
-        """
 
+        """
         medium = [message]
 
         if isinstance(message, types.Message):
@@ -159,9 +163,8 @@ class DownloadMedia:
                 medium = [message.new_chat_photo]
 
             elif (
-                not (self.me and self.me.is_bot) and
-                message.story or message.reply_to_story
-            ):
+                not (self.me and self.me.is_bot) and message.story
+            ) or message.reply_to_story:
                 story_media = message.story or message.reply_to_story or None
                 if story_media and story_media.media:
                     medium = [getattr(story_media, story_media.media.value, None)]
@@ -169,38 +172,63 @@ class DownloadMedia:
                     medium = []
 
             elif message.paid_media:
-                if any([isinstance(paid_media, (types.PaidMediaPhoto, types.PaidMediaVideo)) for paid_media in message.paid_media.paid_media]):
-                    medium = [getattr(paid_media, "photo", (getattr(paid_media, "video", None))) for paid_media in message.paid_media.paid_media]
-                elif any([isinstance(paid_media, types.PaidMediaPreview) for paid_media in message.paid_media.paid_media]):
-                    medium = [getattr(getattr(paid_media, "minithumbnail"), "data", None) for paid_media in message.paid_media.paid_media]
+                if any(
+                    isinstance(paid_media, (types.PaidMediaPhoto, types.PaidMediaVideo))
+                    for paid_media in message.paid_media.paid_media
+                ):
+                    medium = [
+                        getattr(
+                            paid_media, "photo", (getattr(paid_media, "video", None))
+                        )
+                        for paid_media in message.paid_media.paid_media
+                    ]
+                elif any(
+                    isinstance(paid_media, types.PaidMediaPreview)
+                    for paid_media in message.paid_media.paid_media
+                ):
+                    medium = [
+                        getattr(paid_media.minithumbnail, "data", None)
+                        for paid_media in message.paid_media.paid_media
+                    ]
                 else:
                     medium = []
 
-            else:
-                if message.media:
-                    if message.photo:
-                        medium = [
-                            getattr(message, message.media.value, None).sizes[-1]
-                        ]
-                    else:
-                        medium = [getattr(message, message.media.value, None)]
+            elif message.media:
+                if message.photo:
+                    medium = [
+                        getattr(message, message.media.value, None).sizes[-1],
+                    ]
                 else:
-                    medium = []
+                    medium = [getattr(message, message.media.value, None)]
+            else:
+                medium = []
 
         elif isinstance(message, types.Story):
-            if (self.me and self.me.is_bot):
-                raise ValueError("This method cannot be used by bots")
+            if self.me and self.me.is_bot:
+                msg = "This method cannot be used by bots"
+                raise ValueError(msg)
+            if message.media:
+                medium = [getattr(message, message.media.value, None)]
             else:
-                if message.media:
-                    medium = [getattr(message, message.media.value, None)]
-                else:
-                    medium = []
+                medium = []
 
         elif isinstance(message, types.PaidMediaInfo):
-            if any([isinstance(paid_media, (types.PaidMediaPhoto, types.PaidMediaVideo)) for paid_media in message.paid_media]):
-                medium = [getattr(paid_media, "photo", (getattr(paid_media, "video", None))) for paid_media in message.paid_media]
-            elif any([isinstance(paid_media, types.PaidMediaPreview) for paid_media in message.paid_media]):
-                medium = [getattr(getattr(paid_media, "minithumbnail"), "data", None) for paid_media in message.paid_media]
+            if any(
+                isinstance(paid_media, (types.PaidMediaPhoto, types.PaidMediaVideo))
+                for paid_media in message.paid_media
+            ):
+                medium = [
+                    getattr(paid_media, "photo", (getattr(paid_media, "video", None)))
+                    for paid_media in message.paid_media
+                ]
+            elif any(
+                isinstance(paid_media, types.PaidMediaPreview)
+                for paid_media in message.paid_media
+            ):
+                medium = [
+                    getattr(paid_media.minithumbnail, "data", None)
+                    for paid_media in message.paid_media
+                ]
             else:
                 medium = []
 
@@ -211,22 +239,20 @@ class DownloadMedia:
             medium = [message.video]
 
         elif isinstance(message, types.PaidMediaPreview):
-            medium = [getattr(getattr(message, "minithumbnail"), "data", None)]
-            
+            medium = [getattr(message.minithumbnail, "data", None)]
+
         elif isinstance(message, types.StrippedThumbnail):
             medium = [message.data]
-        
-        elif isinstance(message, types.Thumbnail):
-            medium = [message]
 
-        elif isinstance(message, str):
+        elif isinstance(message, (types.Thumbnail, str)):
             medium = [message]
 
         medium = types.List(filter(lambda x: x is not None, medium))
 
         if len(medium) == 0:
+            msg = f"The message {message if isinstance(message, str) else message.id} doesn't contain any downloadable media"
             raise ValueError(
-                f"The message {message if isinstance(message, str) else message.id} doesn't contain any downloadable media"
+                msg,
             )
 
         if idx is not None:
@@ -238,8 +264,8 @@ class DownloadMedia:
             if isinstance(media, bytes):
                 thumb = utils.from_inline_bytes(
                     utils.expand_inline_bytes(
-                        media
-                    )
+                        media,
+                    ),
                 )
                 if in_memory:
                     dledmedia.append(thumb)
@@ -261,10 +287,7 @@ class DownloadMedia:
                 dledmedia.append(temp_file_path)
                 continue
 
-            elif isinstance(media, str):
-                file_id_str = media
-            else:
-                file_id_str = media.file_id
+            file_id_str = media if isinstance(media, str) else media.file_id
 
             file_id_obj = FileId.decode(file_id_str)
 
@@ -298,7 +321,11 @@ class DownloadMedia:
                     extension = ".jpg"
                 elif file_type == FileType.VOICE:
                     extension = ".ogg"
-                elif file_type in (FileType.VIDEO, FileType.ANIMATION, FileType.VIDEO_NOTE):
+                elif file_type in (
+                    FileType.VIDEO,
+                    FileType.ANIMATION,
+                    FileType.VIDEO_NOTE,
+                ):
                     extension = ".mp4"
                 elif file_type == FileType.DOCUMENT:
                     extension = ".zip"
@@ -313,11 +340,19 @@ class DownloadMedia:
                     FileType(file_id_obj.file_type).name.lower(),
                     (date or datetime.now()).strftime("%Y-%m-%d_%H-%M-%S"),
                     self.rnd_id(),
-                    guessed_extension or extension
+                    guessed_extension or extension,
                 )
 
             downloader = self.handle_download(
-                (file_id_obj, directory, file_name, in_memory, file_size, progress, progress_args)
+                (
+                    file_id_obj,
+                    directory,
+                    file_name,
+                    in_memory,
+                    file_size,
+                    progress,
+                    progress_args,
+                ),
             )
 
             if block:
@@ -325,4 +360,10 @@ class DownloadMedia:
             else:
                 utils.get_event_loop().create_task(downloader)
 
-        return types.List(dledmedia) if block and len(dledmedia) > 1  else dledmedia[0] if block and len(dledmedia) == 1 else None
+        return (
+            types.List(dledmedia)
+            if block and len(dledmedia) > 1
+            else dledmedia[0]
+            if block and len(dledmedia) == 1
+            else None
+        )

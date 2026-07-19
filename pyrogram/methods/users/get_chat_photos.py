@@ -20,29 +20,32 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 from asyncio import sleep
-from typing import Union, AsyncGenerator, Optional
+from typing import TYPE_CHECKING
 
 import pyrogram
-from pyrogram import types, raw
+from pyrogram import raw, types
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncGenerator
 
 
 class GetChatPhotos:
     async def get_chat_photos(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
+        self: pyrogram.Client,
+        chat_id: int | str,
         limit: int = 0,
-    ) -> Optional[
-        Union[
-            AsyncGenerator["types.Photo", None],
-            AsyncGenerator["types.Animation", None],
-        ]
-    ]:
+    ) -> (
+        AsyncGenerator[types.Photo, None] | AsyncGenerator[types.Animation, None] | None
+    ):
         """Get a chat or a user profile photos sequentially.
 
         .. include:: /_includes/usable-by/users-bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
                 For your personal cloud (Saved Messages) you can simply use "me" or "self".
@@ -52,7 +55,8 @@ class GetChatPhotos:
                 Limits the number of profile photos to be retrieved.
                 By default, no limit is applied and all profile photos are returned.
 
-        Returns:
+        Returns
+        -------
             ``Generator``: A generator yielding :obj:`~pyrogram.types.Photo` | :obj:`~pyrogram.types.Animation` objects.
 
         Example:
@@ -60,6 +64,7 @@ class GetChatPhotos:
 
                 async for photo in app.get_chat_photos("me"):
                     print(photo)
+
         """
         total = limit or (1 << 31)
         limit = min(100, total)
@@ -67,9 +72,13 @@ class GetChatPhotos:
         peer_id = await self.resolve_peer(chat_id)
 
         if isinstance(peer_id, raw.types.InputPeerChannel):
-            r = await self.invoke(raw.functions.channels.GetFullChannel(channel=peer_id))
+            r = await self.invoke(
+                raw.functions.channels.GetFullChannel(channel=peer_id)
+            )
 
-            _animation = types.Animation._parse_chat_animation(self, r.full_chat.chat_photo)
+            _animation = types.Animation._parse_chat_animation(
+                self, r.full_chat.chat_photo
+            )
             _photo = types.Photo._parse(self, r.full_chat.chat_photo)
             chat_icons = [_animation or _photo]
 
@@ -87,23 +96,33 @@ class GetChatPhotos:
                         max_id=0,
                         min_id=0,
                         hash=0,
-                    )
+                    ),
                 )
                 if _icon := chat_icons[0]:
-                    _first_file_id = _icon.file_id if _animation else _icon.sizes[0].file_id
+                    _first_file_id = (
+                        _icon.file_id if _animation else _icon.sizes[0].file_id
+                    )
                 else:
                     _first_file_id = None
 
                 for m in getattr(r, "messages", []):
-                    if not isinstance(getattr(m, "action", None), raw.types.MessageActionChatEditPhoto):
+                    if not isinstance(
+                        getattr(m, "action", None), raw.types.MessageActionChatEditPhoto
+                    ):
                         continue
 
-                    _c_animation = types.Animation._parse_chat_animation(self, m.action.photo)
+                    _c_animation = types.Animation._parse_chat_animation(
+                        self, m.action.photo
+                    )
                     _c_photo = types.Photo._parse(self, m.action.photo)
 
-                    _current_file_id = (_c_animation and _c_animation.file_id) or (_c_photo and _c_photo.sizes[0].file_id)
+                    _current_file_id = (_c_animation and _c_animation.file_id) or (
+                        _c_photo and _c_photo.sizes[0].file_id
+                    )
 
-                    if (_c_animation or _c_photo) and _first_file_id != _current_file_id:
+                    if (
+                        _c_animation or _c_photo
+                    ) and _first_file_id != _current_file_id:
                         chat_icons.append(_c_animation or _c_photo)
 
             current = 0
@@ -127,15 +146,18 @@ class GetChatPhotos:
             while True:
                 r = await self.invoke(
                     raw.functions.photos.GetUserPhotos(
-                        user_id=peer_id, offset=offset, max_id=0, limit=limit
-                    )
+                        user_id=peer_id,
+                        offset=offset,
+                        max_id=0,
+                        limit=limit,
+                    ),
                 )
 
                 photos = []
                 for photo in r.photos:
                     photos.append(
                         types.Animation._parse_chat_animation(self, photo)
-                        or types.Photo._parse(self, photo)
+                        or types.Photo._parse(self, photo),
                     )
 
                 if not photos:

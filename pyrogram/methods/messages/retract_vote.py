@@ -20,24 +20,24 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union
+from __future__ import annotations
 
 import pyrogram
-from pyrogram import raw
-from pyrogram import types
+from pyrogram import raw, types
 
 
 class RetractVote:
     async def retract_vote(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
-        message_id: int
-    ) -> "types.Poll":
+        self: pyrogram.Client,
+        chat_id: int | str,
+        message_id: int,
+    ) -> types.Poll:
         """Retract your vote in a poll.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
                 For your personal cloud (Saved Messages) you can simply use "me" or "self".
@@ -46,20 +46,22 @@ class RetractVote:
             message_id (``int``):
                 Identifier of the original message with the poll.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.Poll`: On success, the poll with the retracted vote is returned.
 
         Example:
             .. code-block:: python
 
                 await app.retract_vote(chat_id, message_id)
+
         """
         r = await self.invoke(
             raw.functions.messages.SendVote(
                 peer=await self.resolve_peer(chat_id),
                 msg_id=message_id,
-                options=[]
-            )
+                options=[],
+            ),
         )
 
         for i in r.updates:
@@ -67,8 +69,8 @@ class RetractVote:
                 i,
                 (
                     raw.types.MessageMediaPoll,
-                    raw.types.UpdateMessagePoll
-                )
+                    raw.types.UpdateMessagePoll,
+                ),
             ):
                 return await types.Poll._parse(
                     self,
@@ -76,4 +78,4 @@ class RetractVote:
                     {i.id: i for i in r.users},
                     {i.id: i for i in r.chats},
                 )
-
+        return None

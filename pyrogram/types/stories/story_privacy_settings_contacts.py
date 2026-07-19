@@ -21,7 +21,7 @@
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from typing import Union
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw
@@ -32,21 +32,25 @@ from .story_privacy_settings import StoryPrivacySettings
 class StoryPrivacySettingsContacts(StoryPrivacySettings):
     """The story can be viewed by all contacts except chosen users.
 
-    Parameters:
+    Parameters
+    ----------
         except_user_ids (List of ``int`` | ``str``, *optional*):
             User identifiers of the contacts that can't see the story; always unknown and empty for non-owned stories.
 
     """
 
-    def __init__(self, *, except_user_ids: list[Union[int, str]]=None):
+    def __init__(self, *, except_user_ids: list[int | str] | None = None) -> None:
         super().__init__()
 
         self.except_user_ids = except_user_ids
 
-    async def write(self, client: "pyrogram.Client"):
+    async def write(self, client: pyrogram.Client):
         privacy_rules = []
         privacy_rules.append(raw.types.InputPrivacyValueAllowContacts())
-        users = [await client.resolve_peer(user_id) for user_id in (self.except_user_ids or [])]
+        users = [
+            await client.resolve_peer(user_id)
+            for user_id in (self.except_user_ids or [])
+        ]
         if users:
             privacy_rules.append(raw.types.InputPrivacyValueDisallowUsers(users=users))
         return privacy_rules

@@ -35,11 +35,13 @@ class CountPublicMessagesByTag:
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             hashtag (``str``, *optional*):
                 Hashtag or cashtag to search for.
 
-        Returns:
+        Returns
+        -------
             ``int``: On success, the messages count is returned.
 
         """
@@ -49,11 +51,10 @@ class CountPublicMessagesByTag:
                 offset_rate=0,
                 offset_peer=raw.types.InputPeerEmpty(),
                 offset_id=0,
-                limit=1
-            )
+                limit=1,
+            ),
         )
 
         if hasattr(r, "count"):
             return r.count
-        else:
-            return len(r.messages)
+        return len(r.messages)

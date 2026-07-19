@@ -20,30 +20,35 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import logging
-from typing import Union, Optional, AsyncGenerator
+from typing import TYPE_CHECKING
 
 import pyrogram
-from pyrogram import raw
-from pyrogram import types
+from pyrogram import raw, types
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncGenerator
 
 log = logging.getLogger(__name__)
 
 
 class GetForumTopics:
     async def get_forum_topics(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
+        self: pyrogram.Client,
+        chat_id: int | str,
         limit: int = 0,
         offset_date: int = 0,
         offset_id: int = 0,
         offset_topic: int = 0,
-    ) -> Optional[AsyncGenerator["types.ForumTopic", None]]:
+    ) -> AsyncGenerator[types.ForumTopic, None] | None:
         """Get one or more topic from a chat.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
                 You can also use chat public link in form of *t.me/<username>* (str).
@@ -60,7 +65,8 @@ class GetForumTopics:
             offset_topic (``int``, *optional*):
                 ID of the last found topic.
 
-        Returns:
+        Returns
+        -------
             ``Generator``: On success, a generator yielding :obj:`~pyrogram.types.ForumTopic` objects is returned.
 
         Example:
@@ -70,10 +76,11 @@ class GetForumTopics:
                 async for topic in app.get_forum_topics(chat_id):
                     print(topic)
 
-        Raises:
+        Raises
+        ------
             ValueError: In case of invalid arguments.
-        """
 
+        """
         peer = await self.resolve_peer(chat_id)
 
         rpc = raw.functions.channels.GetForumTopics(

@@ -33,11 +33,14 @@ class CheckBotUsername:
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             username (``str``):
                 Username to be checked.
 
-        Returns:
+        Returns
+        -------
             ``bool``: On success, True is returned.
+
         """
         return await self.invoke(raw.functions.bots.CheckUsername(username=username))

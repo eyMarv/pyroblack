@@ -20,18 +20,18 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Dict, List, Optional
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw, types
-
-from ..object import Object
+from pyrogram.types.object import Object
 
 
 class FactCheck(Object):
     """Represents a fact-check created by an independent fact-checker.
 
-    Parameters:
+    Parameters
+    ----------
         need_check (``bool``, *optional*):
             If set, the country/text fields will not be set, and the fact check must be fetched manually by the client (if it isn't already cached with the key specified in hash) using bundled messages.getFactCheck requests, when the message with the factcheck scrolls into view.
 
@@ -43,14 +43,17 @@ class FactCheck(Object):
 
         entities (List of :obj:`~pyrogram.types.MessageEntity`, *optional*):
             For text messages, special entities like usernames, URLs, bot commands, etc. that appear in the text.
+
     """
+
     def __init__(
-        self, *,
-        need_check: Optional[bool] = None,
-        country: Optional[str] = None,
-        text: Optional[str] = None,
-        entities: Optional[List["types.MessageEntity"]] = None
-    ):
+        self,
+        *,
+        need_check: bool | None = None,
+        country: str | None = None,
+        text: str | None = None,
+        entities: list[types.MessageEntity] | None = None,
+    ) -> None:
         super().__init__()
 
         self.need_check = need_check
@@ -60,10 +63,10 @@ class FactCheck(Object):
 
     @staticmethod
     def _parse(
-        client: "pyrogram.Client",
-        fact_check: "raw.types.FactCheck",
-        users: Dict[int, List["raw.base.User"]]
-    ) -> Optional["FactCheck"]:
+        client: pyrogram.Client,
+        fact_check: raw.types.FactCheck,
+        users: dict[int, list[raw.base.User]],
+    ) -> FactCheck | None:
         if not fact_check:
             return None
 
@@ -72,20 +75,23 @@ class FactCheck(Object):
         entities = None
 
         if isinstance(text_obj, raw.types.TextWithEntities):
-            entities = types.List(
-                filter(
-                    lambda x: x is not None,
-                    [
-                        types.MessageEntity._parse(client, entity, users)
-                        for entity in (text_obj.entities or [])
-                    ],
+            entities = (
+                types.List(
+                    filter(
+                        lambda x: x is not None,
+                        [
+                            types.MessageEntity._parse(client, entity, users)
+                            for entity in (text_obj.entities or [])
+                        ],
+                    ),
                 )
-            ) or None
+                or None
+            )
             message = text_obj.text
 
         return FactCheck(
             need_check=getattr(fact_check, "need_check", None),
             country=getattr(fact_check, "country", None),
             text=message,
-            entities=entities
+            entities=entities,
         )

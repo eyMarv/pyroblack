@@ -20,18 +20,20 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union
+from typing import TYPE_CHECKING
 
-import pyrogram
-from pyrogram import raw, types
+from pyrogram.types.object import Object
 
-from ..object import Object
+if TYPE_CHECKING:
+    import pyrogram
+    from pyrogram import raw
 
 
 class RefundedPayment(Object):
     """This object contains basic information about a refunded payment.
 
-    Parameters:
+    Parameters
+    ----------
         currency (``str``):
             Three-letter ISO 4217 `currency <https://core.telegram.org/bots/payments#supported-currencies>`_ code, or ``XTR`` for payments in `Telegram Stars <https://t.me/BotNews/90>`_.
 
@@ -56,8 +58,8 @@ class RefundedPayment(Object):
         total_amount: str,
         invoice_payload: str,
         telegram_payment_charge_id: str,
-        provider_payment_charge_id: str
-    ):
+        provider_payment_charge_id: str,
+    ) -> None:
         super().__init__()
 
         self.currency = currency
@@ -69,7 +71,7 @@ class RefundedPayment(Object):
     @staticmethod
     def _parse(
         client: "pyrogram.Client",
-        refunded_payment: "raw.types.MessageActionPaymentRefunded"
+        refunded_payment: "raw.types.MessageActionPaymentRefunded",
     ) -> "RefundedPayment":
         invoice_payload = None
 
@@ -88,5 +90,5 @@ class RefundedPayment(Object):
             total_amount=refunded_payment.total_amount,
             invoice_payload=invoice_payload,
             telegram_payment_charge_id=telegram_payment_charge_id,
-            provider_payment_charge_id=provider_payment_charge_id
+            provider_payment_charge_id=provider_payment_charge_id,
         )

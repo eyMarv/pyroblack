@@ -20,7 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw, types
@@ -28,17 +28,18 @@ from pyrogram import raw, types
 
 class SummarizeMessage:
     async def summarize_message(
-        self: "pyrogram.Client",
+        self: pyrogram.Client,
         chat_id: str,
         message_id: int,
-        translate_to_language_code: Optional[str] = None,
-        tone: Optional[str] = None,
-    ) -> "types.FormattedText":
+        translate_to_language_code: str | None = None,
+        tone: str | None = None,
+    ) -> types.FormattedText:
         """Summarizes content of the message with non-empty summary_language_code.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
                 For your personal cloud (Saved Messages) you can simply use "me" or "self".
@@ -59,27 +60,28 @@ class SummarizeMessage:
                 Tone of the summarization.
                 Must be one of "formal", "neutral", "casual".
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.FormattedText`: On success, information about the summarized text is returned.
 
         Example:
             .. code-block:: python
-            
+
                 await app.summarize_message(
                     chat_id,
                     message_id,
                     translate_to_language_code="ru",
                     tone="neutral"
                 )
-            
+
         """
         r = await self.invoke(
             raw.functions.messages.SummarizeText(
                 peer=await self.resolve_peer(chat_id),
                 id=message_id,
                 to_lang=translate_to_language_code or self.lang_code,
-                tone=tone
-            )
+                tone=tone,
+            ),
         )
 
         return types.FormattedText._parse(self, r)

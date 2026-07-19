@@ -20,7 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw, types
@@ -28,17 +28,18 @@ from pyrogram import raw, types
 
 class AddPaidMessageReaction:
     async def add_paid_message_reaction(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
+        self: pyrogram.Client,
+        chat_id: int | str,
         message_id: int,
-        star_count: int = None,
-        paid_reaction_type: "types.PaidReactionType" = None
-    ) -> "types.MessageReactions":
+        star_count: int | None = None,
+        paid_reaction_type: types.PaidReactionType = None,
+    ) -> types.MessageReactions:
         """Adds the paid message reaction to a message.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
 
@@ -51,7 +52,8 @@ class AddPaidMessageReaction:
             paid_reaction_type (:obj:`~pyrogram.types.PaidReactionType`, *optional*):
                 Type of the paid reaction; pass None if the user didn't choose reaction type explicitly, for example, the reaction is set from the message bubble.
 
-        Returns:
+        Returns
+        -------
             On success, :obj:`~pyrogram.types.MessageReactions`: is returned.
 
         Example:
@@ -61,15 +63,16 @@ class AddPaidMessageReaction:
                 await app.add_paid_message_reaction(chat_id, message_id, 1)
 
         """
-
         r = await self.invoke(
             raw.functions.messages.SendPaidReaction(
                 peer=await self.resolve_peer(chat_id),
                 msg_id=message_id,
                 random_id=self.rnd_id(),
                 count=star_count,
-                private=await paid_reaction_type.write(self) if paid_reaction_type else None
-            )
+                private=await paid_reaction_type.write(self)
+                if paid_reaction_type
+                else None,
+            ),
         )
         for i in r.updates:
             if isinstance(i, raw.types.UpdateMessageReactions):

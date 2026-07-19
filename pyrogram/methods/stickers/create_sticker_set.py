@@ -20,35 +20,35 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import os
 import re
-from typing import Union, Optional
 
 import pyrogram
-from pyrogram import raw
-from pyrogram import types
-from pyrogram import utils
+from pyrogram import raw, types, utils
 from pyrogram.file_id import FileId, FileType
 
 
 class CreateStickerSet:
     async def create_sticker_set(
-        self: "pyrogram.Client",
+        self: pyrogram.Client,
         title: str,
         short_name: str,
         sticker: str,
-        user_id: Union[int, str] = None,
+        user_id: int | str | None = None,
         emoji: str = "🤔",
-        masks: bool = None,
-        animated: bool = None,
-        videos: bool = None,
-        emojis: bool = None,
-    ) -> Optional["types.Message"]:
+        masks: bool | None = None,
+        animated: bool | None = None,
+        videos: bool | None = None,
+        emojis: bool | None = None,
+    ) -> types.Message | None:
         """Create a new stickerset.
 
         .. include:: /_includes/usable-by/users-bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             title (``str``):
                 Stickerset name, 1-64 chars
 
@@ -84,17 +84,19 @@ class CreateStickerSet:
             emojis (``bool``, *optional*):
                 Whether this is a emojis stickerset.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.StickerSet` | ``None``: On success, the StickerSet is returned.
 
         Example:
             .. code-block:: python
 
                 await app.create_sticker_set("me", "My First Pack", "myfirstpack", "AAjjHjk")
-        """
 
+        """
         if self.me.is_bot and user_id is None:
-            raise ValueError("user_id is required for bots")
+            msg = "user_id is required for bots"
+            raise ValueError(msg)
 
         if isinstance(sticker, str):
             if os.path.isfile(sticker) or re.match("^https?://", sticker):
@@ -105,7 +107,8 @@ class CreateStickerSet:
                     disable_notification=True,
                 )
                 uploaded_media = utils.get_input_media_from_file_id(
-                    document.document.file_id, FileType.DOCUMENT
+                    document.document.file_id,
+                    FileType.DOCUMENT,
                 )
                 media = uploaded_media.id
                 _ = await document.delete()
@@ -118,10 +121,14 @@ class CreateStickerSet:
                 )
         else:
             document = await self.send_document(
-                user_id or "me", sticker, force_document=True, disable_notification=True
+                user_id or "me",
+                sticker,
+                force_document=True,
+                disable_notification=True,
             )
             uploaded_media = utils.get_input_media_from_file_id(
-                document.document.file_id, FileType.DOCUMENT
+                document.document.file_id,
+                FileType.DOCUMENT,
             )
             media = uploaded_media.id
             _ = await document.delete()
@@ -136,7 +143,7 @@ class CreateStickerSet:
                 animated=animated,
                 videos=videos,
                 emojis=emojis,
-            )
+            ),
         )
 
         return types.StickerSet._parse(r.set)

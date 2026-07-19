@@ -20,12 +20,17 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-import io
-from typing import Optional, Union, Callable
+from __future__ import annotations
 
-from ..messages_and_media import MessageEntity
-from ..object import Object
-from ... import enums
+from typing import TYPE_CHECKING, Callable
+
+from pyrogram.types.object import Object
+
+if TYPE_CHECKING:
+    import io
+
+    from pyrogram import enums
+    from pyrogram.types.messages_and_media import MessageEntity
 
 
 class InputMedia(Object):
@@ -42,11 +47,11 @@ class InputMedia(Object):
 
     def __init__(
         self,
-        media: Union[str, "io.BytesIO"],
-        caption: Optional[str] = "",
-        parse_mode: Optional["enums.ParseMode"] = None,
-        caption_entities: Optional[list[MessageEntity]] = None,
-    ):
+        media: str | io.BytesIO,
+        caption: str | None = "",
+        parse_mode: enums.ParseMode | None = None,
+        caption_entities: list[MessageEntity] | None = None,
+    ) -> None:
         super().__init__()
 
         self.media = media
@@ -56,10 +61,10 @@ class InputMedia(Object):
 
     async def write(
         self,
-        client: "pyrogram.Client",
-        chat_id: Optional[Union[int, str]] = None,
-        business_connection_id: Optional[str] = None,
-        progress: Optional[Callable] = None,
+        client: pyrogram.Client,
+        chat_id: int | str | None = None,
+        business_connection_id: str | None = None,
+        progress: Callable | None = None,
         progress_args: tuple = (),
-    ) -> tuple["raw.base.InputMedia", bool]:
+    ) -> tuple[raw.base.InputMedia, bool]:
         raise NotImplementedError

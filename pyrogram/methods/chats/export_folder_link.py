@@ -30,11 +30,13 @@ class ExportFolderLink:
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             folder_id (``int``):
                 Unique identifier (int) of the target folder.
 
-        Returns:
+        Returns
+        -------
             ``str``: On success, a link to the folder as string is returned.
 
         Example:
@@ -42,11 +44,12 @@ class ExportFolderLink:
 
                 # Export folder link
                 app.export_folder_link(folder_id)
+
         """
         folder = await self.get_folders(folder_id)
 
         if not folder:
-            return
+            return None
 
         peers = []
 
@@ -64,7 +67,7 @@ class ExportFolderLink:
                 chatlist=raw.types.InputChatlistDialogFilter(filter_id=folder_id),
                 title=folder.title,
                 peers=[await self.resolve_peer(i.id) for i in peers],
-            )
+            ),
         )
 
         return r.invite.url

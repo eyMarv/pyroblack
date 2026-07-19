@@ -20,9 +20,13 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-import pyrogram
 
-from ..object import Object
+from typing import TYPE_CHECKING
+
+from pyrogram.types.object import Object
+
+if TYPE_CHECKING:
+    import pyrogram
 
 
 class InputPrivacyRule(Object):
@@ -41,7 +45,7 @@ class InputPrivacyRule(Object):
     - :obj:`~pyrogram.types.InputPrivacyRuleDisallowChats`
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
     async def write(self, client: "pyrogram.Client"):

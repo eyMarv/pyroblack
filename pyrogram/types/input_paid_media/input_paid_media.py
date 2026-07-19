@@ -20,10 +20,12 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-import io
-from typing import Union
+from typing import TYPE_CHECKING, Union
 
-from ..object import Object
+from pyrogram.types.object import Object
+
+if TYPE_CHECKING:
+    import io
 
 
 class InputPaidMedia(Object):
@@ -37,8 +39,8 @@ class InputPaidMedia(Object):
 
     def __init__(
         self,
-        media: Union[str, "io.BytesIO"]
-    ):
+        media: Union[str, "io.BytesIO"],
+    ) -> None:
         super().__init__()
 
         self.media = media

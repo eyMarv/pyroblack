@@ -20,17 +20,18 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-import pyrogram
+from __future__ import annotations
 
-from pyrogram import raw
-from pyrogram import types
-from ..object import Object
+import pyrogram
+from pyrogram import raw, types
+from pyrogram.types.object import Object
 
 
 class SuccessfulPayment(Object):
     """Contains information about a successful payment.
 
-    Parameters:
+    Parameters
+    ----------
         currency (``str``):
             Three-letter ISO 4217 currency code.
 
@@ -51,6 +52,7 @@ class SuccessfulPayment(Object):
 
         payment_info (:obj:`~pyrogram.types.PaymentInfo`, *optional*):
             Payment information provided by the user. Only available to the bot that received the payment.
+
     """
 
     def __init__(
@@ -61,9 +63,9 @@ class SuccessfulPayment(Object):
         payload: str,
         telegram_payment_charge_id: str,
         provider_payment_charge_id: str,
-        shipping_option_id: str = None,
-        payment_info: "types.PaymentInfo" = None,
-    ):
+        shipping_option_id: str | None = None,
+        payment_info: types.PaymentInfo = None,
+    ) -> None:
         super().__init__()
 
         self.currency = currency
@@ -75,7 +77,7 @@ class SuccessfulPayment(Object):
         self.payment_info = payment_info
 
     @staticmethod
-    def _parse(client: "pyrogram.Client", successful_payment) -> "SuccessfulPayment":
+    def _parse(client: pyrogram.Client, successful_payment) -> SuccessfulPayment:
         payload = None
         telegram_payment_charge_id = None
         provider_payment_charge_id = None

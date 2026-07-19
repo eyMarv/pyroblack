@@ -35,14 +35,17 @@ class ApplyGiftCode:
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             link (``str``):
                 The gift code link.
 
-        Returns:
+        Returns
+        -------
             ``bool``: On success, True is returned.
 
-        Raises:
+        Raises
+        ------
             ValueError: In case the gift code link is invalid.
 
         Example:
@@ -50,21 +53,25 @@ class ApplyGiftCode:
 
                 # apply a gift code
                 await app.apply_gift_code("t.me/giftcode/abc1234567def")
+
         """
-        match = re.match(r"^(?:https?://)?(?:www\.)?(?:t(?:elegram)?\.(?:org|me|dog)/(?:giftcode/|\+))([\w-]+)$", link)
+        match = re.match(
+            r"^(?:https?://)?(?:www\.)?(?:t(?:elegram)?\.(?:org|me|dog)/(?:giftcode/|\+))([\w-]+)$",
+            link,
+        )
 
         if match:
             slug = match.group(1)
         elif isinstance(link, str):
             slug = link
         else:
-            raise ValueError("Invalid gift code link")
+            msg = "Invalid gift code link"
+            raise ValueError(msg)
 
         await self.invoke(
             raw.functions.payments.ApplyGiftCode(
-                slug=slug
-            )
+                slug=slug,
+            ),
         )
 
         return True
-

@@ -20,24 +20,30 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import AsyncGenerator, Union
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import pyrogram
 from pyrogram import raw, types
 
+if TYPE_CHECKING:
+    from collections.abc import AsyncGenerator
+
 
 class GetArchivedStories:
     async def get_archived_stories(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
+        self: pyrogram.Client,
+        chat_id: int | str,
         limit: int = 0,
-        offset_id: int = 0
-    ) -> AsyncGenerator["types.Story", None]:
+        offset_id: int = 0,
+    ) -> AsyncGenerator[types.Story, None]:
         """Get all archived stories from a chat by using chat identifier.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
                 For your personal cloud (Saved Messages) you can simply use "me" or "self".
@@ -50,7 +56,8 @@ class GetArchivedStories:
             offset_id (``int``, *optional*):
                 Identifier of the first story to be returned.
 
-        Returns:
+        Returns
+        -------
             ``Generator``: A generator yielding :obj:`~pyrogram.types.Story` objects.
 
         Example:
@@ -59,6 +66,7 @@ class GetArchivedStories:
                 # Get archived stories from specific chat
                 async for story in app.get_archived_stories(chat_id):
                     print(story)
+
         """
         current = 0
         total = abs(limit) or (1 << 31)
@@ -70,8 +78,8 @@ class GetArchivedStories:
                 raw.functions.stories.GetStoriesArchive(
                     peer=peer,
                     offset_id=offset_id,
-                    limit=limit
-                )
+                    limit=limit,
+                ),
             )
 
             if not r.stories:
@@ -92,11 +100,10 @@ class GetArchivedStories:
                     None,
                     None,
                     story,
-                    peer
+                    peer,
                 )
 
                 current += 1
 
                 if current >= total:
                     return
-

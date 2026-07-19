@@ -20,24 +20,30 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import datetime
-from typing import Union
-import pyrogram
-from pyrogram import raw
-from pyrogram import utils
+from __future__ import annotations
 
-class ApproveSuggestedPost():
+from typing import TYPE_CHECKING
+
+import pyrogram
+from pyrogram import raw, utils
+
+if TYPE_CHECKING:
+    from datetime import datetime
+
+
+class ApproveSuggestedPost:
     async def approve_suggested_post(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
+        self: pyrogram.Client,
+        chat_id: int | str,
         message_id: int,
-        send_date: datetime = None
+        send_date: datetime | None = None,
     ) -> bool:
         """Use this method to approve a suggested post in a direct messages chat.
 
         .. include:: /_includes/usable-by/users-bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
 
@@ -49,7 +55,8 @@ class ApproveSuggestedPost():
                 Omit if the date has already been specified when the suggested post was created.
                 If specified, then the date must be not more than 2678400 seconds (30 days) in the future.
 
-        Returns:
+        Returns
+        -------
             ``bool``: True on success.
 
         Example:
@@ -63,8 +70,8 @@ class ApproveSuggestedPost():
                 peer=await self.resolve_peer(chat_id),
                 msg_id=message_id,
                 reject=False,
-                schedule_date=utils.datetime_to_timestamp(send_date)
-            )
+                schedule_date=utils.datetime_to_timestamp(send_date),
+            ),
         )
 
         return True

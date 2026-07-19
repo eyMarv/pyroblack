@@ -20,7 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw, types
@@ -28,17 +28,18 @@ from pyrogram import raw, types
 
 class SendPaidReaction:
     async def send_paid_reaction(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
+        self: pyrogram.Client,
+        chat_id: int | str,
         message_id: int,
         amount: int,
-        anonymous: bool = None,
-    ) -> "types.MessageReactions":
+        anonymous: bool | None = None,
+    ) -> types.MessageReactions:
         """Use this method to send paid reactions on a channel message.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
                 You can also use chat public link in form of *t.me/<username>* (str).
@@ -52,7 +53,8 @@ class SendPaidReaction:
             anonymous (``bool``, *optional*):
                 Pass True to hide yourself from top senders list.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.MessageReactions`: On success, MessageReactions is returned.
 
         Example:
@@ -60,6 +62,7 @@ class SendPaidReaction:
 
                 # Send a paid reaction
                 await app.send_paid_reaction(chat_id, message_id=message_id, amount=5)
+
         """
         r = await self.invoke(
             raw.functions.messages.SendPaidReaction(
@@ -68,7 +71,7 @@ class SendPaidReaction:
                 count=amount,
                 random_id=self.rnd_id(),
                 private=anonymous,
-            )
+            ),
         )
         users = {i.id: i for i in r.users}
         chats = {i.id: i for i in r.chats}
@@ -76,3 +79,4 @@ class SendPaidReaction:
         for i in r.updates:
             if isinstance(i, raw.types.UpdateMessageReactions):
                 return types.MessageReactions._parse(self, i.reactions, users, chats)
+        return None

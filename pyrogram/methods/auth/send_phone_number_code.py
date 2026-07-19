@@ -20,39 +20,41 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import logging
 import re
-from typing import List, Optional
 
 import pyrogram
 from pyrogram import enums, raw, types
 from pyrogram.errors import NetworkMigrate, PhoneMigrate
-from pyrogram.session import Session, Auth
+from pyrogram.session import Auth, Session
 
 log = logging.getLogger(__name__)
 
 
 class SendPhoneNumberCode:
     async def send_phone_number_code(
-        self: "pyrogram.Client",
+        self: pyrogram.Client,
         phone_number: str,
-        settings: Optional["types.PhoneNumberAuthenticationSettings"] = None,
-        type: "enums.PhoneNumberCodeType" = enums.PhoneNumberCodeType.AUTHENTICATION,
+        settings: types.PhoneNumberAuthenticationSettings | None = None,
+        type: enums.PhoneNumberCodeType = enums.PhoneNumberCodeType.AUTHENTICATION,
         # Deprecated params
-        current_number: Optional[bool] = None,
-        allow_flashcall: Optional[bool] = None,
-        allow_app_hash: Optional[bool] = None,
-        allow_missed_call: Optional[bool] = None,
-        allow_firebase: Optional[bool] = None,
-        logout_tokens: Optional[List[bytes]] = None,
-        token: Optional[str] = None,
-        app_sandbox: Optional[bool] = None,
-    ) -> "types.SentCode":
+        current_number: bool | None = None,
+        allow_flashcall: bool | None = None,
+        allow_app_hash: bool | None = None,
+        allow_missed_call: bool | None = None,
+        allow_firebase: bool | None = None,
+        logout_tokens: list[bytes] | None = None,
+        token: str | None = None,
+        app_sandbox: bool | None = None,
+    ) -> types.SentCode:
         """Sends a code to the specified phone number. Aborts previous phone number verification if there was one.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             phone_number (``str``):
                 Phone number in international format (includes the country prefix).
 
@@ -63,11 +65,14 @@ class SendPhoneNumberCode:
                 Type of the request for which the code is sent.
                 Defaults to authentication.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.SentCode`: On success, returns information about the sent code.
 
-        Raises:
+        Raises
+        ------
             BadRequest: In case the phone number is invalid.
+
         """
         phone_number = re.sub(r"\D", "", phone_number)
 
@@ -84,46 +89,46 @@ class SendPhoneNumberCode:
                 logout_tokens is not None,
                 token is not None,
                 app_sandbox is not None,
-            )
+            ),
         ):
             if current_number is not None:
                 log.warning(
-                    "`current_number` is deprecated and will be removed in future updates. Use `settings` instead."
+                    "`current_number` is deprecated and will be removed in future updates. Use `settings` instead.",
                 )
 
             if allow_flashcall is not None:
                 log.warning(
-                    "`allow_flashcall` is deprecated and will be removed in future updates. Use `settings` instead."
+                    "`allow_flashcall` is deprecated and will be removed in future updates. Use `settings` instead.",
                 )
 
             if allow_app_hash is not None:
                 log.warning(
-                    "`allow_app_hash` is deprecated and will be removed in future updates. Use `settings` instead."
+                    "`allow_app_hash` is deprecated and will be removed in future updates. Use `settings` instead.",
                 )
 
             if allow_missed_call is not None:
                 log.warning(
-                    "`allow_missed_call` is deprecated and will be removed in future updates. Use `settings` instead."
+                    "`allow_missed_call` is deprecated and will be removed in future updates. Use `settings` instead.",
                 )
 
             if allow_firebase is not None:
                 log.warning(
-                    "`allow_firebase` is deprecated and will be removed in future updates. Use `settings` instead."
+                    "`allow_firebase` is deprecated and will be removed in future updates. Use `settings` instead.",
                 )
 
             if logout_tokens is not None:
                 log.warning(
-                    "`logout_tokens` is deprecated and will be removed in future updates. Use `settings` instead."
+                    "`logout_tokens` is deprecated and will be removed in future updates. Use `settings` instead.",
                 )
 
             if token is not None:
                 log.warning(
-                    "`token` is deprecated and will be removed in future updates. Use `settings` instead."
+                    "`token` is deprecated and will be removed in future updates. Use `settings` instead.",
                 )
 
             if app_sandbox is not None:
                 log.warning(
-                    "`app_sandbox` is deprecated and will be removed in future updates. Use `settings` instead."
+                    "`app_sandbox` is deprecated and will be removed in future updates. Use `settings` instead.",
                 )
 
             firebase_settings = None
@@ -133,7 +138,8 @@ class SendPhoneNumberCode:
 
             if token is not None or app_sandbox is not None:
                 firebase_settings = types.FirebaseAuthenticationSettingsIos(
-                    device_token=token, is_app_sandbox=app_sandbox
+                    device_token=token,
+                    is_app_sandbox=app_sandbox,
                 )
 
             settings = types.PhoneNumberAuthenticationSettings(
@@ -172,13 +178,16 @@ class SendPhoneNumberCode:
                 await self.storage.dc_id(e.value)
                 await self.storage.auth_key(
                     await Auth(
-                        self, await self.storage.dc_id(),
-                        await self.storage.test_mode()
-                    ).create()
+                        self,
+                        await self.storage.dc_id(),
+                        await self.storage.test_mode(),
+                    ).create(),
                 )
                 self.session = Session(
-                    self, await self.storage.dc_id(),
-                    await self.storage.auth_key(), await self.storage.test_mode()
+                    self,
+                    await self.storage.dc_id(),
+                    await self.storage.auth_key(),
+                    await self.storage.test_mode(),
                 )
 
                 await self.session.start()

@@ -20,15 +20,19 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 from pyrogram import raw, types, utils
-from ..object import Object
+from pyrogram.types.object import Object
+
 from .message import Str
 
 
 class GiftCode(Object):
     """Contains gift code data.
 
-    Parameters:
+    Parameters
+    ----------
         via_giveaway (``bool``):
             True if the gift code is received via giveaway.
 
@@ -67,6 +71,7 @@ class GiftCode(Object):
 
         link (``str``, *property*):
             Generate a link to this gift code.
+
     """
 
     def __init__(
@@ -74,17 +79,17 @@ class GiftCode(Object):
         *,
         via_giveaway: bool,
         is_unclaimed: bool,
-        boosted_chat: "types.Chat",
+        boosted_chat: types.Chat,
         premium_subscription_month_count: int,
         slug: str,
-        currency: str = None,
-        amount: int = None,
-        cryptocurrency: str = None,
-        cryptocurrency_amount: int = None,
+        currency: str | None = None,
+        amount: int | None = None,
+        cryptocurrency: str | None = None,
+        cryptocurrency_amount: int | None = None,
         caption: Str = None,
-        caption_entities: list["types.MessageEntity"] = None,
-        **kwargs
-    ):
+        caption_entities: list[types.MessageEntity] | None = None,
+        **kwargs,
+    ) -> None:
         super().__init__()
 
         self.via_giveaway = via_giveaway
@@ -106,11 +111,11 @@ class GiftCode(Object):
     @staticmethod
     def _parse(
         client,
-        giftcode: "raw.types.MessageActionGiftCode",
-        chats: dict
+        giftcode: raw.types.MessageActionGiftCode,
+        chats: dict,
     ):
         peer = chats.get(
-            utils.get_raw_peer_id(giftcode.boost_peer)
+            utils.get_raw_peer_id(giftcode.boost_peer),
         )
 
         caption = None
@@ -120,15 +125,20 @@ class GiftCode(Object):
                 types.MessageEntity._parse(client, entity, {})
                 for entity in giftcode.message.entities
             ]
-            caption_entities = types.List(filter(lambda x: x is not None, caption_entities))
+            caption_entities = types.List(
+                filter(lambda x: x is not None, caption_entities)
+            )
             caption = Str(giftcode.message.text).init(caption_entities) or None
 
         return GiftCode(
             via_giveaway=giftcode.via_giveaway,
             is_unclaimed=giftcode.unclaimed,
             boosted_chat=types.Chat._parse_chat(
-                client, peer
-            ) if peer else None,
+                client,
+                peer,
+            )
+            if peer
+            else None,
             premium_subscription_month_count=giftcode.months,
             slug=giftcode.slug,
             currency=giftcode.currency,
@@ -136,7 +146,7 @@ class GiftCode(Object):
             cryptocurrency=getattr(giftcode, "crypto_currency", None),
             cryptocurrency_amount=getattr(giftcode, "crypto_amount", None),
             caption=caption,
-            caption_entities=caption_entities
+            caption_entities=caption_entities,
         )
 
     @property

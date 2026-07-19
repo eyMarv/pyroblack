@@ -20,26 +20,30 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-import io
+from __future__ import annotations
+
 import os
-from typing import Union
+from typing import TYPE_CHECKING
 
 import pyrogram
 from pyrogram import raw, types, utils
 from pyrogram.file_id import FileType
 
+if TYPE_CHECKING:
+    import io
+
 
 class SetChatPhoto:
     # TODO: FIXME!
     async def set_chat_photo(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
+        self: pyrogram.Client,
+        chat_id: int | str,
         *,
-        photo: Union[str, "io.BytesIO"] = None,
-        video: Union[str, "io.BytesIO"] = None,
-        photo_frame_start_timestamp: float = None,
-        **kwargs
-    ) -> Union["types.Message", bool]:
+        photo: str | io.BytesIO | None = None,
+        video: str | io.BytesIO | None = None,
+        photo_frame_start_timestamp: float | None = None,
+        **kwargs,
+    ) -> types.Message | bool:
         """Set a new chat photo or video (H.264/MPEG-4 AVC video, max 5 seconds).
 
         The ``photo`` and ``video`` arguments are mutually exclusive.
@@ -49,7 +53,8 @@ class SetChatPhoto:
 
         .. include:: /_includes/usable-by/users-bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
 
@@ -66,11 +71,13 @@ class SetChatPhoto:
             photo_frame_start_timestamp (``float``, *optional*):
                 Floating point UNIX timestamp in seconds, indicating the frame of the video/sticker that should be used as static preview; can only be used if ``video`` is set.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.Message` | ``bool``: On success, a service message will be returned (when applicable),
             otherwise, in case a message object couldn't be returned, True is returned.
 
-        Raises:
+        Raises
+        ------
             ValueError: if a chat_id belongs to user.
 
         Example:
@@ -88,6 +95,7 @@ class SetChatPhoto:
 
                 # Set chat photo using an existing Video file_id
                 await app.set_chat_photo(chat_id, video=video.file_id)
+
         """
         peer = await self.resolve_peer(chat_id)
 
@@ -113,26 +121,28 @@ class SetChatPhoto:
                 raw.functions.messages.EditChatPhoto(
                     chat_id=peer.chat_id,
                     photo=photo,
-                )
+                ),
             )
         elif isinstance(peer, raw.types.InputPeerChannel):
             r = await self.invoke(
                 raw.functions.channels.EditPhoto(
                     channel=peer,
-                    photo=photo
-                )
+                    photo=photo,
+                ),
             )
         else:
-            raise ValueError(f'The chat_id "{chat_id}" belongs to a user')
+            msg = f'The chat_id "{chat_id}" belongs to a user'
+            raise ValueError(msg)
 
         for i in r.updates:
-            if isinstance(i, (raw.types.UpdateNewMessage, raw.types.UpdateNewChannelMessage)):
+            if isinstance(
+                i, (raw.types.UpdateNewMessage, raw.types.UpdateNewChannelMessage)
+            ):
                 return await types.Message._parse(
                     self,
                     i.message,
                     {i.id: i for i in r.users},
                     {i.id: i for i in r.chats},
-                    replies=self.fetch_replies
+                    replies=self.fetch_replies,
                 )
-        else:
-            return True
+        return True

@@ -21,13 +21,14 @@
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
 from pyrogram import raw
-from ..object import Object
+from pyrogram.types.object import Object
 
 
 class ChatEventFilter(Object):
     """Set of filters used to obtain a chat event log.
 
-    Parameters:
+    Parameters
+    ----------
         new_restrictions (``bool``, *optional*):
             True, if member restricted/unrestricted/banned/unbanned events should be returned.
             Defaults to False.
@@ -73,7 +74,7 @@ class ChatEventFilter(Object):
         video_chats (``bool``, *optional*):
             True, if video chats events should be returned.
             Defaults to False.
-        
+
         forum_changes (``bool``, *optional*):
             True, if forum-related actions need to be returned.
             Defaults to False.
@@ -88,7 +89,8 @@ class ChatEventFilter(Object):
     """
 
     def __init__(
-        self, *,
+        self,
+        *,
         new_restrictions: bool = False,
         new_privileges: bool = False,
         new_members: bool = False,
@@ -103,7 +105,7 @@ class ChatEventFilter(Object):
         forum_changes: bool = False,
         subscription_extensions: bool = False,
         member_tag_changes: bool = False,
-    ):
+    ) -> None:
         super().__init__()
 
         self.new_restrictions = new_restrictions
@@ -179,13 +181,13 @@ class ChatEventFilter(Object):
 
         if self.video_chats:
             group_call = True
-        
+
         if self.forum_changes:
             forum_changes = True
-        
+
         if self.subscription_extensions:
             subscription_extensions = True
-        
+
         if self.member_tag_changes:
             member_tag_changes = True
 

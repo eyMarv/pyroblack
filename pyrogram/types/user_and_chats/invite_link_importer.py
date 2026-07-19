@@ -22,27 +22,29 @@
 
 from datetime import datetime
 
-from pyrogram import raw, utils
-from pyrogram import types
-from ..object import Object
+from pyrogram import raw, types, utils
+from pyrogram.types.object import Object
 
 
 class InviteLinkImporter(Object):
     """The date and user of when someone has joined with an invite link.
 
-    Parameters:
+    Parameters
+    ----------
         date (:py:obj:`~datetime.datetime`):
             The time of when this user used the given link
 
         user (:obj:`~pyrogram.types.User`):
             The user that has used the given invite link
+
     """
 
     def __init__(
-        self, *,
+        self,
+        *,
         date: datetime,
-        user: "types.User"
-    ):
+        user: "types.User",
+    ) -> None:
         super().__init__(None)
 
         self.date = date
@@ -58,8 +60,8 @@ class InviteLinkImporter(Object):
             importers.append(
                 InviteLinkImporter(
                     date=utils.timestamp_to_datetime(j.date),
-                    user=types.User._parse(client=None, user=d[j.user_id])
-                )
+                    user=types.User._parse(client=None, user=d[j.user_id]),
+                ),
             )
 
         return importers

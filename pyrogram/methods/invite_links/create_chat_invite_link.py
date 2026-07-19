@@ -20,23 +20,26 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import datetime
-from typing import Union
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import pyrogram
-from pyrogram import raw, utils
-from pyrogram import types
+from pyrogram import raw, types, utils
+
+if TYPE_CHECKING:
+    from datetime import datetime
 
 
 class CreateChatInviteLink:
     async def create_chat_invite_link(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
-        name: str = None,
-        expire_date: datetime = None,
-        member_limit: int = None,
-        creates_join_request: bool = None
-    ) -> "types.ChatInviteLink":
+        self: pyrogram.Client,
+        chat_id: int | str,
+        name: str | None = None,
+        expire_date: datetime | None = None,
+        member_limit: int | None = None,
+        creates_join_request: bool | None = None,
+    ) -> types.ChatInviteLink:
         """Create an additional invite link for a chat.
 
         You must be an administrator in the chat for this to work and must have the appropriate admin rights.
@@ -45,7 +48,8 @@ class CreateChatInviteLink:
 
         .. include:: /_includes/usable-by/users-bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier for the target chat or username of the target channel/supergroup
                 (in the format @username).
@@ -66,7 +70,8 @@ class CreateChatInviteLink:
                 True, if users joining the chat via the link need to be approved by chat administrators.
                 If True, member_limit can't be specified.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.ChatInviteLink`: On success, the new invite link is returned.
 
         Example:
@@ -77,6 +82,7 @@ class CreateChatInviteLink:
 
                 # Create a new link for up to 3 new users
                 link = await app.create_chat_invite_link(chat_id, member_limit=3)
+
         """
         r = await self.invoke(
             raw.functions.messages.ExportChatInvite(
@@ -84,8 +90,8 @@ class CreateChatInviteLink:
                 expire_date=utils.datetime_to_timestamp(expire_date),
                 usage_limit=member_limit,
                 title=name,
-                request_needed=creates_join_request
-            )
+                request_needed=creates_join_request,
+            ),
         )
 
         return types.ChatInviteLink._parse(self, r)

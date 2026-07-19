@@ -20,18 +20,21 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
-from pyrogram import raw
+from pyrogram.types.object import Object
+
 from .reaction_type import ReactionType
-from ..object import Object
+
+if TYPE_CHECKING:
+    from pyrogram import raw
 
 
 class ReactionCount(Object):
     """Represents a reaction added to a message along with the number of times it was added.
 
-    Parameters:
-
+    Parameters
+    ----------
         type (:obj:`~pyrogram.types.ReactionType`):
             Reaction type.
 
@@ -41,9 +44,12 @@ class ReactionCount(Object):
         chosen_order (``int``):
             Chosen reaction order.
             Available for chosen reactions.
+
     """
 
-    def __init__(self, *, type: ReactionType, total_count: int, chosen_order: int):
+    def __init__(
+        self, *, type: ReactionType, total_count: int, chosen_order: int
+    ) -> None:
         super().__init__()
         self.type = type
         self.total_count = total_count

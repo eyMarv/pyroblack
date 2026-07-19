@@ -20,19 +20,23 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import datetime
-from typing import Union
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import pyrogram
 from pyrogram import raw, types, utils
+from pyrogram.types.object import Object
 
-from ..object import Object
+if TYPE_CHECKING:
+    from datetime import datetime
 
 
 class SuccessfulPayment(Object):
     """This object contains basic information about a successful payment. Note that if the buyer initiates a chargeback with the relevant payment provider following this transaction, the funds may be debited from your balance. This is outside of Telegram's control.
 
-    Parameters:
+    Parameters
+    ----------
         currency (``str``):
             Three-letter ISO 4217 `currency <https://core.telegram.org/bots/payments#supported-currencies>`_ code, or ``XTR`` for payments in `Telegram Stars <https://t.me/BotNews/90>`_.
 
@@ -74,15 +78,15 @@ class SuccessfulPayment(Object):
         currency: str,
         total_amount: str,
         invoice_payload: str,
-        subscription_expiration_date: datetime = None,
-        is_recurring: bool = None,
-        is_first_recurring: bool = None,
-        shipping_option_id: str = None,
-        order_info: "types.OrderInfo" = None,
+        subscription_expiration_date: datetime | None = None,
+        is_recurring: bool | None = None,
+        is_first_recurring: bool | None = None,
+        shipping_option_id: str | None = None,
+        order_info: types.OrderInfo = None,
         telegram_payment_charge_id: str,
         provider_payment_charge_id: str,
-        invoice_name: str = None
-    ):
+        invoice_name: str | None = None,
+    ) -> None:
         super().__init__()
 
         self.currency = currency
@@ -99,12 +103,10 @@ class SuccessfulPayment(Object):
 
     @staticmethod
     def _parse(
-        client: "pyrogram.Client",
-        successful_payment: Union[
-            "raw.types.MessageActionPaymentSent",
-            "raw.types.MessageActionPaymentSentMe"
-        ]
-    ) -> "SuccessfulPayment":
+        client: pyrogram.Client,
+        successful_payment: raw.types.MessageActionPaymentSent
+        | raw.types.MessageActionPaymentSentMe,
+    ) -> SuccessfulPayment:
         invoice_payload = None
         telegram_payment_charge_id = None
         provider_payment_charge_id = None
@@ -135,8 +137,8 @@ class SuccessfulPayment(Object):
                         city=payment_info.shipping_address.city,
                         street_line1=payment_info.shipping_address.street_line1,
                         street_line2=payment_info.shipping_address.street_line2,
-                        post_code=payment_info.shipping_address.post_code
-                    )
+                        post_code=payment_info.shipping_address.post_code,
+                    ),
                 )
 
         return SuccessfulPayment(
@@ -150,5 +152,7 @@ class SuccessfulPayment(Object):
             is_recurring=getattr(successful_payment, "recurring_used", None),
             is_first_recurring=getattr(successful_payment, "recurring_init", None),
             invoice_name=getattr(successful_payment, "invoice_slug", None),
-            subscription_expiration_date=utils.timestamp_to_datetime(successful_payment.subscription_until_date),
+            subscription_expiration_date=utils.timestamp_to_datetime(
+                successful_payment.subscription_until_date
+            ),
         )

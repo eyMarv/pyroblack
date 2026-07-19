@@ -38,7 +38,8 @@ class DeleteBotCommands:
 
         .. include:: /_includes/usable-by/bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             scope (:obj:`~pyrogram.types.BotCommandScope`, *optional*):
                 An object describing the scope of users for which the commands are relevant.
                 Defaults to :obj:`~pyrogram.types.BotCommandScopeDefault`.
@@ -48,10 +49,12 @@ class DeleteBotCommands:
                 If empty, commands will be applied to all users from the given scope, for whose language there are no
                 dedicated commands.
 
-        Returns:
+        Returns
+        -------
             ``bool``: On success, True is returned.
 
-        Raises:
+        Raises
+        ------
             :obj:`~pyrogram.errors.RPCError`: In case of a Telegram RPC error.
 
         Example:
@@ -59,11 +62,11 @@ class DeleteBotCommands:
 
                 # Delete commands
                 await app.delete_bot_commands()
-        """
 
+        """
         return await self.invoke(
             raw.functions.bots.ResetBotCommands(
                 scope=await scope.write(self),
                 lang_code=language_code,
-            )
+            ),
         )

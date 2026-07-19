@@ -20,22 +20,24 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union
+from __future__ import annotations
 
 import pyrogram
-from pyrogram import raw
-from pyrogram import types
+from pyrogram import raw, types
 
 
 class StartBot:
     async def start_bot(
-        self: "pyrogram.Client", chat_id: Union[int, str], param: str = ""
-    ) -> "types.Message":
-        """Start bot
+        self: pyrogram.Client,
+        chat_id: int | str,
+        param: str = "",
+    ) -> types.Message:
+        """Start bot.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier of the bot you want to be started. You can specify
                 a @username (str) or a bot ID (int).
@@ -44,7 +46,8 @@ class StartBot:
                 Text of the deep linking parameter (up to 64 characters).
                 Defaults to "" (empty string).
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.Message`: On success, the sent message is returned.
 
         Example:
@@ -55,6 +58,7 @@ class StartBot:
 
                 # Start bot with param
                 await app.start_bot("pyrogrambot", "ref123456")
+
         """
         if not param:
             return await self.send_message(chat_id, "/start")
@@ -63,8 +67,11 @@ class StartBot:
 
         r = await self.invoke(
             raw.functions.messages.StartBot(
-                bot=peer, peer=peer, random_id=self.rnd_id(), start_param=param
-            )
+                bot=peer,
+                peer=peer,
+                random_id=self.rnd_id(),
+                start_param=param,
+            ),
         )
 
         for i in r.updates:
@@ -75,3 +82,4 @@ class StartBot:
                     {i.id: i for i in r.users},
                     {i.id: i for i in r.chats},
                 )
+        return None

@@ -20,32 +20,37 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import datetime
+from __future__ import annotations
+
 import logging
-from typing import Optional, Union
+from typing import TYPE_CHECKING
 
 import pyrogram
 from pyrogram import raw, utils
+
+if TYPE_CHECKING:
+    from datetime import datetime
 
 log = logging.getLogger(__name__)
 
 
 class DeleteChatHistory:
     async def delete_chat_history(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
-        max_id: Optional[int] = 0,
+        self: pyrogram.Client,
+        chat_id: int | str,
+        max_id: int | None = 0,
         # TODO
-        revoke: Optional[bool] = None,
-        just_clear: Optional[bool] = None,
-        min_date: Optional[datetime] = None,
-        max_date: Optional[datetime] = None
+        revoke: bool | None = None,
+        just_clear: bool | None = None,
+        min_date: datetime | None = None,
+        max_date: datetime | None = None,
     ) -> int:
         """Deletes all messages in the chat. For group chats this will release the usernames and remove all members.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
 
@@ -71,7 +76,8 @@ class DeleteChatHistory:
                 Delete all messages older than this time.
                 For :obj:`~pyrogram.enums.ChatType.PRIVATE` and :obj:`~pyrogram.enums.ChatType.GROUP` chats only.
 
-        Returns:
+        Returns
+        -------
             ``int``: Amount of affected messages
 
         Example:
@@ -88,11 +94,11 @@ class DeleteChatHistory:
                 raw.functions.channels.DeleteHistory(
                     channel=raw.types.InputChannel(
                         channel_id=peer.channel_id,
-                        access_hash=peer.access_hash
+                        access_hash=peer.access_hash,
                     ),
                     max_id=max_id,
-                    for_everyone=revoke
-                )
+                    for_everyone=revoke,
+                ),
             )
         else:
             r = await self.invoke(
@@ -102,8 +108,12 @@ class DeleteChatHistory:
                     just_clear=just_clear,
                     revoke=revoke,
                     min_date=utils.datetime_to_timestamp(min_date),
-                    max_date=utils.datetime_to_timestamp(max_date)
-                )
+                    max_date=utils.datetime_to_timestamp(max_date),
+                ),
             )
 
-        return len(r.updates[0].messages) if isinstance(peer, raw.types.InputPeerChannel) else r.pts_count
+        return (
+            len(r.updates[0].messages)
+            if isinstance(peer, raw.types.InputPeerChannel)
+            else r.pts_count
+        )

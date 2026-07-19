@@ -20,14 +20,21 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from pyrogram import raw
-from ..object import Object
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+from pyrogram.types.object import Object
+
+if TYPE_CHECKING:
+    from pyrogram import raw
 
 
 class MessageInvoice(Object):
     """Contains information about an Invoice.
 
-    Parameters:
+    Parameters
+    ----------
         title (``str``):
             Product name.
 
@@ -51,6 +58,7 @@ class MessageInvoice(Object):
 
         receipt_message_id (``int``, *optional*):
             The message_id of the message sent to the chat when the invoice is paid.
+
     """
 
     def __init__(
@@ -61,11 +69,11 @@ class MessageInvoice(Object):
         currency: str,
         total_amount: int,
         start_parameter: str,
-        shipping_address_requested: bool = None,
-        test: bool = None,
-        receipt_message_id: int = None,
+        shipping_address_requested: bool | None = None,
+        test: bool | None = None,
+        receipt_message_id: int | None = None,
         # TODO: Implement photo, extended_media parameters
-    ):
+    ) -> None:
         super().__init__()
 
         self.title = title
@@ -78,7 +86,7 @@ class MessageInvoice(Object):
         self.receipt_message_id = receipt_message_id
 
     @staticmethod
-    def _parse(message_invoice: "raw.types.MessageMediaInvoice") -> "MessageInvoice":
+    def _parse(message_invoice: raw.types.MessageMediaInvoice) -> MessageInvoice:
         return MessageInvoice(
             title=message_invoice.title,
             description=message_invoice.description,

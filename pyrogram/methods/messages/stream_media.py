@@ -20,23 +20,27 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from asyncio import sleep
-import io
+from __future__ import annotations
+
 import math
-from typing import Union, Optional
+from asyncio import sleep
+from typing import TYPE_CHECKING
 
 import pyrogram
 from pyrogram import types
 from pyrogram.file_id import FileId
 
+if TYPE_CHECKING:
+    import io
+
 
 class StreamMedia:
     async def stream_media(
-        self: "pyrogram.Client",
-        message: Union["types.Message", str],
+        self: pyrogram.Client,
+        message: types.Message | str,
         limit: int = 0,
-        offset: int = 0
-    ) -> Optional[Union[str, "io.BytesIO"]]:
+        offset: int = 0,
+    ) -> str | io.BytesIO | None:
         """Stream the media from a message chunk by chunk.
 
         You can use this method to partially download a file into memory or to selectively download chunks of file.
@@ -44,7 +48,8 @@ class StreamMedia:
 
         .. include:: /_includes/usable-by/users-bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             message (:obj:`~pyrogram.types.Message` | ``str``):
                 Pass a Message containing the media, the media itself (message.audio, message.video, ...) or a file id
                 as string.
@@ -57,7 +62,8 @@ class StreamMedia:
                 How many chunks to skip before starting to stream.
                 Defaults to 0 (start from the beginning).
 
-        Returns:
+        Returns
+        -------
             ``Generator``: A generator yielding bytes chunk by chunk
 
         Example:
@@ -78,9 +84,19 @@ class StreamMedia:
                 # Stream the last 3 chunks only (negative offset)
                 async for chunk in app.stream_media(message, offset=-3):
                     print(len(chunk))
+
         """
-        available_media = ("audio", "document", "photo", "sticker", "animation", "video", "voice", "video_note",
-                           "new_chat_photo")
+        available_media = (
+            "audio",
+            "document",
+            "photo",
+            "sticker",
+            "animation",
+            "video",
+            "voice",
+            "video_note",
+            "new_chat_photo",
+        )
 
         if isinstance(message, types.Message):
             for kind in available_media:
@@ -89,21 +105,20 @@ class StreamMedia:
                 if media is not None:
                     break
             else:
-                raise ValueError("This message doesn't contain any downloadable media")
+                msg = "This message doesn't contain any downloadable media"
+                raise ValueError(msg)
         else:
             media = message
         # TODO
-        if isinstance(media, str):
-            file_id_str = media
-        else:
-            file_id_str = media.file_id
+        file_id_str = media if isinstance(media, str) else media.file_id
 
         file_id_obj = FileId.decode(file_id_str)
         file_size = getattr(media, "file_size", 0)
 
         if offset < 0:
             if file_size == 0:
-                raise ValueError("Negative offsets are not supported for file ids, pass a Message object instead")
+                msg = "Negative offsets are not supported for file ids, pass a Message object instead"
+                raise ValueError(msg)
 
             chunks = math.ceil(file_size / 1024 / 1024)
             offset += chunks

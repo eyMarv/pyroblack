@@ -20,16 +20,18 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-import pyrogram
+from __future__ import annotations
 
-from pyrogram import raw, types
-from ..object import Object
+import pyrogram
+from pyrogram import raw
+from pyrogram.types.object import Object
 
 
 class PaidMessagesRefunded(Object):
     """Describes a service message about refunded paid messages.
 
-    Parameters:
+    Parameters
+    ----------
         message_count (``int``):
             The number of refunded messages.
 
@@ -41,24 +43,24 @@ class PaidMessagesRefunded(Object):
     def __init__(
         self,
         *,
-        client: "pyrogram.Client" = None,
-        message_count: int = None,
-        star_count: int = None
-    ):
+        client: pyrogram.Client = None,
+        message_count: int | None = None,
+        star_count: int | None = None,
+    ) -> None:
         super().__init__(client)
 
         self.message_count = message_count
         self.star_count = star_count
 
-
     @staticmethod
     def _parse_action(
         client,
-        action: "raw.types.MessageActionPaidMessagesRefunded"
-    ) -> "PaidMessagesRefunded":
+        action: raw.types.MessageActionPaidMessagesRefunded,
+    ) -> PaidMessagesRefunded:
         if isinstance(action, raw.types.MessageActionPaidMessagesRefunded):
             return PaidMessagesRefunded(
                 client=client,
                 message_count=action.count,
-                star_count=action.stars
+                star_count=action.stars,
             )
+        return None

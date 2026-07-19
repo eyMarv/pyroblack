@@ -27,17 +27,19 @@ from pyrogram import raw, types
 class GetUpgradedGiftValueInfo:
     async def get_upgraded_gift_value_info(
         self: "pyrogram.Client",
-        link: str
+        link: str,
     ) -> "types.UpgradedGiftValueInfo":
         """Returns information about value of an upgraded gift by its name.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             link (``str``):
                 The gift link or slug itself.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.UpgradedGiftValueInfo`: Information about the gift value is returned.
 
         Example:
@@ -48,6 +50,7 @@ class GetUpgradedGiftValueInfo:
 
                 # Get information about upgraded gift value by slug
                 gift = await client.get_upgraded_gift_value_info("SignetRing-903")
+
         """
         match = self.UPGRADED_GIFT_RE.match(link)
 
@@ -56,13 +59,13 @@ class GetUpgradedGiftValueInfo:
         elif isinstance(link, str):
             slug = link
         else:
-            raise ValueError("Invalid gift link")
+            msg = "Invalid gift link"
+            raise ValueError(msg)
 
         r = await self.invoke(
             raw.functions.payments.GetUniqueStarGiftValueInfo(
-                slug=slug.replace(" ", "")
-            )
+                slug=slug.replace(" ", ""),
+            ),
         )
 
         return types.UpgradedGiftValueInfo._parse(r)
-

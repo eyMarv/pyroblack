@@ -20,29 +20,32 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union
+from __future__ import annotations
 
 import pyrogram
-from pyrogram import raw
-from pyrogram import errors
+from pyrogram import errors, raw
 
 
 class ToggleForumTopics:
     async def toggle_forum_topics(
-        self: "pyrogram.Client", chat_id: Union[int, str], enabled: bool = False
+        self: pyrogram.Client,
+        chat_id: int | str,
+        enabled: bool = False,
     ) -> bool:
         """Enable or disable forum functionality in a supergroup.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
 
             enabled (``bool``):
                 The new status. Pass True to enable forum topics.
 
-        Returns:
+        Returns
+        -------
             ``bool``: True on success. False otherwise.
 
         Example:
@@ -53,12 +56,14 @@ class ToggleForumTopics:
 
                 # Change status of topics to enabled
                 await app.toggle_topics(enabled=True)
+
         """
         try:
             r = await self.invoke(
                 raw.functions.channels.ToggleForum(
-                    channel=await self.resolve_peer(chat_id), enabled=enabled
-                )
+                    channel=await self.resolve_peer(chat_id),
+                    enabled=enabled,
+                ),
             )
 
             return bool(r)

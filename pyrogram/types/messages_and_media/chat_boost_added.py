@@ -20,14 +20,19 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from pyrogram import raw
-from ..object import Object
+from typing import TYPE_CHECKING
+
+from pyrogram.types.object import Object
+
+if TYPE_CHECKING:
+    from pyrogram import raw
 
 
 class ChatBoostAdded(Object):
     """This object represents a service message about a user boosting a chat.
 
-    Parameters:
+    Parameters
+    ----------
         boost_count (``int``):
             Number of boosts added by the user
 
@@ -37,7 +42,7 @@ class ChatBoostAdded(Object):
         self,
         *,
         boost_count: int,
-    ):
+    ) -> None:
         super().__init__()
 
         self.boost_count = boost_count
@@ -45,5 +50,5 @@ class ChatBoostAdded(Object):
     @staticmethod
     def _parse(action: "raw.types.MessageActionBoostApply"):
         return ChatBoostAdded(
-            boost_count=action.boosts
+            boost_count=action.boosts,
         )

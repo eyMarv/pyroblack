@@ -20,7 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw
@@ -28,15 +28,16 @@ from pyrogram import raw
 
 class BlockUser:
     async def block_user(
-        self: "pyrogram.Client",
-        user_id: Union[int, str],
-        my_stories_from: bool = None
+        self: pyrogram.Client,
+        user_id: int | str,
+        my_stories_from: bool | None = None,
     ) -> bool:
         """Block a user.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             user_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target user.
                 For you yourself you can simply use "me" or "self".
@@ -45,19 +46,21 @@ class BlockUser:
             my_stories_from (``bool``, *optional*):
                 Whether the peer should be added to the story blocklist; if not set, the peer will be added to the main blocklist.
 
-        Returns:
+        Returns
+        -------
             ``bool``: True on success
 
         Example:
             .. code-block:: python
 
                 await app.block_user(user_id)
+
         """
         return bool(
             await self.invoke(
                 raw.functions.contacts.Block(
                     id=await self.resolve_peer(user_id),
-                    my_stories_from=my_stories_from
-                )
-            )
+                    my_stories_from=my_stories_from,
+                ),
+            ),
         )

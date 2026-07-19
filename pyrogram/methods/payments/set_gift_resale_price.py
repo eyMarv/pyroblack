@@ -21,6 +21,7 @@
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
 from typing import Optional
+
 import pyrogram
 from pyrogram import raw, types, utils
 
@@ -35,7 +36,8 @@ class SetGiftResalePrice:
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             owned_gift_id (``str``):
                 Unique identifier of the target gift.
                 For a user gift, you can use the message ID (int) of the gift message.
@@ -46,7 +48,8 @@ class SetGiftResalePrice:
                 The new price for the unique gift.
                 Pass None to disallow gift resale.
 
-        Returns:
+        Returns
+        -------
             ``bool``: On success, True is returned.
 
         Example:
@@ -66,13 +69,15 @@ class SetGiftResalePrice:
 
                 # Disallow resale of a unique gift
                 await app.set_gift_resale_price(owned_gift_id="123456")
+
         """
         await self.invoke(
             raw.functions.payments.UpdateStarGiftPrice(
                 stargift=await utils.get_input_stargift(self, owned_gift_id),
-                resell_amount=raw.types.StarsAmount(amount=0, nanos=0) if price is None else price.write()
-            )
+                resell_amount=raw.types.StarsAmount(amount=0, nanos=0)
+                if price is None
+                else price.write(),
+            ),
         )
 
         return True
-

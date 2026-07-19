@@ -20,7 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import List, Optional, Union
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw
@@ -28,16 +28,17 @@ from pyrogram import raw
 
 class SetManagedBotAccessSettings:
     async def set_managed_bot_access_settings(
-        self: "pyrogram.Client",
-        user_id: Union[int, str],
+        self: pyrogram.Client,
+        user_id: int | str,
         is_access_restricted: bool,
-        added_user_ids: Optional[List[Union[int, str]]] = None,
+        added_user_ids: list[int | str] | None = None,
     ) -> bool:
         """Use this method to get the access settings of a managed bot.
 
         .. include:: /_includes/usable-by/users-bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             user_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the managed bot whose access settings will be changed.
 
@@ -49,8 +50,10 @@ class SetManagedBotAccessSettings:
                 List of up to 10 identifiers of users who will have access to the bot in addition to its owner.
                 Ignored if is_access_restricted is False.
 
-        Returns:
+        Returns
+        -------
             ``bool``: On success, True is returned.
+
         """
         if is_access_restricted is False:
             added_user_ids = None
@@ -59,6 +62,8 @@ class SetManagedBotAccessSettings:
             raw.functions.bots.EditAccessSettings(
                 bot=await self.resolve_peer(user_id),
                 restricted=is_access_restricted,
-                add_users=[await self.resolve_peer(i) for i in added_user_ids] if added_user_ids is not None else None,
-            )
+                add_users=[await self.resolve_peer(i) for i in added_user_ids]
+                if added_user_ids is not None
+                else None,
+            ),
         )

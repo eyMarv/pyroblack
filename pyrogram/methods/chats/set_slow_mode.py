@@ -20,7 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union, Optional
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw
@@ -28,22 +28,24 @@ from pyrogram import raw
 
 class SetSlowMode:
     async def set_slow_mode(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
-        seconds: Optional[int]
+        self: pyrogram.Client,
+        chat_id: int | str,
+        seconds: int | None,
     ) -> bool:
         """Set the slow mode interval for a chat.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
 
             seconds (``int`` | ``None``):
                 New slow mode delay for the chat, in seconds; must be one of: 0 or None (off), 5, 10, 30, 60 (1 minute), 300 (5 minutes), 900 (15 minutes), 3600 (1 hour).
 
-        Returns:
+        Returns
+        -------
             ``bool``: True on success.
 
         Example:
@@ -54,13 +56,13 @@ class SetSlowMode:
 
                 # Disable slow mode
                 await app.set_slow_mode(chat_id, None)
-        """
 
+        """
         await self.invoke(
             raw.functions.channels.ToggleSlowMode(
                 channel=await self.resolve_peer(chat_id),
-                seconds=seconds or 0
-            )
+                seconds=seconds or 0,
+            ),
         )
 
         return True

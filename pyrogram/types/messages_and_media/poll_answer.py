@@ -23,16 +23,16 @@
 from typing import Optional
 
 import pyrogram
-from pyrogram import enums, raw, types, utils
-from ..object import Object
-from ..update import Update
-from .message import Str
+from pyrogram import raw, types
+from pyrogram.types.object import Object
+from pyrogram.types.update import Update
 
 
 class PollAnswer(Object, Update):
     """This object represents an answer of a user in a non-anonymous poll.
 
-    Parameters:
+    Parameters
+    ----------
         poll_id (``str``):
             Unique poll identifier.
 
@@ -59,7 +59,7 @@ class PollAnswer(Object, Update):
         option_persistent_ids: list[str],
         user: Optional["types.User"] = None,
         voter_chat: Optional["types.Chat"] = None,
-    ):
+    ) -> None:
         super().__init__(client)
 
         self.poll_id = poll_id
@@ -83,22 +83,21 @@ class PollAnswer(Object, Update):
                 user = types.Chat._parse_user_chat(client, users[update.peer.user_id])
 
             elif isinstance(update.peer, raw.types.PeerChat):
-                voter_chat = types.Chat._parse_chat_chat(client, chats[update.peer.chat_id])
+                voter_chat = types.Chat._parse_chat_chat(
+                    client, chats[update.peer.chat_id]
+                )
 
             else:
-                voter_chat = types.Chat._parse_channel_chat(client, chats[update.peer.channel_id])
+                voter_chat = types.Chat._parse_channel_chat(
+                    client, chats[update.peer.channel_id]
+                )
 
             return PollAnswer(
                 poll_id=str(update.poll_id),
-                option_ids=[
-                    "{:0>2x}".format(option[0])
-                    for option in update.options
-                ],
-                option_persistent_ids=[
-                    str(position)
-                    for position in update.positions
-                ],
+                option_ids=[f"{option[0]:0>2x}" for option in update.options],
+                option_persistent_ids=[str(position) for position in update.positions],
                 user=user,
                 voter_chat=voter_chat,
-                client=client
+                client=client,
             )
+        return None

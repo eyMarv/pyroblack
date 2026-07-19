@@ -20,10 +20,12 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import io
 import os
 import re
-from typing import Callable, Optional, Union
+from typing import Callable
 
 import pyrogram
 from pyrogram import enums, raw, types, utils
@@ -36,7 +38,8 @@ class InputMediaVideo(InputMedia):
     """A video to be sent inside an album.
     It is intended to be used with :obj:`~pyrogram.Client.send_media_group`.
 
-    Parameters:
+    Parameters
+    ----------
         media (``str`` | :obj:`io.BytesIO`):
             Video to send.
             Pass a file_id as string to send a video that exists on the Telegram servers or
@@ -86,10 +89,10 @@ class InputMediaVideo(InputMedia):
         disable_content_type_detection (``bool``, *optional*):
             Pass True, if the uploaded video is a video message with no sound.
             Disables automatic server-side content type detection for files uploaded using multipart/form-data. Always True, if the document is sent as part of an album.
-        
+
         cover (``str`` | :obj:`io.BytesIO`, *optional*):
             Cover for the video in the message. pass None to skip cover uploading.
-        
+
         start_timestamp (``int``, *optional*):
             Timestamp from which the video playing must start, in seconds.
 
@@ -97,22 +100,22 @@ class InputMediaVideo(InputMedia):
 
     def __init__(
         self,
-        media: Union[str, "io.BytesIO"],
-        thumb: Union[str, "io.BytesIO"] = None,
+        media: str | io.BytesIO,
+        thumb: str | io.BytesIO | None = None,
         caption: str = "",
-        parse_mode: Optional["enums.ParseMode"] = None,
-        caption_entities: list["types.MessageEntity"] = None,
-        show_caption_above_media: bool = None,
+        parse_mode: enums.ParseMode | None = None,
+        caption_entities: list[types.MessageEntity] | None = None,
+        show_caption_above_media: bool | None = None,
         width: int = 0,
         height: int = 0,
         duration: int = 0,
-        file_name: str = None,
+        file_name: str | None = None,
         supports_streaming: bool = True,
-        has_spoiler: bool = None,
-        disable_content_type_detection: bool = None,
-        cover: Optional[Union[str, "io.BytesIO"]] = None,
-        start_timestamp: int = None
-    ):
+        has_spoiler: bool | None = None,
+        disable_content_type_detection: bool | None = None,
+        cover: str | io.BytesIO | None = None,
+        start_timestamp: int | None = None,
+    ) -> None:
         super().__init__(media, caption, parse_mode, caption_entities)
 
         self.thumb = thumb
@@ -129,17 +132,14 @@ class InputMediaVideo(InputMedia):
 
     async def write(
         self,
-        client: "pyrogram.Client",
-        chat_id: Optional[Union[int, str]] = None,
-        business_connection_id: Optional[str] = None,
-        progress: Optional[Callable] = None,
+        client: pyrogram.Client,
+        chat_id: int | str | None = None,
+        business_connection_id: str | None = None,
+        progress: Callable | None = None,
         progress_args: tuple = (),
     ) -> tuple[
-        Union[
-            "InputMediaDocument",
-            "InputMediaDocumentExternal",
-        ],
-        bool
+        InputMediaDocument | InputMediaDocumentExternal,
+        bool,
     ]:
         is_bytes_io = isinstance(self.media, io.BytesIO)
         is_uploaded_file = is_bytes_io or os.path.isfile(self.media)
@@ -151,8 +151,11 @@ class InputMediaVideo(InputMedia):
         if is_uploaded_file:
             filename_attribute = [
                 raw.types.DocumentAttributeFilename(
-                    file_name=self.file_name or (self.media.name if is_bytes_io else os.path.basename(self.media))
-                )
+                    file_name=self.file_name
+                    or (
+                        self.media.name if is_bytes_io else os.path.basename(self.media)
+                    ),
+                ),
             ]
         else:
             filename_attribute = []
@@ -167,7 +170,9 @@ class InputMediaVideo(InputMedia):
 
             cover_is_bytes_io = isinstance(cover, io.BytesIO)
             cover_is_uploaded_file = cover_is_bytes_io or os.path.isfile(cover)
-            cover_is_external_url = not cover_is_uploaded_file and re.match("^https?://", cover)
+            cover_is_external_url = not cover_is_uploaded_file and re.match(
+                "^https?://", cover
+            )
 
             if cover_is_bytes_io and not hasattr(cover, "name"):
                 cover.name = "cover.jpg"
@@ -177,14 +182,14 @@ class InputMediaVideo(InputMedia):
                         business_connection_id=business_connection_id,
                         peer=await client.resolve_peer(chat_id or "me"),
                         media=raw.types.InputMediaUploadedPhoto(
-                            file=await client.save_file(cover)
-                        )
-                    )
+                            file=await client.save_file(cover),
+                        ),
+                    ),
                 )
                 coverfile = raw.types.InputPhoto(
                     id=coverfile.photo.id,
                     access_hash=coverfile.photo.access_hash,
-                    file_reference=coverfile.photo.file_reference
+                    file_reference=coverfile.photo.file_reference,
                 )
             elif cover_is_external_url:
                 coverfile = await client.invoke(
@@ -192,24 +197,29 @@ class InputMediaVideo(InputMedia):
                         business_connection_id=business_connection_id,
                         peer=await client.resolve_peer(chat_id or "me"),
                         media=raw.types.InputMediaPhotoExternal(
-                            url=cover
-                        )
-                    )
+                            url=cover,
+                        ),
+                    ),
                 )
                 coverfile = raw.types.InputPhoto(
                     id=coverfile.photo.id,
                     access_hash=coverfile.photo.access_hash,
-                    file_reference=coverfile.photo.file_reference
+                    file_reference=coverfile.photo.file_reference,
                 )
             else:
-                coverfile = (utils.get_input_media_from_file_id(cover, FileType.PHOTO)).id
+                coverfile = (
+                    utils.get_input_media_from_file_id(cover, FileType.PHOTO)
+                ).id
         if is_uploaded_file:
             uploaded_media = await client.invoke(
                 raw.functions.messages.UploadMedia(
                     business_connection_id=None,  # TODO
                     peer=await client.resolve_peer(chat_id or "me"),
                     media=raw.types.InputMediaUploadedDocument(
-                        mime_type=(None if is_bytes_io else client.guess_mime_type(self.media)) or "video/mp4",
+                        mime_type=(
+                            None if is_bytes_io else client.guess_mime_type(self.media)
+                        )
+                        or "video/mp4",
                         thumb=await client.save_file(self.thumb),
                         spoiler=self.has_spoiler,
                         file=await client.save_file(self.media),
@@ -218,34 +228,37 @@ class InputMediaVideo(InputMedia):
                                 supports_streaming=self.supports_streaming or None,
                                 duration=self.duration,
                                 w=self.width,
-                                h=self.height
+                                h=self.height,
                             ),
-                        ] + filename_attribute,
+                            *filename_attribute,
+                        ],
                         nosound_video=not self.disable_content_type_detection,
                         force_file=self.disable_content_type_detection or None,
-                    )
-                )
+                    ),
+                ),
             )
 
             media = raw.types.InputMediaDocument(
                 id=raw.types.InputDocument(
                     id=uploaded_media.document.id,
                     access_hash=uploaded_media.document.access_hash,
-                    file_reference=uploaded_media.document.file_reference
+                    file_reference=uploaded_media.document.file_reference,
                 ),
                 spoiler=self.has_spoiler,
                 video_cover=coverfile,
-                video_timestamp=start_timestamp
+                video_timestamp=start_timestamp,
             )
         elif is_external_url:
             media = raw.types.InputMediaDocumentExternal(
                 url=self.media,
                 spoiler=self.has_spoiler,
                 video_cover=coverfile,
-                video_timestamp=start_timestamp
+                video_timestamp=start_timestamp,
             )
         else:
-            media = utils.get_input_media_from_file_id(self.media, FileType.VIDEO, has_spoiler=self.has_spoiler)
+            media = utils.get_input_media_from_file_id(
+                self.media, FileType.VIDEO, has_spoiler=self.has_spoiler
+            )
             media.video_cover = coverfile
             media.video_timestamp = start_timestamp
 

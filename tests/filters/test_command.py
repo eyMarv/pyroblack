@@ -29,7 +29,7 @@ c = Client()
 
 
 @pytest.mark.asyncio
-async def test_single():
+async def test_single() -> None:
     f = filters.command("start")
 
     m = Message("/start")
@@ -37,7 +37,7 @@ async def test_single():
 
 
 @pytest.mark.asyncio
-async def test_multiple():
+async def test_multiple() -> None:
     f = filters.command(["start", "help"])
 
     m = Message("/start")
@@ -51,7 +51,7 @@ async def test_multiple():
 
 
 @pytest.mark.asyncio
-async def test_prefixes():
+async def test_prefixes() -> None:
     f = filters.command("start", prefixes=list(".!#"))
 
     m = Message(".start")
@@ -68,7 +68,7 @@ async def test_prefixes():
 
 
 @pytest.mark.asyncio
-async def test_case_sensitive():
+async def test_case_sensitive() -> None:
     f = filters.command("start", case_sensitive=True)
 
     m = Message("/start")
@@ -79,7 +79,7 @@ async def test_case_sensitive():
 
 
 @pytest.mark.asyncio
-async def test_case_insensitive():
+async def test_case_insensitive() -> None:
     f = filters.command("start", case_sensitive=False)
 
     m = Message("/start")
@@ -90,7 +90,7 @@ async def test_case_insensitive():
 
 
 @pytest.mark.asyncio
-async def test_with_mention():
+async def test_with_mention() -> None:
     f = filters.command("start")
 
     m = Message("/start@username")
@@ -104,7 +104,7 @@ async def test_with_mention():
 
 
 @pytest.mark.asyncio
-async def test_with_args():
+async def test_with_args() -> None:
     f = filters.command("start")
 
     m = Message("/start")
@@ -121,11 +121,11 @@ async def test_with_args():
 
     m = Message("/start a b c")
     await f(c, m)
-    assert m.command == ["start"] + list("abc")
+    assert m.command == ["start", *list("abc")]
 
-    m = Message('/start@username a b c')
+    m = Message("/start@username a b c")
     await f(c, m)
-    assert m.command == ["start"] + list("abc")
+    assert m.command == ["start", *list("abc")]
 
     m = Message("/start 'a b' c")
     await f(c, m)
@@ -133,11 +133,11 @@ async def test_with_args():
 
     m = Message('/start     a     b     "c     d"')
     await f(c, m)
-    assert m.command == ["start"] + list("ab") + ["c     d"]
+    assert m.command == ["start", *list("ab"), "c     d"]
 
 
 @pytest.mark.asyncio
-async def test_caption():
+async def test_caption() -> None:
     f = filters.command("start")
 
     m = Message(caption="/start")
@@ -145,7 +145,7 @@ async def test_caption():
 
 
 @pytest.mark.asyncio
-async def test_no_text():
+async def test_no_text() -> None:
     f = filters.command("start")
 
     m = Message()

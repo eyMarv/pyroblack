@@ -20,17 +20,19 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import pyrogram
 from pyrogram import raw
 
 
 class UpdateProfile:
     async def update_profile(
-        self: "pyrogram.Client",
+        self: pyrogram.Client,
         *,
-        first_name: str = None,
-        last_name: str = None,
-        bio: str = None
+        first_name: str | None = None,
+        last_name: str | None = None,
+        bio: str | None = None,
     ) -> bool:
         """Update your profile details such as first name, last name and bio.
 
@@ -38,7 +40,8 @@ class UpdateProfile:
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             first_name (``str``, *optional*):
                 The new first name; 1-64 characters.
 
@@ -51,7 +54,8 @@ class UpdateProfile:
                 Max ``intro_description_length_limit`` characters without line feeds.
                 Pass "" (empty string) to remove it.
 
-        Returns:
+        Returns
+        -------
             ``bool``: True on success.
 
         Example:
@@ -65,14 +69,14 @@ class UpdateProfile:
 
                 # Remove the last name
                 await app.update_profile(last_name="")
-        """
 
+        """
         return bool(
             await self.invoke(
                 raw.functions.account.UpdateProfile(
                     first_name=first_name,
                     last_name=last_name,
-                    about=bio
-                )
-            )
+                    about=bio,
+                ),
+            ),
         )

@@ -20,12 +20,13 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import logging
 
 import pyrogram
 from pyrogram import raw
-
-from ..object import Object
+from pyrogram.types.object import Object
 
 log = logging.getLogger(__name__)
 
@@ -39,7 +40,8 @@ class ForceReply(Object):
     This can be extremely useful if you want to create user-friendly step-by-step interfaces without having to
     sacrifice privacy mode.
 
-    Parameters:
+    Parameters
+    ----------
         selective (``bool``, *optional*):
             Use this parameter if you want to force reply from specific users only. Targets:
             1) users that are @mentioned in the text of the Message object;
@@ -47,23 +49,25 @@ class ForceReply(Object):
 
         input_field_placeholder (``str``, *optional*):
             The placeholder to be shown in the input field when the reply is active; 1-64 characters.
+
     """
 
     def __init__(
         self,
-        selective: bool = None,
-        input_field_placeholder: str = None,
-        placeholder: str = None
-    ):
+        selective: bool | None = None,
+        input_field_placeholder: str | None = None,
+        placeholder: str | None = None,
+    ) -> None:
         if placeholder and input_field_placeholder:
+            msg = "Parameters `placeholder` and `input_field_placeholder` are mutually exclusive."
             raise ValueError(
-                "Parameters `placeholder` and `input_field_placeholder` are mutually exclusive."
+                msg,
             )
 
         if placeholder is not None:
             log.warning(
                 "This property is deprecated. "
-                "Please use input_field_placeholder instead"
+                "Please use input_field_placeholder instead",
             )
             input_field_placeholder = placeholder
 
@@ -78,12 +82,12 @@ class ForceReply(Object):
     def read(b):
         return ForceReply(
             selective=b.selective,
-            input_field_placeholder=b.placeholder
+            input_field_placeholder=b.placeholder,
         )
 
-    async def write(self, _: "pyrogram.Client"):
+    async def write(self, _: pyrogram.Client):
         return raw.types.ReplyKeyboardForceReply(
             single_use=True,
             selective=self.selective or None,
-            placeholder=self.input_field_placeholder or None
+            placeholder=self.input_field_placeholder or None,
         )

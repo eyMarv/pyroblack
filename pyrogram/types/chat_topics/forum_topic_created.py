@@ -20,17 +20,21 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional
+from __future__ import annotations
 
-import pyrogram
-from pyrogram import raw, types, utils, enums
-from ..object import Object
+from typing import TYPE_CHECKING
+
+from pyrogram.types.object import Object
+
+if TYPE_CHECKING:
+    from pyrogram import raw
 
 
 class ForumTopicCreated(Object):
     """This object represents a service message about a new forum topic created in the chat.
 
-    Parameters:
+    Parameters
+    ----------
         name (``str``):
             Name of the topic
 
@@ -50,9 +54,9 @@ class ForumTopicCreated(Object):
         *,
         name: str,
         icon_color: int,
-        icon_custom_emoji_id: str = None,
-        is_name_implicit: bool = None,
-    ):
+        icon_custom_emoji_id: str | None = None,
+        is_name_implicit: bool | None = None,
+    ) -> None:
         super().__init__()
 
         self.name = name
@@ -60,11 +64,10 @@ class ForumTopicCreated(Object):
         self.icon_custom_emoji_id = icon_custom_emoji_id
         self.is_name_implicit = is_name_implicit
 
-
     @staticmethod
     def _parse(
-        message_or_action: "raw.types.MessageActionTopicCreate"
-    ) -> "ForumTopicCreated":
+        message_or_action: raw.types.MessageActionTopicCreate,
+    ) -> ForumTopicCreated:
         # Accept bare MessageActionTopicCreate or a service Message that wraps it.
         action = message_or_action
         if getattr(message_or_action, "action", None) is not None:
@@ -74,6 +77,8 @@ class ForumTopicCreated(Object):
         return ForumTopicCreated(
             name=getattr(action, "title", None),
             icon_color=getattr(action, "icon_color", None),
-            icon_custom_emoji_id=str(icon_emoji_id) if icon_emoji_id is not None else None,
+            icon_custom_emoji_id=str(icon_emoji_id)
+            if icon_emoji_id is not None
+            else None,
             is_name_implicit=bool(getattr(action, "title_missing", False)),
         )

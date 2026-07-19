@@ -21,24 +21,25 @@
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
 from pyrogram import raw
-from ..object import Object
+from pyrogram.types.object import Object
 
 
 class InputReplyToMonoforum(Object):
     """Contains information about a target replied monoforum.
 
-
-    Parameters:
+    Parameters
+    ----------
         monoforum_peer (:obj:`~pyrogram.raw.types.InputPeer`):
             An InputPeer.
+
     """
 
-    def __init__(self, *, monoforum_peer: "raw.types.InputPeer"):
+    def __init__(self, *, monoforum_peer: "raw.types.InputPeer") -> None:
         super().__init__()
 
         self.monoforum_peer = monoforum_peer
 
     def write(self):
         return raw.types.InputReplyToMonoForum(
-            monoforum_peer_id=self.monoforum_peer
+            monoforum_peer_id=self.monoforum_peer,
         ).write()

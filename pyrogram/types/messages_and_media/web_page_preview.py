@@ -20,16 +20,17 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from pyrogram import raw
-from pyrogram import types
-from ..object import Object
-from typing import Union
+from __future__ import annotations
+
+from pyrogram import raw, types
+from pyrogram.types.object import Object
 
 
 class WebPagePreview(Object):
     """A web page preview.
 
-    Parameters:
+    Parameters
+    ----------
         webpage (:obj:`~pyrogram.types.WebPageEmpty` | :obj:`~pyrogram.types.WebPage`):
             Web Page Information.
 
@@ -41,17 +42,18 @@ class WebPagePreview(Object):
 
         is_safe (``bool``, *optional*):
             True, If the webpage is considered safe by telegram.
+
     """
 
     def __init__(
         self,
         *,
-        webpage: Union["types.WebPage", "types.WebPageEmpty"],
-        force_large_media: bool = None,
-        force_small_media: bool = None,
-        invert_media: bool = None,
-        is_safe: bool = None,
-    ):
+        webpage: types.WebPage | types.WebPageEmpty,
+        force_large_media: bool | None = None,
+        force_small_media: bool | None = None,
+        invert_media: bool | None = None,
+        is_safe: bool | None = None,
+    ) -> None:
         super().__init__()
 
         self.webpage = webpage
@@ -63,8 +65,8 @@ class WebPagePreview(Object):
     @staticmethod
     def _parse(
         client,
-        web_page_preview: Union["raw.types.WebPage", "raw.types.WebPageEmpty"],
-        invert_media: bool = None,
+        web_page_preview: raw.types.WebPage | raw.types.WebPageEmpty,
+        invert_media: bool | None = None,
     ):
         if isinstance(web_page_preview.webpage, raw.types.WebPage):
             webpage = types.WebPage._parse(client, web_page_preview.webpage)

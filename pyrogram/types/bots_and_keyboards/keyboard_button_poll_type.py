@@ -21,7 +21,7 @@
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
 from pyrogram import enums
-from ..object import Object
+from pyrogram.types.object import Object
 
 
 class KeyboardButtonPollType(Object):
@@ -38,22 +38,23 @@ class KeyboardButtonPollType(Object):
 
     Otherwise, the user will be allowed to create a poll of any type.
     """
+
     def __init__(
         self,
-        type: enums.PollType
-    ):
+        type: enums.PollType,
+    ) -> None:
         self.type = type
 
 
 class KeyboardButtonPollTypeRegular(KeyboardButtonPollType):
     def __init__(
-        self
-    ):
+        self,
+    ) -> None:
         super().__init__(type=enums.PollType.REGULAR)
 
 
 class KeyboardButtonPollTypeQuiz(KeyboardButtonPollType):
     def __init__(
-        self
-    ):
+        self,
+    ) -> None:
         super().__init__(type=enums.PollType.QUIZ)

@@ -20,14 +20,17 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import datetime
-from typing import Union, Optional
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import pyrogram
 from pyrogram import enums, raw, types, utils
-from ..object import Object
-from ..update import Update
-from .message import Str
+from pyrogram.types.object import Object
+from pyrogram.types.update import Update
+
+if TYPE_CHECKING:
+    from datetime import datetime
 
 
 class Poll(Object, Update):
@@ -38,7 +41,8 @@ class Poll(Object, Update):
         Polls can't be sent to secret chats and channel direct messages chats.
         Polls can be sent to a private chat only if the chat is a chat with a bot or the Saved Messages chat.
 
-    Parameters:
+    Parameters
+    ----------
         id (``str``):
             Unique poll identifier.
 
@@ -97,25 +101,25 @@ class Poll(Object, Update):
     def __init__(
         self,
         *,
-        client: "pyrogram.Client" = None,
+        client: pyrogram.Client = None,
         id: str,
-        question: "types.FormattedText",
-        options: list["types.PollOption"],
+        question: types.FormattedText,
+        options: list[types.PollOption],
         total_voter_count: int,
         is_closed: bool,
         is_anonymous: bool,
-        type: "enums.PollType",
+        type: enums.PollType,
         allows_multiple_answers: bool,
         allows_revoting: bool,
-        chosen_option_id: Optional[int] = None,
-        correct_option_ids: Optional[list[int]] = None,
-        explanation: Optional["types.FormattedText"] = None,
-        open_period: Optional[int] = None,
-        close_date: Optional[datetime] = None,
-        has_open_answers: Optional[bool] = None,
-        description: Optional["types.FormattedText"] = None,
-        **kwargs
-    ):
+        chosen_option_id: int | None = None,
+        correct_option_ids: list[int] | None = None,
+        explanation: types.FormattedText | None = None,
+        open_period: int | None = None,
+        close_date: datetime | None = None,
+        has_open_answers: bool | None = None,
+        description: types.FormattedText | None = None,
+        **kwargs,
+    ) -> None:
         super().__init__(client)
 
         self.id = id
@@ -135,11 +139,7 @@ class Poll(Object, Update):
         self.has_open_answers = has_open_answers
         self.description = description
         # pyroblack <= 2.7.2
-        self.correct_option_id = (
-            correct_option_ids[0]
-            if correct_option_ids
-            else None
-        )
+        self.correct_option_id = correct_option_ids[0] if correct_option_ids else None
         # question/explanation may be FormattedText or str
         self.question_entities = getattr(question, "entities", None)
         self.explanation_entities = getattr(explanation, "entities", None)
@@ -147,13 +147,10 @@ class Poll(Object, Update):
     @staticmethod
     async def _parse(
         client,
-        media_poll: Union[
-            "raw.types.MessageMediaPoll",
-            "raw.types.UpdateMessagePoll"
-        ],
+        media_poll: raw.types.MessageMediaPoll | raw.types.UpdateMessagePoll,
         users: dict,
         chats: dict,
-    ) -> "Poll":
+    ) -> Poll:
         poll: raw.types.Poll = media_poll.poll
         poll_results: raw.types.PollResults = media_poll.results
         results: list[raw.types.PollAnswerVoters] = poll_results.results
@@ -187,13 +184,19 @@ class Poll(Object, Update):
 
             if added_by_peer:
                 if isinstance(added_by_peer, raw.types.PeerUser):
-                    user = types.Chat._parse_user_chat(client, users[added_by_peer.user_id])
+                    user = types.Chat._parse_user_chat(
+                        client, users[added_by_peer.user_id]
+                    )
 
                 elif isinstance(added_by_peer, raw.types.PeerChat):
-                    voter_chat = types.Chat._parse_chat_chat(client, chats[added_by_peer.chat_id])
+                    voter_chat = types.Chat._parse_chat_chat(
+                        client, chats[added_by_peer.chat_id]
+                    )
 
                 else:
-                    voter_chat = types.Chat._parse_channel_chat(client, chats[added_by_peer.channel_id])
+                    voter_chat = types.Chat._parse_channel_chat(
+                        client, chats[added_by_peer.channel_id]
+                    )
 
             options.append(
                 types.PollOption(
@@ -205,19 +208,19 @@ class Poll(Object, Update):
                     added_by_user=user,
                     added_by_chat=voter_chat,
                     addition_date=utils.timestamp_to_datetime(answer.date),
-                    client=client
-                )
+                    client=client,
+                ),
             )
 
         if getattr(media_poll, "attached_media", None):
-            attached_media = media_poll.attached_media
+            pass
             # TODO
 
         return Poll(
             id=persistent_id,
             question=types.FormattedText._parse(
                 client,
-                poll.question
+                poll.question,
             ),
             options=options,
             total_voter_count=poll_results.total_voters,
@@ -228,18 +231,23 @@ class Poll(Object, Update):
             allows_revoting=not poll.revoting_disabled,
             chosen_option_id=chosen_option_id,
             correct_option_ids=correct_option_ids,
-            explanation=types.FormattedText._parse(client, raw.types.TextWithEntities(text=poll_results.solution, entities=poll_results.solution_entities)),
+            explanation=types.FormattedText._parse(
+                client,
+                raw.types.TextWithEntities(
+                    text=poll_results.solution, entities=poll_results.solution_entities
+                ),
+            ),
             open_period=poll.close_period,
             close_date=utils.timestamp_to_datetime(poll.close_date),
             has_open_answers=poll.open_answers,
             description=None,
-            client=client
+            client=client,
         )
 
     @staticmethod
     async def _parse_update(
         client,
-        update: Union["raw.types.UpdateMessagePoll", "raw.types.UpdateMessagePollVote"],
+        update: raw.types.UpdateMessagePoll | raw.types.UpdateMessagePollVote,
         users: dict,
         chats: dict,
     ):
@@ -253,7 +261,7 @@ class Poll(Object, Update):
             correct_option_ids = []
             options = []
             question = types.FormattedText(
-                text=""
+                text="",
             )
 
             for i, result in enumerate(results):
@@ -270,8 +278,8 @@ class Poll(Object, Update):
                         # media:flags.0?MessageMedia
                         voter_count=result.voters,
                         data=result.option,
-                        client=client
-                    )
+                        client=client,
+                    ),
                 )
 
             return Poll(
@@ -281,20 +289,21 @@ class Poll(Object, Update):
                 total_voter_count=update.results.total_voters,
                 is_closed=False,
                 is_anonymous=None,
-                type=None, # TODO
+                type=None,  # TODO
                 allows_multiple_answers=None,
                 allows_revoting=None,
                 has_open_answers=None,
                 chosen_option_id=chosen_option_id,
                 correct_option_ids=correct_option_ids,
-                client=client
+                client=client,
             )
+        return None
 
     async def stop(
         self,
-        reply_markup: "types.InlineKeyboardMarkup" = None,
-        business_connection_id: str = None
-    ) -> "types.Poll":
+        reply_markup: types.InlineKeyboardMarkup = None,
+        business_connection_id: str | None = None,
+    ) -> types.Poll:
         """Bound method *stop* of :obj:`~pyrogram.types.Poll`.
 
         Use as a shortcut for:
@@ -306,7 +315,8 @@ class Poll(Object, Update):
                 message_id=message_id,
             )
 
-        Parameters:
+        Parameters
+        ----------
             reply_markup (:obj:`~pyrogram.types.InlineKeyboardMarkup`, *optional*):
                 An InlineKeyboardMarkup object.
 
@@ -318,19 +328,20 @@ class Poll(Object, Update):
 
                 message.poll.stop()
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.Poll`: On success, the stopped poll with the final results is returned.
 
-        Raises:
+        Raises
+        ------
             :obj:`~pyrogram.errors.RPCError`: In case of a Telegram RPC error.
 
         """
-
         return await self._client.stop_poll(
             chat_id=self.chat.id,
             message_id=self.message_id,
             reply_markup=reply_markup,
-            business_connection_id=business_connection_id
+            business_connection_id=business_connection_id,
         )
 
     @property

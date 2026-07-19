@@ -28,13 +28,16 @@ from pyrogram import raw, utils
 
 class LeaveFolder:
     async def leave_folder(
-        self: "pyrogram.Client", link: str, keep_chats: bool = True
+        self: "pyrogram.Client",
+        link: str,
+        keep_chats: bool = True,
     ) -> bool:
         """Leave a folder by its invite link.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             link (``str``):
                 Invite link of the folder.
 
@@ -42,10 +45,12 @@ class LeaveFolder:
                 If True, the chats from the folder will be kept in the user's account.
                 Defaults to True.
 
-        Returns:
+        Returns
+        -------
             ``bool``: True, on success.
 
-        Raises:
+        Raises
+        ------
             AttributeError: In case the folder invite link does not exist in the user's account.
             BadRequest: In case the folder invite link not exists.
             ValueError: In case the folder invite link is invalid.
@@ -55,6 +60,7 @@ class LeaveFolder:
 
                 # leave folder
                 app.leave_folder("t.me/addlist/ebXQ0Q0I3RnGQ")
+
         """
         match = re.match(
             r"^(?:https?://)?(?:www\.)?(?:t(?:elegram)?\.(?:org|me|dog)/(?:addlist/|\+))([\w-]+)$",
@@ -66,7 +72,8 @@ class LeaveFolder:
         elif isinstance(link, str):
             slug = link
         else:
-            raise ValueError("Invalid folder invite link")
+            msg = "Invalid folder invite link"
+            raise ValueError(msg)
 
         r = await self.invoke(raw.functions.chatlists.CheckChatlistInvite(slug=slug))
 
@@ -81,7 +88,7 @@ class LeaveFolder:
                     if not keep_chats
                     else []
                 ),
-            )
+            ),
         )
 
         return True

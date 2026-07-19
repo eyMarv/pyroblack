@@ -20,29 +20,33 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Any, Callable
+from typing import TYPE_CHECKING, Any, Callable
 
-import pyrogram
 from pyrogram.filters import Filter
+
 from .handler import Handler
+
+if TYPE_CHECKING:
+    import pyrogram
 
 CallbackFunc: Callable = Callable[
     [
         "pyrogram.Client",
-        "pyrogram.types.Message"
+        "pyrogram.types.Message",
     ],
-    Any
+    Any,
 ]
 
 
 class GuestMessageHandler(Handler):
     """The Guest Message handler class. Used to handle guest messages.
-    It is intended to be used with :meth:`~pyrogram.Client.add_handler`
+    It is intended to be used with :meth:`~pyrogram.Client.add_handler`.
 
     For a nicer way to register this handler, have a look at the
     :meth:`~pyrogram.Client.on_guest_message` decorator.
 
-    Parameters:
+    Parameters
+    ----------
         callback (``Callable``):
             Pass a function that will be called when a new guest message arrives. It takes *(client, message)*
             as positional arguments.
@@ -51,13 +55,15 @@ class GuestMessageHandler(Handler):
             Pass one or more filters to allow only a subset of messages to be passed
             in your callback function.
 
-    Other parameters:
+    Other Parameters
+    ----------------
         client (:obj:`~pyrogram.Client`):
             The Client itself.
 
         message (:obj:`~pyrogram.types.Message`):
             The received message.
+
     """
 
-    def __init__(self, callback: CallbackFunc, filters: Filter = None):
+    def __init__(self, callback: CallbackFunc, filters: Filter = None) -> None:
         super().__init__(callback, filters)

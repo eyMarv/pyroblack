@@ -36,4 +36,3 @@ class GiftPurchaseOfferState(AutoName):
 
     REJECTED = auto()
     """The offer was rejected"""
-

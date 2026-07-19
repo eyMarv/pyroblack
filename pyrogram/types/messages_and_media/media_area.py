@@ -21,9 +21,8 @@
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
 import pyrogram
-
 from pyrogram import raw, types
-from ..object import Object
+from pyrogram.types.object import Object
 
 
 class MediaArea(Object):
@@ -34,17 +33,19 @@ class MediaArea(Object):
     - :obj:`~pyrogram.types.MediaAreaChannelPost`
     """
 
-    def __init__(self, coordinates: "types.MediaAreaCoordinates"):
+    def __init__(self, coordinates: "types.MediaAreaCoordinates") -> None:
         super().__init__()
 
         self.coordinates = coordinates
 
     @staticmethod
     async def _parse(
-        client: "pyrogram.Client", media_area: "raw.base.MediaArea"
+        client: "pyrogram.Client",
+        media_area: "raw.base.MediaArea",
     ) -> "MediaArea":
         if isinstance(media_area, raw.types.MediaAreaChannelPost):
             try:
                 return await types.MediaAreaChannelPost._parse(client, media_area)
             except Exception:
                 return None
+        return None

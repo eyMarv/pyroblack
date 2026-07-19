@@ -30,6 +30,6 @@ class Advanced(
     Invoke,
     RecoverGaps,
     ResolvePeer,
-    SaveFile
+    SaveFile,
 ):
     pass

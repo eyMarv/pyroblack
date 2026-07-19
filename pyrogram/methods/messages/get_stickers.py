@@ -21,28 +21,29 @@
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
-from typing import List
 
 import pyrogram
-from pyrogram import raw
-from pyrogram import types
+from pyrogram import raw, types
 
 log = logging.getLogger(__name__)
 
 
 class GetStickers:
     async def get_stickers(
-        self: "pyrogram.Client", short_name: str
-    ) -> List["types.Sticker"]:
+        self: "pyrogram.Client",
+        short_name: str,
+    ) -> list["types.Sticker"]:
         """Get all stickers from set by short name.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             short_name (``str``):
                 Short name of the sticker set, serves as the unique identifier for the sticker set.
 
-        Returns:
+        Returns
+        -------
             List of :obj:`~pyrogram.types.Sticker`: A list of stickers is returned.
 
         Example:
@@ -51,14 +52,16 @@ class GetStickers:
                 # Get all stickers by short name
                 await app.get_stickers("short_name")
 
-        Raises:
+        Raises
+        ------
             ValueError: In case of invalid arguments.
+
         """
         sticker_set = await self.invoke(
             raw.functions.messages.GetStickerSet(
                 stickerset=raw.types.InputStickerSetShortName(short_name=short_name),
                 hash=0,
-            )
+            ),
         )
 
         return [

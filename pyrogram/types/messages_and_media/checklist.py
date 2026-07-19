@@ -20,19 +20,20 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Dict, Optional
+from __future__ import annotations
 
 import pyrogram
-from pyrogram import raw, types, utils
+from pyrogram import raw, types
+from pyrogram.types.object import Object
 
-from ..object import Object
 from .message import Str
 
 
 class Checklist(Object):
     """Describes a checklist.
 
-    Parameters:
+    Parameters
+    ----------
         title (``str``):
             Title of the checklist.
 
@@ -55,11 +56,11 @@ class Checklist(Object):
         self,
         *,
         title: str,
-        title_entities: Optional[list["types.MessageEntity"]] = None,
-        tasks: Optional[list["types.ChecklistTask"]] = None,
-        others_can_add_tasks: Optional[bool] = None,
-        others_can_mark_tasks_as_done: Optional[bool] = None,
-    ):
+        title_entities: list[types.MessageEntity] | None = None,
+        tasks: list[types.ChecklistTask] | None = None,
+        others_can_add_tasks: bool | None = None,
+        others_can_mark_tasks_as_done: bool | None = None,
+    ) -> None:
         super().__init__()
 
         self.title = title
@@ -70,11 +71,11 @@ class Checklist(Object):
 
     @staticmethod
     def _parse(
-        client: "pyrogram.Client",
-        checklist: "raw.types.MessageMediaToDo",
-        users: Dict[int, "raw.base.User"],
-        chats: Dict[int, "raw.base.User"],
-    ) -> "Checklist":
+        client: pyrogram.Client,
+        checklist: raw.types.MessageMediaToDo,
+        users: dict[int, raw.base.User],
+        chats: dict[int, raw.base.User],
+    ) -> Checklist:
         completions = {i.id: i for i in getattr(checklist, "completions", [])}
 
         checklist_tasks = []
@@ -86,8 +87,8 @@ class Checklist(Object):
                     task,
                     completions.get(task.id),
                     users,
-                    chats
-                )
+                    chats,
+                ),
             )
 
         title_entities = [

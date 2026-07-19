@@ -20,27 +20,29 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union
+from __future__ import annotations
 
 import pyrogram
-from pyrogram import types, raw
+from pyrogram import raw, types
 
 
 class DiscardGroupCall:
     async def discard_group_call(
         # TODO
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
-    ) -> "types.Message":
-        """Terminate a group/channel call or livestream
+        self: pyrogram.Client,
+        chat_id: int | str,
+    ) -> types.Message:
+        """Terminate a group/channel call or livestream.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat. A chat can be either a basic group, supergroup or a channel.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.Message`: On success, the sent service message is returned.
 
         Example:
@@ -55,20 +57,22 @@ class DiscardGroupCall:
             r = await self.invoke(raw.functions.channels.GetFullChannel(channel=peer))
         elif isinstance(peer, raw.types.InputPeerChat):
             r = await self.invoke(
-                raw.functions.messages.GetFullChat(chat_id=peer.chat_id)
+                raw.functions.messages.GetFullChat(chat_id=peer.chat_id),
             )
         else:
-            raise ValueError("Target chat should be group, supergroup or channel.")
+            msg = "Target chat should be group, supergroup or channel."
+            raise ValueError(msg)
 
         call = r.full_chat.call
 
         if call is None:
-            raise ValueError("No active group call at this chat.")
+            msg = "No active group call at this chat."
+            raise ValueError(msg)
 
         r = await self.invoke(
             raw.functions.phone.DiscardGroupCall(
-                call=call
-            )
+                call=call,
+            ),
         )
 
         for i in r.updates:
@@ -87,3 +91,4 @@ class DiscardGroupCall:
                     {i.id: i for i in r.chats},
                     is_scheduled=isinstance(i, raw.types.UpdateNewScheduledMessage),
                 )
+        return None

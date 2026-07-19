@@ -34,11 +34,13 @@ class SetAccountTTL:
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             days (``int``):
                 Time to live in days.
 
-        Returns:
+        Returns
+        -------
             ``bool``: On success, True is returned.
 
         Example:
@@ -46,9 +48,10 @@ class SetAccountTTL:
 
                 # Set account ttl to 1 year
                 await app.set_account_ttl(365)
-        """
-        r = await self.invoke(
-            raw.functions.account.SetAccountTTL(ttl=raw.types.AccountDaysTTL(days=days))
-        )
 
-        return r
+        """
+        return await self.invoke(
+            raw.functions.account.SetAccountTTL(
+                ttl=raw.types.AccountDaysTTL(days=days)
+            ),
+        )

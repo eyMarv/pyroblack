@@ -20,7 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import AsyncGenerator
+from collections.abc import AsyncGenerator
 
 import pyrogram
 from pyrogram import enums, raw, types, utils
@@ -36,7 +36,8 @@ class GetTopChats:
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             category (:obj:`~pyrogram.enums.TopChatCategory`):
                 Category of chats to be returned.
 
@@ -44,7 +45,8 @@ class GetTopChats:
                 The maximum number of chats to be returned.
                 By default, no limit is applied and all chats are returned.
 
-        Returns:
+        Returns
+        -------
             ``Generator``: A generator yielding :obj:`~pyrogram.types.Chat` objects.
 
         Example:
@@ -53,6 +55,7 @@ class GetTopChats:
                 # Iterate through all top chats in the "users" category
                 async for chat in app.get_top_chats(enums.TopChatCategory.USERS):
                     print(chat.full_name)
+
         """
         current = 0
         total = limit or (1 << 31) - 1
@@ -77,7 +80,7 @@ class GetTopChats:
                     bots_app=category == enums.TopChatCategory.WEB_APP_BOTS,
                     bots_guestchat=category == enums.TopChatCategory.GUEST_BOTS,
                 ),
-                sleep_threshold=60
+                sleep_threshold=60,
             )
 
             if not isinstance(r, raw.types.contacts.TopPeers):
@@ -94,8 +97,9 @@ class GetTopChats:
 
                     parsed_chats.append(
                         types.Chat._parse_chat(
-                            self, users.get(peer_id) or chats_map.get(peer_id)
-                        )
+                            self,
+                            users.get(peer_id) or chats_map.get(peer_id),
+                        ),
                     )
 
             if not parsed_chats:

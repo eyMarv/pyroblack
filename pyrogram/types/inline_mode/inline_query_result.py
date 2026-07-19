@@ -20,11 +20,14 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from typing import TYPE_CHECKING
 from uuid import uuid4
 
-import pyrogram
-from pyrogram import types
-from ..object import Object
+from pyrogram.types.object import Object
+
+if TYPE_CHECKING:
+    import pyrogram
+    from pyrogram import types
 
 
 class InlineQueryResult(Object):
@@ -60,8 +63,8 @@ class InlineQueryResult(Object):
         type: str,
         id: str,
         input_message_content: "types.InputMessageContent",
-        reply_markup: "types.InlineKeyboardMarkup"
-    ):
+        reply_markup: "types.InlineKeyboardMarkup",
+    ) -> None:
         super().__init__()
 
         self.type = type
@@ -69,5 +72,5 @@ class InlineQueryResult(Object):
         self.input_message_content = input_message_content
         self.reply_markup = reply_markup
 
-    async def write(self, client: "pyrogram.Client"):
+    async def write(self, client: "pyrogram.Client") -> None:
         pass

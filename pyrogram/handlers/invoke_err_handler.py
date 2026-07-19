@@ -35,19 +35,22 @@ class InvokeErrHandler(Handler):
     For a nicer way to register this handler, have a look at the
     :meth:`~pyrogram.Client.on_invoke_err` decorator.
 
-    Parameters:
+    Parameters
+    ----------
         callback (``Callable``):
             Pass a function that will be called when an invoke error occurs. It takes *(client, exception)*
             as positional arguments.
 
-    Other parameters:
+    Other Parameters
+    ----------------
         client (:obj:`~pyrogram.Client`):
             The Client itself. Useful, for example, when you want to change the proxy before a new connection
             is established.
 
         exception (:obj:`~Exception`):
             The exception that occurred while sending a request.
+
     """
 
-    def __init__(self, callback: Callable):
+    def __init__(self, callback: Callable) -> None:
         super().__init__(callback)

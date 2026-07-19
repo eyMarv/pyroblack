@@ -20,10 +20,13 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import logging
 
 import pyrogram
 from pyrogram import raw, types
+
 from .inline_query_result import InlineQueryResult
 
 log = logging.getLogger(__name__)
@@ -35,7 +38,8 @@ class InlineQueryResultVenue(InlineQueryResult):
     By default, the venue will be sent by the user. Alternatively, you can use *input_message_content* to send a message
     with the specified content instead of the venue.
 
-    Parameters:
+    Parameters
+    ----------
         title (``str``):
             Title for the result.
 
@@ -78,6 +82,7 @@ class InlineQueryResultVenue(InlineQueryResult):
 
         thumbnail_height (``int``, *optional*):
             Thumbnail height.
+
     """
 
     def __init__(
@@ -86,56 +91,58 @@ class InlineQueryResultVenue(InlineQueryResult):
         address: str,
         latitude: float,
         longitude: float,
-        id: str = None,
-        foursquare_id: str = None,
-        foursquare_type: str = None,
-        google_place_id: str = None,
-        google_place_type: str = None,
-        reply_markup: "types.InlineKeyboardMarkup" = None,
-        input_message_content: "types.InputMessageContent" = None,
-        thumbnail_url: str = None,
+        id: str | None = None,
+        foursquare_id: str | None = None,
+        foursquare_type: str | None = None,
+        google_place_id: str | None = None,
+        google_place_type: str | None = None,
+        reply_markup: types.InlineKeyboardMarkup = None,
+        input_message_content: types.InputMessageContent = None,
+        thumbnail_url: str | None = None,
         thumbnail_width: int = 0,
         thumbnail_height: int = 0,
-        thumb_url: str = None,
-        thumb_width: int = None,
-        thumb_height: int = None
-    ):
+        thumb_url: str | None = None,
+        thumb_width: int | None = None,
+        thumb_height: int | None = None,
+    ) -> None:
         if thumb_url and thumbnail_url:
+            msg = "Parameters `thumb_url` and `thumbnail_url` are mutually exclusive."
             raise ValueError(
-                "Parameters `thumb_url` and `thumbnail_url` are mutually "
-                "exclusive."
+                msg,
             )
-        
+
         if thumb_url is not None:
             log.warning(
-                "This property is deprecated. "
-                "Please use thumbnail_url instead"
+                "This property is deprecated. Please use thumbnail_url instead",
             )
             thumbnail_url = thumb_url
-        
+
         if thumb_width and thumbnail_width:
-            raise ValueError(
-                "Parameters `thumb_width` and `thumbnail_width` are mutually "
-                "exclusive."
+            msg = (
+                "Parameters `thumb_width` and `thumbnail_width` are mutually exclusive."
             )
-        
+            raise ValueError(
+                msg,
+            )
+
         if thumb_width is not None:
             log.warning(
-                "This property is deprecated. "
-                "Please use thumbnail_width instead"
+                "This property is deprecated. Please use thumbnail_width instead",
             )
             thumbnail_width = thumb_width
-        
+
         if thumb_height and thumbnail_height:
-            raise ValueError(
+            msg = (
                 "Parameters `thumb_height` and `thumbnail_height` are mutually "
                 "exclusive."
             )
-        
+            raise ValueError(
+                msg,
+            )
+
         if thumb_height is not None:
             log.warning(
-                "This property is deprecated. "
-                "Please use thumbnail_height instead"
+                "This property is deprecated. Please use thumbnail_height instead",
             )
             thumbnail_height = thumb_height
 
@@ -156,7 +163,7 @@ class InlineQueryResultVenue(InlineQueryResult):
         self.thumbnail_height = thumbnail_height
         self.thumb_height = thumbnail_height  # <=2.7.2
 
-    async def write(self, client: "pyrogram.Client"):
+    async def write(self, client: pyrogram.Client):
         return raw.types.InputBotInlineResult(
             id=self.id,
             type=self.type,
@@ -167,18 +174,22 @@ class InlineQueryResultVenue(InlineQueryResult):
                 else raw.types.InputBotInlineMessageMediaVenue(
                     geo_point=raw.types.InputGeoPoint(
                         lat=self.latitude,
-                        long=self.longitude
+                        long=self.longitude,
                     ),
                     title=self.title,
                     address=self.address,
                     provider=(
-                        "foursquare" if self.foursquare_id or self.foursquare_type
-                        else "google" if self.google_place_id or self.google_place_type
+                        "foursquare"
+                        if self.foursquare_id or self.foursquare_type
+                        else "google"
+                        if self.google_place_id or self.google_place_type
                         else ""
                     ),
                     venue_id=self.foursquare_id or self.google_place_id or "",
                     venue_type=self.foursquare_type or self.google_place_type or "",
-                    reply_markup=await self.reply_markup.write(client) if self.reply_markup else None
+                    reply_markup=await self.reply_markup.write(client)
+                    if self.reply_markup
+                    else None,
                 )
             ),
             thumb=raw.types.InputWebDocument(
@@ -188,8 +199,10 @@ class InlineQueryResultVenue(InlineQueryResult):
                 attributes=[
                     raw.types.DocumentAttributeImageSize(
                         w=self.thumbnail_width,
-                        h=self.thumbnail_height
-                    )
-                ]
-            ) if self.thumbnail_url else None
+                        h=self.thumbnail_height,
+                    ),
+                ],
+            )
+            if self.thumbnail_url
+            else None,
         )

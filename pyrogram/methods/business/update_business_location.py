@@ -25,39 +25,40 @@
 # Source: tl:account.updateBusinessLocation
 # ***************************
 
-from typing import Union, Optional
+from __future__ import annotations
 
 import pyrogram
-from pyrogram import raw
-from pyrogram import types
+from pyrogram import raw, types
 
 
 class UpdateBusinessLocation:
     async def update_business_location(
-        self: "pyrogram.Client",
-        geo_point: Optional[raw.types.InputGeoPoint] = None,
-        address: Optional[str] = None,
-    ) -> "types.Message":
+        self: pyrogram.Client,
+        geo_point: raw.types.InputGeoPoint | None = None,
+        address: str | None = None,
+    ) -> types.Message:
         """Update the business location shown on your business page.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             geo_point (raw.types.InputGeoPoint): Geolocation coordinates for the business
             address (str): Text address to display
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.Message`
 
         Example:
             .. code-block:: python
 
                 await app.update_business_location(...)
-        """
 
-        r = await self.invoke(
+        """
+        await self.invoke(
             raw.functions.account.updateBusinessLocation(
                 geo_point=geo_point,
                 address=address,
-            )
+            ),
         )

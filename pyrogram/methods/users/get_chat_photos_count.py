@@ -20,7 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw
@@ -28,8 +28,8 @@ from pyrogram import raw
 
 class GetChatPhotosCount:
     async def get_chat_photos_count(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str]
+        self: pyrogram.Client,
+        chat_id: int | str,
     ) -> int:
         """Get the total count of photos for a chat.
 
@@ -39,13 +39,15 @@ class GetChatPhotosCount:
 
         .. include:: /_includes/usable-by/users-bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
                 For your personal cloud (Saved Messages) you can simply use "me" or "self".
                 For a contact that exists in your Telegram address book you can use his phone number (str).
 
-        Returns:
+        Returns
+        -------
             ``int``: On success, the user profile photos count is returned.
 
         Example:
@@ -53,8 +55,8 @@ class GetChatPhotosCount:
 
                 count = await app.get_chat_photos_count("me")
                 print(count)
-        """
 
+        """
         peer_id = await self.resolve_peer(chat_id)
 
         if isinstance(peer_id, raw.types.InputPeerChannel):
@@ -62,21 +64,19 @@ class GetChatPhotosCount:
                 raw.functions.messages.GetSearchCounters(
                     peer=peer_id,
                     filters=[raw.types.InputMessagesFilterChatPhotos()],
-                )
+                ),
             )
 
             return r[0].count
-        else:
-            r = await self.invoke(
-                raw.functions.photos.GetUserPhotos(
-                    user_id=peer_id,
-                    offset=0,
-                    max_id=0,
-                    limit=1
-                )
-            )
+        r = await self.invoke(
+            raw.functions.photos.GetUserPhotos(
+                user_id=peer_id,
+                offset=0,
+                max_id=0,
+                limit=1,
+            ),
+        )
 
-            if isinstance(r, raw.types.photos.Photos):
-                return len(r.photos)
-            else:
-                return r.count
+        if isinstance(r, raw.types.photos.Photos):
+            return len(r.photos)
+        return r.count

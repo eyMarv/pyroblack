@@ -20,6 +20,8 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import logging
 from pathlib import Path
 
@@ -38,12 +40,12 @@ class MemoryStorage(SQLiteStorage):
     def __init__(
         self,
         name: str,
-        session_string: str = None,
+        session_string: str | None = None,
         is_telethon_string: bool = False,
-    ):
+    ) -> None:
         super().__init__(
             name,
-            workdir=Path("."),  # unused for in-memory
+            workdir=Path(),  # unused for in-memory
             session_string=session_string,
             is_telethon_string=is_telethon_string,
             in_memory=True,

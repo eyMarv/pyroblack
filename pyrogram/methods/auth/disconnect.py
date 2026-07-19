@@ -20,13 +20,16 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-import pyrogram
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    import pyrogram
 
 
 class Disconnect:
     async def disconnect(
         self: "pyrogram.Client",
-    ):
+    ) -> None:
         """Disconnect the client from Telegram servers.
 
         Raises:
@@ -34,10 +37,12 @@ class Disconnect:
 
         """
         if not self.is_connected:
-            raise ConnectionError("Client is already disconnected")
+            msg = "Client is already disconnected"
+            raise ConnectionError(msg)
 
         if self.is_initialized:
-            raise ConnectionError("Can't disconnect an initialized client")
+            msg = "Can't disconnect an initialized client"
+            raise ConnectionError(msg)
 
         await self.session.stop()
         await self.storage.close()

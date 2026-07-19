@@ -20,10 +20,10 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional
+from __future__ import annotations
 
 import pyrogram
-from pyrogram import types, raw
+from pyrogram import raw, types
 
 from .story_area_type import StoryAreaType
 
@@ -31,7 +31,8 @@ from .story_area_type import StoryAreaType
 class StoryAreaTypeLocation(StoryAreaType):
     """This object describes a story area pointing to a location. Currently, a story can have up to 10 location areas.
 
-    Parameters:
+    Parameters
+    ----------
         latitude (``float``):
             Location latitude in degrees.
 
@@ -48,11 +49,11 @@ class StoryAreaTypeLocation(StoryAreaType):
 
     def __init__(
         self,
-        latitude: float = None,
-        longitude: float = None,
+        latitude: float | None = None,
+        longitude: float | None = None,
         horizontal_accuracy: float = 0,
-        address: Optional["types.LocationAddress"] = None,
-    ):
+        address: types.LocationAddress | None = None,
+    ) -> None:
         super().__init__()
 
         self.latitude = latitude
@@ -62,8 +63,8 @@ class StoryAreaTypeLocation(StoryAreaType):
 
     async def write(
         self,
-        client: "pyrogram.Client",
-        coordinates: "raw.types.MediaAreaCoordinates"
+        client: pyrogram.Client,
+        coordinates: raw.types.MediaAreaCoordinates,
     ):
         return raw.types.MediaAreaGeoPoint(
             coordinates=coordinates,
@@ -71,12 +72,14 @@ class StoryAreaTypeLocation(StoryAreaType):
                 long=self.longitude,
                 lat=self.latitude,
                 access_hash=0,
-                accuracy_radius=self.horizontal_accuracy
+                accuracy_radius=self.horizontal_accuracy,
             ),
             address=raw.types.GeoPointAddress(
                 country_iso2=self.address.country_code,
                 state=self.address.state,
                 city=self.address.city,
-                street=self.address.street
-            ) if self.address else None
+                street=self.address.street,
+            )
+            if self.address
+            else None,
         )

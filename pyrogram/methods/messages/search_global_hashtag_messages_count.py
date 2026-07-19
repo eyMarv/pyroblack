@@ -35,11 +35,13 @@ class SearchGlobalHashtagMessagesCount:
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             hashtag (``str``, *optional*):
                 Hashtag to search for.
 
-        Returns:
+        Returns
+        -------
             ``int``: On success, the messages count is returned.
 
         """
@@ -50,10 +52,9 @@ class SearchGlobalHashtagMessagesCount:
                 offset_peer=raw.types.InputPeerEmpty(),
                 offset_id=0,
                 limit=1,
-            )
+            ),
         )
 
         if hasattr(r, "count"):
             return r.count
-        else:
-            return len(r.messages)
+        return len(r.messages)

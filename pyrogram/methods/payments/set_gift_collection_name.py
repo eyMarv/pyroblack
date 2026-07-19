@@ -20,7 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw, types
@@ -28,16 +28,17 @@ from pyrogram import raw, types
 
 class SetGiftCollectionName:
     async def set_gift_collection_name(
-        self: "pyrogram.Client",
-        owner_id: Union[int, str],
+        self: pyrogram.Client,
+        owner_id: int | str,
         collection_id: int,
-        name: str
-    ) -> "types.GiftCollection":
+        name: str,
+    ) -> types.GiftCollection:
         """Changes name of a gift collection.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             owner_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
                 For your personal cloud (Saved Messages) you can simply use "me" or "self".
@@ -48,21 +49,22 @@ class SetGiftCollectionName:
             name (``str``):
                 New name of the collection, 1-12 characters.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.GiftCollection`: On success, a updated collection is returned.
 
         Example:
             .. code-block:: python
 
                 await set_gift_collection_name("me", 123, "My best gifts!")
+
         """
         r = await self.invoke(
             raw.functions.payments.UpdateStarGiftCollection(
                 peer=await self.resolve_peer(owner_id),
                 collection_id=collection_id,
-                title=name
-            )
+                title=name,
+            ),
         )
 
         return await types.GiftCollection._parse(self, r)
-

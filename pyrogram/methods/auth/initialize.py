@@ -22,8 +22,10 @@
 
 import asyncio
 import logging
+from typing import TYPE_CHECKING
 
-import pyrogram
+if TYPE_CHECKING:
+    import pyrogram
 
 log = logging.getLogger(__name__)
 
@@ -31,7 +33,7 @@ log = logging.getLogger(__name__)
 class Initialize:
     async def initialize(
         self: "pyrogram.Client",
-    ):
+    ) -> None:
         """Initialize the client by starting up workers.
 
         This method will start updates and download workers.
@@ -42,10 +44,12 @@ class Initialize:
 
         """
         if not self.is_connected:
-            raise ConnectionError("Can't initialize a disconnected client")
+            msg = "Can't initialize a disconnected client"
+            raise ConnectionError(msg)
 
         if self.is_initialized:
-            raise ConnectionError("Client is already initialized")
+            msg = "Client is already initialized"
+            raise ConnectionError(msg)
 
         self.load_plugins()
 

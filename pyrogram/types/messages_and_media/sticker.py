@@ -20,20 +20,25 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import datetime
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import pyrogram
-from pyrogram import raw, utils
-from pyrogram import types
+from pyrogram import raw, types, utils
 from pyrogram.errors import StickersetInvalid
 from pyrogram.file_id import FileId, FileType, FileUniqueId, FileUniqueType
-from ..object import Object
+from pyrogram.types.object import Object
+
+if TYPE_CHECKING:
+    from datetime import datetime
 
 
 class Sticker(Object):
     """A sticker.
 
-    Parameters:
+    Parameters
+    ----------
         file_id (``str``):
             Identifier for this file, which can be used to download or reuse the file.
 
@@ -73,6 +78,7 @@ class Sticker(Object):
 
         thumbs (List of :obj:`~pyrogram.types.Thumbnail`, *optional*):
             Sticker thumbnails in the .webp or .jpg format.
+
     """
 
     # TODO: Add mask position
@@ -80,21 +86,21 @@ class Sticker(Object):
     def __init__(
         self,
         *,
-        client: "pyrogram.Client" = None,
+        client: pyrogram.Client = None,
         file_id: str,
         file_unique_id: str,
         width: int,
         height: int,
         is_animated: bool,
         is_video: bool,
-        file_name: str = None,
-        mime_type: str = None,
-        file_size: int = None,
-        date: datetime = None,
-        emoji: str = None,
-        set_name: str = None,
-        thumbs: list["types.Thumbnail"] = None
-    ):
+        file_name: str | None = None,
+        mime_type: str | None = None,
+        file_size: int | None = None,
+        date: datetime | None = None,
+        emoji: str | None = None,
+        set_name: str | None = None,
+        thumbs: list[types.Thumbnail] | None = None,
+    ) -> None:
         super().__init__(client)
 
         self.file_id = file_id
@@ -130,17 +136,17 @@ class Sticker(Object):
                     raw.functions.messages.GetStickerSet(
                         stickerset=raw.types.InputStickerSetID(
                             id=set_id,
-                            access_hash=set_access_hash
+                            access_hash=set_access_hash,
                         ),
-                        hash=0
-                    )
+                        hash=0,
+                    ),
                 )
             ).set.short_name
 
             Sticker.cache[(set_id, set_access_hash)] = name
 
             if len(Sticker.cache) > 250:
-                for i in range(50):
+                for _i in range(50):
                     Sticker.cache.pop(next(iter(Sticker.cache)))
 
             return name
@@ -150,25 +156,35 @@ class Sticker(Object):
     @staticmethod
     async def _parse(
         client,
-        sticker: "raw.types.Document",
-        document_attributes: dict[type["raw.base.DocumentAttribute"], "raw.base.DocumentAttribute"],
-    ) -> "Sticker":
+        sticker: raw.types.Document,
+        document_attributes: dict[
+            type[raw.base.DocumentAttribute], raw.base.DocumentAttribute
+        ],
+    ) -> Sticker:
         sticker_attributes = (
             document_attributes[raw.types.DocumentAttributeSticker]
             if raw.types.DocumentAttributeSticker in document_attributes
             else document_attributes[raw.types.DocumentAttributeCustomEmoji]
         )
 
-        image_size_attributes = document_attributes.get(raw.types.DocumentAttributeImageSize, None)
-        file_name = getattr(document_attributes.get(raw.types.DocumentAttributeFilename, None), "file_name", None)
-        video_attributes = document_attributes.get(raw.types.DocumentAttributeVideo, None)
+        image_size_attributes = document_attributes.get(
+            raw.types.DocumentAttributeImageSize
+        )
+        file_name = getattr(
+            document_attributes.get(raw.types.DocumentAttributeFilename),
+            "file_name",
+            None,
+        )
+        video_attributes = document_attributes.get(raw.types.DocumentAttributeVideo)
 
         sticker_set = sticker_attributes.stickerset
 
         if isinstance(sticker_set, raw.types.InputStickerSetID):
             input_sticker_set_id = (sticker_set.id, sticker_set.access_hash)
             # TODO: FIXME!
-            set_name = await Sticker._get_sticker_set_name(client.invoke, input_sticker_set_id)
+            set_name = await Sticker._get_sticker_set_name(
+                client.invoke, input_sticker_set_id
+            )
         else:
             set_name = None
 
@@ -178,11 +194,11 @@ class Sticker(Object):
                 dc_id=sticker.dc_id,
                 media_id=sticker.id,
                 access_hash=sticker.access_hash,
-                file_reference=sticker.file_reference
+                file_reference=sticker.file_reference,
             ).encode(),
             file_unique_id=FileUniqueId(
                 file_unique_type=FileUniqueType.DOCUMENT,
-                media_id=sticker.id
+                media_id=sticker.id,
             ).encode(),
             width=(
                 image_size_attributes.w
@@ -208,5 +224,5 @@ class Sticker(Object):
             file_name=file_name,
             date=utils.timestamp_to_datetime(sticker.date),
             thumbs=types.Thumbnail._parse(client, sticker),
-            client=client
+            client=client,
         )

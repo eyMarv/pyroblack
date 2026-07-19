@@ -20,23 +20,29 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union, Iterable
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import pyrogram
 from pyrogram import raw, types, utils
 
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+
 
 class GetStories:
     async def get_stories(
-        self: "pyrogram.Client",
-        story_poster_chat_id: Union[int, str],
-        story_ids: Union[int, Iterable[int]],
-    ) -> Union["types.Story", list["types.Story"]] :
+        self: pyrogram.Client,
+        story_poster_chat_id: int | str,
+        story_ids: int | Iterable[int],
+    ) -> types.Story | list[types.Story]:
         """Get one or more stories from a chat by using stories identifiers.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             story_poster_chat_id (``int`` | ``str``):
                 Identifier of the chat that posted the story.
 
@@ -44,7 +50,8 @@ class GetStories:
                 Pass a single story identifier or an iterable of story ids (as integers) to get the content of the
                 story themselves.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.Story` | List of :obj:`~pyrogram.types.Story`: In case *story_ids* was not
             a list, a single story is returned, otherwise a list of stories is returned.
 
@@ -59,8 +66,8 @@ class GetStories:
 
                 for story in stories:
                     print(story)
-        """
 
+        """
         is_iterable = utils.is_list_like(story_ids)
         ids = list(story_ids) if is_iterable else [story_ids]
 
@@ -68,8 +75,8 @@ class GetStories:
         r = await self.invoke(
             raw.functions.stories.GetStoriesByID(
                 peer=peer,
-                id=ids
-            )
+                id=ids,
+            ),
         )
 
         stories = []
@@ -88,7 +95,7 @@ class GetStories:
                     None,
                     story,
                     peer,
-                )
+                ),
             )
 
         return types.List(stories) if is_iterable else stories[0] if stories else None

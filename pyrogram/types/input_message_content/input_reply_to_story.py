@@ -20,23 +20,28 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 from pyrogram import raw
-from ..object import Object
+from pyrogram.types.object import Object
 
 
 class InputReplyToStory(Object):
     """Contains information about a target replied story.
 
-
-    Parameters:
+    Parameters
+    ----------
         peer (:obj:`~pyrogram.raw.types.InputPeer`):
             An InputPeer.
 
         story_id (``int``):
             Unique identifier for the target story.
+
     """
 
-    def __init__(self, *, peer: "raw.types.InputPeer" = None, story_id: int = None):
+    def __init__(
+        self, *, peer: raw.types.InputPeer = None, story_id: int | None = None
+    ) -> None:
         super().__init__()
 
         self.peer = peer
@@ -44,5 +49,6 @@ class InputReplyToStory(Object):
 
     def write(self):
         return raw.types.InputReplyToStory(
-            peer=self.peer, story_id=self.story_id
+            peer=self.peer,
+            story_id=self.story_id,
         ).write()

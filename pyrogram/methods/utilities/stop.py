@@ -20,28 +20,34 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-import pyrogram
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    import pyrogram
 
 
 class Stop:
     async def stop(
         self: "pyrogram.Client",
-        block: bool = True
+        block: bool = True,
     ):
         """Stop the Client.
 
         This method disconnects the client from Telegram and stops the underlying tasks.
 
-        Parameters:
+        Parameters
+        ----------
             block (``bool``, *optional*):
                 Blocks the code execution until the client has been stopped. It is useful with ``block=False`` in case
                 you want to stop the own client *within* a handler in order not to cause a deadlock.
                 Defaults to True.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.Client`: The stopped client itself.
 
-        Raises:
+        Raises
+        ------
             ConnectionError: In case you try to stop an already stopped client.
 
         Example:
@@ -59,9 +65,10 @@ class Stop:
 
 
                 app.run(main())
+
         """
 
-        async def do_it():
+        async def do_it() -> None:
             await self.terminate()
             await self.disconnect()
 

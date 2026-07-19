@@ -23,6 +23,7 @@
 
 from .block_user import BlockUser
 from .check_username import CheckUsername
+from .delete_account import DeleteAccount
 from .delete_profile_photos import DeleteProfilePhotos
 from .export_story_link import ExportStoryLink
 from .get_chat_photos import GetChatPhotos
@@ -33,18 +34,17 @@ from .get_me import GetMe
 from .get_peer_stories import GetPeerStories
 from .get_stories_history import GetUserStoriesHistory
 from .get_users import GetUsers
+from .set_birthdate import SetBirthdate
 from .set_emoji_status import SetEmojiStatus
+from .set_personal_channel import SetPersonalChannel
+from .set_personal_chat import SetPersonalChat
 from .set_profile_photo import SetProfilePhoto
 from .set_username import SetUsername
 from .unblock_user import UnblockUser
 from .update_birthday import UpdateBirthday
 from .update_personal_chat import UpdatePersonalChat
 from .update_profile import UpdateProfile
-from .set_birthdate import SetBirthdate
-from .set_personal_chat import SetPersonalChat
-from .set_personal_channel import SetPersonalChannel
 from .update_status import UpdateStatus
-from .delete_account import DeleteAccount
 
 
 class Users(
@@ -71,6 +71,6 @@ class Users(
     SetPersonalChat,
     SetPersonalChannel,
     UpdateStatus,
-    DeleteAccount
+    DeleteAccount,
 ):
     pass

@@ -20,26 +20,29 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import datetime
-from typing import List
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import pyrogram
-from pyrogram import raw, utils
-from pyrogram import types
+from pyrogram import raw, types, utils
 from pyrogram.file_id import (
     FileId,
     FileType,
     FileUniqueId,
     FileUniqueType,
-    ThumbnailSource,
 )
-from ..object import Object
+from pyrogram.types.object import Object
+
+if TYPE_CHECKING:
+    from datetime import datetime
 
 
 class AlternativeVideo(Object):
     """Describes an alternative reencoded quality of a video file.
 
-    Parameters:
+    Parameters
+    ----------
         file_id (``str``):
             Identifier for this file, which can be used to download or reuse the file.
 
@@ -82,20 +85,20 @@ class AlternativeVideo(Object):
     def __init__(
         self,
         *,
-        client: "pyrogram.Client" = None,
+        client: pyrogram.Client = None,
         file_id: str,
         file_unique_id: str,
         width: int,
         height: int,
         codec: str,
         duration: int,
-        file_name: str = None,
-        mime_type: str = None,
-        file_size: int = None,
-        supports_streaming: bool = None,
-        date: datetime = None,
-        thumbs: List["types.Thumbnail"] = None,
-    ):
+        file_name: str | None = None,
+        mime_type: str | None = None,
+        file_size: int | None = None,
+        supports_streaming: bool | None = None,
+        date: datetime | None = None,
+        thumbs: list[types.Thumbnail] | None = None,
+    ) -> None:
         super().__init__(client)
 
         self.file_id = file_id
@@ -114,10 +117,10 @@ class AlternativeVideo(Object):
     @staticmethod
     def _parse(
         client,
-        video: "raw.types.Document",
-        video_attributes: "raw.types.DocumentAttributeVideo",
+        video: raw.types.Document,
+        video_attributes: raw.types.DocumentAttributeVideo,
         file_name: str,
-    ) -> "AlternativeVideo":
+    ) -> AlternativeVideo:
         return AlternativeVideo(
             file_id=(
                 FileId(
@@ -132,7 +135,8 @@ class AlternativeVideo(Object):
             ),
             file_unique_id=(
                 FileUniqueId(
-                    file_unique_type=FileUniqueType.DOCUMENT, media_id=video.id
+                    file_unique_type=FileUniqueType.DOCUMENT,
+                    media_id=video.id,
                 ).encode()
                 if video
                 else None

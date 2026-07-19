@@ -24,8 +24,7 @@ from typing import Union
 
 import pyrogram
 from pyrogram import raw, types
-
-from ..object import Object
+from pyrogram.types.object import Object
 
 
 class PaidMedia(Object):
@@ -39,18 +38,17 @@ class PaidMedia(Object):
     """
 
     def __init__(
-        self
-    ):
+        self,
+    ) -> None:
         super().__init__()
-
 
     @staticmethod
     def _parse(
         client: "pyrogram.Client",
         extended_media: Union[
             "raw.types.MessageExtendedMediaPreview",
-            "raw.types.MessageExtendedMedia"
-        ]
+            "raw.types.MessageExtendedMedia",
+        ],
     ) -> "PaidMedia":
         if isinstance(extended_media, raw.types.MessageExtendedMediaPreview):
             return types.PaidMediaPreview(
@@ -60,8 +58,10 @@ class PaidMedia(Object):
                 minithumbnail=types.StrippedThumbnail(
                     client=client,
                     # TODO
-                    data=getattr(getattr(extended_media, "thumb"), "bytes", None)
-                ) if getattr(extended_media, "thumb", None) else None
+                    data=getattr(extended_media.thumb, "bytes", None),
+                )
+                if getattr(extended_media, "thumb", None)
+                else None,
             )
         if isinstance(extended_media, raw.types.MessageExtendedMedia):
             media = extended_media.media
@@ -70,12 +70,14 @@ class PaidMedia(Object):
             ttl_seconds = getattr(media, "ttl_seconds", None)
 
             if isinstance(media, raw.types.MessageMediaPhoto):
-                photo = types.Photo._parse(client, media.photo, ttl_seconds, has_media_spoiler)
-                
-                return types.PaidMediaPhoto(
-                    photo=photo
+                photo = types.Photo._parse(
+                    client, media.photo, ttl_seconds, has_media_spoiler
                 )
-            
+
+                return types.PaidMediaPhoto(
+                    photo=photo,
+                )
+
             if isinstance(media, raw.types.MessageMediaDocument):
                 doc = media.document
 
@@ -83,17 +85,20 @@ class PaidMedia(Object):
                     attributes = {type(i): i for i in doc.attributes}
 
                     file_name = getattr(
-                        attributes.get(
-                            raw.types.DocumentAttributeFilename, None
-                        ), "file_name", None
+                        attributes.get(raw.types.DocumentAttributeFilename),
+                        "file_name",
+                        None,
                     )
 
                     if raw.types.DocumentAttributeVideo in attributes:
                         video_attributes = attributes[raw.types.DocumentAttributeVideo]
 
                         if not video_attributes.round_message:
-                            video = types.Video._parse(client, media, video_attributes, file_name, ttl_seconds)
+                            video = types.Video._parse(
+                                client, media, video_attributes, file_name, ttl_seconds
+                            )
 
                             return types.PaidMediaVideo(
-                                video=video
+                                video=video,
                             )
+        return None

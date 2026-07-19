@@ -23,13 +23,14 @@
 from typing import Optional
 
 from pyrogram import raw, types
-from ..object import Object
+from pyrogram.types.object import Object
 
 
 class BotVerification(Object):
     """Information about bot verification.
 
-    Parameters:
+    Parameters
+    ----------
         bot (:obj:`~pyrogram.types.User`):
             Bot that is verified this user.
 
@@ -38,6 +39,7 @@ class BotVerification(Object):
 
         description (``int``, *optional*):
             Additional description about the verification.
+
     """
 
     def __init__(
@@ -45,8 +47,8 @@ class BotVerification(Object):
         *,
         bot: int,
         custom_emoji_id: str,
-        description: str
-    ):
+        description: str,
+    ) -> None:
         self.bot = bot
         self.custom_emoji_id = custom_emoji_id
         self.description = description
@@ -55,7 +57,7 @@ class BotVerification(Object):
     def _parse(
         client,
         verification: "raw.types.BotVerification",
-        users
+        users,
     ) -> Optional["BotVerification"]:
         if not verification:
             return None
@@ -63,5 +65,5 @@ class BotVerification(Object):
         return BotVerification(
             bot=types.User._parse(client, users.get(verification.bot_id)),
             custom_emoji_id=str(verification.icon),
-            description=verification.description
+            description=verification.description,
         )

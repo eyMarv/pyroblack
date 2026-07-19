@@ -20,11 +20,13 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from typing import NoReturn
+
 import pyrogram
 
 
 class StopTransmission:
-    def stop_transmission(self):
+    def stop_transmission(self) -> NoReturn:
         """Stop downloading or uploading a file.
 
         This method must be called inside a progress callback function in order to stop the transmission at the
@@ -43,5 +45,6 @@ class StopTransmission:
                         "me", "file.zip",
                         progress=progress,
                         progress_args=(app,))
+
         """
         raise pyrogram.StopTransmission

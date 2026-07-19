@@ -20,15 +20,18 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from ..object import Object
+from __future__ import annotations
+
+from pyrogram.types.object import Object
 
 
 class KeyboardButtonRequestUsers(Object):
     """This object defines the criteria used to request suitable users.
     The identifiers of the selected users will be shared with the bot when the corresponding button is pressed.
-    `More about requesting users. <https://core.telegram.org/bots/features#chat-and-user-selection>`_
+    `More about requesting users. <https://core.telegram.org/bots/features#chat-and-user-selection>`_.
 
-    Parameters:
+    Parameters
+    ----------
         request_id (``int``):
             Signed 32-bit identifier of the request, which will be received back in the :obj:`~pyrogram.types.UsersShared` object. Must be unique within the message
 
@@ -51,16 +54,17 @@ class KeyboardButtonRequestUsers(Object):
             Pass True to request the users' photo
 
     """
+
     def __init__(
         self,
         request_id: int,
-        user_is_bot: bool = None,
-        user_is_premium: bool = None,
+        user_is_bot: bool | None = None,
+        user_is_premium: bool | None = None,
         max_quantity: int = 1,
-        request_name: bool = None,
-        request_username: bool = None,
-        request_photo: bool = None
-    ):
+        request_name: bool | None = None,
+        request_username: bool | None = None,
+        request_photo: bool | None = None,
+    ) -> None:
         self.request_id = request_id
         self.user_is_bot = user_is_bot
         self.user_is_premium = user_is_premium

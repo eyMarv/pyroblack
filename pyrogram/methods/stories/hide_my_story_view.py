@@ -20,7 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional, Union
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw, types
@@ -28,22 +28,24 @@ from pyrogram import raw, types
 
 class HideMyStoryView:
     async def hide_my_story_view(
-        self: "pyrogram.Client",
-        past: Optional[bool] = True,
-        future: Optional[bool] = True,
-    ) -> Union["types.StoryStealthMode", bool]:
+        self: pyrogram.Client,
+        past: bool | None = True,
+        future: bool | None = True,
+    ) -> types.StoryStealthMode | bool:
         """Activates stealth mode for stories, which hides all views of stories from the current user in the last "stories_stealth_past_period" seconds and for the next "stories_stealth_future_period" seconds; for Telegram Premium users only.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             past (``bool``, *optional*):
                 Pass True to erase views from any stories opened in the past stories_stealth_past_period seconds, as specified by the client configuration.
 
             future (``bool``, *optional*):
                 Pass True to hide future story views for the next stories_stealth_future_period seconds, as specified by the client configuration.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.StoryStealthMode`: On success, the information about stealth mode session is returned.
 
         Example:
@@ -52,16 +54,16 @@ class HideMyStoryView:
                 # Erase and hide story views in the past stories_stealth_past_period and the next stories_stealth_future_period seconds
                 await app.hide_my_story_view()
 
-        Raises:
+        Raises
+        ------
             :obj:`~pyrogram.errors.RPCError`: In case of a Telegram RPC error.
 
         """
-
         r = await self.invoke(
             raw.functions.stories.ActivateStealthMode(
                 past=past,
-                future=future
-            )
+                future=future,
+            ),
         )
         for i in r.updates:
             if isinstance(i, raw.types.UpdateStoriesStealthMode):

@@ -20,17 +20,22 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import datetime
-from typing import Optional, Union, List, Dict
+from __future__ import annotations
 
-from pyrogram import types, enums, raw, utils
-from ..object import Object
+from typing import TYPE_CHECKING
+
+from pyrogram import enums, raw, types, utils
+from pyrogram.types.object import Object
+
+if TYPE_CHECKING:
+    from datetime import datetime
 
 
 class BusinessMessage(Object):
     """Business working hours.
 
-    Parameters:
+    Parameters
+    ----------
         shortcut_id (``int``):
             ID of the shortcut.
 
@@ -57,21 +62,22 @@ class BusinessMessage(Object):
 
         end_date (``datetime``, *optional*):
             End date of the away message.
+
     """
 
     def __init__(
         self,
         *,
         shortcut_id: int,
-        is_greeting: bool = None,
-        is_away: bool = None,
-        no_activity_days: int = None,
-        offline_only: bool = None,
-        recipients: List["types.User"] = None,
-        schedule: "enums.BusinessSchedule" = None,
-        start_date: datetime = None,
-        end_date: datetime = None,
-    ):
+        is_greeting: bool | None = None,
+        is_away: bool | None = None,
+        no_activity_days: int | None = None,
+        offline_only: bool | None = None,
+        recipients: list[types.User] | None = None,
+        schedule: enums.BusinessSchedule = None,
+        start_date: datetime | None = None,
+        end_date: datetime | None = None,
+    ) -> None:
         self.shortcut_id = shortcut_id
         self.is_greeting = is_greeting
         self.is_away = is_away
@@ -85,11 +91,10 @@ class BusinessMessage(Object):
     @staticmethod
     def _parse(
         client,
-        message: Union[
-            "raw.types.BusinessGreetingMessage", "raw.types.BusinessAwayMessage"
-        ] = None,
-        users: Dict[int, "raw.types.User"] = None,
-    ) -> Optional["BusinessMessage"]:
+        message: raw.types.BusinessGreetingMessage
+        | raw.types.BusinessAwayMessage = None,
+        users: dict[int, raw.types.User] | None = None,
+    ) -> BusinessMessage | None:
         if not message:
             return None
 
@@ -97,15 +102,18 @@ class BusinessMessage(Object):
 
         if isinstance(message, raw.types.BusinessAwayMessage):
             if isinstance(
-                message.schedule, raw.types.BusinessAwayMessageScheduleAlways
+                message.schedule,
+                raw.types.BusinessAwayMessageScheduleAlways,
             ):
                 schedule = enums.BusinessSchedule.ALWAYS
             elif isinstance(
-                message.schedule, raw.types.BusinessAwayMessageScheduleOutsideWorkHours
+                message.schedule,
+                raw.types.BusinessAwayMessageScheduleOutsideWorkHours,
             ):
                 schedule = enums.BusinessSchedule.OUTSIDE_WORK_HOURS
             elif isinstance(
-                message.schedule, raw.types.BusinessAwayMessageScheduleCustom
+                message.schedule,
+                raw.types.BusinessAwayMessageScheduleCustom,
             ):
                 schedule = enums.BusinessSchedule.CUSTOM
 
@@ -116,7 +124,9 @@ class BusinessMessage(Object):
             no_activity_days=getattr(message, "no_activity_days", None),
             offline_only=getattr(message, "offline_only", None),
             recipients=types.BusinessRecipients._parse(
-                client, message.recipients, users
+                client,
+                message.recipients,
+                users,
             ),
             schedule=schedule,
             start_date=(

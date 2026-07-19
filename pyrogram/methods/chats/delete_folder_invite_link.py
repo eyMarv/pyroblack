@@ -30,20 +30,22 @@ class DeleteFolderInviteLink:
     async def delete_folder_invite_link(
         self: "pyrogram.Client",
         chat_folder_id: int,
-        invite_link: str
+        invite_link: str,
     ) -> bool:
         """Deletes an invite link for a chat folder.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_folder_id (``int``):
                 Unique identifier (int) of the target folder.
 
             invite_link (``str``):
                 Invite link to be edited.
 
-        Returns:
+        Returns
+        -------
             ``bool``: On success, True is returned.
 
         Example:
@@ -54,21 +56,24 @@ class DeleteFolderInviteLink:
                     chat_folder_id=folder_id,
                     invite_link="https://t.me/addlist/abcde"
                 )
+
         """
-        match = re.match(r"^(?:https?://)?(?:www\.)?(?:t(?:elegram)?\.(?:org|me|dog)/(?:addlist/|\+))([\w-]+)$", invite_link)
+        match = re.match(
+            r"^(?:https?://)?(?:www\.)?(?:t(?:elegram)?\.(?:org|me|dog)/(?:addlist/|\+))([\w-]+)$",
+            invite_link,
+        )
 
         if match:
             slug = match.group(1)
         elif isinstance(invite_link, str):
             slug = invite_link
         else:
-            raise ValueError("Invalid folder invite link")
+            msg = "Invalid folder invite link"
+            raise ValueError(msg)
 
-        r = await self.invoke(
+        return await self.invoke(
             raw.functions.chatlists.DeleteExportedInvite(
                 chatlist=raw.types.InputChatlistDialogFilter(filter_id=chat_folder_id),
-                slug=slug
-            )
+                slug=slug,
+            ),
         )
-
-        return r

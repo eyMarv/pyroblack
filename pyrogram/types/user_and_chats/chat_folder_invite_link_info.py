@@ -20,18 +20,18 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import List, Optional
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw, types, utils
-
-from ..object import Object
+from pyrogram.types.object import Object
 
 
 class ChatFolderInviteLinkInfo(Object):
     """Contains information about an invite link to a chat folder.
 
-    Parameters:
+    Parameters
+    ----------
         chat_folder_info (:obj:`~pyrogram.types.ChatFolderInfo`):
             Basic information about the chat folder.
             Chat folder identifier will be None if the user didn't have the chat folder yet.
@@ -41,23 +41,25 @@ class ChatFolderInviteLinkInfo(Object):
 
         added_chats (List of :obj:`~pyrogram.types.Chat`):
             Chats from the link, which are added to the folder already.
+
     """
 
     def __init__(
         self,
         *,
-        chat_folder_info: "types.ChatFolderInfo",
-        missing_chats: Optional[List["types.Chat"]] = None,
-        added_chats: Optional[List["types.Chat"]] = None,
-    ):
+        chat_folder_info: types.ChatFolderInfo,
+        missing_chats: list[types.Chat] | None = None,
+        added_chats: list[types.Chat] | None = None,
+    ) -> None:
         self.chat_folder_info = chat_folder_info
         self.missing_chats = missing_chats
         self.added_chats = added_chats
 
     @staticmethod
     async def _parse(
-        client: "pyrogram.Client", invite: "raw.base.chatlists.ChatlistInvite"
-    ) -> "ChatFolderInviteLinkInfo":
+        client: pyrogram.Client,
+        invite: raw.base.chatlists.ChatlistInvite,
+    ) -> ChatFolderInviteLinkInfo:
         if isinstance(invite, raw.types.chatlists.ChatlistInvite):
             title = types.FormattedText._parse(client, invite.title)
 
@@ -70,7 +72,7 @@ class ChatFolderInviteLinkInfo(Object):
                     client=client,
                 ),
                 missing_chats=types.List(
-                    [types.Chat._parse_chat(client, chat) for chat in invite.chats]
+                    [types.Chat._parse_chat(client, chat) for chat in invite.chats],
                 )
                 or None,
             )
@@ -85,17 +87,21 @@ class ChatFolderInviteLinkInfo(Object):
                 ),
                 missing_chats=types.List(
                     [
-                        types.Chat._parse_chat(client, chats.get(utils.get_raw_peer_id(i)))
+                        types.Chat._parse_chat(
+                            client, chats.get(utils.get_raw_peer_id(i))
+                        )
                         for i in invite.missing_peers
-                    ]
+                    ],
                 )
                 or None,
                 added_chats=types.List(
                     [
-                        types.Chat._parse_chat(client, chats.get(utils.get_raw_peer_id(i)))
+                        types.Chat._parse_chat(
+                            client, chats.get(utils.get_raw_peer_id(i))
+                        )
                         for i in invite.already_peers
-                    ]
+                    ],
                 )
                 or None,
             )
-
+        return None

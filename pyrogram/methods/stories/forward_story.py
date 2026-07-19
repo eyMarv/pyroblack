@@ -20,40 +20,43 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import datetime
-from typing import Optional, Union
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import pyrogram
 from pyrogram import raw, types, utils
 
+if TYPE_CHECKING:
+    from datetime import datetime
+
 
 class ForwardStory:
     async def forward_story(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
-        story_poster_chat_id: Union[int, str],
+        self: pyrogram.Client,
+        chat_id: int | str,
+        story_poster_chat_id: int | str,
         story_id: int,
-        disable_notification: bool = None,
-        protect_content: bool = None,
-        allow_paid_broadcast: bool = None,
-        paid_message_star_count: int = None,
-        reply_parameters: "types.ReplyParameters" = None,
-        message_thread_id: int = None,
-        reply_markup: Union[
-            "types.InlineKeyboardMarkup",
-            "types.ReplyKeyboardMarkup",
-            "types.ReplyKeyboardRemove",
-            "types.ForceReply"
-        ] = None,
-        schedule_date: datetime = None,
-        message_effect_id: int = None,
-        send_as: Union[int, str] = None,
-    ) -> Optional["types.Message"]:
+        disable_notification: bool | None = None,
+        protect_content: bool | None = None,
+        allow_paid_broadcast: bool | None = None,
+        paid_message_star_count: int | None = None,
+        reply_parameters: types.ReplyParameters = None,
+        message_thread_id: int | None = None,
+        reply_markup: types.InlineKeyboardMarkup
+        | types.ReplyKeyboardMarkup
+        | types.ReplyKeyboardRemove
+        | types.ForceReply = None,
+        schedule_date: datetime | None = None,
+        message_effect_id: int | None = None,
+        send_as: int | str | None = None,
+    ) -> types.Message | None:
         """Forward story.
 
         .. include:: /_includes/usable-by/users-bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
                 For your personal cloud (Saved Messages) you can simply use "me" or "self".
@@ -100,11 +103,12 @@ class ForwardStory:
             send_as (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the chat or channel to send the message as.
                 You can use this to send the message on behalf of a chat or channel where you have appropriate permissions.
-                Use the :meth:`~pyrogram.Client.get_send_as_chats` to return the list of message sender identifiers, which can be used to send messages in the chat, 
+                Use the :meth:`~pyrogram.Client.get_send_as_chats` to return the list of message sender identifiers, which can be used to send messages in the chat,
                 This setting applies to the current message and will remain effective for future messages unless explicitly changed.
                 To set this behavior permanently for all messages, use :meth:`~pyrogram.Client.set_send_as_chat`.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.Message`: On success, the sent story message is returned.
 
         Example:
@@ -112,11 +116,12 @@ class ForwardStory:
 
                 # Send your story to chat_id
                 await app.forward_story(to_chat, from_chat, 123)
+
         """
         reply_to = await utils._get_reply_message_parameters(
             self,
             message_thread_id,
-            reply_parameters
+            reply_parameters,
         )
         r = await self.invoke(
             raw.functions.messages.SendMedia(
@@ -128,15 +133,15 @@ class ForwardStory:
                 peer=await self.resolve_peer(chat_id),
                 media=raw.types.InputMediaStory(
                     peer=await self.resolve_peer(story_poster_chat_id),
-                    id=story_id
+                    id=story_id,
                 ),
                 silent=disable_notification or None,
                 random_id=self.rnd_id(),
                 schedule_date=utils.datetime_to_timestamp(schedule_date),
                 reply_to=reply_to,
                 allow_paid_stars=paid_message_star_count,
-                message=""
-            )
+                message="",
+            ),
         )
 
         for i in r.updates:
@@ -145,8 +150,8 @@ class ForwardStory:
                 (
                     raw.types.UpdateNewMessage,
                     raw.types.UpdateNewChannelMessage,
-                    raw.types.UpdateNewScheduledMessage
-                )
+                    raw.types.UpdateNewScheduledMessage,
+                ),
             ):
                 return await types.Message._parse(
                     self,
@@ -154,5 +159,6 @@ class ForwardStory:
                     {i.id: i for i in r.users},
                     {i.id: i for i in r.chats},
                     is_scheduled=isinstance(i, raw.types.UpdateNewScheduledMessage),
-                    replies=self.fetch_replies
+                    replies=self.fetch_replies,
                 )
+        return None

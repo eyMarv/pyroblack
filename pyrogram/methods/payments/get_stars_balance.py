@@ -20,7 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional, Union
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw
@@ -28,19 +28,21 @@ from pyrogram import raw
 
 class GetStarsBalance:
     async def get_stars_balance(
-        self: "pyrogram.Client",
-        chat_id: Optional[Union[int, str]] = None,
+        self: pyrogram.Client,
+        chat_id: int | str | None = None,
     ) -> float:
         """Get the current Telegram Stars balance of the current account.
 
         .. include:: /_includes/usable-by/users-bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``, *optional*):
                 Unique identifier (int) or username (str) of the target chat.
                 For your personal cloud (Saved Messages) you can simply use "me" or "self".
 
-        Returns:
+        Returns
+        -------
             ``float``: On success, the current stars balance is returned.
 
         Example:
@@ -51,6 +53,7 @@ class GetStarsBalance:
 
                 # Get stars balance of a bot
                 await app.get_stars_balance(chat_id="pyrogrambot")
+
         """
         if chat_id is None:
             peer = raw.types.InputPeerSelf()
@@ -61,9 +64,8 @@ class GetStarsBalance:
             raw.functions.payments.GetStarsTransactions(
                 peer=peer,
                 offset="",
-                limit=0
-            )
+                limit=0,
+            ),
         )
 
         return r.balance.amount + r.balance.nanos / 1e9
-

@@ -20,18 +20,19 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional, Union
+from __future__ import annotations
 
 import pyrogram
-from pyrogram import raw, types, utils, enums
-from ..object import Object
-from ..messages_and_media.message import Str
+from pyrogram import raw, types
+from pyrogram.types.messages_and_media.message import Str
+from pyrogram.types.object import Object
 
 
 class TextQuote(Object):
     """This object contains information about the quoted part of a message that is replied to by the given message.
 
-    Parameters:
+    Parameters
+    ----------
         text (``str``):
             Text of the quoted part of a message that is replied to by the given message
 
@@ -49,12 +50,12 @@ class TextQuote(Object):
     def __init__(
         self,
         *,
-        client: "pyrogram.Client" = None,
+        client: pyrogram.Client = None,
         text: Str = None,
-        entities: list["types.MessageEntity"] = None,
-        position: int = None,
-        is_manual: bool = None
-    ):
+        entities: list[types.MessageEntity] | None = None,
+        position: int | None = None,
+        is_manual: bool | None = None,
+    ) -> None:
         super().__init__(client)
 
         self.text = text
@@ -67,8 +68,8 @@ class TextQuote(Object):
         client,
         chats: dict,
         users: dict,
-        reply_to: "raw.types.MessageReplyHeader"
-    ) -> "TextQuote":
+        reply_to: raw.types.MessageReplyHeader,
+    ) -> TextQuote:
         if not isinstance(reply_to, raw.types.MessageReplyHeader):
             return None
 
@@ -84,12 +85,12 @@ class TextQuote(Object):
             for entity in quote_entities
         ]
         entities = types.List(
-            filter(lambda x: x is not None, entities)
+            filter(lambda x: x is not None, entities),
         )
 
         return TextQuote(
             text=Str(quote_text).init(entities) if quote_text else None,
             entities=entities or None,
             position=position,
-            is_manual=bool(reply_to.quote) or None
+            is_manual=bool(reply_to.quote) or None,
         )

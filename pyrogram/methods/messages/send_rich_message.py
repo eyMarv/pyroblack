@@ -20,7 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional, Union
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import enums, raw, types, utils
@@ -28,32 +28,30 @@ from pyrogram import enums, raw, types, utils
 
 class SendRichMessage:
     async def send_rich_message(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
-        rich_message: "types.InputRichMessage",
-        disable_notification: Optional[bool] = None,
-        message_thread_id: Optional[int] = None,
-        direct_messages_topic_id: Optional[int] = None,
-        effect_id: Optional[int] = None,
-        reply_parameters: Optional["types.ReplyParameters"] = None,
-        protect_content: Optional[bool] = None,
-        business_connection_id: Optional[str] = None,
-        allow_paid_broadcast: Optional[bool] = None,
-        suggested_post_parameters: Optional["types.SuggestedPostParameters"] = None,
-        reply_markup: Optional[
-            Union[
-                "types.InlineKeyboardMarkup",
-                "types.ReplyKeyboardMarkup",
-                "types.ReplyKeyboardRemove",
-                "types.ForceReply",
-            ]
-        ] = None,
-    ) -> "types.Message":
+        self: pyrogram.Client,
+        chat_id: int | str,
+        rich_message: types.InputRichMessage,
+        disable_notification: bool | None = None,
+        message_thread_id: int | None = None,
+        direct_messages_topic_id: int | None = None,
+        effect_id: int | None = None,
+        reply_parameters: types.ReplyParameters | None = None,
+        protect_content: bool | None = None,
+        business_connection_id: str | None = None,
+        allow_paid_broadcast: bool | None = None,
+        suggested_post_parameters: types.SuggestedPostParameters | None = None,
+        reply_markup: types.InlineKeyboardMarkup
+        | types.ReplyKeyboardMarkup
+        | types.ReplyKeyboardRemove
+        | types.ForceReply
+        | None = None,
+    ) -> types.Message:
         """Send a rich text message.
 
         .. include:: /_includes/usable-by/bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
                 For your personal cloud (Saved Messages) you can simply use "me" or "self".
@@ -99,7 +97,8 @@ class SendRichMessage:
                 Additional interface options. An object for an inline keyboard, custom reply keyboard,
                 instructions to remove reply keyboard or to force a reply from the user.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.Message`: On success, the sent text message is returned.
 
         Example:
@@ -117,6 +116,7 @@ class SendRichMessage:
                         ]
                     ),
                 )
+
         """
         if direct_messages_topic_id:
             _, reply_parameters = utils._get_reply_to_message_quote_ids(
@@ -127,7 +127,7 @@ class SendRichMessage:
         reply_to = await utils._get_reply_message_parameters(
             self,
             message_thread_id,
-            reply_parameters
+            reply_parameters,
         )
 
         rpc = raw.functions.messages.SendMessage(
@@ -150,8 +150,8 @@ class SendRichMessage:
             r = await self.invoke(
                 raw.functions.InvokeWithBusinessConnection(
                     query=rpc,
-                    connection_id=business_connection_id
-                )
+                    connection_id=business_connection_id,
+                ),
             )
         else:
             r = await self.invoke(rpc)
@@ -159,7 +159,11 @@ class SendRichMessage:
         if isinstance(r, raw.types.UpdateShortSentMessage):
             peer = await self.resolve_peer(chat_id)
 
-            peer_id = peer.user_id if isinstance(peer, raw.types.InputPeerUser) else -peer.chat_id
+            peer_id = (
+                peer.user_id
+                if isinstance(peer, raw.types.InputPeerUser)
+                else -peer.chat_id
+            )
 
             return types.Message(
                 id=r.id,

@@ -41,6 +41,7 @@ class Ping:
 
                 latency = await app.ping()
                 print(f"Ping: {latency} ms")
+
         """
         start_time = time()
         await self.invoke(

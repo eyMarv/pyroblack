@@ -20,7 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional, Union
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw, types
@@ -28,17 +28,18 @@ from pyrogram import raw, types
 
 class CreateBot:
     async def create_bot(
-        self: "pyrogram.Client",
-        manager_bot_user_id: Union[int, str],
+        self: pyrogram.Client,
+        manager_bot_user_id: int | str,
         name: str,
         username: str,
-        via_link: Optional[bool] = None,
-    ) -> "types.User":
+        via_link: bool | None = None,
+    ) -> types.User:
         """Creates a bot which will be managed by another bot.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             manager_bot_user_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the bot that will manage the created bot.
 
@@ -53,8 +54,10 @@ class CreateBot:
             via_link (``bool``):
                 Pass True if the bot is created from link.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.User`: On success, created bot is returned.
+
         """
         r = await self.invoke(
             raw.functions.bots.CreateBot(
@@ -62,7 +65,7 @@ class CreateBot:
                 username=username,
                 manager_id=await self.resolve_peer(manager_bot_user_id),
                 via_deeplink=via_link,
-            )
+            ),
         )
 
         return types.User._parse(self, r)

@@ -20,19 +20,23 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import datetime
-from typing import Optional
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import pyrogram
-from pyrogram import raw, utils
-from pyrogram import types
-from ..object import Object
+from pyrogram import raw, types, utils
+from pyrogram.types.object import Object
+
+if TYPE_CHECKING:
+    from datetime import datetime
 
 
 class ChatInviteLink(Object):
     """An invite link for a chat.
 
-    Parameters:
+    Parameters
+    ----------
         invite_link (``str``):
             The invite link. If the link was created by another chat administrator, then the second part of the
             link will be replaced with "...".
@@ -70,7 +74,7 @@ class ChatInviteLink(Object):
 
         pending_join_request_count (``int``, *optional*):
             Number of pending join requests created using this link.
-        
+
         expired_member_count (``int``, *optional*):
             Number of chat members, which joined the chat using the link, but have already left because of expired subscription; for subscription links only.
 
@@ -83,24 +87,25 @@ class ChatInviteLink(Object):
     """
 
     def __init__(
-        self, *,
+        self,
+        *,
         invite_link: str,
         date: datetime,
-        is_primary: bool = None,
-        is_revoked: bool = None,
-        creator: "types.User" = None,
-        name: str = None,
-        creates_join_request: bool = None,
-        start_date: datetime = None,
-        expire_date: datetime = None,
-        member_limit: int = None,
-        member_count: int = None,
-        pending_join_request_count: int = None,
-        expired_member_count: int = None,
-        subscription_period: int = None,
-        subscription_price: int = None,
-        **kwargs
-    ):
+        is_primary: bool | None = None,
+        is_revoked: bool | None = None,
+        creator: types.User = None,
+        name: str | None = None,
+        creates_join_request: bool | None = None,
+        start_date: datetime | None = None,
+        expire_date: datetime | None = None,
+        member_limit: int | None = None,
+        member_count: int | None = None,
+        pending_join_request_count: int | None = None,
+        expired_member_count: int | None = None,
+        subscription_period: int | None = None,
+        subscription_price: int | None = None,
+        **kwargs,
+    ) -> None:
         super().__init__()
 
         self.invite_link = invite_link
@@ -123,10 +128,10 @@ class ChatInviteLink(Object):
 
     @staticmethod
     def _parse(
-        client: "pyrogram.Client",
-        invite: "raw.base.ExportedChatInvite",
-        users: dict[int, "raw.types.User"] = None
-    ) -> Optional["ChatInviteLink"]:
+        client: pyrogram.Client,
+        invite: raw.base.ExportedChatInvite,
+        users: dict[int, raw.types.User] | None = None,
+    ) -> ChatInviteLink | None:
         if not isinstance(invite, raw.types.ChatInviteExported):
             return None
 
@@ -149,7 +154,7 @@ class ChatInviteLink(Object):
             member_limit=invite.usage_limit,
             member_count=invite.usage,
             pending_join_request_count=invite.requested,
-            expired_member_count=invite.subscription_expired   
+            expired_member_count=invite.subscription_expired,
         )
         if invite.subscription_pricing:
             chat_invite_link.subscription_period = invite.subscription_pricing.period

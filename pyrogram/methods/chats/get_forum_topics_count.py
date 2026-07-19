@@ -20,30 +20,37 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import logging
-from typing import Union, Optional, AsyncGenerator
+from typing import TYPE_CHECKING
 
 import pyrogram
-from pyrogram import raw
-from pyrogram import types
+from pyrogram import raw, types
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncGenerator
 
 log = logging.getLogger(__name__)
 
 
 class GetForumTopicsCount:
     async def get_forum_topics_count(
-        self: "pyrogram.Client", chat_id: Union[int, str]
-    ) -> Optional[AsyncGenerator["types.ForumTopic", None]]:
+        self: pyrogram.Client,
+        chat_id: int | str,
+    ) -> AsyncGenerator[types.ForumTopic, None] | None:
         """Get forum topics count from a chat.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
                 You can also use chat public link in form of *t.me/<username>* (str).
 
-        Returns:
+        Returns
+        -------
             ``int``: On success, the count of forum topics is returned.
 
         Example:
@@ -52,14 +59,19 @@ class GetForumTopicsCount:
                 # get all forum topics count
                 app.get_forum_topics_count(chat_id)
 
-        Raises:
+        Raises
+        ------
             ValueError: In case of invalid arguments.
-        """
 
+        """
         peer = await self.resolve_peer(chat_id)
 
         rpc = raw.functions.channels.GetForumTopics(
-            channel=peer, offset_date=0, offset_id=0, offset_topic=0, limit=0
+            channel=peer,
+            offset_date=0,
+            offset_id=0,
+            offset_topic=0,
+            limit=0,
         )
 
         r = await self.invoke(rpc, sleep_threshold=-1)

@@ -20,29 +20,36 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 from asyncio import sleep
-from typing import AsyncGenerator, Union
+from typing import TYPE_CHECKING
 
 import pyrogram
 from pyrogram import raw, types
 
+if TYPE_CHECKING:
+    from collections.abc import AsyncGenerator
+
 
 class GetChatActiveStories:
     async def get_chat_active_stories(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str]
-    ) -> AsyncGenerator["types.Story", None]:
+        self: pyrogram.Client,
+        chat_id: int | str,
+    ) -> AsyncGenerator[types.Story, None]:
         """Get all non expired stories from a chat by using chat identifier.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target user.
                 For your personal story you can simply use "me" or "self".
                 For a contact that exists in your Telegram address book you can use his phone number (str).
 
-        Returns:
+        Returns
+        -------
             ``Generator``: On success, a generator yielding :obj:`~pyrogram.types.Story` objects is returned.
 
         Example:
@@ -52,7 +59,8 @@ class GetChatActiveStories:
                 async for story in app.get_chat_active_stories(chat_id):
                     print(story)
 
-        Raises:
+        Raises
+        ------
             ValueError: In case of invalid arguments.
 
         """
@@ -60,8 +68,8 @@ class GetChatActiveStories:
 
         r = await self.invoke(
             raw.functions.stories.GetPeerStories(
-                peer=peer
-            )
+                peer=peer,
+            ),
         )
 
         users = {i.id: i for i in r.users}
@@ -74,7 +82,9 @@ class GetChatActiveStories:
                 self,
                 users,
                 chats,
-                None, None, None,
+                None,
+                None,
+                None,
                 story,
-                peer
+                peer,
             )

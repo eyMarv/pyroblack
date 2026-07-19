@@ -21,19 +21,24 @@
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
 
-import pyrogram
-from pyrogram import types
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 from .story_origin import StoryOrigin
+
+if TYPE_CHECKING:
+    from pyrogram import types
 
 
 class StoryOriginPublicStory(StoryOrigin):
     """The original story was a public story that was posted by a known chat.
 
-    Parameters:
+    Parameters
+    ----------
         chat (:obj:`~pyrogram.types.Chat`):
             Identifier of the chat that posted original story.
-        
+
         story_id (``int``):
             Story identifier of the original story.
 
@@ -42,9 +47,9 @@ class StoryOriginPublicStory(StoryOrigin):
     def __init__(
         self,
         *,
-        chat: "types.Chat" = None,
-        story_id: int = None
-    ):
+        chat: types.Chat = None,
+        story_id: int | None = None,
+    ) -> None:
         super().__init__()
 
         self.chat = chat

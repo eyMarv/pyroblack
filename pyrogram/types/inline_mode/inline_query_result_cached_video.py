@@ -20,12 +20,13 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional
+from __future__ import annotations
 
 import pyrogram
-from pyrogram import raw, types, utils, enums
+from pyrogram import enums, raw, types, utils
+from pyrogram.file_id import FileId
+
 from .inline_query_result import InlineQueryResult
-from ...file_id import FileId
 
 
 class InlineQueryResultCachedVideo(InlineQueryResult):
@@ -35,7 +36,8 @@ class InlineQueryResultCachedVideo(InlineQueryResult):
     Alternatively, you can use *input_message_content* to send a message with the specified content instead of the
     video.
 
-    Parameters:
+    Parameters
+    ----------
         video_file_id (``str``):
             A valid file identifier for the video file.
 
@@ -67,21 +69,22 @@ class InlineQueryResultCachedVideo(InlineQueryResult):
 
         input_message_content (:obj:`~pyrogram.types.InputMessageContent`):
             Content of the message to be sent instead of the photo.
+
     """
 
     def __init__(
         self,
         video_file_id: str,
         title: str,
-        id: str = None,
-        description: str = None,
+        id: str | None = None,
+        description: str | None = None,
         caption: str = "",
-        parse_mode: Optional["enums.ParseMode"] = None,
-        caption_entities: list["types.MessageEntity"] = None,
-        show_caption_above_media: bool = None,
-        reply_markup: "types.InlineKeyboardMarkup" = None,
-        input_message_content: "types.InputMessageContent" = None
-    ):
+        parse_mode: enums.ParseMode | None = None,
+        caption_entities: list[types.MessageEntity] | None = None,
+        show_caption_above_media: bool | None = None,
+        reply_markup: types.InlineKeyboardMarkup = None,
+        input_message_content: types.InputMessageContent = None,
+    ) -> None:
         super().__init__("video", id, input_message_content, reply_markup)
 
         self.video_file_id = video_file_id
@@ -94,10 +97,15 @@ class InlineQueryResultCachedVideo(InlineQueryResult):
         self.reply_markup = reply_markup
         self.input_message_content = input_message_content
 
-    async def write(self, client: "pyrogram.Client"):
-        message, entities = (await utils.parse_text_entities(
-            client, self.caption, self.parse_mode, self.caption_entities
-        )).values()
+    async def write(self, client: pyrogram.Client):
+        message, entities = (
+            await utils.parse_text_entities(
+                client,
+                self.caption,
+                self.parse_mode,
+                self.caption_entities,
+            )
+        ).values()
 
         file_id = FileId.decode(self.video_file_id)
 
@@ -115,10 +123,12 @@ class InlineQueryResultCachedVideo(InlineQueryResult):
                 await self.input_message_content.write(client, self.reply_markup)
                 if self.input_message_content
                 else raw.types.InputBotInlineMessageMediaAuto(
-                    reply_markup=await self.reply_markup.write(client) if self.reply_markup else None,
+                    reply_markup=await self.reply_markup.write(client)
+                    if self.reply_markup
+                    else None,
                     message=message,
                     entities=entities,
-                    invert_media=self.show_caption_above_media
+                    invert_media=self.show_caption_above_media,
                 )
-            )
+            ),
         )

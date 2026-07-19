@@ -20,7 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import errors, raw, types
@@ -28,20 +28,22 @@ from pyrogram import errors, raw, types
 
 class CanPostStory:
     async def can_post_story(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str]
-    ) -> "types.CanPostStoryResult":
+        self: pyrogram.Client,
+        chat_id: int | str,
+    ) -> types.CanPostStoryResult:
         """Checks whether the current user can post a story on behalf of a chat.
 
         .. include:: /_includes/usable-by/users.rst
 
         Requires can_post_stories right for supergroup and channel chats.
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.CanPostStoryResult`: On success.
 
         Example:
@@ -55,7 +57,7 @@ class CanPostStory:
             r = await self.invoke(
                 raw.functions.stories.CanSendStory(
                     peer=await self.resolve_peer(chat_id),
-                )
+                ),
             )
         except errors.PremiumAccountRequired:
             return types.CanPostStoryResultPremiumNeeded()
@@ -65,14 +67,14 @@ class CanPostStory:
             return types.CanPostStoryResultActiveStoryLimitExceeded()
         except errors.StorySendFloodWeekly as ex:
             return types.CanPostStoryResultWeeklyLimitExceeded(
-                retry_after=ex.value
+                retry_after=ex.value,
             )
         except errors.StorySendFloodMonthly as ex:
             return types.CanPostStoryResultMonthlyLimitExceeded(
-                retry_after=ex.value
+                retry_after=ex.value,
             )
         except errors.StoryLiveAlready as ex:
             return types.CanPostStoryResultLiveStoryIsActive(
-                story_id=ex.value
+                story_id=ex.value,
             )
         return types.CanPostStoryResultOk(story_count=r.count_remains)

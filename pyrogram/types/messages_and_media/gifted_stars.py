@@ -20,16 +20,19 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 from random import choice
 
 from pyrogram import raw, types
-from ..object import Object
+from pyrogram.types.object import Object
 
 
 class GiftedStars(Object):
-    """Telegram Stars were gifted to a user
+    """Telegram Stars were gifted to a user.
 
-    Parameters:
+    Parameters
+    ----------
         gifter_user_id (``int``):
             The identifier of a user that gifted Telegram Stars; 0 if the gift was anonymous or is outgoing
 
@@ -62,16 +65,16 @@ class GiftedStars(Object):
     def __init__(
         self,
         *,
-        gifter_user_id: int = None,
-        receiver_user_id: int = None,
-        currency: str = None,
-        amount: int = None,
-        cryptocurrency: str = None,
-        cryptocurrency_amount: int = None,
-        star_count: int = None,
-        transaction_id: str = None,
-        sticker: "types.Sticker" = None,
-    ):
+        gifter_user_id: int | None = None,
+        receiver_user_id: int | None = None,
+        currency: str | None = None,
+        amount: int | None = None,
+        cryptocurrency: str | None = None,
+        cryptocurrency_amount: int | None = None,
+        star_count: int | None = None,
+        transaction_id: str | None = None,
+        sticker: types.Sticker = None,
+    ) -> None:
         super().__init__()
 
         self.gifter_user_id = gifter_user_id
@@ -87,13 +90,13 @@ class GiftedStars(Object):
     @staticmethod
     async def _parse(
         client,
-        gifted_stars: "raw.types.MessageActionGiftStars",
+        gifted_stars: raw.types.MessageActionGiftStars,
         gifter_user_id: int,
-        receiver_user_id: int
-    ) -> "GiftedStars":
+        receiver_user_id: int,
+    ) -> GiftedStars:
         sticker = None
         stickers, _ = await client._get_raw_stickers(
-            raw.types.InputStickerSetPremiumGifts()
+            raw.types.InputStickerSetPremiumGifts(),
         )
         sticker = choice(stickers)
         return GiftedStars(
@@ -105,5 +108,5 @@ class GiftedStars(Object):
             cryptocurrency_amount=getattr(gifted_stars, "crypto_amount", None),
             star_count=gifted_stars.stars,
             transaction_id=getattr(gifted_stars, "transaction_id", None),
-            sticker=sticker
+            sticker=sticker,
         )

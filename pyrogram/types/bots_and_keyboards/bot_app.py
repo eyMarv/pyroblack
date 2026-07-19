@@ -20,18 +20,18 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-import pyrogram
-
 from typing import Optional
 
+import pyrogram
 from pyrogram import raw, types
-from ..object import Object
+from pyrogram.types.object import Object
 
 
 class BotApp(Object):
     """Contains information about a bot app.
 
-    Parameters:
+    Parameters
+    ----------
         id (``int``):
             The id of the app.
 
@@ -49,6 +49,7 @@ class BotApp(Object):
 
         document (:obj:`~pyrogram.types.Document`, *optional*):
             The document of the app.
+
     """
 
     def __init__(
@@ -59,7 +60,7 @@ class BotApp(Object):
         description: str,
         photo: "types.Photo",
         document: Optional["types.Document"] = None,
-    ):
+    ) -> None:
         super().__init__()
 
         self.id = id
@@ -75,7 +76,7 @@ class BotApp(Object):
         if isinstance(bot_app.document, raw.types.Document):
             attributes = {type(i): i for i in bot_app.document.attributes}
             file_name = getattr(
-                attributes.get(raw.types.DocumentAttributeFilename, None),
+                attributes.get(raw.types.DocumentAttributeFilename),
                 "file_name",
                 None,
             )

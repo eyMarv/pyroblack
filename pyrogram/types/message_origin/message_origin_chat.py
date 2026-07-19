@@ -20,24 +20,29 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import datetime
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+from pyrogram import enums, types
 
 from .message_origin import MessageOrigin
 
-import pyrogram
-from pyrogram import types, enums
+if TYPE_CHECKING:
+    from datetime import datetime
 
 
 class MessageOriginChat(MessageOrigin):
     """The message was originally sent on behalf of a chat to a group chat.
 
-    Parameters:
+    Parameters
+    ----------
         date (:py:obj:`~datetime.datetime`):
             Date the message was sent originally in Unix time
 
         sender_chat (:obj:`~pyrogram.types.Chat`):
             Chat that sent the message originally
-        
+
         author_signature (``str``, *optional*):
             For messages originally sent by an anonymous chat administrator, original message author signature
 
@@ -46,13 +51,13 @@ class MessageOriginChat(MessageOrigin):
     def __init__(
         self,
         *,
-        date: datetime = None,
-        sender_chat: "types.Chat" = None,
-        author_signature: str = None
-    ):
+        date: datetime | None = None,
+        sender_chat: types.Chat = None,
+        author_signature: str | None = None,
+    ) -> None:
         super().__init__(
             type=enums.MessageOriginType.CHAT,
-            date=date
+            date=date,
         )
 
         self.sender_chat = sender_chat

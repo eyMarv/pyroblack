@@ -20,20 +20,25 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from pyrogram import raw
-from ..object import Object
+from typing import TYPE_CHECKING
+
+from pyrogram.types.object import Object
+
+if TYPE_CHECKING:
+    from pyrogram import raw
 
 
 class ExportedStoryLink(Object):
     """Contains information about a story viewers.
 
-
-    Parameters:
+    Parameters
+    ----------
         link (``str``):
             The link of the story.
+
     """
 
-    def __init__(self, *, link: str):
+    def __init__(self, *, link: str) -> None:
         super().__init__()
 
         self.link = link

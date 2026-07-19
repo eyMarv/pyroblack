@@ -21,16 +21,18 @@
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
 
+from __future__ import annotations
+
 import pyrogram
 from pyrogram import raw, types, utils
-
-from ..object import Object
+from pyrogram.types.object import Object
 
 
 class StoryRepostInfo(Object):
     """Contains information about original story that was reposted.
 
-    Parameters:
+    Parameters
+    ----------
         origin (:obj:`~pyrogram.types.StoryOrigin`):
             Origin of the story that was reposted.
 
@@ -42,9 +44,9 @@ class StoryRepostInfo(Object):
     def __init__(
         self,
         *,
-        origin: "types.StoryOrigin" = None,
-        is_content_modified: bool = None
-    ):
+        origin: types.StoryOrigin = None,
+        is_content_modified: bool | None = None,
+    ) -> None:
         super().__init__()
 
         self.origin = origin
@@ -52,31 +54,33 @@ class StoryRepostInfo(Object):
 
     @staticmethod
     def _parse(
-        client: "pyrogram.Client",
-        fwd_from: "raw.base.StoryFwdHeader",
+        client: pyrogram.Client,
+        fwd_from: raw.base.StoryFwdHeader,
         users: dict,
         chats: dict,
-    ) -> "StoryRepostInfo":
+    ) -> StoryRepostInfo:
         from_user = fwd_from.is_from
         origin = None
         if from_user:
             fwd_from_chat = None
             peer_id = utils.get_peer_id(from_user)
             if isinstance(from_user, raw.types.PeerUser):
-                fwd_from_chat = types.Chat._parse_user_chat(client, users.get(peer_id, None))
+                fwd_from_chat = types.Chat._parse_user_chat(client, users.get(peer_id))
             elif isinstance(from_user, raw.types.PeerChat):
-                fwd_from_chat = types.Chat._parse_chat_chat(client, chats.get(peer_id, None))
+                fwd_from_chat = types.Chat._parse_chat_chat(client, chats.get(peer_id))
             else:
-                fwd_from_chat = types.Chat._parse_channel_chat(client, chats.get(peer_id, None))
+                fwd_from_chat = types.Chat._parse_channel_chat(
+                    client, chats.get(peer_id)
+                )
             origin = types.StoryOriginPublicStory(
                 chat=fwd_from_chat,
-                story_id=fwd_from.story_id
+                story_id=fwd_from.story_id,
             )
         else:
             origin = types.StoryOriginHiddenUser(
-                poster_name=fwd_from.from_name
+                poster_name=fwd_from.from_name,
             )
         return StoryRepostInfo(
             origin=origin,
-            is_content_modified=fwd_from.modified
+            is_content_modified=fwd_from.modified,
         )

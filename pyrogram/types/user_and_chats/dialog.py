@@ -21,16 +21,15 @@
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
 import pyrogram
-from pyrogram import raw
-from pyrogram import types
-from ..object import Object
-from ... import utils
+from pyrogram import raw, types, utils
+from pyrogram.types.object import Object
 
 
 class Dialog(Object):
     """A user's dialog.
 
-    Parameters:
+    Parameters
+    ----------
         chat (:obj:`~pyrogram.types.Chat`):
             Conversation the dialog belongs to.
 
@@ -42,10 +41,10 @@ class Dialog(Object):
 
         unread_mentions_count (``int``):
             Amount of unread messages containing a mention in this dialog.
-        
+
         unread_reactions_count (``int``):
             Amount of unread messages containing a reaction in this dialog.
-        
+
         unread_poll_vote_count (``int``):
             Number of messages with unread poll votes in the topic.
 
@@ -54,7 +53,7 @@ class Dialog(Object):
 
         is_pinned (``bool``):
             True, if the dialog is pinned.
-        
+
         chat_list (``int``):
             Chat list in which the dialog is present; Only Main (0) and Archive (1) chat lists are supported.
 
@@ -62,10 +61,10 @@ class Dialog(Object):
             Current message auto-delete or self-destruct timer setting for the chat, in seconds; 0 if disabled.
             Self-destruct timer in secret chats starts after the message or its content is viewed.
             Auto-delete timer in other chats starts from the send date.
-        
+
         view_as_topics (``bool``):
             True, if the chat is a forum supergroup that must be shown in the "View as topics" mode, or Saved Messages chat that must be shown in the "View as chats".
-        
+
         draft (:obj:`~pyrogram.types.DraftMessage`, *optional*):
             Contains information about a message draft.
 
@@ -88,8 +87,8 @@ class Dialog(Object):
         view_as_topics: bool,
         draft: "types.DraftMessage" = None,
         _raw: "raw.types.Dialog" = None,
-        **kwargs
-    ):
+        **kwargs,
+    ) -> None:
         super().__init__(client)
 
         self.chat = chat
@@ -128,7 +127,8 @@ class Dialog(Object):
             draft=types.DraftMessage._parse(
                 client,
                 dialog.draft,
-                users, chats
+                users,
+                chats,
             ),
-            _raw=dialog
+            _raw=dialog,
         )

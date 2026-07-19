@@ -20,18 +20,23 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import datetime
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import pyrogram
 from pyrogram import raw, utils
+from pyrogram.types.object import Object
 
-from ..object import Object
+if TYPE_CHECKING:
+    from datetime import datetime
 
 
 class ActiveSession(Object):
     """Contains information about one session in a Telegram application used by the current user. Sessions must be shown to the user in the returned order.
 
-    Parameters:
+    Parameters
+    ----------
         id (``int``):
             Session identifier.
 
@@ -91,27 +96,27 @@ class ActiveSession(Object):
     def __init__(
         self,
         *,
-        client: "pyrogram.Client" = None,
-        id: int = None,
-        device_model: str = None,
-        platform: str = None,
-        system_version: str = None,
-        api_id: int = None,
-        application_name: str = None,
-        application_version: str = None,
-        log_in_date: datetime = None,
-        last_active_date: datetime = None,
-        ip_address: str = None,
-        location: str = None,
-        country: str = None,
-        is_current: bool = None,
-        is_password_pending: bool = None,
-        is_unconfirmed: bool = None,
-        can_accept_secret_chats: bool = None,
-        can_accept_calls: bool = None,
-        is_official_application: bool = None,
-        **kwargs
-    ):
+        client: pyrogram.Client = None,
+        id: int | None = None,
+        device_model: str | None = None,
+        platform: str | None = None,
+        system_version: str | None = None,
+        api_id: int | None = None,
+        application_name: str | None = None,
+        application_version: str | None = None,
+        log_in_date: datetime | None = None,
+        last_active_date: datetime | None = None,
+        ip_address: str | None = None,
+        location: str | None = None,
+        country: str | None = None,
+        is_current: bool | None = None,
+        is_password_pending: bool | None = None,
+        is_unconfirmed: bool | None = None,
+        can_accept_secret_chats: bool | None = None,
+        can_accept_calls: bool | None = None,
+        is_official_application: bool | None = None,
+        **kwargs,
+    ) -> None:
         super().__init__(client)
 
         self.id = id
@@ -137,9 +142,9 @@ class ActiveSession(Object):
 
     @staticmethod
     def _parse(
-        client: "pyrogram.Client",
-        session: "raw.types.Authorization"
-    ) -> "ActiveSession":        
+        client: pyrogram.Client,
+        session: raw.types.Authorization,
+    ) -> ActiveSession:
         return ActiveSession(
             client=client,
             id=session.hash,
@@ -157,9 +162,11 @@ class ActiveSession(Object):
             is_current=getattr(session, "current", None),
             is_password_pending=getattr(session, "password_pending", None),
             is_unconfirmed=getattr(session, "unconfirmed", None),
-            can_accept_secret_chats=not getattr(session, "encrypted_requests_disabled", False),
+            can_accept_secret_chats=not getattr(
+                session, "encrypted_requests_disabled", False
+            ),
             can_accept_calls=not getattr(session, "call_requests_disabled", False),
-            is_official_application=getattr(session, "official_app", None)
+            is_official_application=getattr(session, "official_app", None),
         )
 
     async def terminate(self):
@@ -184,7 +191,6 @@ class ActiveSession(Object):
             :obj:`~pyrogram.errors.RPCError`: In case of a Telegram RPC error.
 
         """
-
         return await self._client.terminate_session(self.id)
 
     async def reset(self):

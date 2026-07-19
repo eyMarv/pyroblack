@@ -20,11 +20,14 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-import io
-from typing import Optional, Union
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 from .input_story_content import InputStoryContent
-from ... import enums
+
+if TYPE_CHECKING:
+    import io
 
 
 class InputStoryContentVideo(InputStoryContent):
@@ -32,7 +35,8 @@ class InputStoryContentVideo(InputStoryContent):
 
     It is intended to be used with :obj:`~pyrogram.Client.send_story` or :obj:`~pyrogram.Client.post_story`.
 
-    Parameters:
+    Parameters
+    ----------
         video (``str`` | :obj:`io.BytesIO`):
             File to send.
             Pass a file_id as string to send a video that exists on the Telegram servers or
@@ -72,16 +76,16 @@ class InputStoryContentVideo(InputStoryContent):
 
     def __init__(
         self,
-        video: Union[str, "io.BytesIO"],
+        video: str | io.BytesIO,
         duration: int = 0,
         cover_frame_timestamp: int = 0,
-        is_animation: bool = None,
+        is_animation: bool | None = None,
         width: int = 0,
         height: int = 0,
-        thumbnail: Union[str, "io.BytesIO"] = None,
+        thumbnail: str | io.BytesIO | None = None,
         supports_streaming: bool = True,
-        file_name: str = None,
-    ):
+        file_name: str | None = None,
+    ) -> None:
         super().__init__()
 
         self.video = video

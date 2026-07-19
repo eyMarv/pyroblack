@@ -20,7 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import AsyncGenerator
+from collections.abc import AsyncGenerator
 
 import pyrogram
 from pyrogram import raw, types
@@ -30,13 +30,14 @@ class GetGiftsForCrafting:
     async def get_gifts_for_crafting(
         self: "pyrogram.Client",
         regular_gift_id: int,
-        limit: int = 0
+        limit: int = 0,
     ) -> AsyncGenerator["types.Gift", None]:
         """Returns upgraded gifts of the current user that can be used to craft another gifts.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             regular_gift_id (``int``):
                 Identifier of the regular gift that will be used for crafting.
 
@@ -44,8 +45,10 @@ class GetGiftsForCrafting:
                 The maximum number of gifts to be returned.
                 Must be positive and can't be greater than 100.
 
-        Returns:
+        Returns
+        -------
             ``Generator``: A generator yielding :obj:`~pyrogram.types.Gift` objects.
+
         """
         current = 0
         total = abs(limit) or (1 << 31) - 1
@@ -58,9 +61,9 @@ class GetGiftsForCrafting:
                 raw.functions.payments.GetCraftStarGifts(
                     gift_id=regular_gift_id,
                     offset=offset,
-                    limit=limit
+                    limit=limit,
                 ),
-                sleep_threshold=60
+                sleep_threshold=60,
             )
 
             users = {i.id: i for i in r.users}
@@ -88,4 +91,3 @@ class GetGiftsForCrafting:
 
             if not offset:
                 return
-

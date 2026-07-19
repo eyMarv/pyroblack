@@ -20,7 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw, types
@@ -28,16 +28,17 @@ from pyrogram import raw, types
 
 class AddChatMembers:
     async def add_chat_members(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
-        user_ids: Union[Union[int, str], list[Union[int, str]]],
-        forward_limit: int = 100
-    ) -> Union[list["types.Message"], "types.Message", bool]:
-        """Add new chat members to a group, supergroup or channel
+        self: pyrogram.Client,
+        chat_id: int | str,
+        user_ids: int | str | list[int | str],
+        forward_limit: int = 100,
+    ) -> list[types.Message] | types.Message | bool:
+        """Add new chat members to a group, supergroup or channel.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 The group, supergroup or channel id
 
@@ -51,7 +52,8 @@ class AddChatMembers:
                 Only applicable to basic groups (the argument is ignored for supergroups or channels).
                 Defaults to 100 (max amount).
 
-        Returns:
+        Returns
+        -------
             List of :obj:`~pyrogram.types.Message` | :obj:`~pyrogram.types.Message` | ``bool``: On success, a service message will be returned (when applicable),
             otherwise, in case a message object couldn't be returned, True is returned.
 
@@ -66,6 +68,7 @@ class AddChatMembers:
 
                 # Change forward_limit (for basic groups only)
                 await app.add_chat_members(chat_id, user_id, forward_limit=25)
+
         """
         peer = await self.resolve_peer(chat_id)
 
@@ -81,9 +84,9 @@ class AddChatMembers:
                         raw.functions.messages.AddChatUser(
                             chat_id=peer.chat_id,
                             user_id=await self.resolve_peer(user_id),
-                            fwd_limit=forward_limit
-                        )
-                    )
+                            fwd_limit=forward_limit,
+                        ),
+                    ),
                 )
         else:
             r.append(
@@ -91,11 +94,10 @@ class AddChatMembers:
                     raw.functions.channels.InviteToChannel(
                         channel=peer,
                         users=[
-                            await self.resolve_peer(user_id)
-                            for user_id in user_ids
-                        ]
-                    )
-                )
+                            await self.resolve_peer(user_id) for user_id in user_ids
+                        ],
+                    ),
+                ),
             )
 
         _rc = []
@@ -105,8 +107,8 @@ class AddChatMembers:
                     i,
                     (
                         raw.types.UpdateNewMessage,
-                        raw.types.UpdateNewChannelMessage
-                    )
+                        raw.types.UpdateNewChannelMessage,
+                    ),
                 ):
                     _rc.append(
                         await types.Message._parse(
@@ -114,15 +116,13 @@ class AddChatMembers:
                             i.message,
                             {i.id: i for i in rr.updates.users},
                             {i.id: i for i in rr.updates.chats},
-                            replies=self.fetch_replies
-                        )
+                            replies=self.fetch_replies,
+                        ),
                     )
                     break
 
         if len(_rc) > 0:
             if len(_rc) == 1:
                 return _rc[0]
-            else:
-                return types.List(_rc)
-        else:
-            return True
+            return types.List(_rc)
+        return True

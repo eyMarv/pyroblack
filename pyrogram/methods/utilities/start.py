@@ -30,7 +30,7 @@ log = logging.getLogger(__name__)
 
 class Start:
     async def start(
-        self: "pyrogram.Client"
+        self: "pyrogram.Client",
     ):
         """Start the client.
 
@@ -58,6 +58,7 @@ class Start:
 
 
                 app.run(main())
+
         """
         is_authorized = await self.connect()
 
@@ -66,7 +67,9 @@ class Start:
                 await self.authorize()
 
             if self.takeout and not await self.storage.is_bot():
-                self.takeout_id = (await self.invoke(raw.functions.account.InitTakeoutSession())).id
+                self.takeout_id = (
+                    await self.invoke(raw.functions.account.InitTakeoutSession())
+                ).id
                 log.info("Takeout session %s initiated", self.takeout_id)
 
             await self.invoke(raw.functions.updates.GetState())

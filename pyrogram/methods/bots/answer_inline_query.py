@@ -20,11 +20,10 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Iterable
+from collections.abc import Iterable
 
 import pyrogram
-from pyrogram import raw
-from pyrogram import types
+from pyrogram import raw, types
 
 
 class AnswerInlineQuery:
@@ -37,7 +36,7 @@ class AnswerInlineQuery:
         is_personal: bool = False,
         next_offset: str = "",
         switch_pm_text: str = "",
-        switch_pm_parameter: str = ""
+        switch_pm_parameter: str = "",
     ):
         """Send answers to an inline query.
 
@@ -45,7 +44,8 @@ class AnswerInlineQuery:
 
         .. include:: /_includes/usable-by/bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             inline_query_id (``str``):
                 Unique identifier for the answered query.
 
@@ -84,10 +84,12 @@ class AnswerInlineQuery:
                 link. Once done, the bot can offer a switch_inline button so that the user can easily return to the chat
                 where they wanted to use the bot's inline capabilities.
 
-        Returns:
+        Returns
+        -------
             ``bool``: True, on success.
 
-        Raises:
+        Raises
+        ------
             :obj:`~pyrogram.errors.RPCError`: In case of a Telegram RPC error.
 
         Example:
@@ -101,8 +103,8 @@ class AnswerInlineQuery:
                         InlineQueryResultArticle(
                             "Title",
                             InputTextMessageContent("Message content"))])
-        """
 
+        """
         return await self.invoke(
             raw.functions.messages.SetInlineBotResults(
                 query_id=int(inline_query_id),
@@ -113,7 +115,9 @@ class AnswerInlineQuery:
                 next_offset=next_offset or None,
                 switch_pm=raw.types.InlineBotSwitchPM(
                     text=switch_pm_text,
-                    start_param=switch_pm_parameter
-                ) if switch_pm_text else None
-            )
+                    start_param=switch_pm_parameter,
+                )
+                if switch_pm_text
+                else None,
+            ),
         )

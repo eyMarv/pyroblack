@@ -20,24 +20,31 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-import inspect
-from typing import Union
+from __future__ import annotations
 
-import pyrogram
-from pyrogram.types import Message, CallbackQuery
-from .message_handler import MessageHandler
+import inspect
+from typing import TYPE_CHECKING
+
+from pyrogram.types import CallbackQuery, Message
+
 from .callback_query_handler import CallbackQueryHandler
+from .message_handler import MessageHandler
+
+if TYPE_CHECKING:
+    import pyrogram
 
 
 class ConversationHandler(MessageHandler, CallbackQueryHandler):
     """The Conversation handler class."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.waiters = {}
 
     async def check(
-        self, client: "pyrogram.Client", update: Union[Message, CallbackQuery]
-    ):
+        self,
+        client: pyrogram.Client,
+        update: Message | CallbackQuery,
+    ) -> bool:
         if isinstance(update, Message) and update.outgoing:
             return False
 
@@ -64,7 +71,10 @@ class ConversationHandler(MessageHandler, CallbackQueryHandler):
                 filtered = await filters(client, update)
             else:
                 filtered = await client.loop.run_in_executor(
-                    client.executor, filters, client, update
+                    client.executor,
+                    filters,
+                    client,
+                    update,
                 )
             if not filtered or waiter["future"].done():
                 return False
@@ -74,9 +84,9 @@ class ConversationHandler(MessageHandler, CallbackQueryHandler):
 
     @staticmethod
     # pylint: disable=method-hidden
-    async def callback(_, __):
+    async def callback(_, __) -> None:
         pass
 
-    def delete_waiter(self, chat_id, future):
+    def delete_waiter(self, chat_id, future) -> None:
         if future == self.waiters[chat_id]["future"]:
             del self.waiters[chat_id]

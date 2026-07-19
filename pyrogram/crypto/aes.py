@@ -36,7 +36,8 @@ Install speedups with::
     pip install -U pyroblack[fast]
 """
 
-from typing import Optional
+from __future__ import annotations
+
 import logging
 
 log = logging.getLogger(__name__)
@@ -56,12 +57,18 @@ def _bind_tgcrypto():
         return tgcrypto.ige256_decrypt(data, key, iv)
 
     def ctr256_encrypt(
-        data: bytes, key: bytes, iv: bytearray, state: Optional[bytearray] = None
+        data: bytes,
+        key: bytes,
+        iv: bytearray,
+        state: bytearray | None = None,
     ) -> bytes:
         return tgcrypto.ctr256_encrypt(data, key, iv, state or bytearray(1))
 
     def ctr256_decrypt(
-        data: bytes, key: bytes, iv: bytearray, state: Optional[bytearray] = None
+        data: bytes,
+        key: bytes,
+        iv: bytearray,
+        state: bytearray | None = None,
     ) -> bytes:
         return tgcrypto.ctr256_decrypt(data, key, iv, state or bytearray(1))
 
@@ -114,7 +121,7 @@ def _bind_pyaes():
         chunk = cipher.encrypt(iv)
 
         for i in range(0, len(data), 16):
-            for j in range(0, min(len(data) - i, 16)):
+            for j in range(min(len(data) - i, 16)):
                 out[i + j] ^= chunk[state[0]]
 
                 state[0] += 1
@@ -141,12 +148,18 @@ def _bind_pyaes():
         return ige(data, key, iv, False)
 
     def ctr256_encrypt(
-        data: bytes, key: bytes, iv: bytearray, state: Optional[bytearray] = None
+        data: bytes,
+        key: bytes,
+        iv: bytearray,
+        state: bytearray | None = None,
     ) -> bytes:
         return ctr(data, key, iv, state or bytearray(1))
 
     def ctr256_decrypt(
-        data: bytes, key: bytes, iv: bytearray, state: Optional[bytearray] = None
+        data: bytes,
+        key: bytes,
+        iv: bytearray,
+        state: bytearray | None = None,
     ) -> bytes:
         return ctr(data, key, iv, state or bytearray(1))
 
@@ -154,7 +167,7 @@ def _bind_pyaes():
     log.warning(
         "TgCrypto-pyroblack is missing! "
         "Pyroblack will work the same, but uploads/downloads will be much slower. "
-        "Install: pip install -U TgCrypto-pyroblack   (or pyroblack[fast])"
+        "Install: pip install -U TgCrypto-pyroblack   (or pyroblack[fast])",
     )
     return ige256_encrypt, ige256_decrypt, ctr256_encrypt, ctr256_decrypt, xor
 

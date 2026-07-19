@@ -20,7 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw
@@ -28,20 +28,22 @@ from pyrogram import raw
 
 class HideChatStories:
     async def hide_chat_stories(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
+        self: pyrogram.Client,
+        chat_id: int | str,
     ) -> bool:
         """Hide the active stories of a user, preventing them from being displayed on the action bar on the homescreen.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
                 For your personal cloud (Saved Messages) you can simply use "me" or "self".
                 For a contact that exists in your Telegram address book you can use his phone number (str).
 
-        Returns:
+        Returns
+        -------
             ``bool``: On success, a bool is returned.
 
         Example:
@@ -49,13 +51,11 @@ class HideChatStories:
 
                 # Hide stories from specific chat
                 await app.hide_chat_stories(chat_id)
+
         """
-        r = await self.invoke(
+        return await self.invoke(
             raw.functions.stories.TogglePeerStoriesHidden(
                 peer=await self.resolve_peer(chat_id),
-                hidden=True
-            )
+                hidden=True,
+            ),
         )
-
-        return r
-

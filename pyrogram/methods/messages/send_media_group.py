@@ -20,16 +20,21 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import logging
 import os
 import re
-from datetime import datetime
-from typing import Union
+from typing import TYPE_CHECKING
 
 import pyrogram
 from pyrogram import raw, types, utils
 from pyrogram.file_id import FileType
+
 from .inline_session import get_session
+
+if TYPE_CHECKING:
+    from datetime import datetime
 
 log = logging.getLogger(__name__)
 
@@ -37,40 +42,41 @@ log = logging.getLogger(__name__)
 class SendMediaGroup:
     # TODO: Add progress parameter
     async def send_media_group(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
-        media: list[Union[
-            "types.InputMediaPhoto",
-            "types.InputMediaVideo",
-            "types.InputMediaAudio",
-            "types.InputMediaDocument"
-        ]],
-        disable_notification: bool = None,
-        reply_parameters: "types.ReplyParameters" = None,
-        message_thread_id: int = None,
-        business_connection_id: str = None,
-        send_as: Union[int, str] = None,
-        schedule_date: datetime = None,
-        protect_content: bool = None,
-        allow_paid_broadcast: bool = None,
-        paid_message_star_count: int = None,
-        message_effect_id: int = None,
-        reply_to_chat_id: Union[int, str] = None,
-        reply_to_story_id: int = None,
-        reply_to_monoforum_id: Union[int, str] = None,
-        quote_text: str = None,
-        quote_entities: list = None,
-        invert_media: bool = None,
-        reply_to_message_id: int = None,
-        **kwargs
-    ) -> list["types.Message"]:
+        self: pyrogram.Client,
+        chat_id: int | str,
+        media: list[
+            types.InputMediaPhoto
+            | types.InputMediaVideo
+            | types.InputMediaAudio
+            | types.InputMediaDocument
+        ],
+        disable_notification: bool | None = None,
+        reply_parameters: types.ReplyParameters = None,
+        message_thread_id: int | None = None,
+        business_connection_id: str | None = None,
+        send_as: int | str | None = None,
+        schedule_date: datetime | None = None,
+        protect_content: bool | None = None,
+        allow_paid_broadcast: bool | None = None,
+        paid_message_star_count: int | None = None,
+        message_effect_id: int | None = None,
+        reply_to_chat_id: int | str | None = None,
+        reply_to_story_id: int | None = None,
+        reply_to_monoforum_id: int | str | None = None,
+        quote_text: str | None = None,
+        quote_entities: list | None = None,
+        invert_media: bool | None = None,
+        reply_to_message_id: int | None = None,
+        **kwargs,
+    ) -> list[types.Message]:
         """Use this method to send a group of photos, videos, documents or audios as an album.
-        
+
         Documents and audio files can be only grouped in an album with messages of the same type.
 
         .. include:: /_includes/usable-by/users-bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
                 For your personal cloud (Saved Messages) you can simply use "me" or "self".
@@ -95,7 +101,7 @@ class SendMediaGroup:
             send_as (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the chat or channel to send the message as.
                 You can use this to send the message on behalf of a chat or channel where you have appropriate permissions.
-                Use the :meth:`~pyrogram.Client.get_send_as_chats` to return the list of message sender identifiers, which can be used to send messages in the chat, 
+                Use the :meth:`~pyrogram.Client.get_send_as_chats` to return the list of message sender identifiers, which can be used to send messages in the chat,
                 This setting applies to the current message and will remain effective for future messages unless explicitly changed.
                 To set this behavior permanently for all messages, use :meth:`~pyrogram.Client.set_send_as_chat`.
 
@@ -114,7 +120,8 @@ class SendMediaGroup:
             message_effect_id (``int`` ``64-bit``, *optional*):
                 Unique identifier of the message effect to be added to the message; for private chats only.
 
-        Returns:
+        Returns
+        -------
             List of :obj:`~pyrogram.types.Message`: On success, a list of the sent messages is returned.
 
         Example:
@@ -130,8 +137,8 @@ class SendMediaGroup:
                         InputMediaVideo("video.mp4", caption="video caption")
                     ]
                 )
-        """
 
+        """
         reply_parameters = utils.resolve_legacy_reply_parameters(
             reply_parameters=reply_parameters,
             reply_to_message_id=reply_to_message_id,
@@ -156,18 +163,18 @@ class SendMediaGroup:
                                 peer=await self.resolve_peer(chat_id),
                                 media=raw.types.InputMediaUploadedPhoto(
                                     file=await self.save_file(i.media),
-                                    spoiler=i.has_spoiler
-                                )
-                            )
+                                    spoiler=i.has_spoiler,
+                                ),
+                            ),
                         )
 
                         media = raw.types.InputMediaPhoto(
                             id=raw.types.InputPhoto(
                                 id=media.photo.id,
                                 access_hash=media.photo.access_hash,
-                                file_reference=media.photo.file_reference
+                                file_reference=media.photo.file_reference,
                             ),
-                            spoiler=i.has_spoiler
+                            spoiler=i.has_spoiler,
                         )
                     elif re.match("^https?://", i.media):
                         media = await self.invoke(
@@ -176,24 +183,24 @@ class SendMediaGroup:
                                 peer=await self.resolve_peer(chat_id),
                                 media=raw.types.InputMediaPhotoExternal(
                                     url=i.media,
-                                    spoiler=i.has_spoiler
-                                )
-                            )
+                                    spoiler=i.has_spoiler,
+                                ),
+                            ),
                         )
 
                         media = raw.types.InputMediaPhoto(
                             id=raw.types.InputPhoto(
                                 id=media.photo.id,
                                 access_hash=media.photo.access_hash,
-                                file_reference=media.photo.file_reference
+                                file_reference=media.photo.file_reference,
                             ),
-                            spoiler=i.has_spoiler
+                            spoiler=i.has_spoiler,
                         )
                     else:
                         media = utils.get_input_media_from_file_id(
                             i.media,
                             FileType.PHOTO,
-                            has_spoiler=i.has_spoiler
+                            has_spoiler=i.has_spoiler,
                         )
                 else:
                     media = await self.invoke(
@@ -202,18 +209,18 @@ class SendMediaGroup:
                             peer=await self.resolve_peer(chat_id),
                             media=raw.types.InputMediaUploadedPhoto(
                                 file=await self.save_file(i.media),
-                                spoiler=i.has_spoiler
-                            )
-                        )
+                                spoiler=i.has_spoiler,
+                            ),
+                        ),
                     )
 
                     media = raw.types.InputMediaPhoto(
                         id=raw.types.InputPhoto(
                             id=media.photo.id,
                             access_hash=media.photo.access_hash,
-                            file_reference=media.photo.file_reference
+                            file_reference=media.photo.file_reference,
                         ),
-                        spoiler=i.has_spoiler
+                        spoiler=i.has_spoiler,
                     )
                 show_caption_above_media.append(i.show_caption_above_media)
             elif isinstance(i, types.InputMediaVideo):
@@ -226,29 +233,35 @@ class SendMediaGroup:
                                 media=raw.types.InputMediaUploadedDocument(
                                     file=await self.save_file(i.media),
                                     thumb=await self.save_file(i.thumb),
-                                    nosound_video=i.disable_content_type_detection or True,
+                                    nosound_video=i.disable_content_type_detection
+                                    or True,
                                     spoiler=i.has_spoiler,
-                                    mime_type=self.guess_mime_type(i.media) or "video/mp4",
+                                    mime_type=self.guess_mime_type(i.media)
+                                    or "video/mp4",
                                     attributes=[
                                         raw.types.DocumentAttributeVideo(
-                                            supports_streaming=i.supports_streaming or None,
+                                            supports_streaming=i.supports_streaming
+                                            or None,
                                             duration=i.duration,
                                             w=i.width,
-                                            h=i.height
+                                            h=i.height,
                                         ),
-                                        raw.types.DocumentAttributeFilename(file_name=i.file_name or os.path.basename(i.media))
-                                    ]
-                                )
-                            )
+                                        raw.types.DocumentAttributeFilename(
+                                            file_name=i.file_name
+                                            or os.path.basename(i.media)
+                                        ),
+                                    ],
+                                ),
+                            ),
                         )
 
                         media = raw.types.InputMediaDocument(
                             id=raw.types.InputDocument(
                                 id=media.document.id,
                                 access_hash=media.document.access_hash,
-                                file_reference=media.document.file_reference
+                                file_reference=media.document.file_reference,
                             ),
-                            spoiler=i.has_spoiler
+                            spoiler=i.has_spoiler,
                         )
                     elif re.match("^https?://", i.media):
                         media = await self.invoke(
@@ -257,21 +270,23 @@ class SendMediaGroup:
                                 peer=await self.resolve_peer(chat_id),
                                 media=raw.types.InputMediaDocumentExternal(
                                     url=i.media,
-                                    spoiler=i.has_spoiler
-                                )
-                            )
+                                    spoiler=i.has_spoiler,
+                                ),
+                            ),
                         )
 
                         media = raw.types.InputMediaDocument(
                             id=raw.types.InputDocument(
                                 id=media.document.id,
                                 access_hash=media.document.access_hash,
-                                file_reference=media.document.file_reference
+                                file_reference=media.document.file_reference,
                             ),
-                            spoiler=i.has_spoiler
+                            spoiler=i.has_spoiler,
                         )
                     else:
-                        media = utils.get_input_media_from_file_id(i.media, FileType.VIDEO, has_spoiler=i.has_spoiler)
+                        media = utils.get_input_media_from_file_id(
+                            i.media, FileType.VIDEO, has_spoiler=i.has_spoiler
+                        )
                 else:
                     media = await self.invoke(
                         raw.functions.messages.UploadMedia(
@@ -282,27 +297,33 @@ class SendMediaGroup:
                                 thumb=await self.save_file(i.thumb),
                                 nosound_video=i.disable_content_type_detection or True,
                                 spoiler=i.has_spoiler,
-                                mime_type=self.guess_mime_type(getattr(i.media, "name", "video.mp4")) or "video/mp4",
+                                mime_type=self.guess_mime_type(
+                                    getattr(i.media, "name", "video.mp4")
+                                )
+                                or "video/mp4",
                                 attributes=[
                                     raw.types.DocumentAttributeVideo(
                                         supports_streaming=i.supports_streaming or None,
                                         duration=i.duration,
                                         w=i.width,
-                                        h=i.height
+                                        h=i.height,
                                     ),
-                                    raw.types.DocumentAttributeFilename(file_name=i.file_name or getattr(i.media, "name", "video.mp4"))
-                                ]
-                            )
-                        )
+                                    raw.types.DocumentAttributeFilename(
+                                        file_name=i.file_name
+                                        or getattr(i.media, "name", "video.mp4")
+                                    ),
+                                ],
+                            ),
+                        ),
                     )
 
                     media = raw.types.InputMediaDocument(
                         id=raw.types.InputDocument(
                             id=media.document.id,
                             access_hash=media.document.access_hash,
-                            file_reference=media.document.file_reference
+                            file_reference=media.document.file_reference,
                         ),
-                        spoiler=i.has_spoiler
+                        spoiler=i.has_spoiler,
                     )
                 show_caption_above_media.append(i.show_caption_above_media)
             elif isinstance(i, types.InputMediaAudio):
@@ -313,27 +334,31 @@ class SendMediaGroup:
                                 business_connection_id=business_connection_id,
                                 peer=await self.resolve_peer(chat_id),
                                 media=raw.types.InputMediaUploadedDocument(
-                                    mime_type=self.guess_mime_type(i.media) or "audio/mpeg",
+                                    mime_type=self.guess_mime_type(i.media)
+                                    or "audio/mpeg",
                                     file=await self.save_file(i.media),
                                     thumb=await self.save_file(i.thumb),
                                     attributes=[
                                         raw.types.DocumentAttributeAudio(
                                             duration=i.duration,
                                             performer=i.performer,
-                                            title=i.title
+                                            title=i.title,
                                         ),
-                                        raw.types.DocumentAttributeFilename(file_name=i.file_name or os.path.basename(i.media))
-                                    ]
-                                )
-                            )
+                                        raw.types.DocumentAttributeFilename(
+                                            file_name=i.file_name
+                                            or os.path.basename(i.media)
+                                        ),
+                                    ],
+                                ),
+                            ),
                         )
 
                         media = raw.types.InputMediaDocument(
                             id=raw.types.InputDocument(
                                 id=media.document.id,
                                 access_hash=media.document.access_hash,
-                                file_reference=media.document.file_reference
-                            )
+                                file_reference=media.document.file_reference,
+                            ),
                         )
                     elif re.match("^https?://", i.media):
                         media = await self.invoke(
@@ -341,47 +366,55 @@ class SendMediaGroup:
                                 business_connection_id=business_connection_id,
                                 peer=await self.resolve_peer(chat_id),
                                 media=raw.types.InputMediaDocumentExternal(
-                                    url=i.media
-                                )
-                            )
+                                    url=i.media,
+                                ),
+                            ),
                         )
 
                         media = raw.types.InputMediaDocument(
                             id=raw.types.InputDocument(
                                 id=media.document.id,
                                 access_hash=media.document.access_hash,
-                                file_reference=media.document.file_reference
-                            )
+                                file_reference=media.document.file_reference,
+                            ),
                         )
                     else:
-                        media = utils.get_input_media_from_file_id(i.media, FileType.AUDIO)
+                        media = utils.get_input_media_from_file_id(
+                            i.media, FileType.AUDIO
+                        )
                 else:
                     media = await self.invoke(
                         raw.functions.messages.UploadMedia(
                             business_connection_id=business_connection_id,
                             peer=await self.resolve_peer(chat_id),
                             media=raw.types.InputMediaUploadedDocument(
-                                mime_type=self.guess_mime_type(getattr(i.media, "name", "audio.mp3")) or "audio/mpeg",
+                                mime_type=self.guess_mime_type(
+                                    getattr(i.media, "name", "audio.mp3")
+                                )
+                                or "audio/mpeg",
                                 file=await self.save_file(i.media),
                                 thumb=await self.save_file(i.thumb),
                                 attributes=[
                                     raw.types.DocumentAttributeAudio(
                                         duration=i.duration,
                                         performer=i.performer,
-                                        title=i.title
+                                        title=i.title,
                                     ),
-                                    raw.types.DocumentAttributeFilename(file_name=i.file_name or getattr(i.media, "name", "audio.mp3"))
-                                ]
-                            )
-                        )
+                                    raw.types.DocumentAttributeFilename(
+                                        file_name=i.file_name
+                                        or getattr(i.media, "name", "audio.mp3")
+                                    ),
+                                ],
+                            ),
+                        ),
                     )
 
                     media = raw.types.InputMediaDocument(
                         id=raw.types.InputDocument(
                             id=media.document.id,
                             access_hash=media.document.access_hash,
-                            file_reference=media.document.file_reference
-                        )
+                            file_reference=media.document.file_reference,
+                        ),
                     )
             elif isinstance(i, types.InputMediaDocument):
                 if isinstance(i.media, str):
@@ -391,23 +424,27 @@ class SendMediaGroup:
                                 business_connection_id=business_connection_id,
                                 peer=await self.resolve_peer(chat_id),
                                 media=raw.types.InputMediaUploadedDocument(
-                                    mime_type=self.guess_mime_type(i.media) or "application/zip",
+                                    mime_type=self.guess_mime_type(i.media)
+                                    or "application/zip",
                                     file=await self.save_file(i.media),
                                     thumb=await self.save_file(i.thumb),
                                     attributes=[
-                                        raw.types.DocumentAttributeFilename(file_name=i.file_name or os.path.basename(i.media))
+                                        raw.types.DocumentAttributeFilename(
+                                            file_name=i.file_name
+                                            or os.path.basename(i.media)
+                                        ),
                                     ],
-                                    force_file=True # if i.disable_content_type_detection else True
-                                )
-                            )
+                                    force_file=True,  # if i.disable_content_type_detection else True
+                                ),
+                            ),
                         )
 
                         media = raw.types.InputMediaDocument(
                             id=raw.types.InputDocument(
                                 id=media.document.id,
                                 access_hash=media.document.access_hash,
-                                file_reference=media.document.file_reference
-                            )
+                                file_reference=media.document.file_reference,
+                            ),
                         )
                     elif re.match("^https?://", i.media):
                         media = await self.invoke(
@@ -415,20 +452,22 @@ class SendMediaGroup:
                                 business_connection_id=business_connection_id,
                                 peer=await self.resolve_peer(chat_id),
                                 media=raw.types.InputMediaDocumentExternal(
-                                    url=i.media
-                                )
-                            )
+                                    url=i.media,
+                                ),
+                            ),
                         )
 
                         media = raw.types.InputMediaDocument(
                             id=raw.types.InputDocument(
                                 id=media.document.id,
                                 access_hash=media.document.access_hash,
-                                file_reference=media.document.file_reference
-                            )
+                                file_reference=media.document.file_reference,
+                            ),
                         )
                     else:
-                        media = utils.get_input_media_from_file_id(i.media, FileType.DOCUMENT)
+                        media = utils.get_input_media_from_file_id(
+                            i.media, FileType.DOCUMENT
+                        )
                 else:
                     media = await self.invoke(
                         raw.functions.messages.UploadMedia(
@@ -436,39 +475,46 @@ class SendMediaGroup:
                             peer=await self.resolve_peer(chat_id),
                             media=raw.types.InputMediaUploadedDocument(
                                 mime_type=self.guess_mime_type(
-                                    getattr(i.media, "name", "file.zip")
-                                ) or "application/zip",
+                                    getattr(i.media, "name", "file.zip"),
+                                )
+                                or "application/zip",
                                 file=await self.save_file(i.media),
                                 thumb=await self.save_file(i.thumb),
                                 attributes=[
-                                    raw.types.DocumentAttributeFilename(file_name=i.file_name or getattr(i.media, "name", "file.zip"))
-                                ]
-                            )
-                        )
+                                    raw.types.DocumentAttributeFilename(
+                                        file_name=i.file_name
+                                        or getattr(i.media, "name", "file.zip")
+                                    ),
+                                ],
+                            ),
+                        ),
                     )
 
                     media = raw.types.InputMediaDocument(
                         id=raw.types.InputDocument(
                             id=media.document.id,
                             access_hash=media.document.access_hash,
-                            file_reference=media.document.file_reference
-                        )
+                            file_reference=media.document.file_reference,
+                        ),
                     )
             else:
-                raise ValueError(f"{i.__class__.__name__} is not a supported type for send_media_group")
+                msg = f"{i.__class__.__name__} is not a supported type for send_media_group"
+                raise ValueError(msg)
 
             multi_media.append(
                 raw.types.InputSingleMedia(
                     media=media,
                     random_id=self.rnd_id(),
-                    **await utils.parse_text_entities(self, i.caption, i.parse_mode, i.caption_entities)
-                )
+                    **await utils.parse_text_entities(
+                        self, i.caption, i.parse_mode, i.caption_entities
+                    ),
+                ),
             )
 
         reply_to = await utils._get_reply_message_parameters(
             self,
             message_thread_id,
-            reply_parameters
+            reply_parameters,
         )
         rpc = raw.functions.messages.SendMultiMedia(
             peer=await self.resolve_peer(chat_id),
@@ -481,35 +527,41 @@ class SendMediaGroup:
             allow_paid_floodskip=allow_paid_broadcast,
             allow_paid_stars=paid_message_star_count,
             effect=message_effect_id,
-            invert_media=invert_media if invert_media is not None else any(show_caption_above_media)
+            invert_media=invert_media
+            if invert_media is not None
+            else any(show_caption_above_media),
         )
         session = None
         business_connection = None
         if business_connection_id:
-            business_connection = self.business_user_connection_cache[business_connection_id]
+            business_connection = self.business_user_connection_cache[
+                business_connection_id
+            ]
             if business_connection is None:
-                business_connection = await self.get_business_connection(business_connection_id)
+                business_connection = await self.get_business_connection(
+                    business_connection_id
+                )
             session = await get_session(
                 self,
-                business_connection._raw.connection.dc_id
+                business_connection._raw.connection.dc_id,
             )
         if business_connection_id:
             r = await session.invoke(
                 raw.functions.InvokeWithBusinessConnection(
                     query=rpc,
-                    connection_id=business_connection_id
-                )
+                    connection_id=business_connection_id,
+                ),
             )
             # await session.stop()
         else:
             r = await self.invoke(
                 rpc,
-                sleep_threshold=60
+                sleep_threshold=60,
             )
 
         return await utils.parse_messages(
             client=self,
             messages=None,
             business_connection_id=business_connection_id,
-            r=r
+            r=r,
         )

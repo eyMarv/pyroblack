@@ -26,9 +26,9 @@ from .can_post_story_result import CanPostStoryResult
 
 class CanPostStoryResultBoostNeeded(CanPostStoryResult):
     """The chat must be boosted first by Telegram Premium subscribers to post more stories.
-    
+
     Call getChatBoostStatus to get current boost status of the chat.
     """
 
-    def __init__(self,):
+    def __init__(self) -> None:
         super().__init__()

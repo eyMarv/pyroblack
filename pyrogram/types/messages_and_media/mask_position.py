@@ -21,14 +21,14 @@
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
 from pyrogram import enums, raw
-
-from ..object import Object
+from pyrogram.types.object import Object
 
 
 class MaskPosition(Object):
     """This object describes the position on faces where a mask should be placed by default.
 
-    Parameters:
+    Parameters
+    ----------
         point (:obj:`~pyrogram.enums.MaskPointType`):
             The part of the face relative to which the mask should be placed.
 
@@ -42,15 +42,17 @@ class MaskPosition(Object):
 
         scale (``float``):
             Mask scaling coefficient. For example, 2.0 means double size.
+
     """
+
     def __init__(
         self,
         *,
         point: "enums.MaskPointType",
         x_shift: float,
         y_shift: float,
-        scale: float
-    ):
+        scale: float,
+    ) -> None:
         super().__init__()
 
         self.point = point
@@ -60,7 +62,7 @@ class MaskPosition(Object):
 
     @staticmethod
     def _parse(
-        coords: "raw.types.MaskCoords"
+        coords: "raw.types.MaskCoords",
     ) -> "MaskPosition":
         if not coords:
             return None
@@ -69,5 +71,5 @@ class MaskPosition(Object):
             point=enums.MaskPointType(coords.n),
             x_shift=coords.x,
             y_shift=coords.y,
-            scale=coords.zoom
+            scale=coords.zoom,
         )

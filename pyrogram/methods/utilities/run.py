@@ -22,16 +22,19 @@
 
 import asyncio
 import inspect
+from typing import TYPE_CHECKING
 
-import pyrogram
 from pyrogram.methods.utilities.idle import idle
+
+if TYPE_CHECKING:
+    import pyrogram
 
 
 class Run:
     def run(
         self: "pyrogram.Client",
-        coroutine=None
-    ):
+        coroutine=None,
+    ) -> None:
         """Start the client, idle the main script and finally stop the client.
 
         When calling this method without any argument it acts as a convenience method that calls
@@ -44,11 +47,13 @@ class Run:
 
         If you want to run multiple clients at once, see :meth:`pyrogram.compose`.
 
-        Parameters:
+        Parameters
+        ----------
             coroutine (``Coroutine``, *optional*):
                 Pass a coroutine to run it until it completes.
 
-        Raises:
+        Raises
+        ------
             ConnectionError: In case you try to run an already started client.
 
         Example:
@@ -73,18 +78,18 @@ class Run:
 
 
                 app.run(main())
+
         """
         loop = asyncio.get_event_loop()
         run = loop.run_until_complete
 
         if coroutine is not None:
             run(coroutine)
+        elif inspect.iscoroutinefunction(self.start):
+            run(self.start())
+            run(idle())
+            run(self.stop())
         else:
-            if inspect.iscoroutinefunction(self.start):
-                run(self.start())
-                run(idle())
-                run(self.stop())
-            else:
-                self.start()
-                run(idle())
-                self.stop()
+            self.start()
+            run(idle())
+            self.stop()

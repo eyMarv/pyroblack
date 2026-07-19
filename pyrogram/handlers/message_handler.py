@@ -32,20 +32,21 @@ from .handler import Handler
 CallbackFunc: Callable = Callable[
     [
         "pyrogram.Client",
-        pyrogram.types.Message
+        pyrogram.types.Message,
     ],
-    Any
+    Any,
 ]
 
 
 class MessageHandler(Handler):
     """The Message handler class. Used to handle new messages.
-    It is intended to be used with :meth:`~pyrogram.Client.add_handler`
+    It is intended to be used with :meth:`~pyrogram.Client.add_handler`.
 
     For a nicer way to register this handler, have a look at the
     :meth:`~pyrogram.Client.on_message` decorator.
 
-    Parameters:
+    Parameters
+    ----------
         callback (``Callable``):
             Pass a function that will be called when a new Message arrives. It takes *(client, message)*
             as positional arguments (look at the section below for a detailed description).
@@ -54,7 +55,8 @@ class MessageHandler(Handler):
             Pass one or more filters to allow only a subset of messages to be passed
             in your callback function.
 
-    Other parameters:
+    Other Parameters
+    ----------------
         client (:obj:`~pyrogram.Client`):
             The Client itself, useful when you want to call other API methods inside the message handler.
 
@@ -63,13 +65,14 @@ class MessageHandler(Handler):
 
     """
 
-    def __init__(self, callback: CallbackFunc, filters: Filter = None):
+    def __init__(self, callback: CallbackFunc, filters: Filter = None) -> None:
         self.original_callback = callback
         super().__init__(self.resolve_future_or_callback, filters)
 
     @staticmethod
     async def check_if_has_matching_listener(
-        client: "pyrogram.Client", message: Message
+        client: "pyrogram.Client",
+        message: Message,
     ):
         """Checks if the message has a matching pyromod listener (pyroblack <= 2.7.2)."""
         chat = message.chat
@@ -91,7 +94,8 @@ class MessageHandler(Handler):
         )
 
         listener = client.get_listener_matching_with_data(
-            data, pyrogram.enums.ListenerTypes.MESSAGE
+            data,
+            pyrogram.enums.ListenerTypes.MESSAGE,
         )
 
         listener_does_match = False
@@ -103,7 +107,10 @@ class MessageHandler(Handler):
                     listener_does_match = await filters(client, message)
                 else:
                     listener_does_match = await client.loop.run_in_executor(
-                        None, filters, client, message
+                        None,
+                        filters,
+                        client,
+                        message,
                     )
             else:
                 listener_does_match = True
@@ -121,7 +128,10 @@ class MessageHandler(Handler):
                 handler_does_match = await self.filters(client, message)
             else:
                 handler_does_match = await client.loop.run_in_executor(
-                    None, self.filters, client, message
+                    None,
+                    self.filters,
+                    client,
+                    message,
                 )
         else:
             handler_does_match = True
@@ -129,11 +139,15 @@ class MessageHandler(Handler):
         return listener_does_match or handler_does_match
 
     async def resolve_future_or_callback(
-        self, client: "pyrogram.Client", message: Message, *args
-    ):
+        self,
+        client: "pyrogram.Client",
+        message: Message,
+        *args,
+    ) -> None:
         """Resolve a pyromod listener future/callback, else call the original handler."""
         listener_does_match, listener = await self.check_if_has_matching_listener(
-            client, message
+            client,
+            message,
         )
 
         if listener and listener_does_match:
@@ -142,13 +156,12 @@ class MessageHandler(Handler):
             if listener.future and not listener.future.done():
                 listener.future.set_result(message)
                 raise pyrogram.StopPropagation
-            elif listener.callback:
+            if listener.callback:
                 if iscoroutinefunction(listener.callback):
                     await listener.callback(client, message, *args)
                 else:
                     listener.callback(client, message, *args)
                 raise pyrogram.StopPropagation
-            else:
-                raise ValueError("Listener must have either a future or a callback")
-        else:
-            await self.original_callback(client, message, *args)
+            msg = "Listener must have either a future or a callback"
+            raise ValueError(msg)
+        await self.original_callback(client, message, *args)

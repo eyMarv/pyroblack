@@ -20,63 +20,63 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import logging
-from typing import Optional, Union
 
 import pyrogram
-from pyrogram import enums, raw, utils, types
+from pyrogram import enums, raw, types, utils
 
 log = logging.getLogger(__name__)
 
 
 class SendInvoice:
     async def send_invoice(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
+        self: pyrogram.Client,
+        chat_id: int | str,
         title: str,
         description: str,
-        payload: Union[str, bytes],
+        payload: str | bytes,
         currency: str,
-        prices: list["types.LabeledPrice"],
-        message_thread_id: int = None,
-        provider_token: str = None,
-        max_tip_amount: int = None,
-        suggested_tip_amounts: list[int] = None,
-        start_parameter: str = None,
-        provider_data: str = None,
-        photo_url: str = None,
-        photo_size: int = None,
-        photo_width: int = None,
-        photo_height: int = None,
-        need_name: bool = None,
-        need_phone_number: bool = None,
-        need_email: bool = None,
-        need_shipping_address: bool = None,
-        send_phone_number_to_provider: bool = None,
-        send_email_to_provider: bool = None,
-        is_flexible: bool = None,
-        disable_notification: bool = None,
-        protect_content: bool = None,
-        allow_paid_broadcast: bool = None,
-        paid_message_star_count: int = None,
-        message_effect_id: int = None,
-        reply_parameters: "types.ReplyParameters" = None,
-        send_as: Union[int, str] = None,
-        reply_markup: Union[
-            "types.InlineKeyboardMarkup",
-            "types.ReplyKeyboardMarkup",
-            "types.ReplyKeyboardRemove",
-            "types.ForceReply"
-        ] = None,
+        prices: list[types.LabeledPrice],
+        message_thread_id: int | None = None,
+        provider_token: str | None = None,
+        max_tip_amount: int | None = None,
+        suggested_tip_amounts: list[int] | None = None,
+        start_parameter: str | None = None,
+        provider_data: str | None = None,
+        photo_url: str | None = None,
+        photo_size: int | None = None,
+        photo_width: int | None = None,
+        photo_height: int | None = None,
+        need_name: bool | None = None,
+        need_phone_number: bool | None = None,
+        need_email: bool | None = None,
+        need_shipping_address: bool | None = None,
+        send_phone_number_to_provider: bool | None = None,
+        send_email_to_provider: bool | None = None,
+        is_flexible: bool | None = None,
+        disable_notification: bool | None = None,
+        protect_content: bool | None = None,
+        allow_paid_broadcast: bool | None = None,
+        paid_message_star_count: int | None = None,
+        message_effect_id: int | None = None,
+        reply_parameters: types.ReplyParameters = None,
+        send_as: int | str | None = None,
+        reply_markup: types.InlineKeyboardMarkup
+        | types.ReplyKeyboardMarkup
+        | types.ReplyKeyboardRemove
+        | types.ForceReply = None,
         caption: str = "",
-        parse_mode: Optional["enums.ParseMode"] = None,
-        caption_entities: list["types.MessageEntity"] = None
-    ) -> "types.Message":
+        parse_mode: enums.ParseMode | None = None,
+        caption_entities: list[types.MessageEntity] | None = None,
+    ) -> types.Message:
         """Use this method to send invoices.
 
         .. include:: /_includes/usable-by/bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
 
@@ -168,7 +168,7 @@ class SendInvoice:
             send_as (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the chat or channel to send the message as.
                 You can use this to send the message on behalf of a chat or channel where you have appropriate permissions.
-                Use the :meth:`~pyrogram.Client.get_send_as_chats` to return the list of message sender identifiers, which can be used to send messages in the chat, 
+                Use the :meth:`~pyrogram.Client.get_send_as_chats` to return the list of message sender identifiers, which can be used to send messages in the chat,
                 This setting applies to the current message and will remain effective for future messages unless explicitly changed.
                 To set this behavior permanently for all messages, use :meth:`~pyrogram.Client.set_send_as_chat`.
 
@@ -186,14 +186,15 @@ class SendInvoice:
             caption_entities (List of :obj:`~pyrogram.types.MessageEntity`):
                 List of special entities that appear in the caption, which can be specified instead of *parse_mode*.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.Message`: On success, the sent invoice message is returned.
 
         """
         reply_to = await utils._get_reply_message_parameters(
             self,
             message_thread_id,
-            reply_parameters
+            reply_parameters,
         )
 
         rpc = raw.functions.messages.SendMedia(
@@ -208,10 +209,12 @@ class SendInvoice:
                     attributes=[
                         raw.types.DocumentAttributeImageSize(
                             w=photo_width,
-                            h=photo_height
-                        )
-                    ]
-                ) if photo_url else None,
+                            h=photo_height,
+                        ),
+                    ],
+                )
+                if photo_url
+                else None,
                 invoice=raw.types.Invoice(
                     currency=currency,
                     prices=[i.write() for i in prices],
@@ -222,14 +225,14 @@ class SendInvoice:
                     shipping_address_requested=need_shipping_address,
                     flexible=is_flexible,
                     phone_to_provider=send_phone_number_to_provider,
-                    email_to_provider=send_email_to_provider
+                    email_to_provider=send_email_to_provider,
                 ),
                 payload=payload.encode() if isinstance(payload, str) else payload,
                 provider=provider_token,
                 provider_data=raw.types.DataJSON(
-                    data=provider_data if provider_data else "{}"
+                    data=provider_data or "{}",
                 ),
-                start_param=start_parameter
+                start_param=start_parameter,
             ),
             silent=disable_notification or None,
             reply_to=reply_to,
@@ -240,7 +243,9 @@ class SendInvoice:
             allow_paid_stars=paid_message_star_count,
             reply_markup=await reply_markup.write(self) if reply_markup else None,
             effect=message_effect_id,
-            **await utils.parse_text_entities(self, caption, parse_mode, caption_entities)
+            **await utils.parse_text_entities(
+                self, caption, parse_mode, caption_entities
+            ),
         )
         r = await self.invoke(rpc)
 
@@ -250,13 +255,15 @@ class SendInvoice:
                 (
                     raw.types.UpdateNewMessage,
                     raw.types.UpdateNewChannelMessage,
-                    raw.types.UpdateNewScheduledMessage
-                )
+                    raw.types.UpdateNewScheduledMessage,
+                ),
             ):
                 return await types.Message._parse(
-                    self, i.message,
+                    self,
+                    i.message,
                     {i.id: i for i in r.users},
                     {i.id: i for i in r.chats},
                     is_scheduled=isinstance(i, raw.types.UpdateNewScheduledMessage),
-                    replies=self.fetch_replies
+                    replies=self.fetch_replies,
                 )
+        return None

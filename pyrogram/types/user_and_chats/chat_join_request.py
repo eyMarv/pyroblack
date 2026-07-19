@@ -20,19 +20,24 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import datetime
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import pyrogram
-from pyrogram import raw, utils
-from pyrogram import types
-from ..object import Object
-from ..update import Update
+from pyrogram import raw, types, utils
+from pyrogram.types.object import Object
+from pyrogram.types.update import Update
+
+if TYPE_CHECKING:
+    from datetime import datetime
 
 
 class ChatJoinRequest(Object, Update):
     """Represents a join request sent to a chat.
 
-    Parameters:
+    Parameters
+    ----------
         chat (:obj:`~pyrogram.types.Chat`):
             Chat to which the request was sent.
 
@@ -50,19 +55,20 @@ class ChatJoinRequest(Object, Update):
 
         invite_link (:obj:`~pyrogram.types.ChatInviteLink`, *optional*):
             Chat invite link that was used by the user to send the join request.
+
     """
 
     def __init__(
         self,
         *,
-        client: "pyrogram.Client" = None,
-        chat: "types.Chat",
-        from_user: "types.User",
+        client: pyrogram.Client = None,
+        chat: types.Chat,
+        from_user: types.User,
         user_chat_id: int,
         date: datetime,
-        bio: str = None,
-        invite_link: "types.ChatInviteLink" = None
-    ):
+        bio: str | None = None,
+        invite_link: types.ChatInviteLink = None,
+    ) -> None:
         super().__init__(client)
 
         self.chat = chat
@@ -74,11 +80,11 @@ class ChatJoinRequest(Object, Update):
 
     @staticmethod
     def _parse(
-        client: "pyrogram.Client",
-        update: "raw.types.UpdateBotChatInviteRequester",
-        users: dict[int, "raw.types.User"],
-        chats: dict[int, "raw.types.Chat"]
-    ) -> "ChatJoinRequest":
+        client: pyrogram.Client,
+        update: raw.types.UpdateBotChatInviteRequester,
+        users: dict[int, raw.types.User],
+        chats: dict[int, raw.types.Chat],
+    ) -> ChatJoinRequest:
         chat_id = utils.get_raw_peer_id(update.peer)
         return ChatJoinRequest(
             chat=types.Chat._parse_chat(client, chats[chat_id]),
@@ -87,65 +93,65 @@ class ChatJoinRequest(Object, Update):
             date=utils.timestamp_to_datetime(update.date),
             bio=update.about,
             invite_link=types.ChatInviteLink._parse(client, update.invite, users),
-            client=client
+            client=client,
         )
 
     async def approve(self) -> bool:
         """Bound method *approve* of :obj:`~pyrogram.types.ChatJoinRequest`.
-        
+
         Use as a shortcut for:
-        
+
         .. code-block:: python
 
             await client.approve_chat_join_request(
                 chat_id=request.chat.id,
                 user_id=request.from_user.id
             )
-            
+
         Example:
             .. code-block:: python
 
                 await request.approve()
-                
+
         Returns:
             ``bool``: True on success.
-        
+
         Raises:
             :obj:`~pyrogram.errors.RPCError`: In case of a Telegram RPC error.
 
         """
         return await self._client.approve_chat_join_request(
             chat_id=self.chat.id,
-            user_id=self.from_user.id
+            user_id=self.from_user.id,
         )
 
     async def decline(self) -> bool:
         """Bound method *decline* of :obj:`~pyrogram.types.ChatJoinRequest`.
-        
+
         Use as a shortcut for:
-        
+
         .. code-block:: python
 
             await client.decline_chat_join_request(
                 chat_id=request.chat.id,
                 user_id=request.from_user.id
             )
-            
+
         Example:
             .. code-block:: python
 
                 await request.decline()
-                
+
         Returns:
             ``bool``: True on success.
-        
+
         Raises:
             :obj:`~pyrogram.errors.RPCError`: In case of a Telegram RPC error.
 
         """
         return await self._client.decline_chat_join_request(
             chat_id=self.chat.id,
-            user_id=self.from_user.id
+            user_id=self.from_user.id,
         )
 
     # TODO

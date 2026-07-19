@@ -21,18 +21,20 @@
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
 from pyrogram import enums, raw
-from ..object import Object
+from pyrogram.types.object import Object
 
 
 class StoriesPrivacyRules(Object):
     """A story privacy.
 
-    Parameters:
+    Parameters
+    ----------
         type (:obj:`~pyrogram.enums.StoriesPrivacyRules`):
             Story privacy type.
+
     """
 
-    def __init__(self, *, type: "enums.StoriesPrivacyRules"):
+    def __init__(self, *, type: "enums.StoriesPrivacyRules") -> None:
         super().__init__()
         self.type = type
 
@@ -47,3 +49,4 @@ class StoriesPrivacyRules(Object):
             return raw.types.InputPrivacyValueDisallowContacts().write()
         if self.type == enums.StoriesPrivacyRules.PRIVATE:
             return raw.types.InputPrivacyValueDisallowAll().write()
+        return None

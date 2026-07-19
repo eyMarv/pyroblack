@@ -20,8 +20,10 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import os
-from typing import Callable, Union
+from typing import Callable
 
 import pyrogram
 from pyrogram import StopTransmission, enums, raw, types, utils
@@ -30,24 +32,24 @@ from pyrogram.errors import FilePartMissing
 
 class PostStory:
     async def post_story(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
-        content: "types.InputStoryContent",
-        active_period: int = None,
-        caption: str = None,
-        parse_mode: "enums.ParseMode" = None,
-        caption_entities: list["types.MessageEntity"] = None,
-        areas: list["types.StoryArea"] = None,
-        post_to_chat_page: bool = None,
-        protect_content: bool = None,
-        business_connection_id: str = None,
-        privacy_settings: "types.StoryPrivacySettings" = None,
-        album_ids: list[int] = None,
-        from_story_chat_id: Union[int, str] = None,
-        from_story_id: int = None,
-        progress: Callable = None,
+        self: pyrogram.Client,
+        chat_id: int | str,
+        content: types.InputStoryContent,
+        active_period: int | None = None,
+        caption: str | None = None,
+        parse_mode: enums.ParseMode = None,
+        caption_entities: list[types.MessageEntity] | None = None,
+        areas: list[types.StoryArea] | None = None,
+        post_to_chat_page: bool | None = None,
+        protect_content: bool | None = None,
+        business_connection_id: str | None = None,
+        privacy_settings: types.StoryPrivacySettings = None,
+        album_ids: list[int] | None = None,
+        from_story_chat_id: int | str | None = None,
+        from_story_id: int | None = None,
+        progress: Callable | None = None,
         progress_args: tuple = (),
-    ) -> "types.Story":
+    ) -> types.Story:
         """Posts a new story on behalf of a chat.
 
         .. include:: /_includes/usable-by/users.rst
@@ -58,7 +60,8 @@ class PostStory:
 
         Requires the can_manage_stories business bot right.
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
                 For your personal cloud (Saved Messages) you can simply use "me" or "self".
@@ -71,7 +74,7 @@ class PostStory:
 
             caption (``str``, *optional*):
                 Caption of the story, 0-2048 characters after entities parsing.
-            
+
             parse_mode (:obj:`~pyrogram.enums.ParseMode`, *optional*):
                 By default, texts are parsed using both Markdown and HTML styles.
                 You can combine both syntaxes together.
@@ -84,7 +87,7 @@ class PostStory:
 
             post_to_chat_page (``bool``, *optional*):
                 Pass True to keep the story accessible after it expires.
-            
+
             protect_content (``bool``, *optional*):
                 Pass True if the content of the story must be protected from forwarding and screenshotting.
 
@@ -117,7 +120,8 @@ class PostStory:
                 You can pass anything you need to be available in the progress callback scope; for example, a Message
                 object or a Client instance in order to edit the message with the updated progress status.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.Story` a single story is returned.
 
         Example:
@@ -126,15 +130,20 @@ class PostStory:
                 # Post story to your profile
                 await app.post_story("me", InputStoryContentPhoto("story.png"), caption='My new story!')
 
-        Raises:
+        Raises
+        ------
             ValueError: In case of invalid arguments.
             :obj:`~pyrogram.errors.RPCError`: In case of a Telegram RPC error.
 
         """
         if business_connection_id:
-            business_connection = self.business_user_connection_cache[business_connection_id]
+            business_connection = self.business_user_connection_cache[
+                business_connection_id
+            ]
             if not business_connection:
-                business_connection = await self.get_business_connection(business_connection_id)
+                business_connection = await self.get_business_connection(
+                    business_connection_id
+                )
 
             return await self.post_story(
                 chat_id=business_connection.user_chat_id,
@@ -150,10 +159,12 @@ class PostStory:
                 from_story_chat_id=from_story_chat_id,
                 from_story_id=from_story_id,
                 progress=progress,
-                progress_args=progress_args
+                progress_args=progress_args,
             )
 
-        message, entities = (await utils.parse_text_entities(self, caption, parse_mode, caption_entities)).values()
+        message, entities = (
+            await utils.parse_text_entities(self, caption, parse_mode, caption_entities)
+        ).values()
 
         media = None
         thumb = None
@@ -167,12 +178,15 @@ class PostStory:
             thumb = content.thumbnail
             mime_type = "video/mp4"
         else:
-            raise ValueError("invalid content")
+            msg = "invalid content"
+            raise ValueError(msg)
 
         try:
             if isinstance(media, str):
                 if os.path.isfile(media):
-                    file = await self.save_file(media, progress=progress, progress_args=progress_args)
+                    file = await self.save_file(
+                        media, progress=progress, progress_args=progress_args
+                    )
                     thumb = await self.save_file(thumb) if thumb else None
                     if isinstance(content, types.InputStoryContentVideo):
                         media = raw.types.InputMediaUploadedDocument(
@@ -181,13 +195,17 @@ class PostStory:
                             thumb=thumb,
                             attributes=[
                                 raw.types.DocumentAttributeVideo(
-                                    supports_streaming=content.supports_streaming or None,
+                                    supports_streaming=content.supports_streaming
+                                    or None,
                                     duration=content.duration,
                                     w=content.width,
                                     h=content.height,
                                 ),
-                                raw.types.DocumentAttributeFilename(file_name=content.file_name or os.path.basename(media))
-                            ]
+                                raw.types.DocumentAttributeFilename(
+                                    file_name=content.file_name
+                                    or os.path.basename(media)
+                                ),
+                            ],
                         )
                     else:
                         media = raw.types.InputMediaUploadedPhoto(
@@ -196,7 +214,9 @@ class PostStory:
                 else:
                     media = utils.get_input_media_from_file_id(media)
             else:
-                file = await self.save_file(media, progress=progress, progress_args=progress_args)
+                file = await self.save_file(
+                    media, progress=progress, progress_args=progress_args
+                )
                 thumb = await self.save_file(thumb) if thumb else None
                 if isinstance(content, types.InputStoryContentVideo):
                     media = raw.types.InputMediaUploadedDocument(
@@ -210,8 +230,10 @@ class PostStory:
                                 w=content.width,
                                 h=content.height,
                             ),
-                            raw.types.DocumentAttributeFilename(file_name=content.file_name or media.name)
-                        ]
+                            raw.types.DocumentAttributeFilename(
+                                file_name=content.file_name or media.name
+                            ),
+                        ],
                     )
                 else:
                     media = raw.types.InputMediaUploadedPhoto(
@@ -220,29 +242,36 @@ class PostStory:
 
             privacy_rules = []
             if privacy_settings:
-                privacy_rules += (await privacy_settings.write(self))
+                privacy_rules += await privacy_settings.write(self)
             else:
-                privacy_rules += (await (types.StoryPrivacySettingsEveryone()).write(self))
+                privacy_rules += await (types.StoryPrivacySettingsEveryone()).write(
+                    self
+                )
 
             while True:
                 try:
                     r = await self.invoke(
-                        raw.functions.stories.SendStory( 
+                        raw.functions.stories.SendStory(
                             peer=await self.resolve_peer(chat_id),
                             media=media,
                             privacy_rules=privacy_rules,
                             random_id=self.rnd_id(),
                             pinned=post_to_chat_page,
                             noforwards=protect_content,
-                            media_areas=[await area.write(self) for area in (areas or [])] or None,
+                            media_areas=[
+                                await area.write(self) for area in (areas or [])
+                            ]
+                            or None,
                             caption=message,
                             entities=entities,
                             period=active_period,
                             albums=album_ids,
                             # fwd_modified=True if from_story_id else None,
-                            fwd_from_id=await self.resolve_peer(from_story_chat_id) if from_story_chat_id else None,
+                            fwd_from_id=await self.resolve_peer(from_story_chat_id)
+                            if from_story_chat_id
+                            else None,
                             fwd_from_story=from_story_id,
-                        )
+                        ),
                     )
                 except FilePartMissing as e:
                     await self.save_file(media, file_id=file.id, file_part=e.value)
@@ -253,10 +282,11 @@ class PostStory:
                                 self,
                                 {i.id: i for i in r.users},
                                 {i.id: i for i in r.chats},
-                                None, None,
+                                None,
+                                None,
                                 i,
                                 i.story,
-                                i.peer
+                                i.peer,
                             )
         except StopTransmission:
             return None

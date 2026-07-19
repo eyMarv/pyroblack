@@ -20,24 +20,25 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union
+from __future__ import annotations
 
 import pyrogram
-from pyrogram import types, utils, raw
+from pyrogram import raw, types
 
 
 class UnhideForumTopic:
     async def unhide_forum_topic(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
-        message_thread_id: int
-    ) -> "types.Message":
+        self: pyrogram.Client,
+        chat_id: int | str,
+        message_thread_id: int,
+    ) -> types.Message:
         """Use this method to unhide a topic in a forum supergroup chat.
         The bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator rights.
 
         .. include:: /_includes/usable-by/users-bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
                 For your personal cloud (Saved Messages) you can simply use "me" or "self".
@@ -46,7 +47,8 @@ class UnhideForumTopic:
             message_thread_id (``int``):
                 Unique identifier for the target message thread of the forum topic
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.Message`: On success, the edited message is returned.
 
         Example:
@@ -54,14 +56,14 @@ class UnhideForumTopic:
 
                 # Unhide the General Forum Topic
                 await app.unhide_forum_topic(chat, 1)
-        """
 
+        """
         r = await self.invoke(
             raw.functions.messages.EditForumTopic(
                 peer=await self.resolve_peer(chat_id),
                 topic_id=message_thread_id,
-                hidden=False
-            )
+                hidden=False,
+            ),
         )
 
         for i in r.updates:
@@ -72,8 +74,8 @@ class UnhideForumTopic:
                     raw.types.UpdateEditChannelMessage,
                     raw.types.UpdateNewMessage,
                     raw.types.UpdateNewChannelMessage,
-                    raw.types.UpdateNewScheduledMessage
-                )
+                    raw.types.UpdateNewScheduledMessage,
+                ),
             ):
                 return await types.Message._parse(
                     self,
@@ -81,5 +83,6 @@ class UnhideForumTopic:
                     {i.id: i for i in r.users},
                     {i.id: i for i in r.chats},
                     is_scheduled=isinstance(i, raw.types.UpdateNewScheduledMessage),
-                    replies=self.fetch_replies
+                    replies=self.fetch_replies,
                 )
+        return None

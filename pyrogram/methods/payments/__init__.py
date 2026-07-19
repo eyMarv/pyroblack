@@ -32,8 +32,8 @@ from .drop_gift_original_details import DropGiftOriginalDetails
 from .edit_star_subscription import EditStarSubscription
 from .get_available_gifts import GetAvailableGifts
 from .get_chat_gifts import GetChatGifts
-from .get_gift_auction_state import GetGiftAuctionState
 from .get_chat_gifts_count import GetChatGiftsCount
+from .get_gift_auction_state import GetGiftAuctionState
 from .get_gift_collections import GetGiftCollections
 from .get_gift_upgrade_preview import GetGiftUpgradePreview
 from .get_gift_upgrade_variants import GetGiftUpgradeVariants
@@ -53,8 +53,8 @@ from .reorder_collection_gifts import ReorderCollectionGifts
 from .reorder_gift_collections import ReorderGiftCollections
 from .reuse_star_subscription import ReuseStarSubscription
 from .search_gifts_for_resale import SearchGiftsForResale
-from .send_gift_purchase_offer import SendGiftPurchaseOffer
 from .send_gift import SendGift
+from .send_gift_purchase_offer import SendGiftPurchaseOffer
 from .send_paid_reaction import SendPaidReaction
 from .send_payment_form import SendPaymentForm
 from .send_resold_gift import SendResoldGift
@@ -112,7 +112,6 @@ class Payments(
     ShowGift,
     SuggestBirthday,
     TransferGift,
-    UpgradeGift
+    UpgradeGift,
 ):
     pass
-

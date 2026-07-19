@@ -20,7 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw
@@ -28,9 +28,9 @@ from pyrogram import raw
 
 class SetAdministratorTitle:
     async def set_administrator_title(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
-        user_id: Union[int, str],
+        self: pyrogram.Client,
+        chat_id: int | str,
+        user_id: int | str,
         title: str,
     ) -> bool:
         """Set a custom title (rank) to an administrator of a supergroup.
@@ -40,7 +40,8 @@ class SetAdministratorTitle:
 
         .. include:: /_includes/usable-by/users-bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
 
@@ -52,7 +53,8 @@ class SetAdministratorTitle:
                 A custom title that will be shown to all members instead of "Owner" or "Admin".
                 Pass None or "" (empty string) to remove the custom title.
 
-        Returns:
+        Returns
+        -------
             ``bool``: True on success.
 
         Example:
@@ -64,36 +66,38 @@ class SetAdministratorTitle:
         chat_id = await self.resolve_peer(chat_id)
         user_id = await self.resolve_peer(user_id)
 
-        r = (await self.invoke(
-            raw.functions.channels.GetParticipant(
-                channel=chat_id,
-                participant=user_id
+        r = (
+            await self.invoke(
+                raw.functions.channels.GetParticipant(
+                    channel=chat_id,
+                    participant=user_id,
+                ),
             )
-        )).participant
+        ).participant
 
         if isinstance(r, raw.types.ChannelParticipantCreator):
             admin_rights = raw.types.ChatAdminRights()
         elif isinstance(r, raw.types.ChannelParticipantAdmin):
             admin_rights = r.admin_rights
         else:
-            raise ValueError("Custom titles can only be applied to owners or administrators of supergroups")
+            msg = "Custom titles can only be applied to owners or administrators of supergroups"
+            raise ValueError(msg)
 
         await self.invoke(
             raw.functions.channels.EditAdmin(
                 channel=chat_id,
                 user_id=user_id,
                 admin_rights=admin_rights,
-                rank=title
-            )
+                rank=title,
+            ),
         )
 
         return True
 
-
     async def set_chat_member_tag(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
-        user_id: Union[int, str],
+        self: pyrogram.Client,
+        chat_id: int | str,
+        user_id: int | str,
         tag: str,
     ) -> bool:
         """Set a tag or custom title for a regular member in a group or a supergroup.
@@ -102,7 +106,8 @@ class SetAdministratorTitle:
 
         The client must be an administrator in the chat (for basic groups and supergroups only) for this to work and must have the ``can_manage_tags`` administrator right.
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
 
@@ -115,7 +120,8 @@ class SetAdministratorTitle:
                 0-16 characters without emoji.
                 Pass None or "" (empty string) to remove the custom title.
 
-        Returns:
+        Returns
+        -------
             ``bool``: True on success.
 
         Example:
@@ -131,8 +137,8 @@ class SetAdministratorTitle:
             raw.functions.messages.EditChatParticipantRank(
                 peer=chat_id,
                 participant=user_id,
-                rank=tag
-            )
+                rank=tag,
+            ),
         )
 
         return True

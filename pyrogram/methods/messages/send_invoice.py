@@ -20,41 +20,42 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-import pyrogram
+from __future__ import annotations
 
-from pyrogram import types, raw, utils
-from typing import Union, List
+import pyrogram
+from pyrogram import raw, types, utils
 
 
 class SendInvoice:
     async def send_invoice(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
+        self: pyrogram.Client,
+        chat_id: int | str,
         title: str,
         description: str,
         currency: str,
-        prices: List["types.LabeledPrice"],
-        provider: str = None,
-        provider_data: str = None,
-        payload: str = None,
-        photo_url: str = None,
-        photo_size: int = None,
-        photo_mime_type: str = None,
-        start_parameter: str = None,
-        extended_media: "types.InputMedia" = None,
-        reply_to_message_id: int = None,
-        message_thread_id: int = None,
-        quote_text: str = None,
-        allow_paid_broadcast: bool = None,
-        message_effect_id: int = None,
-        quote_entities: List["types.MessageEntity"] = None,
-        reply_markup: "types.InlineKeyboardMarkup" = None,
+        prices: list[types.LabeledPrice],
+        provider: str | None = None,
+        provider_data: str | None = None,
+        payload: str | None = None,
+        photo_url: str | None = None,
+        photo_size: int | None = None,
+        photo_mime_type: str | None = None,
+        start_parameter: str | None = None,
+        extended_media: types.InputMedia = None,
+        reply_to_message_id: int | None = None,
+        message_thread_id: int | None = None,
+        quote_text: str | None = None,
+        allow_paid_broadcast: bool | None = None,
+        message_effect_id: int | None = None,
+        quote_entities: list[types.MessageEntity] | None = None,
+        reply_markup: types.InlineKeyboardMarkup = None,
     ):
         """Use this method to send invoices.
 
         .. include:: /_includes/usable-by/bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier for the target private chat or username of the target private chat.
 
@@ -121,7 +122,8 @@ class SendInvoice:
             reply_markup (:obj:`~pyrogram.types.InlineKeyboardMarkup`, *optional*):
                 An inline keyboard. If empty, one 'Buy' button will be shown.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.Message`: On success, the sent message is returned.
 
         Example:
@@ -144,8 +146,8 @@ class SendInvoice:
                     currency="XTR",
                     prices=[types.LabeledPrice("Product", 1000)]
                 ))
-        """
 
+        """
         if reply_markup is not None:
             has_buy_button = False
             for i in reply_markup.inline_keyboard:
@@ -160,7 +162,8 @@ class SendInvoice:
                         prices_total += price.amount
                     text = f"Pay ⭐️{prices_total}"
                 reply_markup.inline_keyboard.insert(
-                    0, [types.InlineKeyboardButtonBuy(text=text)]
+                    0,
+                    [types.InlineKeyboardButtonBuy(text=text)],
                 )
 
         reply_to = await utils.get_reply_to(
@@ -183,12 +186,13 @@ class SendInvoice:
                     title=title,
                     description=description,
                     invoice=raw.types.Invoice(
-                        currency=currency, prices=[price.write() for price in prices]
+                        currency=currency,
+                        prices=[price.write() for price in prices],
                     ),
                     payload=encoded_payload,
                     provider=provider,
                     provider_data=raw.types.DataJSON(
-                        data=provider_data if provider_data else "{}"
+                        data=provider_data or "{}",
                     ),
                     photo=(
                         raw.types.InputWebDocument(
@@ -211,12 +215,13 @@ class SendInvoice:
                 reply_markup=(
                     await reply_markup.write(self) if reply_markup is not None else None
                 ),
-            )
+            ),
         )
 
         for i in r.updates:
             if isinstance(
-                i, (raw.types.UpdateNewMessage, raw.types.UpdateNewChannelMessage)
+                i,
+                (raw.types.UpdateNewMessage, raw.types.UpdateNewChannelMessage),
             ):
                 return await types.Message._parse(
                     self,
@@ -224,3 +229,4 @@ class SendInvoice:
                     users={i.id: i for i in r.users},
                     chats={i.id: i for i in r.chats},
                 )
+        return None

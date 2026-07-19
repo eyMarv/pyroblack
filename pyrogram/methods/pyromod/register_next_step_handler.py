@@ -20,30 +20,35 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-import pyrogram
+from __future__ import annotations
 
-from pyrogram.filters import Filter
-from typing import Callable, List, Optional, Union
+from typing import TYPE_CHECKING, Callable
+
+import pyrogram
 from pyrogram.types import Identifier, Listener
+
+if TYPE_CHECKING:
+    from pyrogram.filters import Filter
 
 
 class RegisterNextStepHandler:
     def register_next_step_handler(
-        self: "pyrogram.Client",
+        self: pyrogram.Client,
         callback: Callable,
-        filters: Optional[Filter] = None,
-        listener_type: "pyrogram.enums.ListenerTypes" = pyrogram.enums.ListenerTypes.MESSAGE,
+        filters: Filter | None = None,
+        listener_type: pyrogram.enums.ListenerTypes = pyrogram.enums.ListenerTypes.MESSAGE,
         unallowed_click_alert: bool = True,
-        chat_id: Union[Union[int, str], List[Union[int, str]]] = None,
-        user_id: Union[Union[int, str], List[Union[int, str]]] = None,
-        message_id: Union[int, List[int]] = None,
-        inline_message_id: Union[str, List[str]] = None,
-    ):
+        chat_id: int | str | list[int | str] | None = None,
+        user_id: int | str | list[int | str] | None = None,
+        message_id: int | list[int] | None = None,
+        inline_message_id: str | list[str] | None = None,
+    ) -> None:
         """Registers a listener with a callback to be called when the listener is fulfilled.
 
         .. include:: /_includes/usable-by/users-bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             callback (``Callable``):
                 The callback to call when the listener is fulfilled.
 
@@ -69,6 +74,7 @@ class RegisterNextStepHandler:
 
             inline_message_id (``str``, *optional*):
                 The inline message ID to listen for.
+
         """
         pattern = Identifier(
             from_user_id=user_id,

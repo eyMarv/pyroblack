@@ -20,7 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw, types
@@ -28,22 +28,24 @@ from pyrogram import raw, types
 
 class EnableStealthMode:
     async def enable_stealth_mode(
-        self: "pyrogram.Client",
-        past: Optional[bool] = None,
-        future: Optional[bool] = None
-    ) -> "types.StoriesStealthMode":
+        self: pyrogram.Client,
+        past: bool | None = None,
+        future: bool | None = None,
+    ) -> types.StoriesStealthMode:
         """Activates stories stealth mode.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             past (``bool``, *optional*):
                 Pass True to erase views from any stories opened in the past stories_stealth_past_period seconds, as specified by the client configuration.
 
             future (``bool``, *optional*):
                 Pass True to hide future story views for the next stories_stealth_future_period seconds, as specified by the client configuration.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.StoriesStealthMode`: On success, the information about stealth mode session is returned.
 
         Example:
@@ -57,16 +59,16 @@ class EnableStealthMode:
 
                 # Erase and hide story views in the past stories_stealth_past_period and the next stories_stealth_future_period seconds
                 await app.enable_stealth_mode(past=True, future=True)
-        """
 
+        """
         r = await self.invoke(
             raw.functions.stories.ActivateStealthMode(
                 past=past,
-                future=future
-            )
+                future=future,
+            ),
         )
 
         for i in r.updates:
             if isinstance(i, raw.types.UpdateStoriesStealthMode):
                 return types.StoriesStealthMode._parse(i.stealth_mode)
-
+        return None

@@ -20,14 +20,19 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from pyrogram import raw
-from ..object import Object
+from typing import TYPE_CHECKING
+
+from pyrogram.types.object import Object
+
+if TYPE_CHECKING:
+    from pyrogram import raw
 
 
 class RtmpUrl(Object):
     """Represents an RTMP URL and stream key to be used in streaming software.
 
-    Parameters:
+    Parameters
+    ----------
         url (``str``):
             The URL.
 
@@ -36,7 +41,7 @@ class RtmpUrl(Object):
 
     """
 
-    def __init__(self, *, url: str, stream_key: str):
+    def __init__(self, *, url: str, stream_key: str) -> None:
         super().__init__(None)
 
         self.url = url
@@ -46,5 +51,5 @@ class RtmpUrl(Object):
     def _parse(rtmp_url: "raw.types.GroupCallStreamRtmpUrl") -> "RtmpUrl":
         return RtmpUrl(
             url=rtmp_url.url,
-            stream_key=rtmp_url.key
+            stream_key=rtmp_url.key,
         )

@@ -20,16 +20,18 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-import pyrogram
+from __future__ import annotations
 
-from pyrogram import raw, types
-from ..object import Object
+import pyrogram
+from pyrogram import raw
+from pyrogram.types.object import Object
 
 
 class PaidMessagePriceChanged(Object):
     """Describes a service message about a change in the price of paid messages within a chat.
 
-    Parameters:
+    Parameters
+    ----------
         paid_message_star_count (``int``):
             The new number of Telegram Stars that must be paid by non-administrator users of the supergroup chat for each sent message.
 
@@ -38,21 +40,21 @@ class PaidMessagePriceChanged(Object):
     def __init__(
         self,
         *,
-        client: "pyrogram.Client" = None,
-        paid_message_star_count: int = None
-    ):
+        client: pyrogram.Client = None,
+        paid_message_star_count: int | None = None,
+    ) -> None:
         super().__init__(client)
 
         self.paid_message_star_count = paid_message_star_count
 
-
     @staticmethod
     def _parse_action(
         client,
-        action: "raw.types.MessageActionPaidMessagesPrice"
-    ) -> "PaidMessagePriceChanged":
+        action: raw.types.MessageActionPaidMessagesPrice,
+    ) -> PaidMessagePriceChanged:
         if isinstance(action, raw.types.MessageActionPaidMessagesPrice):
             return PaidMessagePriceChanged(
                 client=client,
-                paid_message_star_count=action.stars
+                paid_message_star_count=action.stars,
             )
+        return None

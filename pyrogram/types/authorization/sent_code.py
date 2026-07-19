@@ -20,15 +20,18 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from pyrogram import raw, enums
+from __future__ import annotations
+
+from pyrogram import enums, raw
 from pyrogram.errors import Unauthorized
-from ..object import Object
+from pyrogram.types.object import Object
 
 
 class SentCode(Object):
     """Contains info on a sent confirmation code.
 
-    Parameters:
+    Parameters
+    ----------
         type (:obj:`~pyrogram.enums.SentCodeType`):
             Type of the current sent code.
 
@@ -41,15 +44,17 @@ class SentCode(Object):
 
         timeout (``int``, *optional*):
             Delay in seconds before calling :meth:`~pyrogram.Client.resend_code`.
+
     """
 
     def __init__(
-        self, *,
-        type: "enums.SentCodeType",
+        self,
+        *,
+        type: enums.SentCodeType,
         phone_code_hash: str,
-        next_type: "enums.NextCodeType" = None,
-        timeout: int = None
-    ):
+        next_type: enums.NextCodeType = None,
+        timeout: int | None = None,
+    ) -> None:
         super().__init__()
 
         self.type = type
@@ -58,17 +63,21 @@ class SentCode(Object):
         self.timeout = timeout
 
     @staticmethod
-    def _parse(sent_code: raw.base.auth.SentCode) -> "SentCode":
+    def _parse(sent_code: raw.base.auth.SentCode) -> SentCode:
         if isinstance(sent_code, raw.types.auth.SentCodePaymentRequired):
             # TODO: raw.functions.auth.CheckPaidAuth
+            msg = f"You need to purchase premium for {sent_code.premium_days} days by paying {sent_code.amount}{sent_code.currency} or contact {sent_code.support_email_subject} ({sent_code.support_email_address}) which is currently not supported by Pyrogram."
             raise Unauthorized(
-                f"You need to purchase premium for {sent_code.premium_days} days by paying {sent_code.amount}{sent_code.currency} or contact {sent_code.support_email_subject} ({sent_code.support_email_address}) which is currently not supported by Pyrogram."
+                msg,
             )
 
         if isinstance(sent_code, raw.types.auth.SentCode):
             return SentCode(
                 type=enums.SentCodeType(type(sent_code.type)),
                 phone_code_hash=sent_code.phone_code_hash,
-                next_type=enums.NextCodeType(type(sent_code.next_type)) if sent_code.next_type else None,
-                timeout=sent_code.timeout
+                next_type=enums.NextCodeType(type(sent_code.next_type))
+                if sent_code.next_type
+                else None,
+                timeout=sent_code.timeout,
             )
+        return None

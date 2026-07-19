@@ -20,7 +20,6 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional, Union
 
 import pyrogram
 from pyrogram import raw
@@ -39,11 +38,13 @@ class GetBusinessAccountStarBalance:
 
         .. include:: /_includes/usable-by/bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             business_connection_id (``str``):
                 Unique identifier of business connection on behalf of which to send the request.
 
-        Returns:
+        Returns
+        -------
             ``int``: On success, the current stars balance is returned.
 
         Example:
@@ -51,6 +52,7 @@ class GetBusinessAccountStarBalance:
 
                 # Get stars balance
                 await app.get_business_account_star_balance("connection_id")
+
         """
         connection_info = await self.get_business_connection(business_connection_id)
 
@@ -58,8 +60,7 @@ class GetBusinessAccountStarBalance:
             raw.functions.payments.GetStarsStatus(
                 peer=await self.resolve_peer(connection_info.user.id),
             ),
-            business_connection_id=business_connection_id
+            business_connection_id=business_connection_id,
         )
 
         return r.balance.amount
-

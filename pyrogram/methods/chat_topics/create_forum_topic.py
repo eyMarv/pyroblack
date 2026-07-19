@@ -20,28 +20,29 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union
+from __future__ import annotations
 
 import pyrogram
-from pyrogram import types, utils, raw
+from pyrogram import raw, types
 
 
 class CreateForumTopic:
     async def create_forum_topic(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
+        self: pyrogram.Client,
+        chat_id: int | str,
         name: str,
-        icon_color: int = None,
-        icon_custom_emoji_id: str = None,
-        send_as: Union[int, str] = None,
-    ) -> "types.Message":
+        icon_color: int | None = None,
+        icon_custom_emoji_id: str | None = None,
+        send_as: int | str | None = None,
+    ) -> types.Message:
         """Use this method to create a topic in a forum supergroup chat or a private chat with a user.
-        
+
         In the case of a supergroup chat the bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator right.
 
         .. include:: /_includes/usable-by/users-bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
                 For your personal cloud (Saved Messages) you can simply use "me" or "self".
@@ -62,7 +63,8 @@ class CreateForumTopic:
                 For your personal cloud (Saved Messages) you can simply use "me".
                 Use :meth:`~pyrogram.Client.get_send_as_chats` to get allowed values.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.Message`: On success, the sent text message is returned.
 
         Example:
@@ -70,6 +72,7 @@ class CreateForumTopic:
 
                 # Create a new Topic
                 await app.create_forum_topic(chat, "Topic Title")
+
         """
         wxp = await self.resolve_peer(chat_id)
         tm = False
@@ -83,8 +86,8 @@ class CreateForumTopic:
                 icon_color=icon_color,
                 icon_emoji_id=icon_custom_emoji_id,
                 send_as=await self.resolve_peer(send_as) if send_as else None,
-                random_id=self.rnd_id()
-            )
+                random_id=self.rnd_id(),
+            ),
         )
 
         for i in r.updates:
@@ -93,8 +96,8 @@ class CreateForumTopic:
                 (
                     raw.types.UpdateNewMessage,
                     raw.types.UpdateNewChannelMessage,
-                    raw.types.UpdateNewScheduledMessage
-                )
+                    raw.types.UpdateNewScheduledMessage,
+                ),
             ):
                 return await types.Message._parse(
                     self,
@@ -102,5 +105,6 @@ class CreateForumTopic:
                     {i.id: i for i in r.users},
                     {i.id: i for i in r.chats},
                     is_scheduled=isinstance(i, raw.types.UpdateNewScheduledMessage),
-                    replies=self.fetch_replies
+                    replies=self.fetch_replies,
                 )
+        return None

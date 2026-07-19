@@ -20,7 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw, types
@@ -28,24 +28,26 @@ from pyrogram import raw, types
 
 class SetChatMessageAutoDeleteTime:
     async def set_chat_message_auto_delete_time(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
-        message_auto_delete_time: int
-    ) -> Union["types.Message", bool]:
+        self: pyrogram.Client,
+        chat_id: int | str,
+        message_auto_delete_time: int,
+    ) -> types.Message | bool:
         """Changes the message auto-delete or self-destruct (for secret chats) time in a chat.
 
         Requires change_info administrator right in basic groups, supergroups and channels.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
 
             message_auto_delete_time (``int``):
                 New time value, in seconds; unless the chat is secret, it must be from 0 up to 365 * 86400 and be divisible by 86400. If 0, then messages aren't deleted automatically.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.Message` | ``bool``: On success, a service message will be returned (when applicable),
             otherwise, in case a message object couldn't be returned, True is returned.
 
@@ -60,22 +62,24 @@ class SetChatMessageAutoDeleteTime:
 
                 # Disable message auto delete for this chat
                 app.set_chat_message_auto_delete_time(chat_id, 0)
+
         """
         r = await self.invoke(
             raw.functions.messages.SetHistoryTTL(
                 peer=await self.resolve_peer(chat_id),
                 period=message_auto_delete_time,
-            )
+            ),
         )
 
         for i in r.updates:
-            if isinstance(i, (raw.types.UpdateNewMessage,
-                              raw.types.UpdateNewChannelMessage)):
+            if isinstance(
+                i, (raw.types.UpdateNewMessage, raw.types.UpdateNewChannelMessage)
+            ):
                 return await types.Message._parse(
                     self,
                     i.message,
                     {i.id: i for i in r.users},
                     {i.id: i for i in r.chats},
-                    replies=self.fetch_replies
+                    replies=self.fetch_replies,
                 )
         return True

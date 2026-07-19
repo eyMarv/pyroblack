@@ -20,12 +20,13 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import logging
-from typing import Union
 
 import pyrogram
 from pyrogram import raw, types
-from ..object import Object
+from pyrogram.types.object import Object
 
 log = logging.getLogger(__name__)
 
@@ -33,7 +34,8 @@ log = logging.getLogger(__name__)
 class ReplyKeyboardMarkup(Object):
     """A custom keyboard with reply options.
 
-    Parameters:
+    Parameters
+    ----------
         keyboard (List of List of :obj:`~pyrogram.types.KeyboardButton`):
             List of button rows, each represented by a List of KeyboardButton objects.
 
@@ -60,27 +62,29 @@ class ReplyKeyboardMarkup(Object):
             2) if the bot's message is a reply (has reply_to_message_id), sender of the original message.
             Example: A user requests to change the bot's language, bot replies to the request with a keyboard to
             select the new language. Other users in the group don't see the keyboard.
+
     """
 
     def __init__(
         self,
-        keyboard: list[list[Union["types.KeyboardButton", str]]],
-        is_persistent: bool = None,
-        resize_keyboard: bool = None,
-        one_time_keyboard: bool = None,
-        input_field_placeholder: str = None,
-        selective: bool = None,
-        placeholder: str = None,
-    ):
+        keyboard: list[list[types.KeyboardButton | str]],
+        is_persistent: bool | None = None,
+        resize_keyboard: bool | None = None,
+        one_time_keyboard: bool | None = None,
+        input_field_placeholder: str | None = None,
+        selective: bool | None = None,
+        placeholder: str | None = None,
+    ) -> None:
         if placeholder and input_field_placeholder:
+            msg = "Parameters `placeholder` and `input_field_placeholder` are mutually exclusive."
             raise ValueError(
-                "Parameters `placeholder` and `input_field_placeholder` are mutually exclusive."
+                msg,
             )
 
         if placeholder is not None:
             log.warning(
                 "This property is deprecated. "
-                "Please use input_field_placeholder instead"
+                "Please use input_field_placeholder instead",
             )
             input_field_placeholder = placeholder
 
@@ -96,7 +100,7 @@ class ReplyKeyboardMarkup(Object):
         self.placeholder = input_field_placeholder
 
     @staticmethod
-    def read(kb: "raw.base.ReplyMarkup"):
+    def read(kb: raw.base.ReplyMarkup):
         keyboard = []
 
         for i in kb.rows:
@@ -113,21 +117,25 @@ class ReplyKeyboardMarkup(Object):
             resize_keyboard=kb.resize,
             one_time_keyboard=kb.single_use,
             selective=kb.selective,
-            input_field_placeholder=kb.placeholder
+            input_field_placeholder=kb.placeholder,
         )
 
-    async def write(self, _: "pyrogram.Client"):
+    async def write(self, _: pyrogram.Client):
         return raw.types.ReplyKeyboardMarkup(
-            rows=[raw.types.KeyboardButtonRow(
-                buttons=[
-                    types.KeyboardButton(j).write()
-                    if isinstance(j, str) else j.write()
-                    for j in i
-                ]
-            ) for i in self.keyboard],
+            rows=[
+                raw.types.KeyboardButtonRow(
+                    buttons=[
+                        types.KeyboardButton(j).write()
+                        if isinstance(j, str)
+                        else j.write()
+                        for j in i
+                    ],
+                )
+                for i in self.keyboard
+            ],
             resize=self.resize_keyboard or None,
             single_use=self.one_time_keyboard or None,
             selective=self.selective or None,
             persistent=self.is_persistent or None,
-            placeholder=self.input_field_placeholder or None
+            placeholder=self.input_field_placeholder or None,
         )

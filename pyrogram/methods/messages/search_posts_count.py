@@ -35,12 +35,15 @@ class SearchPostsCount:
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             hashtag (``str``):
                 Text query string.
 
-        Returns:
+        Returns
+        -------
             ``int``: On success, the posts count is returned.
+
         """
         r = await self.invoke(
             raw.functions.channels.SearchPosts(
@@ -49,10 +52,9 @@ class SearchPostsCount:
                 offset_peer=raw.types.InputPeerEmpty(),
                 offset_id=0,
                 limit=1,
-            )
+            ),
         )
 
         if hasattr(r, "count"):
             return r.count
-        else:
-            return len(r.messages)
+        return len(r.messages)

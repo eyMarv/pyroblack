@@ -20,49 +20,51 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import datetime
-from typing import Union, List, Optional
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import pyrogram
-from pyrogram import raw, utils, enums
-from pyrogram import types
+from pyrogram import enums, raw, types, utils
+
+if TYPE_CHECKING:
+    from datetime import datetime
 
 
 class SendWebPage:
     async def send_web_page(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
-        url: str = None,
+        self: pyrogram.Client,
+        chat_id: int | str,
+        url: str | None = None,
         text: str = "",
-        parse_mode: Optional["enums.ParseMode"] = None,
-        entities: List["types.MessageEntity"] = None,
-        large_media: bool = None,
-        invert_media: bool = None,
-        disable_notification: bool = None,
-        message_thread_id: int = None,
-        business_connection_id: str = None,
-        reply_to_message_id: int = None,
-        reply_to_story_id: int = None,
-        reply_to_chat_id: Union[int, str] = None,
-        reply_to_monoforum_id: Union[int, str] = None,
-        quote_text: str = None,
-        quote_entities: List["types.MessageEntity"] = None,
-        schedule_date: datetime = None,
-        protect_content: bool = None,
-        allow_paid_broadcast: bool = None,
-        message_effect_id: int = None,
-        reply_markup: Union[
-            "types.InlineKeyboardMarkup",
-            "types.ReplyKeyboardMarkup",
-            "types.ReplyKeyboardRemove",
-            "types.ForceReply",
-        ] = None,
-    ) -> "types.Message":
+        parse_mode: enums.ParseMode | None = None,
+        entities: list[types.MessageEntity] | None = None,
+        large_media: bool | None = None,
+        invert_media: bool | None = None,
+        disable_notification: bool | None = None,
+        message_thread_id: int | None = None,
+        business_connection_id: str | None = None,
+        reply_to_message_id: int | None = None,
+        reply_to_story_id: int | None = None,
+        reply_to_chat_id: int | str | None = None,
+        reply_to_monoforum_id: int | str | None = None,
+        quote_text: str | None = None,
+        quote_entities: list[types.MessageEntity] | None = None,
+        schedule_date: datetime | None = None,
+        protect_content: bool | None = None,
+        allow_paid_broadcast: bool | None = None,
+        message_effect_id: int | None = None,
+        reply_markup: types.InlineKeyboardMarkup
+        | types.ReplyKeyboardMarkup
+        | types.ReplyKeyboardRemove
+        | types.ForceReply = None,
+    ) -> types.Message:
         """Send text Web Page Preview.
 
         .. include:: /_includes/usable-by/users-bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
                 For your personal cloud (Saved Messages) you can simply use "me" or "self".
@@ -141,7 +143,8 @@ class SendWebPage:
                 Additional interface options. An object for an inline keyboard, custom reply keyboard,
                 instructions to remove reply keyboard or to force a reply from the user.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.Message`: On success, the sent text message is returned.
 
         Example:
@@ -150,22 +153,21 @@ class SendWebPage:
                 await app.send_web_page("me", "https://github.com/eyMarv/pyroblack")
 
         """
-
         message, entities = (
             await utils.parse_text_entities(self, text, parse_mode, entities)
         ).values()
-        if not url:
-            if entities:
-                for entity in entities:
-                    if isinstance(entity, enums.MessageEntityType.URL):
-                        url = entity.url
-                        break
+        if not url and entities:
+            for entity in entities:
+                if isinstance(entity, enums.MessageEntityType.URL):
+                    url = entity.url
+                    break
 
-                if not url:
-                    url = utils.get_first_url(message)
+            if not url:
+                url = utils.get_first_url(message)
 
         if not url:
-            raise ValueError("URL not specified")
+            msg = "URL not specified"
+            raise ValueError(msg)
 
         reply_to = await utils.get_reply_to(
             client=self,
@@ -181,7 +183,9 @@ class SendWebPage:
         )
 
         media = raw.types.InputMediaWebPage(
-            url=url, force_large_media=large_media, force_small_media=not large_media
+            url=url,
+            force_large_media=large_media,
+            force_small_media=not large_media,
         )
         rpc = raw.functions.messages.SendMedia(
             peer=await self.resolve_peer(chat_id),
@@ -201,8 +205,9 @@ class SendWebPage:
         if business_connection_id is not None:
             r = await self.invoke(
                 raw.functions.InvokeWithBusinessConnection(
-                    connection_id=business_connection_id, query=rpc
-                )
+                    connection_id=business_connection_id,
+                    query=rpc,
+                ),
             )
         else:
             r = await self.invoke(rpc)
@@ -251,3 +256,4 @@ class SendWebPage:
                     is_scheduled=isinstance(i, raw.types.UpdateNewScheduledMessage),
                     business_connection_id=business_connection_id,
                 )
+        return None

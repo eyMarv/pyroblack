@@ -20,12 +20,15 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-import pyrogram
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    import pyrogram
 
 
 class ExportSessionString:
     async def export_session_string(
-        self: "pyrogram.Client"
+        self: "pyrogram.Client",
     ):
         """Export the current authorized session as a serialized string.
 
@@ -40,5 +43,6 @@ class ExportSessionString:
             .. code-block:: python
 
                 s = await app.export_session_string()
+
         """
         return await self.storage.export_session_string()

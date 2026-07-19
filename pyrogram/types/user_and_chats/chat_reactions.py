@@ -20,17 +20,18 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw, types
-from ..object import Object
+from pyrogram.types.object import Object
 
 
 class ChatReactions(Object):
-    """A chat reactions
+    """A chat reactions.
 
-    Parameters:
+    Parameters
+    ----------
         all_are_enabled (``bool``, *optional*)
 
         allow_custom_emoji (``bool``, *optional*):
@@ -38,20 +39,21 @@ class ChatReactions(Object):
 
         reactions (List of :obj:`~pyrogram.types.Reaction`, *optional*):
             Reactions available.
-        
+
         max_reaction_count (``int``, *optional*):
             Limit of the number of different unique reactions that can be added to a message, including already published ones. Can have values between 1 and 11. Defaults to 11, if not specified. Only applicable for :obj:`~pyrogram.enums.ChatType.CHANNEL`.
+
     """
 
     def __init__(
         self,
         *,
-        client: "pyrogram.Client" = None,
-        all_are_enabled: Optional[bool] = None,
-        allow_custom_emoji: Optional[bool] = None,
-        reactions: Optional[list["types.Reaction"]] = None,
+        client: pyrogram.Client = None,
+        all_are_enabled: bool | None = None,
+        allow_custom_emoji: bool | None = None,
+        reactions: list[types.Reaction] | None = None,
         max_reaction_count: int = 11,
-    ):
+    ) -> None:
         super().__init__(client)
 
         self.all_are_enabled = all_are_enabled
@@ -60,13 +62,15 @@ class ChatReactions(Object):
         self.max_reaction_count = max_reaction_count
 
     @staticmethod
-    def _parse(client, chat_reactions: "raw.base.ChatReactions", reactions_limit: int = 11) -> Optional["ChatReactions"]:
+    def _parse(
+        client, chat_reactions: raw.base.ChatReactions, reactions_limit: int = 11
+    ) -> ChatReactions | None:
         if isinstance(chat_reactions, raw.types.ChatReactionsAll):
             return ChatReactions(
                 client=client,
                 all_are_enabled=True,
                 allow_custom_emoji=chat_reactions.allow_custom,
-                max_reaction_count=reactions_limit
+                max_reaction_count=reactions_limit,
             )
 
         if isinstance(chat_reactions, raw.types.ChatReactionsSome):
@@ -76,7 +80,7 @@ class ChatReactions(Object):
                     types.ReactionType._parse(client, reaction)
                     for reaction in chat_reactions.reactions
                 ],
-                max_reaction_count=reactions_limit
+                max_reaction_count=reactions_limit,
             )
 
         if isinstance(chat_reactions, raw.types.ChatReactionsNone):

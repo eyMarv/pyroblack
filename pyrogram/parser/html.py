@@ -30,6 +30,7 @@ import pyrogram
 from pyrogram import raw
 from pyrogram.enums import MessageEntityType
 from pyrogram.errors import PeerIdInvalid
+
 from . import utils
 
 log = logging.getLogger(__name__)
@@ -38,7 +39,7 @@ log = logging.getLogger(__name__)
 class Parser(HTMLParser):
     MENTION_RE = re.compile(r"tg://user\?id=(\d+)")
 
-    def __init__(self, client: "pyrogram.Client"):
+    def __init__(self, client: "pyrogram.Client") -> None:
         super().__init__()
 
         self.client = client
@@ -47,7 +48,7 @@ class Parser(HTMLParser):
         self.entities = []
         self.tag_entities = {}
 
-    def handle_starttag(self, tag, attrs):
+    def handle_starttag(self, tag, attrs) -> None:
         attrs = dict(attrs)
         extra = {}
 
@@ -61,7 +62,7 @@ class Parser(HTMLParser):
             entity = raw.types.MessageEntityStrike
         elif tag == "blockquote":
             entity = raw.types.MessageEntityBlockquote
-            extra["collapsed"] = bool("expandable" in attrs.keys())
+            extra["collapsed"] = bool("expandable" in attrs)
         elif tag == "pre":
             entity = raw.types.MessageEntityPre
             extra["language"] = attrs.get("language", "")
@@ -73,16 +74,18 @@ class Parser(HTMLParser):
             if active_pres:
                 if _class.startswith("language-"):
                     # Update the language of the currently open <pre> entity
-                    active_pres[-1].language = _class[9:] # 9 is the length of "language-"
-                    
+                    active_pres[-1].language = _class[
+                        9:
+                    ]  # 9 is the length of "language-"
+
                 # Return early to intentionally skip creating a nested CODE entity.
                 # (When handle_endtag hits </code>, it will safely ignore it).
                 return
             # If not inside a <pre>, treat it as a standard inline code block
             entity = raw.types.MessageEntityCode
-        elif tag in ["spoiler", "tg-spoiler"]:
-            entity = raw.types.MessageEntitySpoiler
-        elif tag == "span" and attrs.get("class", "") == "tg-spoiler":
+        elif tag in ["spoiler", "tg-spoiler"] or (
+            tag == "span" and attrs.get("class", "") == "tg-spoiler"
+        ):
             entity = raw.types.MessageEntitySpoiler
         elif tag == "a":
             url = attrs.get("href", "")
@@ -116,7 +119,7 @@ class Parser(HTMLParser):
 
         self.tag_entities[tag].append(entity(offset=len(self.text), length=0, **extra))
 
-    def handle_data(self, data):
+    def handle_data(self, data) -> None:
         data = html.unescape(data)
 
         for entities in self.tag_entities.values():
@@ -125,7 +128,7 @@ class Parser(HTMLParser):
 
         self.text += data
 
-    def handle_endtag(self, tag):
+    def handle_endtag(self, tag) -> None:
         try:
             self.entities.append(self.tag_entities[tag].pop())
         except (KeyError, IndexError):
@@ -137,12 +140,12 @@ class Parser(HTMLParser):
             if not self.tag_entities[tag]:
                 self.tag_entities.pop(tag)
 
-    def error(self, message):
+    def error(self, message) -> None:
         pass
 
 
 class HTML:
-    def __init__(self, client: Optional["pyrogram.Client"]):
+    def __init__(self, client: Optional["pyrogram.Client"]) -> None:
         self.client = client
 
     async def parse(self, text: str):
@@ -179,15 +182,13 @@ class HTML:
 
         return {
             "message": utils.remove_surrogates(parser.text),
-            "entities": sorted(entities, key=lambda e: e.offset) or None
+            "entities": sorted(entities, key=lambda e: e.offset) or None,
         }
 
     @staticmethod
     def unparse(text: str, entities: list):
         def parse_one(entity):
-            """
-            Parses a single entity and returns (start_tag, start), (end_tag, end)
-            """
+            """Parses a single entity and returns (start_tag, start), (end_tag, end)."""
             entity_type = entity.type
             start = entity.offset
             end = start + entity.length
@@ -204,8 +205,12 @@ class HTML:
             elif entity_type == MessageEntityType.PRE:
                 name = entity_type.name.lower()
                 language = getattr(entity, "language", "") or ""
-                start_tag = f'<pre><code class="language-{language}">' if language else f"<{name}>"
-                end_tag = f"</code></pre>" if language else f"</{name}>"
+                start_tag = (
+                    f'<pre><code class="language-{language}">'
+                    if language
+                    else f"<{name}>"
+                )
+                end_tag = "</code></pre>" if language else f"</{name}>"
             elif entity_type == MessageEntityType.EXPANDABLE_BLOCKQUOTE:
                 name = "blockquote"
                 start_tag = f"<{name} expandable>"
@@ -238,13 +243,12 @@ class HTML:
                 start_tag = f'<tg-time unix="{date}" format="{dtf}">'
                 end_tag = "</tg-time>"
             else:
-                return
+                return None
 
             return (start_tag, start), (end_tag, end)
 
         def recursive(entity_i: int) -> int:
-            """
-            Takes the index of the entity to start parsing from, returns the number of parsed entities inside it.
+            """Takes the index of the entity to start parsing from, returns the number of parsed entities inside it.
             Uses entities_offsets as a stack, pushing (start_tag, start) first, then parsing nested entities,
             and finally pushing (end_tag, end) to the stack.
             No need to sort at the end.
@@ -277,7 +281,12 @@ class HTML:
             last_offset = entities_offsets[-1][1]
             # no need to sort, but still add entities starting from the end
             for entity, offset in reversed(entities_offsets):
-                text = text[:offset] + entity + html.escape(text[offset:last_offset]) + text[last_offset:]
+                text = (
+                    text[:offset]
+                    + entity
+                    + html.escape(text[offset:last_offset])
+                    + text[last_offset:]
+                )
                 last_offset = offset
 
         return utils.remove_surrogates(text)

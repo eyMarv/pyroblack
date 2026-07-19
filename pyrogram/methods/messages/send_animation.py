@@ -20,70 +20,74 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import logging
-import io
 import os
 import re
-from datetime import datetime
-from typing import Union, Optional, Callable
+from typing import TYPE_CHECKING, Callable
 
 import pyrogram
 from pyrogram import StopTransmission, enums, raw, types, utils
 from pyrogram.errors import FilePartMissing
 from pyrogram.file_id import FileType
+
 from .inline_session import get_session
+
+if TYPE_CHECKING:
+    import io
+    from datetime import datetime
 
 log = logging.getLogger(__name__)
 
 
 class SendAnimation:
     async def send_animation(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
-        animation: Union[str, "io.BytesIO"],
+        self: pyrogram.Client,
+        chat_id: int | str,
+        animation: str | io.BytesIO,
         caption: str = "",
-        parse_mode: Optional["enums.ParseMode"] = None,
-        caption_entities: list["types.MessageEntity"] = None,
-        show_caption_above_media: bool = None,
+        parse_mode: enums.ParseMode | None = None,
+        caption_entities: list[types.MessageEntity] | None = None,
+        show_caption_above_media: bool | None = None,
         unsave: bool = False,
-        has_spoiler: bool = None,
+        has_spoiler: bool | None = None,
         duration: int = 0,
         width: int = 0,
         height: int = 0,
-        thumb: Union[str, "io.BytesIO"] = None,
-        file_name: str = None,
-        disable_notification: bool = None,
-        reply_parameters: "types.ReplyParameters" = None,
-        message_thread_id: int = None,
-        business_connection_id: str = None,
-        send_as: Union[int, str] = None,
-        message_effect_id: int = None,
-        schedule_date: datetime = None,
-        protect_content: bool = None,
-        allow_paid_broadcast: bool = None,
-        paid_message_star_count: int = None,
-        ttl_seconds: int = None,
-        reply_markup: Union[
-            "types.InlineKeyboardMarkup",
-            "types.ReplyKeyboardMarkup",
-            "types.ReplyKeyboardRemove",
-            "types.ForceReply"
-        ] = None,
-        reply_to_chat_id: Union[int, str] = None,
-        reply_to_story_id: int = None,
-        reply_to_monoforum_id: Union[int, str] = None,
-        quote_text: str = None,
-        quote_entities: list = None,
-        invert_media: bool = None,
-        reply_to_message_id: int = None,
-        progress: Callable = None,
-        progress_args: tuple = ()
-    ) -> Optional["types.Message"]:
+        thumb: str | io.BytesIO | None = None,
+        file_name: str | None = None,
+        disable_notification: bool | None = None,
+        reply_parameters: types.ReplyParameters = None,
+        message_thread_id: int | None = None,
+        business_connection_id: str | None = None,
+        send_as: int | str | None = None,
+        message_effect_id: int | None = None,
+        schedule_date: datetime | None = None,
+        protect_content: bool | None = None,
+        allow_paid_broadcast: bool | None = None,
+        paid_message_star_count: int | None = None,
+        ttl_seconds: int | None = None,
+        reply_markup: types.InlineKeyboardMarkup
+        | types.ReplyKeyboardMarkup
+        | types.ReplyKeyboardRemove
+        | types.ForceReply = None,
+        reply_to_chat_id: int | str | None = None,
+        reply_to_story_id: int | None = None,
+        reply_to_monoforum_id: int | str | None = None,
+        quote_text: str | None = None,
+        quote_entities: list | None = None,
+        invert_media: bool | None = None,
+        reply_to_message_id: int | None = None,
+        progress: Callable | None = None,
+        progress_args: tuple = (),
+    ) -> types.Message | None:
         """Send animation files (animation or H.264/MPEG-4 AVC video without sound).
 
         .. include:: /_includes/usable-by/users-bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
                 For your personal cloud (Saved Messages) you can simply use "me" or "self".
@@ -151,7 +155,7 @@ class SendAnimation:
             send_as (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the chat or channel to send the message as.
                 You can use this to send the message on behalf of a chat or channel where you have appropriate permissions.
-                Use the :meth:`~pyrogram.Client.get_send_as_chats` to return the list of message sender identifiers, which can be used to send messages in the chat, 
+                Use the :meth:`~pyrogram.Client.get_send_as_chats` to return the list of message sender identifiers, which can be used to send messages in the chat,
                 This setting applies to the current message and will remain effective for future messages unless explicitly changed.
                 To set this behavior permanently for all messages, use :meth:`~pyrogram.Client.set_send_as_chat`.
 
@@ -189,7 +193,8 @@ class SendAnimation:
                 You can pass anything you need to be available in the progress callback scope; for example, a Message
                 object or a Client instance in order to edit the message with the updated progress status.
 
-        Other Parameters:
+        Other Parameters
+        ----------------
             current (``int``):
                 The amount of bytes transmitted so far.
 
@@ -200,7 +205,8 @@ class SendAnimation:
                 Extra custom arguments as defined in the ``progress_args`` parameter.
                 You can either keep ``*args`` or add every single extra argument in your function signature.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.Message` | ``None``: On success, the sent animation message is returned, otherwise,
             in case the upload is deliberately stopped with :meth:`~pyrogram.Client.stop_transmission`, None is
             returned.
@@ -225,8 +231,8 @@ class SendAnimation:
 
                 # Send self-destructing animation message
                 await app.send_animation("me", "animation.gif", ttl_seconds=10)
-        """
 
+        """
         if invert_media is not None and show_caption_above_media is None:
             show_caption_above_media = invert_media
 
@@ -246,7 +252,9 @@ class SendAnimation:
         try:
             if isinstance(animation, str):
                 if os.path.isfile(animation):
-                    file = await self.save_file(animation, progress=progress, progress_args=progress_args)
+                    file = await self.save_file(
+                        animation, progress=progress, progress_args=progress_args
+                    )
                     thumb = await self.save_file(thumb)
                     media = raw.types.InputMediaUploadedDocument(
                         mime_type=self.guess_mime_type(animation) or "video/mp4",
@@ -258,30 +266,35 @@ class SendAnimation:
                                 supports_streaming=True,
                                 duration=duration,
                                 w=width,
-                                h=height
+                                h=height,
                             ),
-                            raw.types.DocumentAttributeFilename(file_name=file_name or os.path.basename(animation)),
-                            raw.types.DocumentAttributeAnimated()
+                            raw.types.DocumentAttributeFilename(
+                                file_name=file_name or os.path.basename(animation)
+                            ),
+                            raw.types.DocumentAttributeAnimated(),
                         ],
-                        ttl_seconds=ttl_seconds
+                        ttl_seconds=ttl_seconds,
                     )
                 elif re.match("^https?://", animation):
                     media = raw.types.InputMediaDocumentExternal(
                         url=animation,
                         spoiler=has_spoiler,
-                        ttl_seconds=ttl_seconds
+                        ttl_seconds=ttl_seconds,
                     )
                 else:
                     media = utils.get_input_media_from_file_id(
                         animation,
                         FileType.ANIMATION,
-                        ttl_seconds=ttl_seconds
+                        ttl_seconds=ttl_seconds,
                     )
             else:
-                file = await self.save_file(animation, progress=progress, progress_args=progress_args)
+                file = await self.save_file(
+                    animation, progress=progress, progress_args=progress_args
+                )
                 thumb = await self.save_file(thumb)
                 media = raw.types.InputMediaUploadedDocument(
-                    mime_type=self.guess_mime_type(file_name or animation.name) or "video/mp4",
+                    mime_type=self.guess_mime_type(file_name or animation.name)
+                    or "video/mp4",
                     file=file,
                     thumb=thumb,
                     spoiler=has_spoiler,
@@ -290,18 +303,20 @@ class SendAnimation:
                             supports_streaming=True,
                             duration=duration,
                             w=width,
-                            h=height
+                            h=height,
                         ),
-                        raw.types.DocumentAttributeFilename(file_name=file_name or animation.name),
-                        raw.types.DocumentAttributeAnimated()
+                        raw.types.DocumentAttributeFilename(
+                            file_name=file_name or animation.name
+                        ),
+                        raw.types.DocumentAttributeAnimated(),
                     ],
-                    ttl_seconds=ttl_seconds
+                    ttl_seconds=ttl_seconds,
                 )
 
             reply_to = await utils._get_reply_message_parameters(
                 self,
                 message_thread_id,
-                reply_parameters
+                reply_parameters,
             )
 
             rpc = raw.functions.messages.SendMedia(
@@ -318,17 +333,23 @@ class SendAnimation:
                 reply_markup=await reply_markup.write(self) if reply_markup else None,
                 effect=message_effect_id,
                 invert_media=show_caption_above_media,
-                **await utils.parse_text_entities(self, caption, parse_mode, caption_entities)
+                **await utils.parse_text_entities(
+                    self, caption, parse_mode, caption_entities
+                ),
             )
             session = None
             business_connection = None
             if business_connection_id:
-                business_connection = self.business_user_connection_cache[business_connection_id]
+                business_connection = self.business_user_connection_cache[
+                    business_connection_id
+                ]
                 if business_connection is None:
-                    business_connection = await self.get_business_connection(business_connection_id)
+                    business_connection = await self.get_business_connection(
+                        business_connection_id
+                    )
                 session = await get_session(
                     self,
-                    business_connection._raw.connection.dc_id
+                    business_connection._raw.connection.dc_id,
                 )
 
             while True:
@@ -337,8 +358,8 @@ class SendAnimation:
                         r = await session.invoke(
                             raw.functions.InvokeWithBusinessConnection(
                                 query=rpc,
-                                connection_id=business_connection_id
-                            )
+                                connection_id=business_connection_id,
+                            ),
                         )
                         # await session.stop()
                     else:
@@ -352,48 +373,50 @@ class SendAnimation:
                             (
                                 raw.types.UpdateNewMessage,
                                 raw.types.UpdateNewChannelMessage,
-                                raw.types.UpdateNewScheduledMessage
-                            )
+                                raw.types.UpdateNewScheduledMessage,
+                            ),
                         ):
                             message = await types.Message._parse(
                                 self,
                                 i.message,
                                 {i.id: i for i in r.users},
                                 {i.id: i for i in r.chats},
-                                is_scheduled=isinstance(i, raw.types.UpdateNewScheduledMessage),
-                                replies=self.fetch_replies
+                                is_scheduled=isinstance(
+                                    i, raw.types.UpdateNewScheduledMessage
+                                ),
+                                replies=self.fetch_replies,
                             )
 
                             if unsave:
                                 document = message.animation or message.document
                                 document_id = utils.get_input_media_from_file_id(
-                                    document.file_id, FileType.ANIMATION
+                                    document.file_id,
+                                    FileType.ANIMATION,
                                 ).id
 
                                 await self.invoke(
                                     raw.functions.messages.SaveGif(
                                         id=document_id,
-                                        unsave=True
-                                    )
+                                        unsave=True,
+                                    ),
                                 )
 
                             return message
-                        elif isinstance(
+                        if isinstance(
                             i,
-                            (
-                                raw.types.UpdateBotNewBusinessMessage
-                            )
+                            (raw.types.UpdateBotNewBusinessMessage),
                         ):
                             return await types.Message._parse(
                                 self,
                                 i.message,
                                 {i.id: i for i in r.users},
                                 {i.id: i for i in r.chats},
-                                business_connection_id=getattr(i, "connection_id", business_connection_id),
+                                business_connection_id=getattr(
+                                    i, "connection_id", business_connection_id
+                                ),
                                 raw_reply_to_message=i.reply_to_message,
-                                replies=0
+                                replies=0,
                             )
-
 
         except StopTransmission:
             return None

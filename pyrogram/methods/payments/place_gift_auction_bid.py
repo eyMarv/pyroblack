@@ -21,7 +21,7 @@
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from typing import Optional, Union
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw, types
@@ -29,18 +29,19 @@ from pyrogram import raw, types
 
 class PlaceGiftAuctionBid:
     async def place_gift_auction_bid(
-        self: "pyrogram.Client",
+        self: pyrogram.Client,
         gift_id: int,
         star_count: int,
-        user_id: Optional[Union[int, str]] = None,
-        text: Optional[Union[str, "types.FormattedText"]] = None,
-        is_private: Optional[bool] = False,
+        user_id: int | str | None = None,
+        text: str | types.FormattedText | None = None,
+        is_private: bool | None = False,
     ) -> bool:
         """Places a bid on an auction gift.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             gift_id (``int``):
                 Identifier of the gift to place the bid on.
 
@@ -59,7 +60,8 @@ class PlaceGiftAuctionBid:
             is_private (``bool``, *optional*):
                 Pass True to show gift text and sender only to the gift receiver, otherwise, everyone will be able to see them.
 
-        Returns:
+        Returns
+        -------
             ``bool``: On success, True is returned.
 
         Example:
@@ -80,6 +82,7 @@ class PlaceGiftAuctionBid:
                         text="Here's a gift for you!"
                     )
                 )
+
         """
         if isinstance(text, str):
             text = types.FormattedText(text=text)
@@ -90,27 +93,28 @@ class PlaceGiftAuctionBid:
             hide_name=is_private,
             update_bid=False,
             peer=await self.resolve_peer(user_id or "me"),
-            message=await text.write() if text else None
+            message=await text.write() if text else None,
         )
 
         form = await self.invoke(
             raw.functions.payments.GetPaymentForm(
-                invoice=invoice
-            )
+                invoice=invoice,
+            ),
         )
 
         if star_count < 0:
-            raise ValueError("Invalid amount of Telegram Stars specified.")
+            msg = "Invalid amount of Telegram Stars specified."
+            raise ValueError(msg)
 
         if form.invoice.prices[0].amount > star_count:
-            raise ValueError("Have not enough Telegram Stars.")
+            msg = "Have not enough Telegram Stars."
+            raise ValueError(msg)
 
         r = await self.invoke(
             raw.functions.payments.SendStarsForm(
                 form_id=form.form_id,
-                invoice=invoice
-            )
+                invoice=invoice,
+            ),
         )
 
         return isinstance(r, raw.types.payments.PaymentResult)
-

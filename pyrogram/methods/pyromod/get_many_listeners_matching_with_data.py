@@ -20,10 +20,12 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import List
+from typing import TYPE_CHECKING
 
-import pyrogram
 from pyrogram.types import Identifier, Listener
+
+if TYPE_CHECKING:
+    import pyrogram
 
 
 class GetManyListenersMatchingWithData:
@@ -31,20 +33,23 @@ class GetManyListenersMatchingWithData:
         self: "pyrogram.Client",
         data: Identifier,
         listener_type: "pyrogram.enums.ListenerTypes",
-    ) -> List[Listener]:
+    ) -> list[Listener]:
         """Gets multiple listener that matches the given data.
 
         .. include:: /_includes/usable-by/users-bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             data (:obj:`~pyrogram.types.Identifier`):
                 The Identifier to match agains.
 
             listener_type (:obj:`~pyrogram.enums.ListenerTypes`):
                 The type of listener to get.
 
-        Returns:
+        Returns
+        -------
             List of :obj:`~pyrogram.types.Listener`: On success, a list of Listener is returned.
+
         """
         listeners = []
         for listener in self.listeners[listener_type]:

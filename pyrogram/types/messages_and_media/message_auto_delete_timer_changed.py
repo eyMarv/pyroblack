@@ -20,19 +20,25 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-import pyrogram
 
-from pyrogram import types
-from ..object import Object
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+from pyrogram.types.object import Object
+
+if TYPE_CHECKING:
+    from pyrogram import types
 
 
 class MessageAutoDeleteTimerChanged(Object):
     """This object represents a service message about a change in auto-delete timer settings.
 
-    Parameters:
+    Parameters
+    ----------
         message_auto_delete_time (``int``):
             New auto-delete time for messages in the chat; in seconds.
-        
+
         from_user (:obj:`~pyrogram.types.User`, *optional*):
             If set, the chat TTL setting was set not due to a manual change by one of participants, but automatically because one of the participants has the default TTL settings enabled.
 
@@ -41,9 +47,9 @@ class MessageAutoDeleteTimerChanged(Object):
     def __init__(
         self,
         *,
-        message_auto_delete_time: int = None,
-        from_user: "types.User" = None
-    ):
+        message_auto_delete_time: int | None = None,
+        from_user: types.User = None,
+    ) -> None:
         super().__init__()
 
         self.message_auto_delete_time = message_auto_delete_time

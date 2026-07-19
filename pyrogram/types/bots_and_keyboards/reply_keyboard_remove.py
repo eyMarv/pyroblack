@@ -20,9 +20,11 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import pyrogram
 from pyrogram import raw
-from ..object import Object
+from pyrogram.types.object import Object
 
 
 class ReplyKeyboardRemove(Object):
@@ -33,19 +35,21 @@ class ReplyKeyboardRemove(Object):
     An exception is made for one-time keyboards that are hidden immediately after the user presses a button
     (see ReplyKeyboardMarkup).
 
-    Parameters:
+    Parameters
+    ----------
         selective (``bool``, *optional*):
             Use this parameter if you want to remove the keyboard for specific users only. Targets:
             1) users that are @mentioned in the text of the Message object;
             2) if the bot's message is a reply (has reply_to_message_id), sender of the original message.
             Example: A user votes in a poll, bot returns confirmation message in reply to the vote and removes the
             keyboard for that user, while still showing the keyboard with poll options to users who haven't voted yet.
+
     """
 
     def __init__(
         self,
-        selective: bool = None
-    ):
+        selective: bool | None = None,
+    ) -> None:
         super().__init__()
 
         self.selective = selective
@@ -53,10 +57,10 @@ class ReplyKeyboardRemove(Object):
     @staticmethod
     def read(b):
         return ReplyKeyboardRemove(
-            selective=b.selective
+            selective=b.selective,
         )
 
-    async def write(self, _: "pyrogram.Client"):
+    async def write(self, _: pyrogram.Client):
         return raw.types.ReplyKeyboardHide(
-            selective=self.selective or None
+            selective=self.selective or None,
         )

@@ -20,7 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw
@@ -28,16 +28,17 @@ from pyrogram import raw
 
 class SetDirectMessagesChatTopicIsMarkedAsUnread:
     async def set_direct_messages_chat_topic_is_marked_as_unread(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
-        topic_id: int = None,
-        is_marked_as_unread: bool = True
+        self: pyrogram.Client,
+        chat_id: int | str,
+        topic_id: int | None = None,
+        is_marked_as_unread: bool = True,
     ) -> int:
         """Change the marked as unread state of the topic in a channel direct messages chat administered by the current user.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
 
@@ -49,7 +50,8 @@ class SetDirectMessagesChatTopicIsMarkedAsUnread:
                 Pass False to mark the topic as read.
                 Defaults to True.
 
-        Returns:
+        Returns
+        -------
             ``bool``: True on success
 
         Example:
@@ -57,13 +59,12 @@ class SetDirectMessagesChatTopicIsMarkedAsUnread:
 
                 # Mark the topic as unread
                 await app.set_direct_messages_chat_topic_is_marked_as_unread(chat_id, topic_id)
+
         """
-        r = await self.invoke(
+        return await self.invoke(
             raw.functions.messages.MarkDialogUnread(
                 parent_peer=await self.resolve_peer(chat_id),
                 peer=await self.resolve_peer(topic_id),
-                unread=is_marked_as_unread
-            )
+                unread=is_marked_as_unread,
+            ),
         )
-
-        return r

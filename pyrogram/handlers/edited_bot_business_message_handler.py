@@ -27,12 +27,13 @@ from .handler import Handler
 
 class EditedBotBusinessMessageHandler(Handler):
     """The EditedBotBusinessMessageHandler handler class. Used to handle edited bot business messages.
-     It is intended to be used with :meth:`~pyrogram.Client.add_handler`
+     It is intended to be used with :meth:`~pyrogram.Client.add_handler`.
 
     For a nicer way to register this handler, have a look at the
     :meth:`~pyrogram.Client.on_edited_bot_business_message` decorator.
 
-    Parameters:
+    Parameters
+    ----------
         callback (``Callable``):
             Pass a function that will be called when a new edited message arrives. It takes *(client, message)*
             as positional arguments (look at the section below for a detailed description).
@@ -41,13 +42,15 @@ class EditedBotBusinessMessageHandler(Handler):
             Pass one or more filters to allow only a subset of messages to be passed
             in your callback function.
 
-    Other parameters:
+    Other Parameters
+    ----------------
         client (:obj:`~pyrogram.Client`):
             The Client itself, useful when you want to call other API methods inside the message handler.
 
         edited_message (:obj:`~pyrogram.types.Message`):
             The received edited message.
+
     """
 
-    def __init__(self, callback: Callable, filters=None):
+    def __init__(self, callback: Callable, filters=None) -> None:
         super().__init__(callback, filters)

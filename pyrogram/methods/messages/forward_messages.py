@@ -20,38 +20,44 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import datetime
-from typing import Union, Iterable
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import pyrogram
 from pyrogram import raw, types, utils
 
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from datetime import datetime
+
 
 class ForwardMessages:
     async def forward_messages(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
-        from_chat_id: Union[int, str],
-        message_ids: Union[int, Iterable[int]],
-        message_thread_id: int = None,
-        disable_notification: bool = None,
-        protect_content: bool = None,
-        allow_paid_broadcast: bool = None,
-        paid_message_star_count: int = None,
-        reply_parameters: "types.ReplyParameters" = None,
-        send_copy: bool = None,
-        remove_caption: bool = None,
-        video_start_timestamp: int = None,
-        send_as: Union[int, str] = None,
-        message_effect_id: int = None,
-        schedule_date: datetime = None,
-        **kwargs
-    ) -> Union["types.Message", list["types.Message"]]:
+        self: pyrogram.Client,
+        chat_id: int | str,
+        from_chat_id: int | str,
+        message_ids: int | Iterable[int],
+        message_thread_id: int | None = None,
+        disable_notification: bool | None = None,
+        protect_content: bool | None = None,
+        allow_paid_broadcast: bool | None = None,
+        paid_message_star_count: int | None = None,
+        reply_parameters: types.ReplyParameters = None,
+        send_copy: bool | None = None,
+        remove_caption: bool | None = None,
+        video_start_timestamp: int | None = None,
+        send_as: int | str | None = None,
+        message_effect_id: int | None = None,
+        schedule_date: datetime | None = None,
+        **kwargs,
+    ) -> types.Message | list[types.Message]:
         """Forward messages of any kind.
 
         .. include:: /_includes/usable-by/users-bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
                 For your personal cloud (Saved Messages) you can simply use "me" or "self".
@@ -80,7 +86,7 @@ class ForwardMessages:
 
             paid_message_star_count (``int``, *optional*):
                 The number of Telegram Stars the user agreed to pay to send the messages.
-            
+
             reply_parameters (:obj:`~pyrogram.types.ReplyParameters`, *optional*):
                 Description of the message to reply to
 
@@ -96,7 +102,7 @@ class ForwardMessages:
             send_as (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the chat or channel to send the message as.
                 You can use this to send the message on behalf of a chat or channel where you have appropriate permissions.
-                Use the :meth:`~pyrogram.Client.get_send_as_chats` to return the list of message sender identifiers, which can be used to send messages in the chat, 
+                Use the :meth:`~pyrogram.Client.get_send_as_chats` to return the list of message sender identifiers, which can be used to send messages in the chat,
                 This setting applies to the current message and will remain effective for future messages unless explicitly changed.
                 To set this behavior permanently for all messages, use :meth:`~pyrogram.Client.set_send_as_chat`.
 
@@ -106,11 +112,13 @@ class ForwardMessages:
             schedule_date (:py:obj:`~datetime.datetime`, *optional*):
                 Date when the message will be automatically sent.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.Message` | List of :obj:`~pyrogram.types.Message`: In case *message_ids* was not
             a list, a single message is returned, otherwise a list of messages is returned.
 
-        Raises:
+        Raises
+        ------
             :obj:`~pyrogram.errors.RPCError`: In case of a Telegram RPC error.
 
         Example:
@@ -121,15 +129,15 @@ class ForwardMessages:
 
                 # Forward multiple messages at once
                 await app.forward_messages(to_chat, from_chat, [1, 2, 3])
-        """
 
+        """
         is_iterable = utils.is_list_like(message_ids)
         message_ids = list(message_ids) if is_iterable else [message_ids]
 
         reply_to = await utils._get_reply_message_parameters(
             self,
             message_thread_id,
-            reply_parameters
+            reply_parameters,
         )
 
         r = await self.invoke(
@@ -150,8 +158,8 @@ class ForwardMessages:
                 effect=message_effect_id,
                 schedule_date=utils.datetime_to_timestamp(schedule_date),
                 top_msg_id=message_thread_id,
-                reply_to=reply_to
-            )
+                reply_to=reply_to,
+            ),
         )
 
         forwarded_messages = []
@@ -165,8 +173,8 @@ class ForwardMessages:
                 (
                     raw.types.UpdateNewMessage,
                     raw.types.UpdateNewChannelMessage,
-                    raw.types.UpdateNewScheduledMessage
-                )
+                    raw.types.UpdateNewScheduledMessage,
+                ),
             ):
                 forwarded_messages.append(
                     await types.Message._parse(
@@ -175,8 +183,8 @@ class ForwardMessages:
                         users,
                         chats,
                         is_scheduled=isinstance(i, raw.types.UpdateNewScheduledMessage),
-                        replies=self.fetch_replies
-                    )
+                        replies=self.fetch_replies,
+                    ),
                 )
 
         return types.List(forwarded_messages) if is_iterable else forwarded_messages[0]

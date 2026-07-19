@@ -20,18 +20,19 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from pyrogram.errors.exceptions.bad_request_400 import PeerIdInvalid
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw, types, utils
-from ..object import Object
+from pyrogram.errors.exceptions.bad_request_400 import PeerIdInvalid
+from pyrogram.types.object import Object
 
 
 class StoryForwardHeader(Object):
     """Contains information about origin of forwarded story.
 
-
-    Parameters:
+    Parameters
+    ----------
         user (:obj:`~pyrogram.types.User`, *optional*):
             Sender of the story.
 
@@ -46,17 +47,18 @@ class StoryForwardHeader(Object):
 
         is_modified (``bool``):
             True, if the story is modified.
+
     """
 
     def __init__(
         self,
         *,
-        user: "types.User" = None,
-        sender_name: str = None,
-        chat: "types.Chat" = None,
-        story_id: int = None,
-        is_modified: bool = None,
-    ):
+        user: types.User = None,
+        sender_name: str | None = None,
+        chat: types.Chat = None,
+        story_id: int | None = None,
+        is_modified: bool | None = None,
+    ) -> None:
         super().__init__()
 
         self.user = user
@@ -66,20 +68,21 @@ class StoryForwardHeader(Object):
         self.is_modified = is_modified
 
     async def _parse(
-        client: "pyrogram.Client", fwd_header: "raw.types.StoryFwdHeader"
-    ) -> "StoryForwardHeader":
+        self: pyrogram.Client,
+        fwd_header: raw.types.StoryFwdHeader,
+    ) -> StoryForwardHeader:
         user = None
         chat = None
         if fwd_header.from_peer is not None:
             try:
                 if isinstance(fwd_header.from_peer, raw.types.PeerChannel):
-                    chat = await client.get_chat(
-                        utils.get_channel_id(fwd_header.from_peer.channel_id)
+                    chat = await self.get_chat(
+                        utils.get_channel_id(fwd_header.from_peer.channel_id),
                     )
                 elif isinstance(fwd_header.from_peer, raw.types.InputPeerSelf):
-                    user = client.me
+                    user = self.me
                 else:
-                    user = await client.get_users(fwd_header.from_peer.user_id)
+                    user = await self.get_users(fwd_header.from_peer.user_id)
             except PeerIdInvalid:
                 pass
 

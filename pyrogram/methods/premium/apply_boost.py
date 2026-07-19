@@ -20,27 +20,28 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union
+from __future__ import annotations
 
 import pyrogram
-from pyrogram import raw
-from pyrogram import types
+from pyrogram import raw, types
 
 
 class ApplyBoost:
     async def apply_boost(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
+        self: pyrogram.Client,
+        chat_id: int | str,
     ) -> bool:
-        """Apply boost
+        """Apply boost.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.MyBoost`: On success, a boost object is returned.
 
         Example:
@@ -48,17 +49,17 @@ class ApplyBoost:
 
                 # Apply boost to chat id
                 await app.apply_boost(chat_id)
+
         """
         r = await self.invoke(
             raw.functions.premium.ApplyBoost(
                 peer=await self.resolve_peer(chat_id),
-            )
+            ),
         )
 
         return types.MyBoost._parse(
             self,
             r.my_boosts[0],
             {i.id: i for i in r.users},
-            {i.id: i for i in r.chats}
+            {i.id: i for i in r.chats},
         )
-

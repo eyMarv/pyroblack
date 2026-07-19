@@ -30,13 +30,14 @@ Python otherwise.
 deserialization on the event loop.
 """
 
+import logging
 from hashlib import sha256
 from io import BytesIO
 from os import urandom
-import logging
 
 from pyrogram.errors import SecurityCheckMismatch
-from pyrogram.raw.core import Message, Long
+from pyrogram.raw.core import Long, Message
+
 from . import aes
 
 log = logging.getLogger(__name__)
@@ -49,9 +50,7 @@ _native = None
 try:
     import tgcrypto as _native  # type: ignore
 
-    if not (
-        hasattr(_native, "pack_message") and hasattr(_native, "unpack_message")
-    ):
+    if not (hasattr(_native, "pack_message") and hasattr(_native, "unpack_message")):
         _native = None
 except ImportError:
     _native = None
@@ -63,7 +62,7 @@ if _HAS_NATIVE_MTPROTO:
 else:
     log.debug(
         "Native MTProto pack/unpack unavailable "
-        "(install TgCrypto-pyroblack for speedups)"
+        "(install TgCrypto-pyroblack for speedups)",
     )
 
 
@@ -81,7 +80,11 @@ def kdf(auth_key: bytes, msg_key: bytes, outgoing: bool) -> tuple:
 
 
 def _pack_native(
-    message: Message, salt: int, session_id: bytes, auth_key: bytes, auth_key_id: bytes
+    message: Message,
+    salt: int,
+    session_id: bytes,
+    auth_key: bytes,
+    auth_key_id: bytes,
 ) -> bytes:
     # TgCrypto-pyroblack accepts signed i64 salts (same as warpcrypto).
     return _native.pack_message(
@@ -96,7 +99,11 @@ def _pack_native(
 
 
 def _pack_python(
-    message: Message, salt: int, session_id: bytes, auth_key: bytes, auth_key_id: bytes
+    message: Message,
+    salt: int,
+    session_id: bytes,
+    auth_key: bytes,
+    auth_key_id: bytes,
 ) -> bytes:
     data = Long(salt) + session_id + message.write()
     padding = urandom(-(len(data) + 12) % 16 + 12)
@@ -110,7 +117,11 @@ def _pack_python(
 
 
 def pack(
-    message: Message, salt: int, session_id: bytes, auth_key: bytes, auth_key_id: bytes
+    message: Message,
+    salt: int,
+    session_id: bytes,
+    auth_key: bytes,
+    auth_key_id: bytes,
 ) -> bytes:
     if _HAS_NATIVE_MTPROTO:
         return _pack_native(message, salt, session_id, auth_key, auth_key_id)
@@ -119,11 +130,17 @@ def pack(
 
 
 def _decrypt_native(
-    packet: bytes, session_id: bytes, auth_key: bytes, auth_key_id: bytes
+    packet: bytes,
+    session_id: bytes,
+    auth_key: bytes,
+    auth_key_id: bytes,
 ) -> tuple:
     try:
         msg_id, seq_no, length, body_bytes, total_len = _native.unpack_message(
-            packet, session_id, auth_key, auth_key_id
+            packet,
+            session_id,
+            auth_key,
+            auth_key_id,
         )
     except ValueError as e:
         raise SecurityCheckMismatch(str(e)) from e
@@ -137,7 +154,10 @@ def _decrypt_native(
 
 
 def _decrypt_python(
-    packet: bytes, session_id: bytes, auth_key: bytes, auth_key_id: bytes
+    packet: bytes,
+    session_id: bytes,
+    auth_key: bytes,
+    auth_key_id: bytes,
 ) -> tuple:
     b = BytesIO(packet)
 
@@ -162,14 +182,19 @@ def _decrypt_python(
 
     payload = data[32:]
     padding = payload[length:]
-    SecurityCheckMismatch.check(12 <= len(padding) <= 1024, "12 <= len(padding) <= 1024")
+    SecurityCheckMismatch.check(
+        12 <= len(padding) <= 1024, "12 <= len(padding) <= 1024"
+    )
     SecurityCheckMismatch.check(len(payload) % 4 == 0, "len(payload) % 4 == 0")
 
     return msg_id, seq_no, length, payload[:length]
 
 
 def decrypt(
-    packet: bytes, session_id: bytes, auth_key: bytes, auth_key_id: bytes
+    packet: bytes,
+    session_id: bytes,
+    auth_key: bytes,
+    auth_key_id: bytes,
 ) -> tuple:
     """Decrypt and verify a packet → ``(msg_id, seq_no, length, body_bytes)``."""
     if _HAS_NATIVE_MTPROTO:
@@ -186,8 +211,9 @@ def parse(msg_id: int, seq_no: int, length: int, body_bytes: bytes) -> Message:
         body = TLObject.read(BytesIO(body_bytes))
     except KeyError as e:
         if e.args[0] == 0:
+            msg = "Received empty data. Check your internet connection."
             raise ConnectionError(
-                "Received empty data. Check your internet connection."
+                msg,
             ) from e
 
         left = body_bytes.hex()
@@ -195,8 +221,9 @@ def parse(msg_id: int, seq_no: int, length: int, body_bytes: bytes) -> Message:
         left = [[left[i : i + 8] for i in range(0, len(left), 8)] for left in left]
         left = "\n".join(" ".join(x for x in left) for left in left)
 
+        msg = f"The server sent an unknown constructor: {hex(e.args[0])}\n{left}"
         raise ValueError(
-            f"The server sent an unknown constructor: {hex(e.args[0])}\n{left}"
+            msg,
         ) from e
 
     message = Message(body, msg_id, seq_no, length)
@@ -207,7 +234,10 @@ def parse(msg_id: int, seq_no: int, length: int, body_bytes: bytes) -> Message:
 
 
 def unpack(
-    b: BytesIO, session_id: bytes, auth_key: bytes, auth_key_id: bytes
+    b: BytesIO,
+    session_id: bytes,
+    auth_key: bytes,
+    auth_key_id: bytes,
 ) -> Message:
     """One-shot decrypt + parse (backward-compatible)."""
     return parse(*decrypt(b.read(), session_id, auth_key, auth_key_id))

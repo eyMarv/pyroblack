@@ -20,22 +20,29 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from pyrogram import raw
-from ..object import Object
+from typing import TYPE_CHECKING
+
+from pyrogram.types.object import Object
+
+if TYPE_CHECKING:
+    from pyrogram import raw
 
 
 class VideoChatEnded(Object):
     """A service message about a voice chat ended in the chat.
 
-    Parameters:
+    Parameters
+    ----------
         duration (``int``):
             Voice chat duration; in seconds.
+
     """
 
     def __init__(
-        self, *,
-        duration: int
-    ):
+        self,
+        *,
+        duration: int,
+    ) -> None:
         super().__init__()
 
         self.duration = duration

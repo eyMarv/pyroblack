@@ -20,7 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw, types
@@ -28,63 +28,68 @@ from pyrogram import raw, types
 
 class SetChatProtectedContent:
     async def set_chat_protected_content(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
-        enabled: bool
-    ) -> Union["types.Message", bool]:
+        self: pyrogram.Client,
+        chat_id: int | str,
+        enabled: bool,
+    ) -> types.Message | bool:
         """Set the chat protected content setting.
 
         .. include:: /_includes/usable-by/users.rst
 
         Changes the ability of users to save, forward, or copy chat content.
-        
+
         Requires owner privileges in basic groups, supergroups and channels.
         Requires Telegram Premium to enable protected content in private chats. Not available in Saved Messages and private chats with bots or support accounts.
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
 
             enabled (``bool``):
                 Pass True to enable the protected content setting, False to disable.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.Message` | ``bool``: On success, a service message will be returned (when applicable),
             otherwise, in case a message object couldn't be returned, True is returned.
 
-        Raises:
+        Raises
+        ------
             :obj:`~pyrogram.errors.RPCError`: In case of a Telegram RPC error.
 
         """
         r = await self.invoke(
             raw.functions.messages.ToggleNoForwards(
                 peer=await self.resolve_peer(chat_id),
-                enabled=enabled
-            )
+                enabled=enabled,
+            ),
         )
         for i in r.updates:
-            if isinstance(i, (raw.types.UpdateNewMessage, raw.types.UpdateNewChannelMessage)):
+            if isinstance(
+                i, (raw.types.UpdateNewMessage, raw.types.UpdateNewChannelMessage)
+            ):
                 return await types.Message._parse(
                     self,
                     i.message,
                     {i.id: i for i in r.users},
                     {i.id: i for i in r.chats},
-                    replies=self.fetch_replies
+                    replies=self.fetch_replies,
                 )
         return True
 
-
     async def process_chat_protected_content_disable_request(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
+        self: pyrogram.Client,
+        chat_id: int | str,
         request_message_id: int,
-        enabled: bool
-    ) -> Union["types.Message", bool]:
+        enabled: bool,
+    ) -> types.Message | bool:
         """Processes request to disable ``has_protected_content`` in a chat.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
 
@@ -94,28 +99,32 @@ class SetChatProtectedContent:
             enabled (``bool``):
                 Pass True to approve the request; pass False to reject the request.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.Message` | ``bool``: On success, a service message will be returned (when applicable),
             otherwise, in case a message object couldn't be returned, True is returned.
 
-        Raises:
+        Raises
+        ------
             :obj:`~pyrogram.errors.RPCError`: In case of a Telegram RPC error.
-        
+
         """
         r = await self.invoke(
             raw.functions.messages.ToggleNoForwards(
                 peer=await self.resolve_peer(chat_id),
                 enabled=enabled,
-                request_msg_id=request_message_id
-            )
+                request_msg_id=request_message_id,
+            ),
         )
         for i in r.updates:
-            if isinstance(i, (raw.types.UpdateNewMessage, raw.types.UpdateNewChannelMessage)):
+            if isinstance(
+                i, (raw.types.UpdateNewMessage, raw.types.UpdateNewChannelMessage)
+            ):
                 return await types.Message._parse(
                     self,
                     i.message,
                     {i.id: i for i in r.users},
                     {i.id: i for i in r.chats},
-                    replies=self.fetch_replies
+                    replies=self.fetch_replies,
                 )
         return True

@@ -20,20 +20,21 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional
+from __future__ import annotations
 
 import pyrogram
-from pyrogram import raw, enums, types
+from pyrogram import enums, raw, types
 from pyrogram.parser import utils as parserutils
-from ..object import Object
+from pyrogram.types.object import Object
 
 
 class MessageEntity(Object):
     """One special entity in a text message.
-    
+
     For example, hashtags, usernames, URLs, etc.
 
-    Parameters:
+    Parameters
+    ----------
         type (:obj:`~pyrogram.enums.MessageEntityType`):
             Type of the entity.
 
@@ -67,18 +68,18 @@ class MessageEntity(Object):
     def __init__(
         self,
         *,
-        client: "pyrogram.Client" = None,
-        type: "enums.MessageEntityType",
+        client: pyrogram.Client = None,
+        type: enums.MessageEntityType,
         offset: int,
         length: int,
-        url: str = None,
-        user: "types.User" = None,
-        language: str = None,
-        custom_emoji_id: str = None,
-        unix_time: int = None,
-        date_time_format: str = None,
-        collapsed: bool = None,
-    ):
+        url: str | None = None,
+        user: types.User = None,
+        language: str | None = None,
+        custom_emoji_id: str | None = None,
+        unix_time: int | None = None,
+        date_time_format: str | None = None,
+        collapsed: bool | None = None,
+    ) -> None:
         super().__init__(client)
 
         self.type = type
@@ -94,7 +95,9 @@ class MessageEntity(Object):
         self.collapsed = collapsed
 
     @staticmethod
-    def _parse(client, entity: "raw.base.MessageEntity", users: dict) -> Optional["MessageEntity"]:
+    def _parse(
+        client, entity: raw.base.MessageEntity, users: dict
+    ) -> MessageEntity | None:
         user_id = None
         unix_time = None
         date_time_format = None
@@ -145,13 +148,13 @@ class MessageEntity(Object):
             offset=entity.offset,
             length=entity.length,
             url=getattr(entity, "url", None),
-            user=types.User._parse(client, users.get(user_id, None)),
+            user=types.User._parse(client, users.get(user_id)),
             language=getattr(entity, "language", None),
             custom_emoji_id=str(custom_emoji_id) if custom_emoji_id else None,
             unix_time=unix_time,
             date_time_format=date_time_format,
             collapsed=getattr(entity, "collapsed", None),
-            client=client
+            client=client,
         )
 
     async def write(self):

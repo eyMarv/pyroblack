@@ -20,37 +20,37 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import List, Union
+from __future__ import annotations
 
 import pyrogram
-from pyrogram import raw
-from pyrogram import enums
+from pyrogram import enums, raw
 
 
 class UpdateFolder:
     async def update_folder(
-        self: "pyrogram.Client",
+        self: pyrogram.Client,
         folder_id: int,
         title: str,
-        included_chats: Union[Union[int, str], List[Union[int, str]]] = None,
-        excluded_chats: Union[Union[int, str], List[Union[int, str]]] = None,
-        pinned_chats: Union[Union[int, str], List[Union[int, str]]] = None,
-        contacts: bool = None,
-        non_contacts: bool = None,
-        groups: bool = None,
-        channels: bool = None,
-        bots: bool = None,
-        exclude_muted: bool = None,
-        exclude_read: bool = None,
-        exclude_archived: bool = None,
-        color: "enums.FolderColor" = None,
-        emoji: str = None,
+        included_chats: int | str | list[int | str] | None = None,
+        excluded_chats: int | str | list[int | str] | None = None,
+        pinned_chats: int | str | list[int | str] | None = None,
+        contacts: bool | None = None,
+        non_contacts: bool | None = None,
+        groups: bool | None = None,
+        channels: bool | None = None,
+        bots: bool | None = None,
+        exclude_muted: bool | None = None,
+        exclude_read: bool | None = None,
+        exclude_archived: bool | None = None,
+        color: enums.FolderColor = None,
+        emoji: str | None = None,
     ) -> bool:
         """Create or update a user's folder.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             folder_id (``int``):
                 Unique folder identifier.
 
@@ -104,7 +104,8 @@ class UpdateFolder:
                 Color type.
                 Pass :obj:`~pyrogram.enums.FolderColor` to set folder color.
 
-        Returns:
+        Returns
+        -------
             ``bool``: True, on success.
 
         Example:
@@ -112,6 +113,7 @@ class UpdateFolder:
 
                 # Create or update folder
                 app.update_folder(folder_id, title="New folder", included_chats="me")
+
         """
         if not isinstance(included_chats, list):
             included_chats = [included_chats] if included_chats else []
@@ -120,7 +122,7 @@ class UpdateFolder:
         if not isinstance(pinned_chats, list):
             pinned_chats = [pinned_chats] if pinned_chats else []
 
-        r = await self.invoke(
+        return await self.invoke(
             raw.functions.messages.UpdateDialogFilter(
                 id=folder_id,
                 filter=raw.types.DialogFilter(
@@ -146,7 +148,5 @@ class UpdateFolder:
                     emoticon=emoji,
                     color=color.value if color else None,
                 ),
-            )
+            ),
         )
-
-        return r

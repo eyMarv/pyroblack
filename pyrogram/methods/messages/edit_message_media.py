@@ -20,30 +20,30 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import datetime
-import io
-import os
-import re
-from typing import Union
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import pyrogram
 from pyrogram import raw, types, utils
-from pyrogram.file_id import FileType
 
 from .inline_session import get_session
+
+if TYPE_CHECKING:
+    from datetime import datetime
 
 
 class EditMessageMedia:
     async def edit_message_media(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
+        self: pyrogram.Client,
+        chat_id: int | str,
         message_id: int,
-        media: "types.InputMedia",
-        reply_markup: "types.InlineKeyboardMarkup" = None,
-        schedule_date: datetime = None,
-        business_connection_id: str = None,
-        **kwargs
-    ) -> "types.Message":
+        media: types.InputMedia,
+        reply_markup: types.InlineKeyboardMarkup = None,
+        schedule_date: datetime | None = None,
+        business_connection_id: str | None = None,
+        **kwargs,
+    ) -> types.Message:
         """Edit animation, audio, document, photo or video messages, or to add media to text messages.
 
         If a message is part of a message album, then it can be edited only to an audio for audio albums, only to a document for document albums and to a photo or a video otherwise. Otherwise, the
@@ -53,7 +53,8 @@ class EditMessageMedia:
 
         .. include:: /_includes/usable-by/users-bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
                 For your personal cloud (Saved Messages) you can simply use "me" or "self".
@@ -74,7 +75,8 @@ class EditMessageMedia:
             business_connection_id (``str``, *optional*):
                 Unique identifier of the business connection on behalf of which the message to be edited was sent
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.Message`: On success, the edited message is returned.
 
         Example:
@@ -93,6 +95,7 @@ class EditMessageMedia:
                 # Replace the current media with a local audio
                 await app.edit_message_media(chat_id, message_id,
                     InputMediaAudio("new_audio.mp3"))
+
         """
         caption = media.caption
         parse_mode = media.parse_mode
@@ -101,7 +104,11 @@ class EditMessageMedia:
         message, entities = None, None
 
         if caption is not None:
-            message, entities = (await utils.parse_text_entities(self, caption, parse_mode, caption_entities)).values()
+            message, entities = (
+                await utils.parse_text_entities(
+                    self, caption, parse_mode, caption_entities
+                )
+            ).values()
 
         if media is not None and not isinstance(
             media,
@@ -113,7 +120,8 @@ class EditMessageMedia:
                 types.InputMediaDocument,
             ),
         ):
-            raise ValueError(f"Unsupported media type: {type(media)}")
+            msg = f"Unsupported media type: {type(media)}"
+            raise ValueError(msg)
 
         raw_media, _show_caption_above_media = await media.write(
             client=self,
@@ -129,24 +137,28 @@ class EditMessageMedia:
             message=message,
             entities=entities,
             invert_media=_show_caption_above_media,
-            schedule_date=utils.datetime_to_timestamp(schedule_date)
+            schedule_date=utils.datetime_to_timestamp(schedule_date),
         )
         session = None
         business_connection = None
         if business_connection_id:
-            business_connection = self.business_user_connection_cache[business_connection_id]
+            business_connection = self.business_user_connection_cache[
+                business_connection_id
+            ]
             if business_connection is None:
-                business_connection = await self.get_business_connection(business_connection_id)
+                business_connection = await self.get_business_connection(
+                    business_connection_id
+                )
             session = await get_session(
                 self,
-                business_connection._raw.connection.dc_id
+                business_connection._raw.connection.dc_id,
             )
         if business_connection_id:
             r = await session.invoke(
                 raw.functions.InvokeWithBusinessConnection(
                     query=rpc,
-                    connection_id=business_connection_id
-                )
+                    connection_id=business_connection_id,
+                ),
             )
             # await session.stop()
         else:
@@ -158,28 +170,30 @@ class EditMessageMedia:
                 (
                     raw.types.UpdateEditMessage,
                     raw.types.UpdateEditChannelMessage,
-                    raw.types.UpdateNewScheduledMessage
-                )
-            ):
-                return await types.Message._parse(
-                    self, i.message,
-                    {i.id: i for i in r.users},
-                    {i.id: i for i in r.chats},
-                    is_scheduled=isinstance(i, raw.types.UpdateNewScheduledMessage),
-                    replies=self.fetch_replies
-                )
-            elif isinstance(
-                i,
-                (
-                    raw.types.UpdateBotEditBusinessMessage
-                )
+                    raw.types.UpdateNewScheduledMessage,
+                ),
             ):
                 return await types.Message._parse(
                     self,
                     i.message,
                     {i.id: i for i in r.users},
                     {i.id: i for i in r.chats},
-                    business_connection_id=getattr(i, "connection_id", business_connection_id),
-                    raw_reply_to_message=i.reply_to_message,
-                    replies=0
+                    is_scheduled=isinstance(i, raw.types.UpdateNewScheduledMessage),
+                    replies=self.fetch_replies,
                 )
+            if isinstance(
+                i,
+                (raw.types.UpdateBotEditBusinessMessage),
+            ):
+                return await types.Message._parse(
+                    self,
+                    i.message,
+                    {i.id: i for i in r.users},
+                    {i.id: i for i in r.chats},
+                    business_connection_id=getattr(
+                        i, "connection_id", business_connection_id
+                    ),
+                    raw_reply_to_message=i.reply_to_message,
+                    replies=0,
+                )
+        return None

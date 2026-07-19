@@ -20,17 +20,18 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional, List, Union
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw, types
-from ..object import Object
+from pyrogram.types.object import Object
 
 
 class Invoice(Object):
     """This object contains basic information about an invoice.
 
-    Parameters:
+    Parameters
+    ----------
         currency (``str``):
             Three-letter ISO 4217 `currency <https://core.telegram.org/bots/payments#supported-currencies>`_ code.
 
@@ -91,32 +92,33 @@ class Invoice(Object):
 
         raw (:obj:`~raw.base.payments.MessageMediaInvoice` | :obj:`~raw.base.Invoice`, *optional*):
             The raw object, as received from the Telegram API.
+
     """
 
     def __init__(
         self,
         *,
-        client: "pyrogram.Client" = None,
+        client: pyrogram.Client = None,
         currency: str,
         is_test: bool,
-        title: Optional[str] = None,
-        description: Optional[str] = None,
-        total_amount: Optional[int] = None,
-        start_parameter: Optional[str] = None,
-        prices: Optional[List["types.LabeledPrice"]] = None,
-        is_name_requested: Optional[bool] = None,
-        is_phone_requested: Optional[bool] = None,
-        is_email_requested: Optional[bool] = None,
-        is_shipping_address_requested: Optional[bool] = None,
-        is_flexible: Optional[bool] = None,
-        is_phone_to_provider: Optional[bool] = None,
-        is_email_to_provider: Optional[bool] = None,
-        is_recurring: Optional[bool] = None,
-        max_tip_amount: Optional[int] = None,
-        suggested_tip_amounts: Optional[List[int]] = None,
-        terms_url: Optional[str] = None,
-        raw: Union["raw.types.MessageMediaInvoice", "raw.types.Invoice"] = None,
-    ):
+        title: str | None = None,
+        description: str | None = None,
+        total_amount: int | None = None,
+        start_parameter: str | None = None,
+        prices: list[types.LabeledPrice] | None = None,
+        is_name_requested: bool | None = None,
+        is_phone_requested: bool | None = None,
+        is_email_requested: bool | None = None,
+        is_shipping_address_requested: bool | None = None,
+        is_flexible: bool | None = None,
+        is_phone_to_provider: bool | None = None,
+        is_email_to_provider: bool | None = None,
+        is_recurring: bool | None = None,
+        max_tip_amount: int | None = None,
+        suggested_tip_amounts: list[int] | None = None,
+        terms_url: str | None = None,
+        raw: raw.types.MessageMediaInvoice | raw.types.Invoice = None,
+    ) -> None:
         super().__init__(client)
 
         self.currency = currency
@@ -141,8 +143,9 @@ class Invoice(Object):
 
     @staticmethod
     def _parse(
-        client, invoice: Union["raw.types.MessageMediaInvoice", "raw.types.Invoice"]
-    ) -> "Invoice":
+        client,
+        invoice: raw.types.MessageMediaInvoice | raw.types.Invoice,
+    ) -> Invoice:
         return Invoice(
             currency=invoice.currency,
             is_test=invoice.test,
@@ -159,7 +162,9 @@ class Invoice(Object):
             is_phone_requested=getattr(invoice, "phone_requested", None),
             is_email_requested=getattr(invoice, "email_requested", None),
             is_shipping_address_requested=getattr(
-                invoice, "shipping_address_requested", None
+                invoice,
+                "shipping_address_requested",
+                None,
             ),
             is_flexible=getattr(invoice, "flexible", None),
             is_phone_to_provider=getattr(invoice, "phone_to_provider", None),

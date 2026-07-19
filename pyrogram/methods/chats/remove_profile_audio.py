@@ -34,12 +34,14 @@ class RemoveProfileAudio:
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             audio (``str``):
                 Identifier of the audio file to be removed.
                 Use :meth:`~pyrogram.Client.get_chat_audios` to get the Audio identifier.
 
-        Returns:
+        Returns
+        -------
             ``bool``: On success, True is returned.
 
         Example:
@@ -52,6 +54,6 @@ class RemoveProfileAudio:
         return await self.invoke(
             raw.functions.account.SaveMusic(
                 id=(utils.get_input_media_from_file_id(audio, FileType.AUDIO)).id,
-                unsave=True
-            )
+                unsave=True,
+            ),
         )

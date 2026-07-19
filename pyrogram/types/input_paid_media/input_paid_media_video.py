@@ -20,11 +20,14 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-import io
-from typing import Optional, Union
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 from .input_paid_media import InputPaidMedia
-from ... import enums
+
+if TYPE_CHECKING:
+    import io
 
 
 class InputPaidMediaVideo(InputPaidMedia):
@@ -32,7 +35,8 @@ class InputPaidMediaVideo(InputPaidMedia):
 
     It is intended to be used with :obj:`~pyrogram.Client.send_paid_media`.
 
-    Parameters:
+    Parameters
+    ----------
         media (``str`` | :obj:`io.BytesIO`):
             File to send.
             Pass a file_id as string to send a video that exists on the Telegram servers or
@@ -60,7 +64,7 @@ class InputPaidMediaVideo(InputPaidMedia):
 
         cover (``str`` | :obj:`io.BytesIO`, *optional*):
             Cover for the video in the message. pass None to skip cover uploading.
-        
+
         start_timestamp (``int``, *optional*):
             Timestamp from which the video playing must start, in seconds.
 
@@ -68,15 +72,15 @@ class InputPaidMediaVideo(InputPaidMedia):
 
     def __init__(
         self,
-        media: Union[str, "io.BytesIO"],
-        thumbnail: Union[str, "io.BytesIO"] = None,
+        media: str | io.BytesIO,
+        thumbnail: str | io.BytesIO | None = None,
         width: int = 0,
         height: int = 0,
         duration: int = 0,
         supports_streaming: bool = True,
-        cover: Optional[Union[str, "io.BytesIO"]] = None,
-        start_timestamp: int = None
-    ):
+        cover: str | io.BytesIO | None = None,
+        start_timestamp: int | None = None,
+    ) -> None:
         super().__init__(media)
 
         self.thumbnail = thumbnail

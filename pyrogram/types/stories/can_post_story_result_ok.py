@@ -21,13 +21,16 @@
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
 
+from __future__ import annotations
+
 from .can_post_story_result import CanPostStoryResult
 
 
 class CanPostStoryResultOk(CanPostStoryResult):
     """A story can be sent.
 
-    Parameters:
+    Parameters
+    ----------
         story_count (``int``):
             Number of stories that can be posted by the user.
 
@@ -35,8 +38,8 @@ class CanPostStoryResultOk(CanPostStoryResult):
 
     def __init__(
         self,
-        story_count: int = None,
-    ):
+        story_count: int | None = None,
+    ) -> None:
         super().__init__()
 
         self.story_count = story_count

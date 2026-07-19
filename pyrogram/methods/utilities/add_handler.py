@@ -20,22 +20,26 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-import pyrogram
+from typing import TYPE_CHECKING
+
 from pyrogram.handlers import (
+    ConnectHandler,
     DisconnectHandler,
     InvokeErrHandler,
     StartHandler,
     StopHandler,
-    ConnectHandler,
 )
-from pyrogram.handlers.handler import Handler
+
+if TYPE_CHECKING:
+    import pyrogram
+    from pyrogram.handlers.handler import Handler
 
 
 class AddHandler:
     def add_handler(
         self: "pyrogram.Client",
         handler: "Handler",
-        group: int = 0
+        group: int = 0,
     ):
         """Register an update handler.
 
@@ -44,14 +48,16 @@ class AddHandler:
         == higher priority). This mechanism is explained in greater details at
         :doc:`More on Updates <../../topics/more-on-updates>`.
 
-        Parameters:
+        Parameters
+        ----------
             handler (``Handler``):
                 The handler to be registered.
 
             group (``int``, *optional*):
                 The group identifier, defaults to 0.
 
-        Returns:
+        Returns
+        -------
             ``tuple``: A tuple consisting of *(handler, group)*.
 
         Example:
@@ -68,6 +74,7 @@ class AddHandler:
                 app.add_handler(MessageHandler(hello))
 
                 app.run()
+
         """
         if isinstance(handler, StartHandler):
             self.start_handler = handler.callback

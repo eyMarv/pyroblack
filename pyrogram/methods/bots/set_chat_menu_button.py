@@ -20,24 +20,24 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union
+from __future__ import annotations
 
 import pyrogram
-from pyrogram import raw
-from pyrogram import types
+from pyrogram import raw, types
 
 
 class SetChatMenuButton:
     async def set_chat_menu_button(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str] = None,
-        menu_button: "types.MenuButton" = None
+        self: pyrogram.Client,
+        chat_id: int | str | None = None,
+        menu_button: types.MenuButton = None,
     ) -> bool:
         """Change the bot's menu button in a private chat, or the default menu button.
 
         .. include:: /_includes/usable-by/bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``, *optional*):
                 Unique identifier (int) or username (str) of the target chat.
                 If not specified, default bot's menu button will be changed.
@@ -46,19 +46,20 @@ class SetChatMenuButton:
                 The new bot's menu button.
                 Defaults to :obj:`~pyrogram.types.MenuButtonDefault`.
 
-        Raises:
+        Raises
+        ------
             :obj:`~pyrogram.errors.RPCError`: In case of a Telegram RPC error.
 
         """
-
         await self.invoke(
             raw.functions.bots.SetBotMenuButton(
                 user_id=await self.resolve_peer(chat_id or "me"),
                 button=(
-                    (await menu_button.write(self)) if menu_button
+                    (await menu_button.write(self))
+                    if menu_button
                     else (await types.MenuButtonDefault().write(self))
-                )
-            )
+                ),
+            ),
         )
 
         return True

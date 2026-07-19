@@ -20,7 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-"""pyroblack async utils"""
+"""pyroblack async utils."""
 
 # Copyright (C) 2020 - 2023  UserbotIndo Team, <https://github.com/userbotindo.git>
 # Copyright (C) 2022-present  Mayuri-Chan, <https://github.com/Mayuri-Chan.git>
@@ -38,8 +38,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from pyrogram import utils
 from typing import Any, Callable, TypeVar
+
+from pyrogram import utils
 
 
 class RunSync:
@@ -47,11 +48,14 @@ class RunSync:
 
     @staticmethod
     async def run_sync(
-        func: Callable[..., Result], *args: Any, **kwargs: Any
+        func: Callable[..., Result],
+        *args: Any,
+        **kwargs: Any,
     ) -> Result:
-        """Run the given sync function (optionally with arguments) on a separate thread.
+        r"""Run the given sync function (optionally with arguments) on a separate thread.
 
-        Parameters:
+        Parameters
+        ----------
             func (``Callable``):
                 Sync function to run.
 
@@ -61,7 +65,9 @@ class RunSync:
             \\*\\*kwargs (``any``, *optional*):
                 Function keyword arguments.
 
-        Returns:
+        Returns
+        -------
             ``any``: The function result.
+
         """
         return await utils.run_sync(func, *args, **kwargs)

@@ -20,18 +20,23 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import datetime
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+from pyrogram import enums
 
 from .message_origin import MessageOrigin
 
-import pyrogram
-from pyrogram import types, enums
+if TYPE_CHECKING:
+    from datetime import datetime
 
 
 class MessageImportInfo(MessageOrigin):
     """Contains information about a message created with `importMessages <https://t.me/telegram/142>`_.
 
-    Parameters:
+    Parameters
+    ----------
         date (:py:obj:`~datetime.datetime`):
             Date the message was sent originally in Unix time
 
@@ -43,12 +48,12 @@ class MessageImportInfo(MessageOrigin):
     def __init__(
         self,
         *,
-        date: datetime = None,
-        sender_user_name: str = None
-    ):
+        date: datetime | None = None,
+        sender_user_name: str | None = None,
+    ) -> None:
         super().__init__(
             type=enums.MessageOriginType.IMPORT_INFO,
-            date=date
+            date=date,
         )
 
         self.sender_user_name = sender_user_name

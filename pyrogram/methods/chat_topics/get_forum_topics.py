@@ -20,31 +20,37 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 from asyncio import sleep
-from datetime import datetime
-from typing import Union, AsyncGenerator
+from typing import TYPE_CHECKING
 
 import pyrogram
-from pyrogram import types, raw, utils
+from pyrogram import raw, types, utils
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncGenerator
+    from datetime import datetime
 
 
 class GetForumTopics:
     async def get_forum_topics(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
+        self: pyrogram.Client,
+        chat_id: int | str,
         query: str = "",
         offset_date: datetime = utils.zero_datetime(),
         offset_message_id: int = 0,
         offset_message_thread_id: int = 0,
-        limit: int = 0
-    ) -> AsyncGenerator["types.ForumTopic", None]:
+        limit: int = 0,
+    ) -> AsyncGenerator[types.ForumTopic, None]:
         """Get one or more topic from a chat.
         Returns found forum topics in a forum chat.
-        This is a temporary method for getting information about topic list from the server
+        This is a temporary method for getting information about topic list from the server.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
 
@@ -65,7 +71,8 @@ class GetForumTopics:
                 For optimal performance, the number of returned forum topics is chosen by Telegram Server and can be smaller than the specified limit
                 By default, no limit is applied and all topics are returned.
 
-        Returns:
+        Returns
+        -------
             ``Generator``: A generator yielding :obj:`~pyrogram.types.ForumTopic` objects.
 
         Example:
@@ -74,6 +81,7 @@ class GetForumTopics:
                 # Iterate through all topics
                 async for topic in app.get_forum_topics(chat_id):
                     print(topic)
+
         """
         current = 0
         total = limit or (1 << 31) - 1
@@ -84,13 +92,13 @@ class GetForumTopics:
         while True:
             r = await self.invoke(
                 raw.functions.messages.GetForumTopics(
-                    # q:flags.0?string 
+                    # q:flags.0?string
                     peer=await self.resolve_peer(chat_id),
                     offset_date=offset_date,
                     offset_id=offset_message_id,
                     offset_topic=offset_message_thread_id,
-                    limit=limit
-                )
+                    limit=limit,
+                ),
             )
 
             users = {i.id: i for i in r.users}
@@ -109,7 +117,7 @@ class GetForumTopics:
                     message,
                     users,
                     chats,
-                    replies=self.fetch_replies
+                    replies=self.fetch_replies,
                 )
 
             topics = []
@@ -117,8 +125,12 @@ class GetForumTopics:
             for topic in tts:
                 topics.append(
                     types.ForumTopic._parse(
-                        self, topic, messages, users, chats
-                    )
+                        self,
+                        topic,
+                        messages,
+                        users,
+                        chats,
+                    ),
                 )
 
             if not topics:
@@ -129,7 +141,7 @@ class GetForumTopics:
             offset_message_id = last.last_message.id
             # TODO: fix inconsistency
             offset_date = utils.datetime_to_timestamp(
-                last.last_message.date
+                last.last_message.date,
             )
             offset_message_thread_id = last.message_thread_id
 

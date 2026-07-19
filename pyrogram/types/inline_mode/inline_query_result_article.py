@@ -20,6 +20,8 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import logging
 
 import pyrogram
@@ -33,7 +35,8 @@ log = logging.getLogger(__name__)
 class InlineQueryResultArticle(InlineQueryResult):
     """Link to an article or web page.
 
-    Parameters:
+    Parameters
+    ----------
         title (``str``):
             Title for the result.
 
@@ -61,59 +64,62 @@ class InlineQueryResultArticle(InlineQueryResult):
 
         thumbnail_height (``int``, *optional*):
             Thumbnail height.
+
     """
 
     def __init__(
         self,
         title: str,
-        input_message_content: "types.InputMessageContent",
-        id: str = None,
-        url: str = None,
-        description: str = None,
-        reply_markup: "types.InlineKeyboardMarkup" = None,
-        thumbnail_url: str = None,
+        input_message_content: types.InputMessageContent,
+        id: str | None = None,
+        url: str | None = None,
+        description: str | None = None,
+        reply_markup: types.InlineKeyboardMarkup = None,
+        thumbnail_url: str | None = None,
         thumbnail_width: int = 0,
         thumbnail_height: int = 0,
-        thumb_url: str = None,
-        thumb_width: int = None,
-        thumb_height: int = None
-    ):
+        thumb_url: str | None = None,
+        thumb_width: int | None = None,
+        thumb_height: int | None = None,
+    ) -> None:
         if thumb_url and thumbnail_url:
+            msg = "Parameters `thumb_url` and `thumbnail_url` are mutually exclusive."
             raise ValueError(
-                "Parameters `thumb_url` and `thumbnail_url` are mutually "
-                "exclusive."
+                msg,
             )
-        
+
         if thumb_url is not None:
             log.warning(
-                "This property is deprecated. "
-                "Please use thumbnail_url instead"
+                "This property is deprecated. Please use thumbnail_url instead",
             )
             thumbnail_url = thumb_url
-        
+
         if thumb_width and thumbnail_width:
-            raise ValueError(
-                "Parameters `thumb_width` and `thumbnail_width` are mutually "
-                "exclusive."
+            msg = (
+                "Parameters `thumb_width` and `thumbnail_width` are mutually exclusive."
             )
-        
+            raise ValueError(
+                msg,
+            )
+
         if thumb_width is not None:
             log.warning(
-                "This property is deprecated. "
-                "Please use thumbnail_width instead"
+                "This property is deprecated. Please use thumbnail_width instead",
             )
             thumbnail_width = thumb_width
-        
+
         if thumb_height and thumbnail_height:
-            raise ValueError(
+            msg = (
                 "Parameters `thumb_height` and `thumbnail_height` are mutually "
                 "exclusive."
             )
-        
+            raise ValueError(
+                msg,
+            )
+
         if thumb_height is not None:
             log.warning(
-                "This property is deprecated. "
-                "Please use thumbnail_height instead"
+                "This property is deprecated. Please use thumbnail_height instead",
             )
             thumbnail_height = thumb_height
 
@@ -130,11 +136,13 @@ class InlineQueryResultArticle(InlineQueryResult):
         self.thumb_width = thumbnail_width
         self.thumb_height = thumbnail_height
 
-    async def write(self, client: "pyrogram.Client"):
+    async def write(self, client: pyrogram.Client):
         return raw.types.InputBotInlineResult(
             id=self.id,
             type=self.type,
-            send_message=await self.input_message_content.write(client, self.reply_markup),
+            send_message=await self.input_message_content.write(
+                client, self.reply_markup
+            ),
             title=self.title,
             description=self.description,
             url=self.url,
@@ -145,8 +153,10 @@ class InlineQueryResultArticle(InlineQueryResult):
                 attributes=[
                     raw.types.DocumentAttributeImageSize(
                         w=self.thumbnail_width,
-                        h=self.thumbnail_height
-                    )
-                ]
-            ) if self.thumbnail_url else None
+                        h=self.thumbnail_height,
+                    ),
+                ],
+            )
+            if self.thumbnail_url
+            else None,
         )

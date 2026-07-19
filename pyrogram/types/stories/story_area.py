@@ -22,18 +22,18 @@
 
 
 import pyrogram
-from pyrogram import types, raw, utils
-
-from ..object import Object
+from pyrogram import raw, types, utils
+from pyrogram.types.object import Object
 
 
 class StoryArea(Object):
     """This object describes a clickable area on a story media.
 
-    Parameters:
+    Parameters
+    ----------
         position (:obj:`~pyrogram.types.StoryAreaPosition`):
             Position of the area.
-        
+
         type (:obj:`~pyrogram.types.StoryAreaType`):
             Type of the area.
 
@@ -43,7 +43,7 @@ class StoryArea(Object):
         self,
         position: "types.StoryAreaPosition" = None,
         type: "types.StoryAreaType" = None,
-    ):
+    ) -> None:
         super().__init__()
 
         self.position = position
@@ -68,32 +68,34 @@ class StoryArea(Object):
                     state=area.address.state,
                     city=area.address.city,
                     street=area.address.street,
-                ) if area.address else None
+                )
+                if area.address
+                else None,
             )
         if isinstance(area, raw.types.MediaAreaSuggestedReaction):
             story_area_type = types.StoryAreaTypeSuggestedReaction(
                 reaction_type=types.ReactionType._parse(client, area.reaction),
                 is_dark=area.dark,
-                is_flipped=area.flipped
+                is_flipped=area.flipped,
             )
         if isinstance(area, raw.types.MediaAreaChannelPost):
             story_area_type = types.StoryAreaTypeMessage(
                 chat_id=utils.get_channel_id(area.channel_id),
-                message_id=area.msg_id
+                message_id=area.msg_id,
             )
         if isinstance(area, raw.types.MediaAreaUrl):
             story_area_type = types.StoryAreaTypeLink(
-                url=area.url
+                url=area.url,
             )
         if isinstance(area, raw.types.MediaAreaWeather):
             story_area_type = types.StoryAreaTypeWeather(
                 temperature=area.temperature_c,
                 emoji=area.emoji,
-                background_color=area.color
+                background_color=area.color,
             )
         if isinstance(area, raw.types.MediaAreaStarGift):
             story_area_type = types.StoryAreaTypeUniqueGift(
-                name=area.slug
+                name=area.slug,
             )
         return StoryArea(
             position=types.StoryAreaPosition._parse(area.coordinates),

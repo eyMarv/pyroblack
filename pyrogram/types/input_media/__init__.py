@@ -22,28 +22,28 @@
 
 from .input_media import InputMedia
 from .input_media_animation import InputMediaAnimation
-from .input_media_audio import InputMediaAudio
-from .input_media_document import InputMediaDocument
-from .input_media_photo import InputMediaPhoto
-from .input_media_video import InputMediaVideo
-from .input_media_sticker import InputMediaSticker
-from .input_media_live_photo import InputMediaLivePhoto
 from .input_media_area import InputMediaArea
 from .input_media_area_channel_post import InputMediaAreaChannelPost
+from .input_media_audio import InputMediaAudio
+from .input_media_document import InputMediaDocument
+from .input_media_live_photo import InputMediaLivePhoto
+from .input_media_photo import InputMediaPhoto
+from .input_media_sticker import InputMediaSticker
+from .input_media_video import InputMediaVideo
 from .input_phone_contact import InputPhoneContact
 from .link_preview_options import LinkPreviewOptions
 
 __all__ = [
-    "LinkPreviewOptions",
     "InputMedia",
     "InputMediaAnimation",
-    "InputMediaAudio",
-    "InputMediaDocument",
-    "InputMediaPhoto",
-    "InputMediaVideo",
-    "InputMediaSticker",
-    "InputMediaLivePhoto",
     "InputMediaArea",
     "InputMediaAreaChannelPost",
+    "InputMediaAudio",
+    "InputMediaDocument",
+    "InputMediaLivePhoto",
+    "InputMediaPhoto",
+    "InputMediaSticker",
+    "InputMediaVideo",
     "InputPhoneContact",
+    "LinkPreviewOptions",
 ]

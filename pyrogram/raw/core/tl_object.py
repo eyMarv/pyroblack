@@ -20,11 +20,15 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from io import BytesIO
-from json import dumps
-from typing import cast, Any, Union, TypeVar, Generic
+from __future__ import annotations
 
-from ..all import objects
+from json import dumps
+from typing import TYPE_CHECKING, Any, Generic, TypeVar, cast
+
+from pyrogram.raw.all import objects
+
+if TYPE_CHECKING:
+    from io import BytesIO
 
 ReturnType = TypeVar("ReturnType")
 
@@ -36,13 +40,15 @@ class TLObject(Generic[ReturnType]):
 
     @classmethod
     def read(cls, b: BytesIO, *args: Any) -> Any:
-        return cast(TLObject, objects[int.from_bytes(b.read(4), "little")]).read(b, *args)
+        return cast("TLObject", objects[int.from_bytes(b.read(4), "little")]).read(
+            b, *args
+        )
 
     def write(self, *args: Any) -> bytes:
         pass
 
     @staticmethod
-    def default(obj: "TLObject") -> Union[str, dict[str, str]]:
+    def default(obj: TLObject) -> str | dict[str, str]:
         if isinstance(obj, bytes):
             return repr(obj)
 
@@ -52,7 +58,7 @@ class TLObject(Generic[ReturnType]):
                 attr: getattr(obj, attr)
                 for attr in obj.__slots__
                 if getattr(obj, attr) is not None
-            }
+            },
         }
 
     def __str__(self) -> str:
@@ -65,13 +71,13 @@ class TLObject(Generic[ReturnType]):
         return "pyrogram.raw.{}({})".format(
             self.QUALNAME,
             ", ".join(
-                f"{attr}={repr(getattr(self, attr))}"
+                f"{attr}={getattr(self, attr)!r}"
                 for attr in self.__slots__
                 if getattr(self, attr) is not None
-            )
+            ),
         )
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         for attr in self.__slots__:
             try:
                 if getattr(self, attr) != getattr(other, attr):

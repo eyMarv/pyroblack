@@ -20,11 +20,15 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-import asyncio
+from __future__ import annotations
+
 import logging
-from typing import Optional
+from typing import TYPE_CHECKING
 
 from .tcp import TCP
+
+if TYPE_CHECKING:
+    import asyncio
 
 log = logging.getLogger(__name__)
 
@@ -35,15 +39,15 @@ class TCPAbridged(TCP):
         ipv6: bool,
         proxy: dict,
         crypto_executor=None,
-        loop: Optional[asyncio.AbstractEventLoop] = None,
-    ):
+        loop: asyncio.AbstractEventLoop | None = None,
+    ) -> None:
         super().__init__(ipv6, proxy, crypto_executor, loop)
 
-    async def connect(self, address: tuple):
+    async def connect(self, address: tuple) -> None:
         await super().connect(address)
         await super().send(b"\xef")
 
-    async def send(self, data: bytes, *args):
+    async def send(self, data: bytes, *args) -> None:
         length = len(data) // 4
 
         await super().send(
@@ -52,10 +56,10 @@ class TCPAbridged(TCP):
                 if length <= 126
                 else b"\x7f" + length.to_bytes(3, "little")
             )
-            + data
+            + data,
         )
 
-    async def recv(self, length: int = 0) -> Optional[bytes]:
+    async def recv(self, length: int = 0) -> bytes | None:
         length = await super().recv(1)
 
         if length is None:

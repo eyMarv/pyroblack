@@ -20,11 +20,13 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import logging
-from typing import Optional
 
 import pyrogram
-from pyrogram import raw, enums, types, utils
+from pyrogram import enums, raw, types, utils
+
 from .inline_session import get_session
 
 log = logging.getLogger(__name__)
@@ -32,21 +34,22 @@ log = logging.getLogger(__name__)
 
 class EditInlineText:
     async def edit_inline_text(
-        self: "pyrogram.Client",
+        self: pyrogram.Client,
         inline_message_id: str,
         text: str,
-        parse_mode: Optional["enums.ParseMode"] = None,
-        entities: list["types.MessageEntity"] = None,
-        link_preview_options: "types.LinkPreviewOptions" = None,
-        reply_markup: "types.InlineKeyboardMarkup" = None,
-        disable_web_page_preview: bool = None,
-        **kwargs
+        parse_mode: enums.ParseMode | None = None,
+        entities: list[types.MessageEntity] | None = None,
+        link_preview_options: types.LinkPreviewOptions = None,
+        reply_markup: types.InlineKeyboardMarkup = None,
+        disable_web_page_preview: bool | None = None,
+        **kwargs,
     ) -> bool:
         """Edit the text of inline messages.
 
         .. include:: /_includes/usable-by/bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             inline_message_id (``str``):
                 Identifier of the inline message.
 
@@ -66,7 +69,8 @@ class EditInlineText:
             reply_markup (:obj:`~pyrogram.types.InlineKeyboardMarkup`, *optional*):
                 An InlineKeyboardMarkup object.
 
-        Returns:
+        Returns
+        -------
             ``bool``: On success, True is returned.
 
         Example:
@@ -84,19 +88,24 @@ class EditInlineText:
                         is_disabled=True
                     )
                 )
+
         """
         if disable_web_page_preview and link_preview_options:
-            raise ValueError(
+            msg = (
                 "Parameters `disable_web_page_preview` and `link_preview_options` are mutually "
                 "exclusive."
+            )
+            raise ValueError(
+                msg,
             )
 
         if disable_web_page_preview is not None:
             log.warning(
-                "This property is deprecated. "
-                "Please use link_preview_options instead"
+                "This property is deprecated. Please use link_preview_options instead",
             )
-            link_preview_options = types.LinkPreviewOptions(is_disabled=disable_web_page_preview)
+            link_preview_options = types.LinkPreviewOptions(
+                is_disabled=disable_web_page_preview
+            )
 
         link_preview_options = link_preview_options or self.link_preview_options
 
@@ -108,10 +117,14 @@ class EditInlineText:
         return await session.invoke(
             raw.functions.messages.EditInlineBotMessage(
                 id=unpacked,
-                no_webpage=link_preview_options.is_disabled if link_preview_options else None,
-                invert_media=link_preview_options.show_above_text if link_preview_options else None,
+                no_webpage=link_preview_options.is_disabled
+                if link_preview_options
+                else None,
+                invert_media=link_preview_options.show_above_text
+                if link_preview_options
+                else None,
                 reply_markup=await reply_markup.write(self) if reply_markup else None,
-                **await utils.parse_text_entities(self, text, parse_mode, entities)
+                **await utils.parse_text_entities(self, text, parse_mode, entities),
             ),
-            sleep_threshold=self.sleep_threshold
+            sleep_threshold=self.sleep_threshold,
         )

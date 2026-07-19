@@ -20,7 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw
@@ -28,16 +28,17 @@ from pyrogram import raw
 
 class GetChatAdminInviteLinksCount:
     async def get_chat_admin_invite_links_count(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
-        admin_id: Union[int, str],
+        self: pyrogram.Client,
+        chat_id: int | str,
+        admin_id: int | str,
         revoked: bool = False,
     ) -> int:
         """Get the count of the invite links created by an administrator in a chat.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier for the target chat or username of the target channel/supergroup
                 (in the format @username).
@@ -51,16 +52,18 @@ class GetChatAdminInviteLinksCount:
                 True, if you want to get revoked links instead.
                 Defaults to False (get active links only).
 
-        Returns:
+        Returns
+        -------
             ``int``: On success, the invite links count is returned.
+
         """
         r = await self.invoke(
             raw.functions.messages.GetExportedChatInvites(
                 peer=await self.resolve_peer(chat_id),
                 admin_id=await self.resolve_peer(admin_id),
                 limit=1,
-                revoked=revoked
-            )
+                revoked=revoked,
+            ),
         )
 
         return r.count

@@ -20,37 +20,43 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 from asyncio import sleep
-from datetime import datetime
-from typing import AsyncGenerator, Optional
+from typing import TYPE_CHECKING
 
 import pyrogram
 from pyrogram import raw, types, utils
 
+if TYPE_CHECKING:
+    from collections.abc import AsyncGenerator
+    from datetime import datetime
+
 
 class GetDialogs:
     async def get_dialogs(
-        self: "pyrogram.Client",
+        self: pyrogram.Client,
         limit: int = 0,
         pinned_only: bool = False,
         chat_list: int = 0,
         offset_date: datetime = utils.zero_datetime(),
         offset_message_id: int = 0,
-        **kwargs
-    ) -> Optional[AsyncGenerator["types.Dialog", None]]:
+        **kwargs,
+    ) -> AsyncGenerator[types.Dialog, None] | None:
         """Get a user's dialogs sequentially.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             limit (``int``, *optional*):
                 Limits the number of dialogs to be retrieved.
                 By default, no limit is applied and all dialogs are returned.
-            
+
             pinned_only (``bool``, *optional*):
                 Pass True if you want to get only pinned dialogs.
                 Defaults to False.
-            
+
             chat_list (``int``, *optional*):
                 Chat list from which to get the dialogs; Only Main (0) and Archive (1) chat lists are supported. Defaults to (0) Main chat list.
 
@@ -60,7 +66,8 @@ class GetDialogs:
             offset_message_id (``int``, *optional*):
                 The message identifier of the last message in the last found dialog, or 0 for the first request.
 
-        Returns:
+        Returns
+        -------
             ``Generator``: A generator yielding :obj:`~pyrogram.types.Dialog` objects.
 
         Example:
@@ -69,6 +76,7 @@ class GetDialogs:
                 # Iterate through all dialogs
                 async for dialog in app.get_dialogs():
                     print(dialog.chat.first_name or dialog.chat.title)
+
         """
         current = 0
         total = limit or (1 << 31) - 1
@@ -88,9 +96,9 @@ class GetDialogs:
                     limit=request_limit,
                     hash=0,
                     exclude_pinned=not pinned_only,
-                    folder_id=chat_list
+                    folder_id=chat_list,
                 ),
-                sleep_threshold=60
+                sleep_threshold=60,
             )
 
             users = {i.id: i for i in r.users}
@@ -108,7 +116,7 @@ class GetDialogs:
                     message,
                     users,
                     chats,
-                    replies=self.fetch_replies
+                    replies=self.fetch_replies,
                 )
 
             dialogs = []
@@ -120,13 +128,13 @@ class GetDialogs:
                 parsed = types.Dialog._parse(self, dialog, messages, users, chats)
                 if parsed is None:
                     continue
-                
+
                 if parsed.chat is None:
                     continue
-                
+
                 if parsed.chat.id in seen_dialog_ids:
                     continue
-                
+
                 seen_dialog_ids.add(parsed.chat.id)
                 dialogs.append(parsed)
 

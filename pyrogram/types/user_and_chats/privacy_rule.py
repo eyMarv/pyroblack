@@ -20,16 +20,17 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import List, Optional
+from __future__ import annotations
 
 from pyrogram import raw, types
-from ..object import Object
+from pyrogram.types.object import Object
 
 
 class PrivacyRule(Object):
     """A privacy rule.
 
-    Parameters:
+    Parameters
+    ----------
         allow_all (``bool``, *optional*):
             Allow all users.
 
@@ -50,19 +51,20 @@ class PrivacyRule(Object):
 
         chats (List of :obj:`~pyrogram.types.Chat`, *optional*):
             List of chats.
+
     """
 
     def __init__(
         self,
         *,
-        allow_all: Optional[bool] = None,
-        allow_chats: Optional[bool] = None,
-        allow_contacts: Optional[bool] = None,
-        allow_premium: Optional[bool] = None,
-        allow_users: Optional[bool] = None,
-        users: Optional[List["types.User"]] = None,
-        chats: Optional[List["types.Chat"]] = None,
-    ):
+        allow_all: bool | None = None,
+        allow_chats: bool | None = None,
+        allow_contacts: bool | None = None,
+        allow_premium: bool | None = None,
+        allow_users: bool | None = None,
+        users: list[types.User] | None = None,
+        chats: list[types.Chat] | None = None,
+    ) -> None:
         super().__init__(None)
 
         self.allow_all = allow_all
@@ -74,7 +76,7 @@ class PrivacyRule(Object):
         self.chats = chats
 
     @staticmethod
-    def _parse(client, rule: "raw.base.PrivacyRule", users, chats) -> "PrivacyRule":
+    def _parse(client, rule: raw.base.PrivacyRule, users, chats) -> PrivacyRule:
         parsed_users = None
         parsed_chats = None
 

@@ -20,17 +20,17 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import List, Optional
+from __future__ import annotations
 
 from pyrogram import raw
-
-from ..object import Object
+from pyrogram.types.object import Object
 
 
 class GiftResaleParameters(Object):
     """Describes parameters of a unique gift available for resale.
 
-    Parameters:
+    Parameters
+    ----------
         star_count (``int``, *optional*):
             Resale price of the gift in Telegram Stars.
 
@@ -39,14 +39,16 @@ class GiftResaleParameters(Object):
 
         toncoin_only (``bool``, *optional*):
             True, if the gift can be bought only using Toncoins.
+
     """
+
     def __init__(
         self,
         *,
-        star_count: Optional[int] = None,
-        toncoin_cent_count: Optional[int] = None,
-        toncoin_only: Optional[bool] = None
-    ):
+        star_count: int | None = None,
+        toncoin_cent_count: int | None = None,
+        toncoin_only: bool | None = None,
+    ) -> None:
         super().__init__()
 
         self.star_count = star_count
@@ -54,7 +56,9 @@ class GiftResaleParameters(Object):
         self.toncoin_only = toncoin_only
 
     @staticmethod
-    def _parse(resell_amount: List["raw.base.StarsAmount"], ton_only: bool) -> Optional["GiftResaleParameters"]:
+    def _parse(
+        resell_amount: list[raw.base.StarsAmount], ton_only: bool
+    ) -> GiftResaleParameters | None:
         if not resell_amount:
             return None
 
@@ -70,6 +74,5 @@ class GiftResaleParameters(Object):
         return GiftResaleParameters(
             star_count=star_count,
             toncoin_cent_count=toncoin_cent_count,
-            toncoin_only=ton_only
+            toncoin_only=ton_only,
         )
-

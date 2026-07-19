@@ -20,13 +20,17 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-import re
-from typing import Optional
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import pyrogram
 from pyrogram import raw, types, utils
-from ..object import Object
-from ..update import Update
+from pyrogram.types.object import Object
+from pyrogram.types.update import Update
+
+if TYPE_CHECKING:
+    import re
 
 
 class ChosenInlineResult(Object, Update):
@@ -37,7 +41,8 @@ class ChosenInlineResult(Object, Update):
         In order to receive these updates, your bot must have "inline feedback" enabled.
         You can enable this feature with `@BotFather <https://t.me/botfather>`_.
 
-    Parameters:
+    Parameters
+    ----------
         result_id (``str``):
             The unique identifier for the result that was chosen.
 
@@ -58,19 +63,20 @@ class ChosenInlineResult(Object, Update):
         matches (List of regex Matches, *optional*):
             A list containing all `Match Objects <https://docs.python.org/3/library/re.html#match-objects>`_ that match
             the query of this inline query. Only applicable when using :obj:`Filters.regex <pyrogram.Filters.regex>`.
+
     """
 
     def __init__(
         self,
         *,
-        client: "pyrogram.Client" = None,
+        client: pyrogram.Client = None,
         result_id: str,
-        from_user: "types.User",
+        from_user: types.User,
         query: str,
-        location: "types.Location" = None,
-        inline_message_id: str = None,
-        matches: list[re.Match] = None
-    ):
+        location: types.Location = None,
+        inline_message_id: str | None = None,
+        matches: list[re.Match] | None = None,
+    ) -> None:
         super().__init__(client)
 
         self.result_id = result_id
@@ -81,10 +87,16 @@ class ChosenInlineResult(Object, Update):
         self.matches = matches
 
     @staticmethod
-    def _parse(client, chosen_inline_result: raw.types.UpdateBotInlineSend, users) -> "ChosenInlineResult":
-        inline_message_id = utils.pack_inline_message_id(
-            chosen_inline_result.msg_id
-        ) if chosen_inline_result.msg_id else None
+    def _parse(
+        client, chosen_inline_result: raw.types.UpdateBotInlineSend, users
+    ) -> ChosenInlineResult:
+        inline_message_id = (
+            utils.pack_inline_message_id(
+                chosen_inline_result.msg_id,
+            )
+            if chosen_inline_result.msg_id
+            else None
+        )
 
         return ChosenInlineResult(
             result_id=str(chosen_inline_result.id),
@@ -93,25 +105,28 @@ class ChosenInlineResult(Object, Update):
             location=types.Location(
                 longitude=chosen_inline_result.geo.long,
                 latitude=chosen_inline_result.geo.lat,
-                client=client
-            ) if chosen_inline_result.geo else None,
+                client=client,
+            )
+            if chosen_inline_result.geo
+            else None,
             inline_message_id=inline_message_id,
-            client=client
+            client=client,
         )
 
     async def edit_message_text(
         self,
         text: str,
-        parse_mode: Optional["enums.ParseMode"] = None,
-        entities: list["types.MessageEntity"] = None,
-        link_preview_options: "types.LinkPreviewOptions" = None,
-        reply_markup: "types.InlineKeyboardMarkup" = None
+        parse_mode: enums.ParseMode | None = None,
+        entities: list[types.MessageEntity] | None = None,
+        link_preview_options: types.LinkPreviewOptions = None,
+        reply_markup: types.InlineKeyboardMarkup = None,
     ) -> bool:
         """Edit the text of messages attached to sent :obj:`~pyrogram.types.InlineQueryResult` messages.
 
         Bound method *edit_message_text* of :obj:`~pyrogram.types.ChosenInlineResult`.
 
-        Parameters:
+        Parameters
+        ----------
             text (``str``):
                 New text of the message.
 
@@ -128,37 +143,40 @@ class ChosenInlineResult(Object, Update):
             reply_markup (:obj:`~pyrogram.types.InlineKeyboardMarkup`, *optional*):
                 An InlineKeyboardMarkup object.
 
-        Returns:
+        Returns
+        -------
             ``bool``: On success, True is returned.
 
-        Raises:
+        Raises
+        ------
             :obj:`~pyrogram.errors.RPCError`: In case of a Telegram RPC error.
 
         """
         if self.inline_message_id is None:
-            raise ValueError("Identifier of the inline message is required to edit the message")
-        else:
-            return await self._client.edit_inline_text(
-                inline_message_id=self.inline_message_id,
-                text=text,
-                parse_mode=parse_mode,
-                entities=entities,
-                link_preview_options=link_preview_options,
-                reply_markup=reply_markup
-            )
+            msg = "Identifier of the inline message is required to edit the message"
+            raise ValueError(msg)
+        return await self._client.edit_inline_text(
+            inline_message_id=self.inline_message_id,
+            text=text,
+            parse_mode=parse_mode,
+            entities=entities,
+            link_preview_options=link_preview_options,
+            reply_markup=reply_markup,
+        )
 
     async def edit_message_caption(
         self,
         caption: str,
-        parse_mode: Optional["enums.ParseMode"] = None,
-        caption_entities: list["types.MessageEntity"] = None,
-        reply_markup: "types.InlineKeyboardMarkup" = None
+        parse_mode: enums.ParseMode | None = None,
+        caption_entities: list[types.MessageEntity] | None = None,
+        reply_markup: types.InlineKeyboardMarkup = None,
     ) -> bool:
         """Edit the caption of media messages attached to sent :obj:`~pyrogram.types.InlineQueryResult` messages.
 
         Bound method *edit_message_caption* of :obj:`~pyrogram.types.ChosenInlineResult`.
 
-        Parameters:
+        Parameters
+        ----------
             caption (``str``):
                 New caption of the message.
 
@@ -172,10 +190,12 @@ class ChosenInlineResult(Object, Update):
             reply_markup (:obj:`~pyrogram.types.InlineKeyboardMarkup`, *optional*):
                 An InlineKeyboardMarkup object.
 
-        Returns:
+        Returns
+        -------
             ``bool``: On success, True is returned.
 
-        Raises:
+        Raises
+        ------
             :obj:`~pyrogram.errors.RPCError`: In case of a Telegram RPC error.
 
         """
@@ -183,64 +203,70 @@ class ChosenInlineResult(Object, Update):
             text=caption,
             parse_mode=parse_mode,
             entities=caption_entities,
-            reply_markup=reply_markup
+            reply_markup=reply_markup,
         )
 
     async def edit_message_media(
         self,
-        media: "types.InputMedia",
-        reply_markup: "types.InlineKeyboardMarkup" = None,
+        media: types.InputMedia,
+        reply_markup: types.InlineKeyboardMarkup = None,
     ) -> bool:
         """Edit animation, audio, document, photo or video messages attached to sent :obj:`~pyrogram.types.InlineQueryResult` messages.
 
         Bound method *edit_message_media* of :obj:`~pyrogram.types.ChosenInlineResult`.
 
-        Parameters:
+        Parameters
+        ----------
             media (:obj:`~pyrogram.types.InputMedia`):
                 One of the InputMedia objects describing an animation, audio, document, photo or video.
 
             reply_markup (:obj:`~pyrogram.types.InlineKeyboardMarkup`, *optional*):
                 An InlineKeyboardMarkup object.
 
-        Returns:
+        Returns
+        -------
             ``bool``: On success, True is returned.
 
-        Raises:
+        Raises
+        ------
             :obj:`~pyrogram.errors.RPCError`: In case of a Telegram RPC error.
 
         """
         if self.inline_message_id is None:
-            raise ValueError("Identifier of the inline message is required to edit the message")
-        else:
-            return await self._client.edit_inline_media(
-                inline_message_id=self.inline_message_id,
-                media=media,
-                reply_markup=reply_markup
-            )
+            msg = "Identifier of the inline message is required to edit the message"
+            raise ValueError(msg)
+        return await self._client.edit_inline_media(
+            inline_message_id=self.inline_message_id,
+            media=media,
+            reply_markup=reply_markup,
+        )
 
     async def edit_message_reply_markup(
         self,
-        reply_markup: "types.InlineKeyboardMarkup" = None
+        reply_markup: types.InlineKeyboardMarkup = None,
     ) -> bool:
         """Edit only the reply markup of messages attached to sent :obj:`~pyrogram.types.InlineQueryResult` messages.
 
         Bound method *edit_message_reply_markup* of :obj:`~pyrogram.types.ChosenInlineResult`.
 
-        Parameters:
+        Parameters
+        ----------
             reply_markup (:obj:`~pyrogram.types.InlineKeyboardMarkup`):
                 An InlineKeyboardMarkup object.
 
-        Returns:
+        Returns
+        -------
             ``bool``: On success, True is returned.
 
-        Raises:
+        Raises
+        ------
             :obj:`~pyrogram.errors.RPCError`: In case of a Telegram RPC error.
 
         """
         if self.inline_message_id is None:
-            raise ValueError("Identifier of the inline message is required to edit the message")
-        else:
-            return await self._client.edit_inline_reply_markup(
-                inline_message_id=self.inline_message_id,
-                reply_markup=reply_markup
-            )
+            msg = "Identifier of the inline message is required to edit the message"
+            raise ValueError(msg)
+        return await self._client.edit_inline_reply_markup(
+            inline_message_id=self.inline_message_id,
+            reply_markup=reply_markup,
+        )

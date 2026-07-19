@@ -20,67 +20,66 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-import logging
+from __future__ import annotations
+
 import io
-import os
-import re
-from datetime import datetime
-from typing import Union, Optional, Callable
+import logging
+from typing import TYPE_CHECKING, Callable
 
 import pyrogram
-from pyrogram import raw, enums, types, utils
+from pyrogram import enums, raw, types, utils
 from pyrogram.errors import FilePartMissing
-from pyrogram.file_id import FileType
+
 from .inline_session import get_session
+
+if TYPE_CHECKING:
+    from datetime import datetime
 
 log = logging.getLogger(__name__)
 
 
 class SendPhoto:
     async def send_photo(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
-        photo: "types.InputMediaPhoto",
-
+        self: pyrogram.Client,
+        chat_id: int | str,
+        photo: types.InputMediaPhoto,
         caption: str = "",
-        parse_mode: Optional["enums.ParseMode"] = None,
-        caption_entities: list["types.MessageEntity"] = None,
-        show_caption_above_media: bool = None,
-        has_spoiler: bool = None,
-
-        ttl_seconds: int = None,
-        disable_notification: bool = None,
-        reply_parameters: "types.ReplyParameters" = None,
-        message_thread_id: int = None,
-        business_connection_id: str = None,
-        send_as: Union[int, str] = None,
-        schedule_date: datetime = None,
-        protect_content: bool = None,
-        allow_paid_broadcast: bool = None,
-        paid_message_star_count: int = None,
-        view_once: bool = None,
-        message_effect_id: int = None,
-        reply_markup: Union[
-            "types.InlineKeyboardMarkup",
-            "types.ReplyKeyboardMarkup",
-            "types.ReplyKeyboardRemove",
-            "types.ForceReply"
-        ] = None,
-        reply_to_chat_id: Union[int, str] = None,
-        reply_to_story_id: int = None,
-        reply_to_monoforum_id: Union[int, str] = None,
-        quote_text: str = None,
-        quote_entities: list = None,
-        invert_media: bool = None,
-        reply_to_message_id: int = None,
-        progress: Callable = None,
-        progress_args: tuple = ()
-    ) -> Optional["types.Message"]:
+        parse_mode: enums.ParseMode | None = None,
+        caption_entities: list[types.MessageEntity] | None = None,
+        show_caption_above_media: bool | None = None,
+        has_spoiler: bool | None = None,
+        ttl_seconds: int | None = None,
+        disable_notification: bool | None = None,
+        reply_parameters: types.ReplyParameters = None,
+        message_thread_id: int | None = None,
+        business_connection_id: str | None = None,
+        send_as: int | str | None = None,
+        schedule_date: datetime | None = None,
+        protect_content: bool | None = None,
+        allow_paid_broadcast: bool | None = None,
+        paid_message_star_count: int | None = None,
+        view_once: bool | None = None,
+        message_effect_id: int | None = None,
+        reply_markup: types.InlineKeyboardMarkup
+        | types.ReplyKeyboardMarkup
+        | types.ReplyKeyboardRemove
+        | types.ForceReply = None,
+        reply_to_chat_id: int | str | None = None,
+        reply_to_story_id: int | None = None,
+        reply_to_monoforum_id: int | str | None = None,
+        quote_text: str | None = None,
+        quote_entities: list | None = None,
+        invert_media: bool | None = None,
+        reply_to_message_id: int | None = None,
+        progress: Callable | None = None,
+        progress_args: tuple = (),
+    ) -> types.Message | None:
         """Send photos.
 
         .. include:: /_includes/usable-by/users-bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
                 For your personal cloud (Saved Messages) you can simply use "me" or "self".
@@ -125,7 +124,7 @@ class SendPhoto:
             send_as (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the chat or channel to send the message as.
                 You can use this to send the message on behalf of a chat or channel where you have appropriate permissions.
-                Use the :meth:`~pyrogram.Client.get_send_as_chats` to return the list of message sender identifiers, which can be used to send messages in the chat, 
+                Use the :meth:`~pyrogram.Client.get_send_as_chats` to return the list of message sender identifiers, which can be used to send messages in the chat,
                 This setting applies to the current message and will remain effective for future messages unless explicitly changed.
                 To set this behavior permanently for all messages, use :meth:`~pyrogram.Client.set_send_as_chat`.
 
@@ -162,7 +161,8 @@ class SendPhoto:
                 You can pass anything you need to be available in the progress callback scope; for example, a Message
                 object or a Client instance in order to edit the message with the updated progress status.
 
-        Other Parameters:
+        Other Parameters
+        ----------------
             current (``int``):
                 The amount of bytes transmitted so far.
 
@@ -173,7 +173,8 @@ class SendPhoto:
                 Extra custom arguments as defined in the ``progress_args`` parameter.
                 You can either keep ``*args`` or add every single extra argument in your function signature.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.Message` | ``None``: On success, the sent photo message is returned, otherwise, in
             case the upload is deliberately stopped with :meth:`~pyrogram.Client.stop_transmission`, None is returned.
 
@@ -191,8 +192,8 @@ class SendPhoto:
 
                 # Send self-destructing photo
                 await app.send_photo("me", "photo.jpg", ttl_seconds=10)
-        """
 
+        """
         if invert_media is not None and show_caption_above_media is None:
             show_caption_above_media = invert_media
 
@@ -211,10 +212,7 @@ class SendPhoto:
         ttl_seconds = 0x7FFFFFFF if view_once else ttl_seconds
 
         try:
-            if (
-                isinstance(photo, str) or
-                isinstance(photo, io.BytesIO)
-            ):
+            if isinstance(photo, (str, io.BytesIO)):
                 photo = types.InputMediaPhoto(
                     media=photo,
                     caption=caption,
@@ -233,7 +231,7 @@ class SendPhoto:
             reply_to = await utils._get_reply_message_parameters(
                 self,
                 message_thread_id,
-                reply_parameters
+                reply_parameters,
             )
             rpc = raw.functions.messages.SendMedia(
                 peer=await self.resolve_peer(chat_id),
@@ -249,17 +247,23 @@ class SendPhoto:
                 reply_markup=await reply_markup.write(self) if reply_markup else None,
                 effect=message_effect_id,
                 invert_media=show_caption_above_media,
-                **await utils.parse_text_entities(self, caption, parse_mode, caption_entities)
+                **await utils.parse_text_entities(
+                    self, caption, parse_mode, caption_entities
+                ),
             )
             session = None
             business_connection = None
             if business_connection_id:
-                business_connection = self.business_user_connection_cache[business_connection_id]
+                business_connection = self.business_user_connection_cache[
+                    business_connection_id
+                ]
                 if business_connection is None:
-                    business_connection = await self.get_business_connection(business_connection_id)
+                    business_connection = await self.get_business_connection(
+                        business_connection_id
+                    )
                 session = await get_session(
                     self,
-                    business_connection._raw.connection.dc_id
+                    business_connection._raw.connection.dc_id,
                 )
 
             while True:
@@ -268,8 +272,8 @@ class SendPhoto:
                         r = await session.invoke(
                             raw.functions.InvokeWithBusinessConnection(
                                 query=rpc,
-                                connection_id=business_connection_id
-                            )
+                                connection_id=business_connection_id,
+                            ),
                         )
                         # await session.stop()
                     else:
@@ -283,30 +287,33 @@ class SendPhoto:
                             (
                                 raw.types.UpdateNewMessage,
                                 raw.types.UpdateNewChannelMessage,
-                                raw.types.UpdateNewScheduledMessage
-                            )
-                        ):
-                            return await types.Message._parse(
-                                self, i.message,
-                                {i.id: i for i in r.users},
-                                {i.id: i for i in r.chats},
-                                is_scheduled=isinstance(i, raw.types.UpdateNewScheduledMessage),
-                                replies=self.fetch_replies
-                            )
-                        elif isinstance(
-                            i,
-                            (
-                                raw.types.UpdateBotNewBusinessMessage
-                            )
+                                raw.types.UpdateNewScheduledMessage,
+                            ),
                         ):
                             return await types.Message._parse(
                                 self,
                                 i.message,
                                 {i.id: i for i in r.users},
                                 {i.id: i for i in r.chats},
-                                business_connection_id=getattr(i, "connection_id", business_connection_id),
+                                is_scheduled=isinstance(
+                                    i, raw.types.UpdateNewScheduledMessage
+                                ),
+                                replies=self.fetch_replies,
+                            )
+                        if isinstance(
+                            i,
+                            (raw.types.UpdateBotNewBusinessMessage),
+                        ):
+                            return await types.Message._parse(
+                                self,
+                                i.message,
+                                {i.id: i for i in r.users},
+                                {i.id: i for i in r.chats},
+                                business_connection_id=getattr(
+                                    i, "connection_id", business_connection_id
+                                ),
                                 raw_reply_to_message=i.reply_to_message,
-                                replies=0
+                                replies=0,
                             )
         except pyrogram.StopTransmission:
             return None

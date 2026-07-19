@@ -20,11 +20,13 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import logging
-from typing import Optional
 
 import pyrogram
-from pyrogram import raw, types, utils, enums
+from pyrogram import enums, raw, types, utils
+
 from .inline_query_result import InlineQueryResult
 
 log = logging.getLogger(__name__)
@@ -43,7 +45,8 @@ class InlineQueryResultVideo(InlineQueryResult):
         you must replace its content using *input_message_content*.
 
 
-    Parameters:
+    Parameters
+    ----------
         video_url (``str``):
             A valid URL for the embedded video player or video file.
 
@@ -92,6 +95,7 @@ class InlineQueryResultVideo(InlineQueryResult):
         input_message_content (:obj:`~pyrogram.types.InputMessageContent`):
             Content of the message to be sent instead of the video. This field is required if InlineQueryResultVideo is
             used to send an HTML-page as a result (e.g., a YouTube video).
+
     """
 
     def __init__(
@@ -99,30 +103,29 @@ class InlineQueryResultVideo(InlineQueryResult):
         video_url: str,
         thumbnail_url: str,
         title: str,
-        id: str = None,
+        id: str | None = None,
         mime_type: str = "video/mp4",
         video_width: int = 0,
         video_height: int = 0,
         video_duration: int = 0,
-        description: str = None,
+        description: str | None = None,
         caption: str = "",
-        parse_mode: Optional["enums.ParseMode"] = None,
-        caption_entities: list["types.MessageEntity"] = None,
-        show_caption_above_media: bool = None,
-        reply_markup: "types.InlineKeyboardMarkup" = None,
-        input_message_content: "types.InputMessageContent" = None,
-        thumb_url: str = None,
-    ):
+        parse_mode: enums.ParseMode | None = None,
+        caption_entities: list[types.MessageEntity] | None = None,
+        show_caption_above_media: bool | None = None,
+        reply_markup: types.InlineKeyboardMarkup = None,
+        input_message_content: types.InputMessageContent = None,
+        thumb_url: str | None = None,
+    ) -> None:
         if thumb_url and thumbnail_url:
+            msg = "Parameters `thumb_url` and `thumbnail_url` are mutually exclusive."
             raise ValueError(
-                "Parameters `thumb_url` and `thumbnail_url` are mutually "
-                "exclusive."
+                msg,
             )
-        
+
         if thumb_url is not None:
             log.warning(
-                "This property is deprecated. "
-                "Please use thumbnail_url instead"
+                "This property is deprecated. Please use thumbnail_url instead",
             )
             thumbnail_url = thumb_url
 
@@ -142,28 +145,35 @@ class InlineQueryResultVideo(InlineQueryResult):
         self.show_caption_above_media = show_caption_above_media
         self.mime_type = mime_type
 
-    async def write(self, client: "pyrogram.Client"):
+    async def write(self, client: pyrogram.Client):
         video = raw.types.InputWebDocument(
             url=self.video_url,
             size=0,
             mime_type=self.mime_type,
-            attributes=[raw.types.DocumentAttributeVideo(
-                duration=self.video_duration,
-                w=self.video_width,
-                h=self.video_height
-            )]
+            attributes=[
+                raw.types.DocumentAttributeVideo(
+                    duration=self.video_duration,
+                    w=self.video_width,
+                    h=self.video_height,
+                )
+            ],
         )
 
         thumb = raw.types.InputWebDocument(
             url=self.thumbnail_url,
             size=0,
             mime_type="image/jpeg",
-            attributes=[]
+            attributes=[],
         )
 
-        message, entities = (await utils.parse_text_entities(
-            client, self.caption, self.parse_mode, self.caption_entities
-        )).values()
+        message, entities = (
+            await utils.parse_text_entities(
+                client,
+                self.caption,
+                self.parse_mode,
+                self.caption_entities,
+            )
+        ).values()
 
         return raw.types.InputBotInlineResult(
             id=self.id,
@@ -176,10 +186,12 @@ class InlineQueryResultVideo(InlineQueryResult):
                 await self.input_message_content.write(client, self.reply_markup)
                 if self.input_message_content
                 else raw.types.InputBotInlineMessageMediaAuto(
-                    reply_markup=await self.reply_markup.write(client) if self.reply_markup else None,
+                    reply_markup=await self.reply_markup.write(client)
+                    if self.reply_markup
+                    else None,
                     message=message,
                     entities=entities,
-                    invert_media=self.show_caption_above_media
+                    invert_media=self.show_caption_above_media,
                 )
-            )
+            ),
         )

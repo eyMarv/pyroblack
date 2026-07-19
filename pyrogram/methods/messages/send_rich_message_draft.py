@@ -20,7 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional, Union
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw, types
@@ -28,11 +28,11 @@ from pyrogram import raw, types
 
 class SendRichMessageDraft:
     async def send_rich_message_draft(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
+        self: pyrogram.Client,
+        chat_id: int | str,
         draft_id: int,
-        rich_message: "types.InputRichMessage",
-        message_thread_id: Optional[int] = None,
+        rich_message: types.InputRichMessage,
+        message_thread_id: int | None = None,
     ) -> bool:
         """Stream a partial rich message to a user while the message is being generated.
 
@@ -43,7 +43,8 @@ class SendRichMessageDraft:
 
         .. include:: /_includes/usable-by/bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
 
@@ -57,8 +58,10 @@ class SendRichMessageDraft:
             message_thread_id (``int``, *optional*):
                 Unique identifier for the target message thread.
 
-        Returns:
+        Returns
+        -------
             ``bool``: On success, True is returned.
+
         """
         return await self.invoke(
             raw.functions.messages.SetTyping(
@@ -68,5 +71,5 @@ class SendRichMessageDraft:
                     rich_message=rich_message.write(),
                 ),
                 top_msg_id=message_thread_id,
-            )
+            ),
         )

@@ -20,23 +20,26 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import datetime
-from typing import Union
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import pyrogram
-from pyrogram import raw, utils
-from pyrogram import types
+from pyrogram import raw, types, utils
+
+if TYPE_CHECKING:
+    from datetime import datetime
 
 
 class RestrictChatMember:
     async def restrict_chat_member(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
-        user_id: Union[int, str],
-        permissions: "types.ChatPermissions",
+        self: pyrogram.Client,
+        chat_id: int | str,
+        user_id: int | str,
+        permissions: types.ChatPermissions,
         use_independent_chat_permissions: bool = False,
-        until_date: datetime = utils.zero_datetime()
-    ) -> "types.Chat":
+        until_date: datetime = utils.zero_datetime(),
+    ) -> types.Chat:
         """Restrict a user in a supergroup.
 
         You must be an administrator in the supergroup for this to work and must have the appropriate admin rights.
@@ -44,7 +47,8 @@ class RestrictChatMember:
 
         .. include:: /_includes/usable-by/users-bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
 
@@ -66,7 +70,8 @@ class RestrictChatMember:
                 If user is banned for more than 366 days or less than 30 seconds from the current time they are
                 considered to be banned forever. Defaults to epoch (ban forever).
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.Chat`: On success, a chat object is returned.
 
         Example:
@@ -85,6 +90,7 @@ class RestrictChatMember:
                 # Chat member can only send text messages
                 await app.restrict_chat_member(chat_id, user_id,
                     ChatPermissions(can_send_messages=True))
+
         """
         r = await self.invoke(
             raw.functions.channels.EditBanned(
@@ -92,9 +98,9 @@ class RestrictChatMember:
                 participant=await self.resolve_peer(user_id),
                 banned_rights=permissions.write(
                     use_independent_chat_permissions,
-                    until_date
-                )
-            )
+                    until_date,
+                ),
+            ),
         )
 
         return types.Chat._parse_chat(self, r.chats[0])

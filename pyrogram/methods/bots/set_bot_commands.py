@@ -21,8 +21,7 @@
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
 import pyrogram
-from pyrogram import raw
-from pyrogram import types
+from pyrogram import raw, types
 
 
 class SetBotCommands:
@@ -38,7 +37,8 @@ class SetBotCommands:
 
         .. include:: /_includes/usable-by/bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             commands (List of :obj:`~pyrogram.types.BotCommand`):
                 A list of bot commands.
                 At most 100 commands can be specified.
@@ -52,10 +52,12 @@ class SetBotCommands:
                 If empty, commands will be applied to all users from the given scope, for whose language there are no
                 dedicated commands.
 
-        Returns:
+        Returns
+        -------
             ``bool``: On success, True is returned.
 
-        Raises:
+        Raises
+        ------
             :obj:`~pyrogram.errors.RPCError`: In case of a Telegram RPC error.
 
         Example:
@@ -67,12 +69,12 @@ class SetBotCommands:
                 await app.set_bot_commands([
                     BotCommand("start", "Start the bot"),
                     BotCommand("settings", "Bot settings")])
-        """
 
+        """
         return await self.invoke(
             raw.functions.bots.SetBotCommands(
                 commands=[c.write() for c in commands],
                 scope=await scope.write(self),
                 lang_code=language_code,
-            )
+            ),
         )

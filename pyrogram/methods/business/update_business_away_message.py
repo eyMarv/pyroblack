@@ -25,36 +25,37 @@
 # Source: tl:account.updateBusinessAwayMessage
 # ***************************
 
-from typing import Union, Optional
+from __future__ import annotations
 
 import pyrogram
-from pyrogram import raw
-from pyrogram import types
+from pyrogram import raw, types
 
 
 class UpdateBusinessAwayMessage:
     async def update_business_away_message(
-        self: "pyrogram.Client",
-        message: Optional[raw.types.InputBusinessAwayMessage] = None,
-    ) -> "types.Message":
+        self: pyrogram.Client,
+        message: raw.types.InputBusinessAwayMessage | None = None,
+    ) -> types.Message:
         """Set an automatic away message when you are offline.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             message (raw.types.InputBusinessAwayMessage): Away message config (shortcut_id + schedule + recipients)
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.Message`
 
         Example:
             .. code-block:: python
 
                 await app.update_business_away_message(...)
-        """
 
-        r = await self.invoke(
+        """
+        await self.invoke(
             raw.functions.account.updateBusinessAwayMessage(
                 message=message,
-            )
+            ),
         )

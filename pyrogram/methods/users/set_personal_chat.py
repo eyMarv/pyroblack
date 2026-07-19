@@ -20,7 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional, Union
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw
@@ -28,18 +28,20 @@ from pyrogram import raw
 
 class SetPersonalChat:
     async def set_personal_chat(
-        self: "pyrogram.Client",
-        chat_id: Optional[Union[int, str]] = None,
+        self: pyrogram.Client,
+        chat_id: int | str | None = None,
     ) -> bool:
-        """Changes the personal chat of the current user
+        """Changes the personal chat of the current user.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``, *optional*):
                 Identifier of the new personal chat; pass None to remove the chat. Use :meth:`~pyrogram.Client.get_created_chats` with ``is_suitable_for_my_personal_chat`` to get suitable chats
 
-        Returns:
+        Returns
+        -------
             ``bool``: True on success.
 
         Example:
@@ -50,14 +52,16 @@ class SetPersonalChat:
 
                 # Hide your personal chat
                 await app.set_personal_chat()
-        """
 
+        """
         return bool(
             await self.invoke(
                 raw.functions.account.UpdatePersonalChannel(
                     channel=await self.resolve_peer(
-                        chat_id
-                    ) if chat_id else raw.types.InputChannelEmpty()
-                )
-            )
+                        chat_id,
+                    )
+                    if chat_id
+                    else raw.types.InputChannelEmpty(),
+                ),
+            ),
         )

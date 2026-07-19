@@ -20,18 +20,18 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw, types
-
-from ..object import Object
+from pyrogram.types.object import Object
 
 
 class PaidMediaPurchased(Object):
     """This object contains information about a paid media purchase.
 
-    Parameters:
+    Parameters
+    ----------
         from_user (:obj:`~pyrogram.types.User`):
             User who purchased the media.
 
@@ -42,25 +42,26 @@ class PaidMediaPurchased(Object):
 
     def __init__(
         self,
-        from_user: "types.User" = None,
-        paid_media_payload: str = None,
-        _raw: "raw.types.UpdateBotPurchasedPaidMedia" = None,
-    ):
+        from_user: types.User = None,
+        paid_media_payload: str | None = None,
+        _raw: raw.types.UpdateBotPurchasedPaidMedia = None,
+    ) -> None:
         super().__init__()
 
         self.from_user = from_user
         self.paid_media_payload = paid_media_payload
         self._raw = _raw
 
-
     @staticmethod
     def _parse(
-        client: "pyrogram.Client",
-        bot_purchased_paid_media: "raw.types.UpdateBotPurchasedPaidMedia",
+        client: pyrogram.Client,
+        bot_purchased_paid_media: raw.types.UpdateBotPurchasedPaidMedia,
         users: dict,
-    ) -> "PaidMediaPurchased":
+    ) -> PaidMediaPurchased:
         return PaidMediaPurchased(
-            from_user=types.User._parse(client, users[bot_purchased_paid_media.user_id]),
+            from_user=types.User._parse(
+                client, users[bot_purchased_paid_media.user_id]
+            ),
             paid_media_payload=bot_purchased_paid_media.payload,
-            _raw=bot_purchased_paid_media
+            _raw=bot_purchased_paid_media,
         )

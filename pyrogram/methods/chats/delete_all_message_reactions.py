@@ -20,7 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional, Union
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw
@@ -28,11 +28,11 @@ from pyrogram import raw
 
 class DeleteAllMessageReactions:
     async def delete_all_message_reactions(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
+        self: pyrogram.Client,
+        chat_id: int | str,
         *,
-        user_id: Optional[Union[int, str]] = None,
-        actor_chat_id: Optional[Union[int, str]] = None,
+        user_id: int | str | None = None,
+        actor_chat_id: int | str | None = None,
     ) -> bool:
         """Use this method to remove up to 10000 recent reactions in a group or a supergroup chat added by a given user or chat.
 
@@ -42,7 +42,8 @@ class DeleteAllMessageReactions:
 
         .. include:: /_includes/usable-by/users-bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
 
@@ -52,8 +53,10 @@ class DeleteAllMessageReactions:
             actor_chat_id (``int`` | ``str``, *optional*):
                 Unique identifier (int) or username (str) of the chat whose reactions will be removed, if the reactions were added by a chat.
 
-        Returns:
+        Returns
+        -------
             ``bool``: True on success, False otherwise.
+
         """
         peer = None
 
@@ -68,11 +71,12 @@ class DeleteAllMessageReactions:
             if not isinstance(peer, raw.types.InputPeerChannel):
                 return False
         else:
-            raise ValueError("Invalid user_id or actor_chat_id")
+            msg = "Invalid user_id or actor_chat_id"
+            raise ValueError(msg)
 
         return await self.invoke(
             raw.functions.messages.DeleteParticipantReactions(
                 peer=await self.resolve_peer(chat_id),
                 participant=peer,
-            )
+            ),
         )

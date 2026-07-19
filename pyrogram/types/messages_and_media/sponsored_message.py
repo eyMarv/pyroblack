@@ -20,16 +20,20 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import pyrogram
 from pyrogram import raw, types
+from pyrogram.types.object import Object
 
-from ..object import Object
 from .message import Str
+
 
 class SponsoredMessage(Object):
     """Describes a sponsored message.
 
-    Parameters:
+    Parameters
+    ----------
         random_id (``bytes``):
             Message identifier; unique for the chat to which the sponsored message belongs among both ordinary and sponsored messages.
 
@@ -38,7 +42,7 @@ class SponsoredMessage(Object):
 
         title (``str``):
             Title of the sponsored message.
-        
+
         content (``str``):
             sponsored message.
 
@@ -71,20 +75,20 @@ class SponsoredMessage(Object):
     def __init__(
         self,
         *,
-        client: "pyrogram.Client" = None,
+        client: pyrogram.Client = None,
         random_id: bytes,
         url: str,
         title: str,
         content: Str,
         button_text: str,
-        entities: list["types.MessageEntity"] = None,
-        photo: "types.Photo" = None,
-        is_recommended: bool = None,
-        can_be_reported: bool = None,
-        color: "types.ChatColor" = None,
-        sponsor_info: str = None,
-        additional_info: str = None
-    ):
+        entities: list[types.MessageEntity] | None = None,
+        photo: types.Photo = None,
+        is_recommended: bool | None = None,
+        can_be_reported: bool | None = None,
+        color: types.ChatColor = None,
+        sponsor_info: str | None = None,
+        additional_info: str | None = None,
+    ) -> None:
         super().__init__(client)
 
         self.random_id = random_id
@@ -101,14 +105,16 @@ class SponsoredMessage(Object):
         self.additional_info = additional_info
 
     @staticmethod
-    def _parse(client, sponsored_message: "raw.types.SponsoredMessage", users: dict = None):
+    def _parse(
+        client, sponsored_message: raw.types.SponsoredMessage, users: dict | None = None
+    ):
         users = users or {}
         entities = [
             types.MessageEntity._parse(client, entity, users)
             for entity in getattr(sponsored_message, "entities", [])
         ]
         entities = types.List(
-            filter(lambda x: x is not None, entities)
+            filter(lambda x: x is not None, entities),
         )
         return SponsoredMessage(
             random_id=sponsored_message.random_id,
@@ -116,12 +122,16 @@ class SponsoredMessage(Object):
             title=sponsored_message.title,
             content=Str(sponsored_message.message).init(entities),
             button_text=sponsored_message.button_text,
-            photo=types.Photo._parse(client, sponsored_message.photo) if sponsored_message.photo else None,
+            photo=types.Photo._parse(client, sponsored_message.photo)
+            if sponsored_message.photo
+            else None,
             is_recommended=sponsored_message.recommended,
             can_be_reported=sponsored_message.can_report,
             entities=entities,
-            color=types.ChatColor._parse(sponsored_message.color) if sponsored_message.color else None,
+            color=types.ChatColor._parse(sponsored_message.color)
+            if sponsored_message.color
+            else None,
             sponsor_info=getattr(sponsored_message, "sponsor_info", None),
             additional_info=getattr(sponsored_message, "additional_info", None),
-            client=client
+            client=client,
         )

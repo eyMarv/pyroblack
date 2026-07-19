@@ -48,4 +48,3 @@ class UpgradedGiftOrigin(AutoName):
 
     CRAFT = auto()
     "The gift was crafted from other gifts."
-

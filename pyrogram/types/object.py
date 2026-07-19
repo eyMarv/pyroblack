@@ -104,7 +104,7 @@ class Object:
         "is_join_to_send": None,
     }
 
-    def __init__(self, client: "pyrogram.Client" = None):
+    def __init__(self, client: "pyrogram.Client" = None) -> None:
         self._client = client
 
     def __getattr__(self, item: str):
@@ -117,17 +117,20 @@ class Object:
                 return Object._COMPAT_DEFAULTS.get(item)
         if item in Object._COMPAT_DEFAULTS:
             return Object._COMPAT_DEFAULTS[item]
+        msg = f"{type(self).__name__!r} object has no attribute {item!r}"
         raise AttributeError(
-            f"{type(self).__name__!r} object has no attribute {item!r}"
+            msg,
         )
 
-    def bind(self, client: "pyrogram.Client"):
+    def bind(self, client: "pyrogram.Client") -> None:
         """Bind a Client instance to this and to all nested Pyrogram objects.
 
-        Parameters:
+        Parameters
+        ----------
             client (:obj:`~pyrogram.types.Client`):
                 The Client instance to bind this object with. Useful to re-enable bound methods after serializing and
                 deserializing Pyrogram objects with ``repr`` and ``eval``.
+
         """
         self._client = client
 
@@ -163,13 +166,10 @@ class Object:
         return {
             "_": obj.__class__.__name__,
             **{
-                attr: (
-                    "*" * 9 if attr == "phone_number" else
-                    getattr(obj, attr)
-                )
+                attr: ("*" * 9 if attr == "phone_number" else getattr(obj, attr))
                 for attr in filter(lambda x: not x.startswith("_"), obj.__dict__)
                 if getattr(obj, attr) is not None
-            }
+            },
         }
 
     def __str__(self) -> str:
@@ -179,10 +179,10 @@ class Object:
         return "pyrogram.types.{}({})".format(
             self.__class__.__name__,
             ", ".join(
-                f"{attr}={repr(getattr(self, attr))}"
+                f"{attr}={getattr(self, attr)!r}"
                 for attr in filter(lambda x: not x.startswith("_"), self.__dict__)
                 if getattr(self, attr) is not None
-            )
+            ),
         )
 
     def __eq__(self, other: "Object") -> bool:

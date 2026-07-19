@@ -20,27 +20,32 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import logging
-from typing import Union, List, Iterable
+from typing import TYPE_CHECKING
 
 import pyrogram
-from pyrogram import raw
-from pyrogram import types
+from pyrogram import raw, types
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
 
 log = logging.getLogger(__name__)
 
 
 class GetForumTopicsByID:
     async def get_forum_topics_by_id(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
-        topic_ids: Union[int, Iterable[int]],
-    ) -> Union["types.ForumTopic", List["types.ForumTopic"]]:
+        self: pyrogram.Client,
+        chat_id: int | str,
+        topic_ids: int | Iterable[int],
+    ) -> types.ForumTopic | list[types.ForumTopic]:
         """Get one or more topic from a chat by using topic identifiers.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
                 You can also use chat public link in form of *t.me/<username>* (str).
@@ -49,7 +54,8 @@ class GetForumTopicsByID:
                 Pass a single topic identifier or an iterable of topic ids (as integers) to get the information of the
                 topic themselves.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.ForumTopic` | List of :obj:`~pyrogram.types.ForumTopic`: In case *topic_ids* was not
             a list, a single topic is returned, otherwise a list of topics is returned.
 
@@ -62,19 +68,22 @@ class GetForumTopicsByID:
                 # Get more than one topic (list of topics)
                 await app.get_forum_topics_by_id(chat_id, [12345, 12346])
 
-        Raises:
+        Raises
+        ------
             ValueError: In case of invalid arguments.
+
         """
         ids, _ = (topic_ids, int) if topic_ids else (None, None)
 
         if ids is None:
-            raise ValueError("No argument supplied. Either pass topic_ids")
+            msg = "No argument supplied. Either pass topic_ids"
+            raise ValueError(msg)
 
         peer = await self.resolve_peer(chat_id)
 
         is_iterable = not isinstance(ids, int)
         ids = list(ids) if is_iterable else [ids]
-        ids = [i for i in ids]
+        ids = list(ids)
 
         rpc = raw.functions.channels.GetForumTopicsByID(channel=peer, topics=ids)
 

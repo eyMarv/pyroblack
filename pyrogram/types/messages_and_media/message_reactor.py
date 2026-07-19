@@ -20,17 +20,18 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional, Dict
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw, types
-from ..object import Object
+from pyrogram.types.object import Object
 
 
 class MessageReactor(Object):
     """Contains information about a message reactor.
 
-    Parameters:
+    Parameters
+    ----------
         amount (``int``):
             Stars amount.
 
@@ -48,19 +49,20 @@ class MessageReactor(Object):
 
         sender_chat (:obj:`~pyrogram.types.Chat`, *optional*):
             Information about the sender chat.
+
     """
 
     def __init__(
         self,
         *,
-        client: "pyrogram.Client" = None,
+        client: pyrogram.Client = None,
         amount: int,
-        is_top: bool = None,
-        is_my: bool = None,
-        is_anonymous: bool = None,
-        from_user: "types.User" = None,
-        sender_chat: "types.Chat" = None,
-    ):
+        is_top: bool | None = None,
+        is_my: bool | None = None,
+        is_anonymous: bool | None = None,
+        from_user: types.User = None,
+        sender_chat: types.Chat = None,
+    ) -> None:
         super().__init__(client)
 
         self.amount = amount
@@ -72,11 +74,11 @@ class MessageReactor(Object):
 
     @staticmethod
     def _parse(
-        client: "pyrogram.Client",
-        message_reactor: Optional["raw.base.MessageReactor"] = None,
-        users: Dict[int, "raw.types.User"] = None,
-        chats: Dict[int, "raw.types.Chat"] = None,
-    ) -> Optional["MessageReactor"]:
+        client: pyrogram.Client,
+        message_reactor: raw.base.MessageReactor | None = None,
+        users: dict[int, raw.types.User] | None = None,
+        chats: dict[int, raw.types.Chat] | None = None,
+    ) -> MessageReactor | None:
         if not message_reactor:
             return None
 
@@ -86,11 +88,13 @@ class MessageReactor(Object):
         if not is_anonymous:
             if isinstance(message_reactor.peer_id, raw.types.PeerUser):
                 from_user = types.User._parse(
-                    client, users.get(message_reactor.peer_id.user_id)
+                    client,
+                    users.get(message_reactor.peer_id.user_id),
                 )
             elif isinstance(message_reactor.peer_id, raw.types.PeerChannel):
                 sender_chat = types.Chat._parse_channel_chat(
-                    client, chats.get(message_reactor.peer_id.channel_id)
+                    client,
+                    chats.get(message_reactor.peer_id.channel_id),
                 )
 
         return MessageReactor(

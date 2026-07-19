@@ -26,7 +26,7 @@ from .auto_name import AutoName
 
 
 class ParseMode(AutoName):
-    """Parse mode enumeration used in various places to set a specific parse mode"""
+    """Parse mode enumeration used in various places to set a specific parse mode."""
 
     DEFAULT = auto()
     "Default mode. Markdown and HTML combined"

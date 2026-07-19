@@ -20,16 +20,23 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-import pyrogram
-from pyrogram import raw
 
-from ..object import Object
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+from pyrogram.types.object import Object
+
+if TYPE_CHECKING:
+    import pyrogram
+    from pyrogram import raw
 
 
 class StarAmount(Object):
     """This object Describes a possibly non-integer amount of Telegram Stars.
 
-    Parameters:
+    Parameters
+    ----------
         star_count (``int``):
             The integer amount of Telegram Stars rounded to 0.
 
@@ -41,20 +48,19 @@ class StarAmount(Object):
     def __init__(
         self,
         *,
-        star_count: int = None,
-        nanostar_count: int = None,
-    ):
+        star_count: int | None = None,
+        nanostar_count: int | None = None,
+    ) -> None:
         super().__init__()
 
         self.star_count = star_count
         self.nanostar_count = nanostar_count
 
-
     @staticmethod
     def _parse(
-        client: "pyrogram.Client",
-        stars_status: "raw.base.payments.StarsStatus"
-    ) -> "StarAmount":
+        client: pyrogram.Client,
+        stars_status: raw.base.payments.StarsStatus,
+    ) -> StarAmount:
         return StarAmount(
             star_count=stars_status.balance.amount,
             nanostar_count=stars_status.balance.nanos,

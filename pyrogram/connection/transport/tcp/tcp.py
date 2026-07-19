@@ -20,21 +20,22 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import asyncio
 import ipaddress
 import logging
 import socket
 from concurrent.futures import ThreadPoolExecutor
-from typing import Optional
 
 try:
     import socks
 except ImportError as e:
     e.msg = (
         "PySocks is missing and Pyrogram can't run without. "
-        "Please install it using \"pip3 install pysocks\"."
+        'Please install it using "pip3 install pysocks".'
     )
-    raise e
+    raise
 
 from pyrogram import utils
 
@@ -48,9 +49,9 @@ class TCP:
         self,
         ipv6: bool,
         proxy: dict,
-        crypto_executor: Optional[ThreadPoolExecutor] = None,
-        loop: Optional[asyncio.AbstractEventLoop] = None,
-    ):
+        crypto_executor: ThreadPoolExecutor | None = None,
+        loop: asyncio.AbstractEventLoop | None = None,
+    ) -> None:
         self.socket = None
 
         self.reader = None  # type: Optional[asyncio.StreamReader]
@@ -65,7 +66,8 @@ class TCP:
             self._owns_crypto_executor = False
         else:
             self.crypto_executor = ThreadPoolExecutor(
-                max_workers=1, thread_name_prefix="CryptoWorker"
+                max_workers=1,
+                thread_name_prefix="CryptoWorker",
             )
             self._owns_crypto_executor = True
 
@@ -85,9 +87,9 @@ class TCP:
             self.socket.set_proxy(
                 proxy_type=getattr(socks, proxy.get("scheme").upper()),
                 addr=hostname,
-                port=proxy.get("port", None),
-                username=proxy.get("username", None),
-                password=proxy.get("password", None),
+                port=proxy.get("port"),
+                username=proxy.get("username"),
+                password=proxy.get("password"),
             )
 
             # PySocks still needs a blocking connect; keep the timeout for that path.
@@ -97,11 +99,11 @@ class TCP:
             # Native non-blocking socket so we can use asyncio sock_connect
             # (no temporary ThreadPoolExecutor per connect).
             self.socket = socket.socket(
-                socket.AF_INET6 if ipv6 else socket.AF_INET
+                socket.AF_INET6 if ipv6 else socket.AF_INET,
             )
             self.socket.setblocking(False)
 
-    async def connect(self, address: tuple):
+    async def connect(self, address: tuple) -> None:
         if self.proxy:
             # PySocks connect is still blocking — offload to a throwaway executor.
             with ThreadPoolExecutor(1) as executor:
@@ -113,7 +115,8 @@ class TCP:
                     TCP.TIMEOUT,
                 )
             except asyncio.TimeoutError:
-                raise TimeoutError("Connection timed out")
+                msg = "Connection timed out"
+                raise TimeoutError(msg)
 
         self.reader, self.writer = await asyncio.open_connection(sock=self.socket)
 
@@ -134,7 +137,7 @@ class TCP:
         except OSError:
             pass
 
-    async def close(self):
+    async def close(self) -> None:
         try:
             if self.writer is not None:
                 self.writer.close()
@@ -146,7 +149,7 @@ class TCP:
                 self.crypto_executor.shutdown(wait=False)
                 self.crypto_executor = None
 
-    async def send(self, data: bytes):
+    async def send(self, data: bytes) -> None:
         async with self.lock:
             try:
                 if self.writer is not None:

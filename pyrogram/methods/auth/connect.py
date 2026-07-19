@@ -20,16 +20,19 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-import pyrogram
+from typing import TYPE_CHECKING
+
 from pyrogram.session import Session
+
+if TYPE_CHECKING:
+    import pyrogram
 
 
 class Connect:
     async def connect(
         self: "pyrogram.Client",
     ) -> bool:
-        """
-        Connect the client to Telegram servers.
+        """Connect the client to Telegram servers.
 
         Returns:
             ``bool``: On success, in case the passed-in session is authorized, True is returned. Otherwise, in case
@@ -40,13 +43,16 @@ class Connect:
 
         """
         if self.is_connected:
-            raise ConnectionError("Client is already connected")
+            msg = "Client is already connected"
+            raise ConnectionError(msg)
 
         await self.load_session()
 
         self.session = Session(
-            self, await self.storage.dc_id(),
-            await self.storage.auth_key(), await self.storage.test_mode()
+            self,
+            await self.storage.dc_id(),
+            await self.storage.auth_key(),
+            await self.storage.test_mode(),
         )
 
         await self.session.start()

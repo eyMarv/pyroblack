@@ -20,7 +20,6 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import List
 
 import pyrogram
 from pyrogram import raw
@@ -29,14 +28,15 @@ from pyrogram import raw
 class ReorderFolders:
     async def reorder_folders(
         self: "pyrogram.Client",
-        folder_ids: List[int],
-        main_chat_list_position: int = 0
+        folder_ids: list[int],
+        main_chat_list_position: int = 0,
     ) -> bool:
         """Change the order of chat folders.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             folder_ids (List of ``int``):
                 Identifiers of chat folders in the new correct order.
 
@@ -44,7 +44,8 @@ class ReorderFolders:
                 Position of the main chat list among chat folders, 0-based.
                 Can be non-zero only for Premium users.
 
-        Returns:
+        Returns
+        -------
             ``bool``: True, on success.
 
         Example:
@@ -52,14 +53,13 @@ class ReorderFolders:
 
                 # Reorder folders
                 await app.reorder_folders([2, 5, 4])
+
         """
         if main_chat_list_position:
             folder_ids.insert(main_chat_list_position, 0)
 
-        r = await self.invoke(
+        return await self.invoke(
             raw.functions.messages.UpdateDialogFiltersOrder(
-                order=folder_ids
-            )
+                order=folder_ids,
+            ),
         )
-
-        return r

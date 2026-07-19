@@ -20,46 +20,48 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import logging
-from datetime import datetime
-from typing import Optional, Union
+from typing import TYPE_CHECKING
 
 import pyrogram
 from pyrogram import enums, raw, types, utils
+
+if TYPE_CHECKING:
+    from datetime import datetime
 
 log = logging.getLogger(__name__)
 
 
 class SendChecklist:
     async def send_checklist(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
-        checklist: "types.InputChecklist",
-        disable_notification: Optional[bool] = None,
-        protect_content: Optional[bool] = None,
-        message_effect_id: Optional[int] = None,
-        message_thread_id: Optional[int] = None,
-        reply_parameters: Optional["types.ReplyParameters"] = None,
-        schedule_date: Optional[datetime] = None,
-        business_connection_id: Optional[str] = None,
-        paid_message_star_count: int = None,
-        reply_markup: Optional[
-            Union[
-                "types.InlineKeyboardMarkup",
-                "types.ReplyKeyboardMarkup",
-                "types.ReplyKeyboardRemove",
-                "types.ForceReply"
-            ]
-        ] = None,
+        self: pyrogram.Client,
+        chat_id: int | str,
+        checklist: types.InputChecklist,
+        disable_notification: bool | None = None,
+        protect_content: bool | None = None,
+        message_effect_id: int | None = None,
+        message_thread_id: int | None = None,
+        reply_parameters: types.ReplyParameters | None = None,
+        schedule_date: datetime | None = None,
+        business_connection_id: str | None = None,
+        paid_message_star_count: int | None = None,
+        reply_markup: types.InlineKeyboardMarkup
+        | types.ReplyKeyboardMarkup
+        | types.ReplyKeyboardRemove
+        | types.ForceReply
+        | None = None,
         caption: str = "",
-        parse_mode: Optional["enums.ParseMode"] = None,
-        caption_entities: list["types.MessageEntity"] = None,
-    ) -> "types.Message":
+        parse_mode: enums.ParseMode | None = None,
+        caption_entities: list[types.MessageEntity] | None = None,
+    ) -> types.Message:
         """Send a new checklist.
 
         .. include:: /_includes/usable-by/users-bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
                 For your personal cloud (Saved Messages) you can simply use "me" or "self".
@@ -108,7 +110,8 @@ class SendChecklist:
             caption_entities (List of :obj:`~pyrogram.types.MessageEntity`):
                 List of special entities that appear in the caption, which can be specified instead of *parse_mode*.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.Message`: On success, the sent checklist message is returned.
 
         Example:
@@ -125,10 +128,16 @@ class SendChecklist:
                         ]
                     )
                 )
+
         """
-        title, entities = (await utils.parse_text_entities(
-            self, checklist.title, checklist.parse_mode, checklist.title_entities
-        )).values()
+        title, entities = (
+            await utils.parse_text_entities(
+                self,
+                checklist.title,
+                checklist.parse_mode,
+                checklist.title_entities,
+            )
+        ).values()
 
         rpc = raw.functions.messages.SendMedia(
             peer=await self.resolve_peer(chat_id),
@@ -136,18 +145,18 @@ class SendChecklist:
                 todo=raw.types.TodoList(
                     title=raw.types.TextWithEntities(
                         text=title,
-                        entities=entities or []
+                        entities=entities or [],
                     ),
                     list=[await task.write(self) for task in checklist.tasks],
                     others_can_append=checklist.others_can_add_tasks,
-                    others_can_complete=checklist.others_can_mark_tasks_as_done
-                )
+                    others_can_complete=checklist.others_can_mark_tasks_as_done,
+                ),
             ),
             silent=disable_notification,
             reply_to=await utils._get_reply_message_parameters(
                 self,
                 message_thread_id,
-                reply_parameters
+                reply_parameters,
             ),
             random_id=self.rnd_id(),
             schedule_date=utils.datetime_to_timestamp(schedule_date),
@@ -155,14 +164,16 @@ class SendChecklist:
             allow_paid_stars=paid_message_star_count,
             reply_markup=await reply_markup.write(self) if reply_markup else None,
             effect=message_effect_id,
-            **await utils.parse_text_entities(self, caption, parse_mode, caption_entities)
+            **await utils.parse_text_entities(
+                self, caption, parse_mode, caption_entities
+            ),
         )
         if business_connection_id:
             r = await self.invoke(
                 raw.functions.InvokeWithBusinessConnection(
                     query=rpc,
-                    connection_id=business_connection_id
-                )
+                    connection_id=business_connection_id,
+                ),
             )
         else:
             r = await self.invoke(rpc)
@@ -171,7 +182,7 @@ class SendChecklist:
             client=self,
             messages=None,
             business_connection_id=business_connection_id,
-            r=r
+            r=r,
         )
 
         return messages[0] if messages else None

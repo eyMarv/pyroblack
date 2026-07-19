@@ -20,50 +20,52 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union
+from __future__ import annotations
 
 import pyrogram
-from pyrogram import raw, types
+from pyrogram import raw
 
 
 class SendWebAppCustomRequest:
     async def send_web_app_custom_request(
-        self: "pyrogram.Client",
-        bot_user_id: Union[int, str],
+        self: pyrogram.Client,
+        bot_user_id: int | str,
         method: str,
-        parameters: str
+        parameters: str,
     ) -> str:
         """Sends a custom request from a Web App.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             bot_user_id (``int`` | ``str``):
                 Unique identifier of the inline bot you want to get results from. You can specify
                 a @username (str) or a bot ID (int).
 
             method (``str``):
                 The method name.
-            
+
             parameters (``str``):
                 JSON-serialized method parameters.
 
-        Returns:
+        Returns
+        -------
             ``str``: On success, a JSON-serialized result is returned.
 
-        Raises:
+        Raises
+        ------
             :obj:`~pyrogram.errors.RPCError`: In case of a Telegram RPC error.
 
         """
-
         r = await self.invoke(
             raw.functions.bots.InvokeWebViewCustomMethod(
                 bot=await self.resolve_peer(bot_user_id),
                 custom_method=method,
                 params=raw.types.DataJSON(
-                    data=parameters
-                )
-            )
+                    data=parameters,
+                ),
+            ),
         )
 
         return r.data

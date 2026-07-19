@@ -20,26 +20,31 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 from asyncio import sleep
-from typing import Union, Optional, AsyncGenerator
+from typing import TYPE_CHECKING
 
 import pyrogram
-from pyrogram import raw
-from pyrogram import types
+from pyrogram import raw, types
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncGenerator
 
 
 class GetChatJoinRequests:
     async def get_chat_join_requests(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
+        self: pyrogram.Client,
+        chat_id: int | str,
         limit: int = 0,
-        query: str = ""
-    ) -> Optional[AsyncGenerator["types.ChatJoiner", None]]:
+        query: str = "",
+    ) -> AsyncGenerator[types.ChatJoiner, None] | None:
         """Get the pending join requests of a chat.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier for the target chat or username of the target channel/supergroup
                 (in the format @username).
@@ -51,11 +56,14 @@ class GetChatJoinRequests:
             query (``str``, *optional*):
                 Query to search for a user.
 
-        Returns:
+        Returns
+        -------
             ``Generator``: A generator yielding :obj:`~pyrogram.types.ChatJoiner` objects.
 
-        Yields:
+        Yields
+        ------
             :obj:`~pyrogram.types.ChatJoiner` objects.
+
         """
         current = 0
         total = abs(limit) or (1 << 31) - 1
@@ -72,8 +80,8 @@ class GetChatJoinRequests:
                     offset_date=offset_date,
                     offset_user=offset_user,
                     requested=True,
-                    q=query
-                )
+                    q=query,
+                ),
             )
 
             if not r.importers:

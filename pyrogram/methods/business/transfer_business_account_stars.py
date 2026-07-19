@@ -38,26 +38,32 @@ class TransferBusinessAccountStars:
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             business_connection_id (``str``):
                 Unique identifier of the business connection.
 
             star_count (``int`` | ``str``):
                 Number of Telegram Stars to transfer, 1-10000.
 
-        Returns:
+        Returns
+        -------
             ``bool``: On success, True is returned.
+
         """
         # Why telegram won't let us just use InputPeerSelf :(
         if self.me:
             bot_id = self.me.id
         else:
             bot_id = (
-                await self.invoke(raw.functions.users.GetUsers(id=[raw.types.InputPeerSelf()]))
+                await self.invoke(
+                    raw.functions.users.GetUsers(id=[raw.types.InputPeerSelf()])
+                )
             )[0].id
 
         invoice = raw.types.InputInvoiceBusinessBotTransferStars(
-            bot=await self.resolve_peer(bot_id), stars=star_count
+            bot=await self.resolve_peer(bot_id),
+            stars=star_count,
         )
 
         payment_form = await self.invoke(
@@ -74,4 +80,3 @@ class TransferBusinessAccountStars:
         )
 
         return True
-

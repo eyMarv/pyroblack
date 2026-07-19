@@ -20,7 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional, Union
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw
@@ -28,12 +28,12 @@ from pyrogram import raw
 
 class DeleteMessageReaction:
     async def delete_message_reaction(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
+        self: pyrogram.Client,
+        chat_id: int | str,
         message_id: int,
         *,
-        user_id: Optional[Union[int, str]] = None,
-        actor_chat_id: Optional[Union[int, str]] = None,
+        user_id: int | str | None = None,
+        actor_chat_id: int | str | None = None,
     ) -> bool:
         """Use this method to remove a reaction from a message in a group or a supergroup chat.
 
@@ -43,7 +43,8 @@ class DeleteMessageReaction:
 
         .. include:: /_includes/usable-by/users-bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
 
@@ -56,8 +57,10 @@ class DeleteMessageReaction:
             actor_chat_id (``int`` | ``str``, *optional*):
                 Unique identifier (int) or username (str) of the chat whose reaction will be removed, if the reaction were added by a chat.
 
-        Returns:
+        Returns
+        -------
             ``bool``: True on success, False otherwise.
+
         """
         peer = None
 
@@ -72,14 +75,15 @@ class DeleteMessageReaction:
             if not isinstance(peer, raw.types.InputPeerChannel):
                 return False
         else:
-            raise ValueError("Invalid user_id or actor_chat_id")
+            msg = "Invalid user_id or actor_chat_id"
+            raise ValueError(msg)
 
         r = await self.invoke(
             raw.functions.messages.DeleteParticipantReaction(
                 peer=await self.resolve_peer(chat_id),
                 msg_id=message_id,
                 participant=peer,
-            )
+            ),
         )
 
         return bool(r)

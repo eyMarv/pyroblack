@@ -20,21 +20,25 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import datetime
-from typing import Union
+from __future__ import annotations
 
-from pyrogram.errors.exceptions.bad_request_400 import PeerIdInvalid
+from typing import TYPE_CHECKING
 
 import pyrogram
 from pyrogram import raw, types, utils
-from ..object import Object
-from ..update import Update
+from pyrogram.errors.exceptions.bad_request_400 import PeerIdInvalid
+from pyrogram.types.object import Object
+from pyrogram.types.update import Update
+
+if TYPE_CHECKING:
+    from datetime import datetime
 
 
 class StorySkipped(Object, Update):
     """A skipped story.
 
-    Parameters:
+    Parameters
+    ----------
         id (``int``):
             Unique story identifier.
 
@@ -52,19 +56,20 @@ class StorySkipped(Object, Update):
 
         close_friends (``bool``, *optional*):
            True, if the Story is shared with close_friends only.
+
     """
 
     def __init__(
         self,
         *,
-        client: "pyrogram.Client" = None,
+        client: pyrogram.Client = None,
         id: int,
-        from_user: "types.User" = None,
-        sender_chat: "types.Chat" = None,
+        from_user: types.User = None,
+        sender_chat: types.Chat = None,
         date: datetime,
         expire_date: datetime,
-        close_friends: bool = None,
-    ):
+        close_friends: bool | None = None,
+    ) -> None:
         super().__init__(client)
 
         self.id = id
@@ -75,19 +80,19 @@ class StorySkipped(Object, Update):
         self.close_friends = close_friends
 
     async def _parse(
-        client: "pyrogram.Client",
+        self: pyrogram.Client,
         stories: raw.base.StoryItem,
-        peer: Union["raw.types.PeerChannel", "raw.types.PeerUser"],
-    ) -> "StorySkipped":
+        peer: raw.types.PeerChannel | raw.types.PeerUser,
+    ) -> StorySkipped:
         from_user = None
         sender_chat = None
         try:
             if isinstance(peer, raw.types.PeerChannel):
-                sender_chat = await client.get_chat(peer.channel_id)
+                sender_chat = await self.get_chat(peer.channel_id)
             elif isinstance(peer, raw.types.InputPeerSelf):
-                from_user = client.me
+                from_user = self.me
             else:
-                from_user = await client.get_users(peer.user_id)
+                from_user = await self.get_users(peer.user_id)
         except PeerIdInvalid:
             pass
 
@@ -98,5 +103,5 @@ class StorySkipped(Object, Update):
             date=utils.timestamp_to_datetime(stories.date),
             expire_date=utils.timestamp_to_datetime(stories.expire_date),
             close_friends=stories.close_friends,
-            client=client,
+            client=self,
         )

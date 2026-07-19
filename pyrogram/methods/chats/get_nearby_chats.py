@@ -28,20 +28,22 @@ class GetNearbyChats:
     async def get_nearby_chats(
         self: "pyrogram.Client",
         latitude: float,
-        longitude: float
+        longitude: float,
     ) -> list["types.Chat"]:
         """Returns a list of users and location-based supergroups nearby. The method was disabled and returns an empty list of chats now.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             latitude (``float``):
                 Latitude of the location.
 
             longitude (``float``):
                 Longitude of the location.
 
-        Returns:
+        Returns
+        -------
             List of :obj:`~pyrogram.types.Chat`: On success, a list of nearby chats is returned.
 
         Example:
@@ -49,15 +51,15 @@ class GetNearbyChats:
 
                 chats = await app.get_nearby_chats(latitude, longitude)
                 print(chats)
-        """
 
+        """
         r = await self.invoke(
             raw.functions.contacts.GetLocated(
                 geo_point=raw.types.InputGeoPoint(
                     lat=latitude,
-                    long=longitude
-                )
-            )
+                    long=longitude,
+                ),
+            ),
         )
 
         if not r.updates:

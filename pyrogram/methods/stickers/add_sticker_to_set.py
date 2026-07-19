@@ -20,31 +20,30 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import os
 import re
 
 import pyrogram
-from pyrogram import raw
-from pyrogram import types
-from pyrogram import utils
+from pyrogram import raw, types, utils
 from pyrogram.file_id import FileId, FileType
-
-from typing import Union
 
 
 class AddStickerToSet:
     async def add_sticker_to_set(
-        self: "pyrogram.Client",
+        self: pyrogram.Client,
         set_short_name: str,
         sticker: str,
-        user_id: Union[int, str] = None,
+        user_id: int | str | None = None,
         emoji: str = "🤔",
-    ) -> "types.StickerSet":
+    ) -> types.StickerSet:
         """Add a sticker to stickerset.
 
         .. include:: /_includes/usable-by/bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             set_short_name (``str``):
                Stickerset shortname.
 
@@ -65,18 +64,20 @@ class AddStickerToSet:
                 Associated emoji.
                 default to "🤔"
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.StickerSet`: On success, the StickerSet information is returned.
 
         Example:
             .. code-block:: python
 
                 await app.add_sticker_to_set("mypack1", "AsJiasp")
-        """
 
+        """
         if isinstance(sticker, str):
             if self.me.is_bot and user_id is None:
-                raise ValueError("user_id is required for bots")
+                msg = "user_id is required for bots"
+                raise ValueError(msg)
             if os.path.isfile(sticker) or re.match("^https?://", sticker):
                 document = await self.send_document(
                     user_id or "me",
@@ -85,7 +86,8 @@ class AddStickerToSet:
                     disable_notification=True,
                 )
                 uploaded_media = utils.get_input_media_from_file_id(
-                    document.document.file_id, FileType.DOCUMENT
+                    document.document.file_id,
+                    FileType.DOCUMENT,
                 )
                 media = uploaded_media.id
                 _ = await document.delete()
@@ -98,12 +100,17 @@ class AddStickerToSet:
                 )
         else:
             if self.me.is_bot and user_id is None:
-                raise ValueError("user_id is required for bots")
+                msg = "user_id is required for bots"
+                raise ValueError(msg)
             document = await self.send_document(
-                user_id or "me", sticker, force_document=True, disable_notification=True
+                user_id or "me",
+                sticker,
+                force_document=True,
+                disable_notification=True,
             )
             uploaded_media = utils.get_input_media_from_file_id(
-                document.document.file_id, FileType.DOCUMENT
+                document.document.file_id,
+                FileType.DOCUMENT,
             )
             media = uploaded_media.id
             _ = await document.delete()
@@ -111,10 +118,10 @@ class AddStickerToSet:
         r = await self.invoke(
             raw.functions.stickers.AddStickerToSet(
                 stickerset=raw.types.InputStickerSetShortName(
-                    short_name=set_short_name
+                    short_name=set_short_name,
                 ),
                 sticker=[raw.types.InputStickerSetItem(document=media, emoji=emoji)],
-            )
+            ),
         )
 
         return types.StickerSet._parse(r.set)

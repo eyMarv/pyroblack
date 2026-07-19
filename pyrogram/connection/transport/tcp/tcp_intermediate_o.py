@@ -20,14 +20,19 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-import asyncio
+from __future__ import annotations
+
 import logging
 import os
 from struct import pack, unpack
-from typing import Optional
+from typing import TYPE_CHECKING
 
 from pyrogram.crypto import aes
+
 from .tcp import TCP
+
+if TYPE_CHECKING:
+    import asyncio
 
 log = logging.getLogger(__name__)
 
@@ -40,14 +45,14 @@ class TCPIntermediateO(TCP):
         ipv6: bool,
         proxy: dict,
         crypto_executor=None,
-        loop: Optional[asyncio.AbstractEventLoop] = None,
-    ):
+        loop: asyncio.AbstractEventLoop | None = None,
+    ) -> None:
         super().__init__(ipv6, proxy, crypto_executor, loop)
 
         self.encrypt = None
         self.decrypt = None
 
-    async def connect(self, address: tuple):
+    async def connect(self, address: tuple) -> None:
         await super().connect(address)
 
         while True:
@@ -70,7 +75,7 @@ class TCPIntermediateO(TCP):
 
         await super().send(nonce)
 
-    async def send(self, data: bytes, *args):
+    async def send(self, data: bytes, *args) -> None:
         payload = await self.loop.run_in_executor(
             self.crypto_executor,
             aes.ctr256_encrypt,
@@ -79,7 +84,7 @@ class TCPIntermediateO(TCP):
         )
         await super().send(payload)
 
-    async def recv(self, length: int = 0) -> Optional[bytes]:
+    async def recv(self, length: int = 0) -> bytes | None:
         length = await super().recv(4)
 
         if length is None:
@@ -93,5 +98,8 @@ class TCPIntermediateO(TCP):
             return None
 
         return await self.loop.run_in_executor(
-            self.crypto_executor, aes.ctr256_decrypt, data, *self.decrypt
+            self.crypto_executor,
+            aes.ctr256_decrypt,
+            data,
+            *self.decrypt,
         )

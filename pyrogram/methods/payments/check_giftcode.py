@@ -35,14 +35,17 @@ class CheckGiftCode:
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             link (``str``):
                 The gift code link.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.CheckedGiftCode`: On success, a checked gift code is returned.
 
-        Raises:
+        Raises
+        ------
             ValueError: In case the folder invite link is invalid.
 
         Example:
@@ -50,6 +53,7 @@ class CheckGiftCode:
 
                 # get information about a gift code
                 app.check_gift_code("t.me/giftcode/abc1234567def")
+
         """
         match = re.match(
             r"^(?:https?://)?(?:www\.)?(?:t(?:elegram)?\.(?:org|me|dog)/(?:giftcode/|\+))([\w-]+)$",
@@ -61,7 +65,8 @@ class CheckGiftCode:
         elif isinstance(link, str):
             slug = link
         else:
-            raise ValueError("Invalid gift code link")
+            msg = "Invalid gift code link"
+            raise ValueError(msg)
 
         r = await self.invoke(raw.functions.payments.CheckGiftCode(slug=slug))
 

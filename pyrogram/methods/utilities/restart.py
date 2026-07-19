@@ -20,29 +20,35 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-import pyrogram
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    import pyrogram
 
 
 class Restart:
     async def restart(
         self: "pyrogram.Client",
-        block: bool = True
+        block: bool = True,
     ):
         """Restart the Client.
 
         This method will first call :meth:`~pyrogram.Client.stop` and then :meth:`~pyrogram.Client.start` in a row in
         order to restart a client using a single method.
 
-        Parameters:
+        Parameters
+        ----------
             block (``bool``, *optional*):
                 Blocks the code execution until the client has been restarted. It is useful with ``block=False`` in case
                 you want to restart the own client within an handler in order not to cause a deadlock.
                 Defaults to True.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.Client`: The restarted client itself.
 
-        Raises:
+        Raises
+        ------
             ConnectionError: In case you try to restart a stopped Client.
 
         Example:
@@ -62,9 +68,10 @@ class Restart:
 
 
                 app.run(main())
+
         """
 
-        async def do_it():
+        async def do_it() -> None:
             await self.stop()
             await self.start()
 

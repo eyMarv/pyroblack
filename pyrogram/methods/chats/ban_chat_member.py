@@ -20,22 +20,25 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import datetime
-from typing import Union
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import pyrogram
-from pyrogram import raw, utils
-from pyrogram import types
+from pyrogram import raw, types, utils
+
+if TYPE_CHECKING:
+    from datetime import datetime
 
 
 class BanChatMember:
     async def ban_chat_member(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
-        user_id: Union[int, str],
+        self: pyrogram.Client,
+        chat_id: int | str,
+        user_id: int | str,
         until_date: datetime = utils.zero_datetime(),
-        revoke_messages: bool = None
-    ) -> Union["types.Message", bool]:
+        revoke_messages: bool | None = None,
+    ) -> types.Message | bool:
         """Ban a user from a group, a supergroup or a channel.
         In the case of supergroups and channels, the user will not be able to return to the group on their own using
         invite links, etc., unless unbanned first. You must be an administrator in the chat for this to work and must
@@ -48,7 +51,8 @@ class BanChatMember:
 
         .. include:: /_includes/usable-by/users-bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
 
@@ -65,7 +69,8 @@ class BanChatMember:
                 Pass True to delete all messages from the chat for the user that is being removed. If False, the user will be able to see messages in the group that were sent before the user was removed.
                 Always True for supergroups and channels.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.Message` | ``bool``: On success, a service message will be returned (when applicable),
             otherwise, in case a message object couldn't be returned, True is returned.
 
@@ -79,6 +84,7 @@ class BanChatMember:
 
                 # Ban chat member and automatically unban after 24h
                 await app.ban_chat_member(chat_id, user_id, datetime.now() + timedelta(days=1))
+
         """
         chat_peer = await self.resolve_peer(chat_id)
         user_peer = await self.resolve_peer(user_id)
@@ -97,27 +103,28 @@ class BanChatMember:
                         send_gifs=True,
                         send_games=True,
                         send_inline=True,
-                        embed_links=True
-                    )
-                )
+                        embed_links=True,
+                    ),
+                ),
             )
         else:
             r = await self.invoke(
                 raw.functions.messages.DeleteChatUser(
                     chat_id=abs(chat_id),
                     user_id=user_peer,
-                    revoke_history=revoke_messages
-                )
+                    revoke_history=revoke_messages,
+                ),
             )
 
         for i in r.updates:
-            if isinstance(i, (raw.types.UpdateNewMessage, raw.types.UpdateNewChannelMessage)):
+            if isinstance(
+                i, (raw.types.UpdateNewMessage, raw.types.UpdateNewChannelMessage)
+            ):
                 return await types.Message._parse(
                     self,
                     i.message,
                     {i.id: i for i in r.users},
                     {i.id: i for i in r.chats},
-                    replies=self.fetch_replies
+                    replies=self.fetch_replies,
                 )
-        else:
-            return True
+        return True

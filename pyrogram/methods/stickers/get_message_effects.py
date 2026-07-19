@@ -23,15 +23,14 @@
 import logging
 
 import pyrogram
-from pyrogram import raw
-from pyrogram import types
+from pyrogram import raw, types
 
 log = logging.getLogger(__name__)
 
 
 class GetMessageEffects:
     async def get_message_effects(
-        self: "pyrogram.Client"
+        self: "pyrogram.Client",
     ) -> list["types.MessageEffect"]:
         """Returns information about all available message effects.
 
@@ -49,22 +48,30 @@ class GetMessageEffects:
         """
         r = await self.invoke(
             raw.functions.messages.GetAvailableEffects(
-                hash=0
-            )
+                hash=0,
+            ),
         )
         documents = {d.id: d for d in r.documents}
         outlst = []
         for effect in r.effects:
-            effect_animation_document = documents.get(effect.effect_sticker_id, None)
-            static_icon_document = documents.get(effect.static_icon_id, None) if getattr(effect, "static_icon_id", None) else None
-            select_animation_document = documents.get(effect.effect_animation_id, None) if getattr(effect, "effect_animation_id", None) else None
+            effect_animation_document = documents.get(effect.effect_sticker_id)
+            static_icon_document = (
+                documents.get(effect.static_icon_id)
+                if getattr(effect, "static_icon_id", None)
+                else None
+            )
+            select_animation_document = (
+                documents.get(effect.effect_animation_id)
+                if getattr(effect, "effect_animation_id", None)
+                else None
+            )
             outlst.append(
                 await types.MessageEffect._parse(
                     self,
                     effect,
                     effect_animation_document,
                     static_icon_document,
-                    select_animation_document
-                )
+                    select_animation_document,
+                ),
             )
         return types.List(outlst)

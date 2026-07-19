@@ -20,29 +20,38 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from pyrogram import raw
-from ..object import Object
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+from pyrogram.types.object import Object
+
+if TYPE_CHECKING:
+    from pyrogram import raw
 
 
 class Username(Object):
     """Describes usernames assigned to a user, a supergroup, or a channel.
 
-    Parameters:
+    Parameters
+    ----------
         username (``str``):
             User's or chat's username.
         is_editable (``bool``, *optional*):
             True, if the username is editable.
         is_active (``bool``, *optional*):
             True, if the username is active.
+
     """
 
     def __init__(
-        self, *,
+        self,
+        *,
         username: str,
-        is_editable: bool = None,
-        is_active: bool = None,
-        **kwargs
-    ):
+        is_editable: bool | None = None,
+        is_active: bool | None = None,
+        **kwargs,
+    ) -> None:
         super().__init__()
 
         self.username = username
@@ -53,9 +62,9 @@ class Username(Object):
         self.active = is_active
 
     @staticmethod
-    def _parse(username: "raw.types.Username") -> "Username":
+    def _parse(username: raw.types.Username) -> Username:
         return Username(
             username=username.username,
             is_editable=username.editable,
-            is_active=username.active
+            is_active=username.active,
         )

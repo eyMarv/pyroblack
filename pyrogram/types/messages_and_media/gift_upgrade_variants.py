@@ -20,18 +20,17 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import List
 
 import pyrogram
 from pyrogram import raw, types
-
-from ..object import Object
+from pyrogram.types.object import Object
 
 
 class GiftUpgradeVariants(Object):
     """Contains all possible variants of upgraded gifts for the given regular gift.
 
-    Parameters:
+    Parameters
+    ----------
         models (List of :obj:`~pyrogram.types.GiftAttribute`):
             Models that can be chosen for the gift after upgrade.
 
@@ -40,15 +39,16 @@ class GiftUpgradeVariants(Object):
 
         backdrops (List of :obj:`~pyrogram.types.GiftAttribute`):
             Backdrops that can be chosen for the gift after upgrade.
+
     """
 
     def __init__(
         self,
         *,
-        models: List["types.GiftAttribute"],
-        symbols: List["types.GiftAttribute"],
-        backdrops: List["types.GiftAttribute"]
-    ):
+        models: list["types.GiftAttribute"],
+        symbols: list["types.GiftAttribute"],
+        backdrops: list["types.GiftAttribute"],
+    ) -> None:
         super().__init__()
 
         self.models = models
@@ -56,7 +56,10 @@ class GiftUpgradeVariants(Object):
         self.backdrops = backdrops
 
     @staticmethod
-    async def _parse(client: "pyrogram.Client", gift_upgrade_attributes: "raw.types.payments.StarGiftUpgradeAttributes"):
+    async def _parse(
+        client: "pyrogram.Client",
+        gift_upgrade_attributes: "raw.types.payments.StarGiftUpgradeAttributes",
+    ):
         models = types.List()
         symbols = types.List()
         backdrops = types.List()
@@ -72,6 +75,5 @@ class GiftUpgradeVariants(Object):
         return GiftUpgradeVariants(
             models=models,
             symbols=symbols,
-            backdrops=backdrops
+            backdrops=backdrops,
         )
-

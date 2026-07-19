@@ -20,18 +20,17 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Dict
 
 import pyrogram
 from pyrogram import raw, types
-
-from ..object import Object
+from pyrogram.types.object import Object
 
 
 class ChecklistTasksAdded(Object):
     """Describes a service message about tasks added to a checklist.
 
-    Parameters:
+    Parameters
+    ----------
         checklist_message_id (``int``):
             Identifier of the message with the checklist.
             Can be None if the message was deleted.
@@ -45,8 +44,8 @@ class ChecklistTasksAdded(Object):
         self,
         *,
         checklist_message_id: int,
-        tasks: list["types.ChecklistTask"]
-    ):
+        tasks: list["types.ChecklistTask"],
+    ) -> None:
 
         super().__init__()
 
@@ -57,12 +56,17 @@ class ChecklistTasksAdded(Object):
     def _parse(
         client: "pyrogram.Client",
         message: "raw.types.MessageService",
-        users: Dict[int, "raw.base.User"],
-        chats: Dict[int, "raw.base.Chat"],
+        users: dict[int, "raw.base.User"],
+        chats: dict[int, "raw.base.Chat"],
     ) -> "ChecklistTasksAdded":
-        action: "raw.types.MessageActionTodoAppendTasks" = message.action
+        action: raw.types.MessageActionTodoAppendTasks = message.action
 
         return ChecklistTasksAdded(
             checklist_message_id=getattr(message.reply_to, "reply_to_msg_id", None),
-            tasks=types.List([types.ChecklistTask._parse(client, task, None, users, chats) for task in action.list])
+            tasks=types.List(
+                [
+                    types.ChecklistTask._parse(client, task, None, users, chats)
+                    for task in action.list
+                ]
+            ),
         )

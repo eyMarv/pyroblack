@@ -20,18 +20,20 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional, Union, Callable
+from __future__ import annotations
+
+from typing import Callable
 
 import pyrogram
-from pyrogram import raw, types, utils, enums
-from pyrogram.file_id import FileId, FileType, FileUniqueId, FileUniqueType
-from ..object import Object
+from pyrogram import enums, raw, types, utils
+from pyrogram.types.object import Object
 
 
 class ExternalReplyInfo(Object):
     """This object contains information about a message that is being replied to, which may come from another chat or forum topic.
 
-    Parameters:
+    Parameters
+    ----------
         origin (:obj:`~pyrogram.types.MessageOrigin`, *optional*):
             Origin of the message replied to by the given message
 
@@ -76,7 +78,7 @@ class ExternalReplyInfo(Object):
 
         has_media_spoiler (``bool``, *optional*):
             True, if the message media is covered by a spoiler animation.
-        
+
         checklist (:obj:`~pyrogram.types.Checklist`, *optional*):
             Message is a checklist.
 
@@ -88,7 +90,7 @@ class ExternalReplyInfo(Object):
 
         game (:obj:`~pyrogram.types.Game`, *optional*):
             Message is a game, information about the game.
-        
+
         giveaway (:obj:`~pyrogram.types.Giveaway`, *optional*):
             Message is a scheduled giveaway, information about the giveaway
 
@@ -106,7 +108,7 @@ class ExternalReplyInfo(Object):
 
         venue (:obj:`~pyrogram.types.Venue`, *optional*):
             Message is a venue, information about the venue.
-        
+
         media (:obj:`~pyrogram.enums.MessageMediaType`, *optional*):
             The external reply is a media message.
             This field will contain the enumeration type of the media message.
@@ -117,34 +119,34 @@ class ExternalReplyInfo(Object):
     def __init__(
         self,
         *,
-        client: "pyrogram.Client" = None,
-        origin: "types.MessageOrigin" = None,
-        chat: "types.Chat" = None,
+        client: pyrogram.Client = None,
+        origin: types.MessageOrigin = None,
+        chat: types.Chat = None,
         message_id: int,
-        link_preview_options: "types.LinkPreviewOptions" = None,
-        animation: "types.Animation" = None,
-        audio: "types.Audio" = None,
-        document: "types.Document" = None,
-        paid_media: "types.PaidMediaInfo" = None,
-        photo: "types.Photo" = None,
-        sticker: "types.Sticker" = None,
-        story: "types.Story" = None,
-        video: "types.Video" = None,
-        video_note: "types.VideoNote" = None,
-        voice: "types.Voice" = None,
-        has_media_spoiler: bool = None,
-        checklist: Optional["types.Checklist"] = None,
-        contact: "types.Contact" = None,
-        dice: "types.Dice" = None,
-        game: "types.Game" = None,
-        giveaway: "types.Giveaway" = None,
-        giveaway_winners: "types.GiveawayWinners" = None,
-        invoice: "types.Invoice" = None,
-        location: "types.Location" = None,
-        poll: "types.Poll" = None,
-        venue: "types.Venue" = None,
-        media: "enums.MessageMediaType" = None,
-    ):
+        link_preview_options: types.LinkPreviewOptions = None,
+        animation: types.Animation = None,
+        audio: types.Audio = None,
+        document: types.Document = None,
+        paid_media: types.PaidMediaInfo = None,
+        photo: types.Photo = None,
+        sticker: types.Sticker = None,
+        story: types.Story = None,
+        video: types.Video = None,
+        video_note: types.VideoNote = None,
+        voice: types.Voice = None,
+        has_media_spoiler: bool | None = None,
+        checklist: types.Checklist | None = None,
+        contact: types.Contact = None,
+        dice: types.Dice = None,
+        game: types.Game = None,
+        giveaway: types.Giveaway = None,
+        giveaway_winners: types.GiveawayWinners = None,
+        invoice: types.Invoice = None,
+        location: types.Location = None,
+        poll: types.Poll = None,
+        venue: types.Venue = None,
+        media: enums.MessageMediaType = None,
+    ) -> None:
         super().__init__(client)
 
         self.origin = origin
@@ -179,8 +181,8 @@ class ExternalReplyInfo(Object):
         client,
         chats: dict,
         users: dict,
-        reply_to: "raw.types.MessageReplyHeader"
-    ) -> "ExternalReplyInfo":
+        reply_to: raw.types.MessageReplyHeader,
+    ) -> ExternalReplyInfo:
         if not getattr(reply_to, "reply_from", None):
             # TODO: temp. workaround
             return None
@@ -225,25 +227,24 @@ class ExternalReplyInfo(Object):
             location = None
             poll = None
             venue = None
-            
-            web_page = None
+
             link_preview_options = types.LinkPreviewOptions._parse(
                 client,
                 reply_to.reply_media,
                 None,
-                False
+                False,
             )
 
             media = reply_to.reply_media
             media_type = None
-            
+
             if media:
                 if isinstance(media, raw.types.MessageMediaPhoto):
                     photo = types.Photo._parse(
                         client,
                         media.photo,
                         media.ttl_seconds,
-                        media.spoiler
+                        media.spoiler,
                     )
                     media_type = enums.MessageMediaType.PHOTO
                     has_media_spoiler = media.spoiler
@@ -266,46 +267,67 @@ class ExternalReplyInfo(Object):
                         attributes = {type(i): i for i in doc.attributes}
 
                         file_name = getattr(
-                            attributes.get(
-                                raw.types.DocumentAttributeFilename, None
-                            ), "file_name", None
+                            attributes.get(raw.types.DocumentAttributeFilename),
+                            "file_name",
+                            None,
                         )
 
                         if raw.types.DocumentAttributeAnimated in attributes:
-                            video_attributes = attributes.get(raw.types.DocumentAttributeVideo, None)
-                            animation = types.Animation._parse(client, doc, video_attributes, file_name)
+                            video_attributes = attributes.get(
+                                raw.types.DocumentAttributeVideo
+                            )
+                            animation = types.Animation._parse(
+                                client, doc, video_attributes, file_name
+                            )
                             media_type = enums.MessageMediaType.ANIMATION
                             has_media_spoiler = media.spoiler
                         elif raw.types.DocumentAttributeSticker in attributes:
-                            sticker = await types.Sticker._parse(client, doc, attributes)
+                            sticker = await types.Sticker._parse(
+                                client, doc, attributes
+                            )
                             media_type = enums.MessageMediaType.STICKER
                         elif raw.types.DocumentAttributeVideo in attributes:
-                            video_attributes = attributes[raw.types.DocumentAttributeVideo]
+                            video_attributes = attributes[
+                                raw.types.DocumentAttributeVideo
+                            ]
 
                             if video_attributes.round_message:
-                                video_note = types.VideoNote._parse(client, doc, video_attributes)
+                                video_note = types.VideoNote._parse(
+                                    client, doc, video_attributes
+                                )
                                 media_type = enums.MessageMediaType.VIDEO_NOTE
                             else:
-                                video = types.Video._parse(client, media, video_attributes, file_name, media.ttl_seconds)
+                                video = types.Video._parse(
+                                    client,
+                                    media,
+                                    video_attributes,
+                                    file_name,
+                                    media.ttl_seconds,
+                                )
                                 media_type = enums.MessageMediaType.VIDEO
                                 has_media_spoiler = media.spoiler
                         elif raw.types.DocumentAttributeAudio in attributes:
-                            audio_attributes = attributes[raw.types.DocumentAttributeAudio]
+                            audio_attributes = attributes[
+                                raw.types.DocumentAttributeAudio
+                            ]
 
                             if audio_attributes.voice:
-                                voice = types.Voice._parse(client, doc, audio_attributes)
+                                voice = types.Voice._parse(
+                                    client, doc, audio_attributes
+                                )
                                 media_type = enums.MessageMediaType.VOICE
                             else:
-                                audio = types.Audio._parse(client, doc, audio_attributes, file_name)
+                                audio = types.Audio._parse(
+                                    client, doc, audio_attributes, file_name
+                                )
                                 media_type = enums.MessageMediaType.AUDIO
                         else:
                             document = types.Document._parse(client, doc, file_name)
                             media_type = enums.MessageMediaType.DOCUMENT
                 elif isinstance(media, raw.types.MessageMediaWebPage):
                     if isinstance(media.webpage, raw.types.WebPage):
-                        web_page = types.WebPage._parse(client, media.webpage)
+                        types.WebPage._parse(client, media.webpage)
                         media_type = enums.MessageMediaType.WEB_PAGE
-                        web_page_url = media.webpage.url
                     else:
                         media = None
                 elif isinstance(media, raw.types.MessageMediaPoll):
@@ -315,13 +337,17 @@ class ExternalReplyInfo(Object):
                     dice = types.Dice._parse(client, media)
                     media_type = enums.MessageMediaType.DICE
                 elif isinstance(media, raw.types.MessageMediaStory):
-                    story = await types.Story._parse(client, users, chats, media, None, None, None, None)
+                    story = await types.Story._parse(
+                        client, users, chats, media, None, None, None, None
+                    )
                     media_type = enums.MessageMediaType.STORY
                 elif isinstance(media, raw.types.MessageMediaGiveaway):
                     giveaway = types.Giveaway._parse(client, chats, media)
                     media_type = enums.MessageMediaType.GIVEAWAY
                 elif isinstance(media, raw.types.MessageMediaGiveawayResults):
-                    giveaway_winners = types.GiveawayWinners._parse(client, chats, users, media)
+                    giveaway_winners = types.GiveawayWinners._parse(
+                        client, chats, users, media
+                    )
                     media_type = enums.MessageMediaType.GIVEAWAY_WINNERS
                 elif isinstance(media, raw.types.MessageMediaInvoice):
                     invoice = types.Invoice._parse(client, media)
@@ -362,19 +388,19 @@ class ExternalReplyInfo(Object):
                 location=location,
                 poll=poll,
                 venue=venue,
-                media=media_type
+                media=media_type,
             )
-
+        return None
 
     async def download(
         self,
         file_name: str = "",
         in_memory: bool = False,
         block: bool = True,
-        idx: int = None,
-        progress: Callable = None,
-        progress_args: tuple = ()
-    ) -> Optional[Union[str, "io.BytesIO", list[str], list["io.BytesIO"]]]:
+        idx: int | None = None,
+        progress: Callable | None = None,
+        progress_args: tuple = (),
+    ) -> str | io.BytesIO | list[str] | list[io.BytesIO] | None:
         """Bound method *download* of :obj:`~pyrogram.types.ExternalReplyInfo`.
 
         Use as a shortcut for:
@@ -388,7 +414,8 @@ class ExternalReplyInfo(Object):
 
                 await message.external_reply.download()
 
-        Parameters:
+        Parameters
+        ----------
             file_name (``str``, *optional*):
                 A custom *file_name* to be used instead of the one provided by Telegram.
                 By default, all files are downloaded in the *downloads* folder in your working directory.
@@ -418,7 +445,8 @@ class ExternalReplyInfo(Object):
                 You can pass anything you need to be available in the progress callback scope; for example, a Message
                 object or a Client instance in order to edit the message with the updated progress status.
 
-        Other Parameters:
+        Other Parameters
+        ----------------
             current (``int``):
                 The amount of bytes transmitted so far.
 
@@ -429,14 +457,16 @@ class ExternalReplyInfo(Object):
                 Extra custom arguments as defined in the ``progress_args`` parameter.
                 You can either keep ``*args`` or add every single extra argument in your function signature.
 
-        Returns:
+        Returns
+        -------
             ``str`` | ``None`` | :obj:`io.BytesIO`: On success, the absolute path of the downloaded file is returned,
             otherwise, in case the download failed or was deliberately stopped with
             :meth:`~pyrogram.Client.stop_transmission`, None is returned.
             Otherwise, in case ``in_memory=True``, a binary file-like object with its attribute ".name" set is returned.
             If the message is a :obj:`~pyrogram.types.PaidMediaInfo` with more than one ``paid_media`` containing ``minithumbnail`` and ``idx`` is not specified, then a list of paths or binary file-like objects is returned.
 
-        Raises:
+        Raises
+        ------
             IndexError: In case of wrong value of ``idx``.
             ValueError: If the message doesn't contain any downloadable media.
             :obj:`~pyrogram.errors.RPCError`: In case of a Telegram RPC error.
@@ -444,8 +474,9 @@ class ExternalReplyInfo(Object):
         """
         message = getattr(self, self.media.value, None)
         if not message:
+            msg = "The reply doesn't contain any downloadable media"
             raise ValueError(
-                f"The reply doesn't contain any downloadable media"
+                msg,
             )
 
         return await self._client.download_media(

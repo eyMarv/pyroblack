@@ -20,14 +20,13 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from ..object import Object
+from pyrogram.types.object import Object
 
 
 class ForumTopicReopened(Object):
-    """This object represents a service message about a forum topic reopened in the chat. Currently holds no information.
-    """
+    """This object represents a service message about a forum topic reopened in the chat. Currently holds no information."""
 
     def __init__(
-        self
-    ):
+        self,
+    ) -> None:
         super().__init__()

@@ -20,18 +20,17 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional
+from __future__ import annotations
 
-import pyrogram
 from pyrogram import raw
-
-from ..object import Object
+from pyrogram.types.object import Object
 
 
 class StoryAreaPosition(Object):
     """This object describes the position of a clickable area within a story.
 
-    Parameters:
+    Parameters
+    ----------
         x_percentage (``float``):
             The abscissa of the area's center, as a percentage of the media width.
 
@@ -40,13 +39,13 @@ class StoryAreaPosition(Object):
 
         width_percentage (``float``):
             The width of the area's rectangle, as a percentage of the media width.
-        
+
         height_percentage (``float``):
             The height of the area's rectangle, as a percentage of the media height.
-        
+
         rotation_angle (``float``):
             The clockwise rotation angle of the rectangle, in degrees; 0-360.
-        
+
         corner_radius_percentage (``float``, *optional*):
             The radius of the rectangle corner rounding, as a percentage of the media width.
 
@@ -54,13 +53,13 @@ class StoryAreaPosition(Object):
 
     def __init__(
         self,
-        x_percentage: float = None,
-        y_percentage: float = None,
-        width_percentage: float = None,
-        height_percentage: float = None,
-        rotation_angle: float = None,
-        corner_radius_percentage: Optional[float] = None,
-    ):
+        x_percentage: float | None = None,
+        y_percentage: float | None = None,
+        width_percentage: float | None = None,
+        height_percentage: float | None = None,
+        rotation_angle: float | None = None,
+        corner_radius_percentage: float | None = None,
+    ) -> None:
         super().__init__()
 
         self.x_percentage = x_percentage
@@ -71,14 +70,14 @@ class StoryAreaPosition(Object):
         self.corner_radius_percentage = corner_radius_percentage
 
     @staticmethod
-    def _parse(coordinates: "raw.types.MediaAreaCoordinates") -> "StoryAreaPosition":
+    def _parse(coordinates: raw.types.MediaAreaCoordinates) -> StoryAreaPosition:
         return StoryAreaPosition(
             x_percentage=coordinates.x,
             y_percentage=coordinates.y,
             width_percentage=coordinates.w,
             height_percentage=coordinates.h,
             rotation_angle=coordinates.rotation,
-            corner_radius_percentage=coordinates.radius
+            corner_radius_percentage=coordinates.radius,
         )
 
     def write(self):
@@ -88,5 +87,5 @@ class StoryAreaPosition(Object):
             w=self.width_percentage,
             h=self.height_percentage,
             rotation=self.rotation_angle,
-            radius=self.corner_radius_percentage
+            radius=self.corner_radius_percentage,
         )

@@ -20,19 +20,24 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union, Iterable
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import pyrogram
 from pyrogram import raw
 
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+
 
 class DeleteMessages:
     async def delete_messages(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
-        message_ids: Union[int, Iterable[int]],
+        self: pyrogram.Client,
+        chat_id: int | str,
+        message_ids: int | Iterable[int],
         revoke: bool = True,
-        is_scheduled: bool = False
+        is_scheduled: bool = False,
     ) -> int:
         """Delete messages, including service messages, with the following limitations:
 
@@ -52,7 +57,8 @@ class DeleteMessages:
 
         Please be aware about using the correct :doc:`Message Identifiers <../../topics/message-identifiers>`, specifically when using the ``is_scheduled`` parameter.
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
                 For your personal cloud (Saved Messages) you can simply use "me" or "self".
@@ -70,7 +76,8 @@ class DeleteMessages:
             is_scheduled (``bool``, *optional*):
                 True, if the specified ``message_ids`` refers to a scheduled message. Defaults to False.
 
-        Returns:
+        Returns
+        -------
             ``int``: Amount of affected messages
 
         Example:
@@ -84,38 +91,42 @@ class DeleteMessages:
 
                 # Delete messages only on your side (without revoking)
                 await app.delete_messages(chat_id, message_id, revoke=False)
+
         """
         peer = await self.resolve_peer(chat_id)
-        message_ids = list(message_ids) if not isinstance(message_ids, int) else [message_ids]
+        message_ids = (
+            list(message_ids) if not isinstance(message_ids, int) else [message_ids]
+        )
 
         if is_scheduled:
             r = await self.invoke(
                 raw.functions.messages.DeleteScheduledMessages(
                     peer=peer,
-                    id=message_ids
-                )
+                    id=message_ids,
+                ),
             )
             for i in r.updates:
                 if isinstance(i, raw.types.UpdateDeleteScheduledMessages):
                     return len(
-                        getattr(i, "messages", [])
+                        getattr(i, "messages", []),
                     ) + len(
-                        getattr(i, "sent_messages", [])
+                        getattr(i, "sent_messages", []),
                     )
         else:
             if isinstance(peer, raw.types.InputPeerChannel):
                 r = await self.invoke(
                     raw.functions.channels.DeleteMessages(
                         channel=peer,
-                        id=message_ids
-                    )
+                        id=message_ids,
+                    ),
                 )
             else:
                 r = await self.invoke(
                     raw.functions.messages.DeleteMessages(
                         id=message_ids,
-                        revoke=revoke
-                    )
+                        revoke=revoke,
+                    ),
                 )
 
             return getattr(r, "pts_count", 0)
+        return None

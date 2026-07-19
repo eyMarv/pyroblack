@@ -21,7 +21,7 @@
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from ..object import Object
+from pyrogram.types.object import Object
 
 
 class InputStoryContent(Object):
@@ -33,5 +33,5 @@ class InputStoryContent(Object):
     - :obj:`~pyrogram.types.InputStoryContentVideo`
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()

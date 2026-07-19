@@ -25,8 +25,7 @@ from .can_post_story_result import CanPostStoryResult
 
 
 class CanPostStoryResultPremiumNeeded(CanPostStoryResult):
-    """The user must subscribe to Telegram Premium to be able to post stories.
-    """
+    """The user must subscribe to Telegram Premium to be able to post stories."""
 
-    def __init__(self,):
+    def __init__(self) -> None:
         super().__init__()

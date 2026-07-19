@@ -20,13 +20,16 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from ..object import Object
+from __future__ import annotations
+
+from pyrogram.types.object import Object
 
 
 class OrderInfo(Object):
     """This object represents information about an order.
 
-    Parameters:
+    Parameters
+    ----------
         name (``str``, *optional*):
             User name.
 
@@ -44,11 +47,11 @@ class OrderInfo(Object):
     def __init__(
         self,
         *,
-        name: str = None,
-        phone_number: str = None,
-        email: str = None,
-        shipping_address: "types.ShippingAddress" = None
-    ):
+        name: str | None = None,
+        phone_number: str | None = None,
+        email: str | None = None,
+        shipping_address: types.ShippingAddress = None,
+    ) -> None:
         super().__init__()
 
         self.name = name
