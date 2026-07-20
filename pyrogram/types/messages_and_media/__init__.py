@@ -100,7 +100,6 @@ from .message_reactions import MessageReactions
 from .message_reactor import MessageReactor
 from .message_story import MessageStory
 from .my_boost import MyBoost
-from .paid_media import PaidMedia
 from .paid_message_price_changed import PaidMessagePriceChanged
 from .paid_messages_refunded import PaidMessagesRefunded
 from .paid_reactor import PaidReactor
@@ -302,7 +301,6 @@ __all__ = [
     "MessageReactor",
     "MessageStory",
     "MyBoost",
-    "PaidMedia",
     "PaidMessagePriceChanged",
     "PaidMessagesRefunded",
     "PaidReactor",

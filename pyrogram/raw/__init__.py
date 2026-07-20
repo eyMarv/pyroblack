@@ -22,7 +22,12 @@
 
 from importlib import import_module
 
-from . import base, core, functions, types
+# NOTE: import order matters — `types` MUST load before `base`. The generated
+# raw/base/*.py modules evaluate `Union[raw.types.X]` eagerly at class-definition
+# time, so `raw.types` must already be populated. Do NOT let an import sorter
+# (ruff/isort) alphabetize this line, or you get a circular-import crash on
+# `import pyrogram`. isort directive below pins the order.
+from . import types, functions, base, core  # isort: skip
 from .all import objects
 
 for k, v in objects.items():
