@@ -20,50 +20,52 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import logging
-from datetime import datetime
-from typing import Union, Optional
+from typing import TYPE_CHECKING
 
 import pyrogram
-from pyrogram import types, enums, utils
+from pyrogram import enums, types, utils
+
+if TYPE_CHECKING:
+    from datetime import datetime
 
 log = logging.getLogger(__name__)
 
 
 class CopyMessage:
     async def copy_message(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
-        from_chat_id: Union[int, str],
+        self: pyrogram.Client,
+        chat_id: int | str,
+        from_chat_id: int | str,
         message_id: int,
-        caption: str = None,
-        parse_mode: Optional["enums.ParseMode"] = None,
-        caption_entities: list["types.MessageEntity"] = None,
-        show_caption_above_media: bool = None,
-        video_cover: Optional[Union[str, "io.BytesIO"]] = None,
-        video_start_timestamp: int = None,
-        disable_notification: bool = None,
-        reply_parameters: "types.ReplyParameters" = None,
-        reply_markup: Union[
-            "types.InlineKeyboardMarkup",
-            "types.ReplyKeyboardMarkup",
-            "types.ReplyKeyboardRemove",
-            "types.ForceReply"
-        ] = None,
-        schedule_date: datetime = None,
-        business_connection_id: str = None,
-        send_as: Union[int, str] = None,
-        protect_content: bool = None,
-        message_thread_id: int = None,
-        reply_to_chat_id: Union[int, str] = None,
-        reply_to_story_id: int = None,
-        reply_to_monoforum_id: Union[int, str] = None,
-        quote_text: str = None,
-        quote_entities: list = None,
-        invert_media: bool = None,
-        reply_to_message_id: int = None,
-        **kwargs
-    ) -> "types.Message":
+        caption: str | None = None,
+        parse_mode: enums.ParseMode | None = None,
+        caption_entities: list[types.MessageEntity] | None = None,
+        show_caption_above_media: bool | None = None,
+        video_cover: str | io.BytesIO | None = None,
+        video_start_timestamp: int | None = None,
+        disable_notification: bool | None = None,
+        reply_parameters: types.ReplyParameters = None,
+        reply_markup: types.InlineKeyboardMarkup
+        | types.ReplyKeyboardMarkup
+        | types.ReplyKeyboardRemove
+        | types.ForceReply = None,
+        schedule_date: datetime | None = None,
+        business_connection_id: str | None = None,
+        send_as: int | str | None = None,
+        protect_content: bool | None = None,
+        message_thread_id: int | None = None,
+        reply_to_chat_id: int | str | None = None,
+        reply_to_story_id: int | None = None,
+        reply_to_monoforum_id: int | str | None = None,
+        quote_text: str | None = None,
+        quote_entities: list | None = None,
+        invert_media: bool | None = None,
+        reply_to_message_id: int | None = None,
+        **kwargs,
+    ) -> types.Message:
         """Copy messages of any kind.
 
         Service messages, paid media messages, giveaway messages, giveaway winners messages, and invoice messages can't be copied. A quiz poll can be copied only if the value of the field ``correct_option_id`` is known to the bot.
@@ -73,7 +75,8 @@ class CopyMessage:
 
         .. include:: /_includes/usable-by/users-bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
                 For your personal cloud (Saved Messages) you can simply use "me" or "self".
@@ -104,7 +107,7 @@ class CopyMessage:
 
             video_cover (``str`` | :obj:`io.BytesIO`, *optional*):
                 New cover for the copied video in the message. Pass None to skip cover uploading and use the existing cover.
-            
+
             video_start_timestamp (``int``, *optional*):
                 New start timestamp, from which the video playing must start, in seconds for the copied video in the message.
 
@@ -128,7 +131,7 @@ class CopyMessage:
             send_as (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the chat or channel to send the message as.
                 You can use this to send the message on behalf of a chat or channel where you have appropriate permissions.
-                Use the :meth:`~pyrogram.Client.get_send_as_chats` to return the list of message sender identifiers, which can be used to send messages in the chat, 
+                Use the :meth:`~pyrogram.Client.get_send_as_chats` to return the list of message sender identifiers, which can be used to send messages in the chat,
                 This setting applies to the current message and will remain effective for future messages unless explicitly changed.
                 To set this behavior permanently for all messages, use :meth:`~pyrogram.Client.set_send_as_chat`.
 
@@ -138,10 +141,12 @@ class CopyMessage:
             message_thread_id (``int``, *optional*):
                 Unique identifier for the target message thread (topic) of the forum; for forum supergroups only
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.Message`: On success, the copied message is returned.
 
-        Raises:
+        Raises
+        ------
             ValueError: In case if an invalid message_id was provided.
             :obj:`~pyrogram.errors.RPCError`: In case of a Telegram RPC error.
 
@@ -152,7 +157,6 @@ class CopyMessage:
                 await app.copy_message(to_chat, from_chat, 123)
 
         """
-
         if invert_media is not None and show_caption_above_media is None:
             show_caption_above_media = invert_media
 
@@ -169,7 +173,7 @@ class CopyMessage:
 
         message: types.Message = await self.get_messages(
             chat_id=from_chat_id,
-            message_ids=message_id
+            message_ids=message_id,
         )
 
         return await message.copy(
@@ -187,5 +191,5 @@ class CopyMessage:
             business_connection_id=business_connection_id,
             send_as=send_as,
             protect_content=protect_content,
-            message_thread_id=message_thread_id
+            message_thread_id=message_thread_id,
         )

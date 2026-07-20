@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Inject missing optional keyword parameters from the v2.7.2 compat report into
+"""Inject missing optional keyword parameters from the v2.7.2 compat report into
 current function signatures so call sites and the compat_diff script agree.
 
 For each param mismatch in scripts/compat_report_v272.json, add
@@ -8,18 +7,18 @@ For each param mismatch in scripts/compat_report_v272.json, add
 
 Does NOT change function bodies (legacy_compat / dual-attrs still handle values).
 """
+
 from __future__ import annotations
 
 import ast
 import json
 import sys
 from pathlib import Path
-from typing import Dict, List, Set, Tuple
 
 
-def load_mismatches(report_path: Path) -> Dict[Tuple[str, str], List[str]]:
+def load_mismatches(report_path: Path) -> dict[tuple[str, str], list[str]]:
     data = json.loads(report_path.read_text(encoding="utf-8"))
-    out: Dict[Tuple[str, str], List[str]] = {}
+    out: dict[tuple[str, str], list[str]] = {}
     for m in data.get("param_mismatches", []):
         # use new_file if present else old_file
         f = m.get("new_file") or m.get("old_file")
@@ -29,10 +28,10 @@ def load_mismatches(report_path: Path) -> Dict[Tuple[str, str], List[str]]:
 
 
 class ParamInjector(ast.NodeTransformer):
-    def __init__(self, wanted: Dict[str, List[str]]):
+    def __init__(self, wanted: dict[str, list[str]]) -> None:
         # qualname -> missing params for THIS file
         self.wanted = wanted
-        self.class_stack: List[str] = []
+        self.class_stack: list[str] = []
         self.changed = False
 
     def visit_ClassDef(self, node: ast.ClassDef):
@@ -43,7 +42,7 @@ class ParamInjector(ast.NodeTransformer):
 
     def _qual(self, name: str) -> str:
         if self.class_stack:
-            return ".".join(self.class_stack + [name])
+            return ".".join([*self.class_stack, name])
         return name
 
     def _inject(self, node: ast.AST) -> ast.AST:
@@ -57,7 +56,7 @@ class ParamInjector(ast.NodeTransformer):
         if not missing:
             return node
 
-        existing: Set[str] = set()
+        existing: set[str] = set()
         for a in node.args.posonlyargs + node.args.args + node.args.kwonlyargs:
             existing.add(a.arg)
         if node.args.vararg:
@@ -87,12 +86,11 @@ class ParamInjector(ast.NodeTransformer):
         return node
 
 
-def patch_file(path: Path, qual_to_params: Dict[str, List[str]]) -> bool:
+def patch_file(path: Path, qual_to_params: dict[str, list[str]]) -> bool:
     src = path.read_text(encoding="utf-8")
     try:
         tree = ast.parse(src)
-    except SyntaxError as e:
-        print(f"  skip parse error {path}: {e}")
+    except SyntaxError:
         return False
 
     inj = ParamInjector(qual_to_params)
@@ -103,8 +101,7 @@ def patch_file(path: Path, qual_to_params: Dict[str, List[str]]) -> bool:
     ast.fix_missing_locations(tree)
     try:
         new_src = ast.unparse(tree)
-    except Exception as e:
-        print(f"  unparse failed {path}: {e}")
+    except Exception:
         return False
 
     # preserve trailing newline
@@ -115,15 +112,14 @@ def patch_file(path: Path, qual_to_params: Dict[str, List[str]]) -> bool:
 
 
 def main() -> int:
-    root = Path(".").resolve()
+    root = Path.cwd()
     report = root / "scripts" / "compat_report_v272.json"
     if not report.exists():
-        print("Run scripts/compat_diff_v272.py --params --json first")
         return 2
 
     mismatches = load_mismatches(report)
     # group by file
-    by_file: Dict[str, Dict[str, List[str]]] = {}
+    by_file: dict[str, dict[str, list[str]]] = {}
     for (f, q), params in mismatches.items():
         by_file.setdefault(f, {})[q] = params
 
@@ -131,15 +127,12 @@ def main() -> int:
     for fpath, qmap in sorted(by_file.items()):
         p = root / fpath
         if not p.is_file():
-            print(f"  missing file {fpath}")
             continue
         if patch_file(p, qmap):
-            print(f"  patched {fpath} ({len(qmap)} funcs)")
             changed += 1
         else:
-            print(f"  no change {fpath}")
+            pass
 
-    print(f"Done. files changed: {changed}")
     return 0
 
 

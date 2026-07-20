@@ -20,19 +20,29 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import datetime
-from typing import Optional
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import pyrogram
 from pyrogram import raw, types, utils
-from pyrogram.file_id import FileId, FileType, FileUniqueId, FileUniqueType, ThumbnailSource
-from ..object import Object
+from pyrogram.file_id import (
+    FileId,
+    FileType,
+    FileUniqueId,
+    FileUniqueType,
+)
+from pyrogram.types.object import Object
+
+if TYPE_CHECKING:
+    from datetime import datetime
 
 
 class Video(Object):
     """A video file.
 
-    Parameters:
+    Parameters
+    ----------
         file_id (``str``):
             Identifier for this file, which can be used to download or reuse the file.
 
@@ -84,24 +94,24 @@ class Video(Object):
     def __init__(
         self,
         *,
-        client: "pyrogram.Client" = None,
+        client: pyrogram.Client = None,
         file_id: str,
         file_unique_id: str,
         width: int,
         height: int,
         duration: int,
-        file_name: str = None,
-        mime_type: str = None,
-        file_size: int = None,
-        supports_streaming: bool = None,
-        ttl_seconds: int = None,
-        date: datetime = None,
-        thumbs: list["types.Thumbnail"] = None,
-        cover: Optional["types.Photo"] = None,
-        start_timestamp: Optional[int] = None,
-        qualities: list["types.VideoQuality"] = None,
-        **kwargs
-    ):
+        file_name: str | None = None,
+        mime_type: str | None = None,
+        file_size: int | None = None,
+        supports_streaming: bool | None = None,
+        ttl_seconds: int | None = None,
+        date: datetime | None = None,
+        thumbs: list[types.Thumbnail] | None = None,
+        cover: types.Photo | None = None,
+        start_timestamp: int | None = None,
+        qualities: list[types.VideoQuality] | None = None,
+        **kwargs,
+    ) -> None:
         super().__init__(client)
 
         self.file_id = file_id
@@ -125,12 +135,12 @@ class Video(Object):
     @staticmethod
     def _parse(
         client,
-        media: "raw.types.MessageMediaDocument",
-        video_attributes: "raw.types.DocumentAttributeVideo",
+        media: raw.types.MessageMediaDocument,
+        video_attributes: raw.types.DocumentAttributeVideo,
         file_name: str,
-        ttl_seconds: int = None,
-        video: "raw.types.Document" = None
-    ) -> "Video":
+        ttl_seconds: int | None = None,
+        video: raw.types.Document = None,
+    ) -> Video:
         if not video:
             video = media.document  # "raw.types.Document"
         qualities = []
@@ -141,14 +151,18 @@ class Video(Object):
                     altdoc_attributes = {type(i): i for i in altdoc.attributes}
 
                     altdoc_file_name = getattr(
-                        altdoc_attributes.get(
-                            raw.types.DocumentAttributeFilename, None
-                        ), "file_name", None
+                        altdoc_attributes.get(raw.types.DocumentAttributeFilename),
+                        "file_name",
+                        None,
                     )
-                    altdoc_video_attribute = altdoc_attributes.get(raw.types.DocumentAttributeVideo, None)
+                    altdoc_video_attribute = altdoc_attributes.get(
+                        raw.types.DocumentAttributeVideo
+                    )
                     if altdoc_video_attribute:
                         qualities.append(
-                            types.VideoQuality._parse(client, altdoc, altdoc_video_attribute, altdoc_file_name)
+                            types.VideoQuality._parse(
+                                client, altdoc, altdoc_video_attribute, altdoc_file_name
+                            ),
                         )
         return Video(
             file_id=FileId(
@@ -156,27 +170,35 @@ class Video(Object):
                 dc_id=video.dc_id,
                 media_id=video.id,
                 access_hash=video.access_hash,
-                file_reference=video.file_reference
-            ).encode() if video else None,
+                file_reference=video.file_reference,
+            ).encode()
+            if video
+            else None,
             file_unique_id=FileUniqueId(
                 file_unique_type=FileUniqueType.DOCUMENT,
-                media_id=video.id
-            ).encode() if video else None,
+                media_id=video.id,
+            ).encode()
+            if video
+            else None,
             width=video_attributes.w if video_attributes else None,
             height=video_attributes.h if video_attributes else None,
             duration=video_attributes.duration if video_attributes else None,
             thumbs=types.Thumbnail._parse(client, video) if video else None,
             cover=types.Photo._parse(
                 client,
-                media.video_cover
-            ) if media and media.video_cover else None,
+                media.video_cover,
+            )
+            if media and media.video_cover
+            else None,
             start_timestamp=media.video_timestamp if media else None,
             qualities=types.List(qualities) if qualities else None,
             file_name=file_name,
             mime_type=video.mime_type if video else None,
             file_size=video.size if video else None,
-            supports_streaming=video_attributes.supports_streaming if video_attributes else None,
+            supports_streaming=video_attributes.supports_streaming
+            if video_attributes
+            else None,
             date=utils.timestamp_to_datetime(video.date) if video else None,
             ttl_seconds=ttl_seconds,
-            client=client
+            client=client,
         )

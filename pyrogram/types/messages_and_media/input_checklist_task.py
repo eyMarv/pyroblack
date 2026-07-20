@@ -20,18 +20,18 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import List, Optional
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import enums, raw, types, utils
-
-from ..object import Object
+from pyrogram.types.object import Object
 
 
 class InputChecklistTask(Object):
     """Describes a task in a checklist to be sent.
 
-    Parameters:
+    Parameters
+    ----------
         id (``int``):
             Unique identifier of the task.
 
@@ -43,6 +43,7 @@ class InputChecklistTask(Object):
 
         entities (List of :obj:`~pyrogram.types.MessageEntity`, *optional*):
             List of special entities that appear in the checklist title.
+
     """
 
     def __init__(
@@ -50,9 +51,9 @@ class InputChecklistTask(Object):
         *,
         id: int,
         text: str,
-        parse_mode: Optional["enums.ParseMode"] = None,
-        entities: Optional[List["types.MessageEntity"]] = None,
-    ):
+        parse_mode: enums.ParseMode | None = None,
+        entities: list[types.MessageEntity] | None = None,
+    ) -> None:
         super().__init__()
 
         self.id = id
@@ -60,16 +61,20 @@ class InputChecklistTask(Object):
         self.parse_mode = parse_mode
         self.entities = entities
 
-    async def write(self, client: "pyrogram.Client") -> "raw.types.TodoItem":
+    async def write(self, client: pyrogram.Client) -> raw.types.TodoItem:
         task_title, task_entities = (
             await utils.parse_text_entities(
-                client, self.text, self.parse_mode, self.entities
+                client,
+                self.text,
+                self.parse_mode,
+                self.entities,
             )
         ).values()
 
         return raw.types.TodoItem(
             id=self.id,
             title=raw.types.TextWithEntities(
-                text=task_title, entities=task_entities or []
+                text=task_title,
+                entities=task_entities or [],
             ),
         )

@@ -26,7 +26,7 @@ from pyrogram import raw
 
 class TerminateAllOtherSessions:
     async def terminate_all_other_sessions(
-        self: "pyrogram.Client"
+        self: "pyrogram.Client",
     ) -> bool:
         """Terminates all other sessions of the current user.
 
@@ -40,5 +40,5 @@ class TerminateAllOtherSessions:
 
         """
         return await self.invoke(
-            raw.functions.auth.ResetAuthorizations()
+            raw.functions.auth.ResetAuthorizations(),
         )

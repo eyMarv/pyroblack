@@ -20,36 +20,41 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import inspect
 import re
-from typing import Any, Callable, Literal, Optional, Pattern, Union
+from re import Pattern
+from typing import TYPE_CHECKING, Any, Callable, Literal
 
 import pyrogram
 from pyrogram import enums
 from pyrogram.types import (
-    Message,
     CallbackQuery,
     ChosenInlineResult,
-    InlineQuery,
     InlineKeyboardMarkup,
+    InlineQuery,
+    Message,
     PreCheckoutQuery,
     ReplyKeyboardMarkup,
     Update,
 )
-from pyrogram.types.messages_and_media.message import Str
+
+if TYPE_CHECKING:
+    from pyrogram.types.messages_and_media.message import Str
 
 
 class Filter:
-    async def __call__(self, client: "pyrogram.Client", update: Update) -> None:
+    async def __call__(self, client: pyrogram.Client, update: Update) -> None:
         raise NotImplementedError
 
-    def __invert__(self) -> "InvertFilter":
+    def __invert__(self) -> InvertFilter:
         return InvertFilter(self)
 
-    def __and__(self, other) -> "AndFilter":
+    def __and__(self, other) -> AndFilter:
         return AndFilter(self, other)
 
-    def __or__(self, other) -> "OrFilter":
+    def __or__(self, other) -> OrFilter:
         return OrFilter(self, other)
 
 
@@ -57,12 +62,15 @@ class InvertFilter(Filter):
     def __init__(self, base) -> None:
         self.base: Any = base
 
-    async def __call__(self, client: "pyrogram.Client", update: Update) -> bool:
+    async def __call__(self, client: pyrogram.Client, update: Update) -> bool:
         if inspect.iscoroutinefunction(self.base.__call__):
             x = await self.base(client, update)
         else:
             x = await client.loop.run_in_executor(
-                client.executor, self.base, client, update
+                client.executor,
+                self.base,
+                client,
+                update,
             )
 
         return not x
@@ -74,13 +82,18 @@ class AndFilter(Filter):
         self.other = other
 
     async def __call__(
-        self, client: "pyrogram.Client", update: Update
-    ) -> Union[Any, Literal[False]]:
+        self,
+        client: pyrogram.Client,
+        update: Update,
+    ) -> Any | Literal[False]:
         if inspect.iscoroutinefunction(self.base.__call__):
             x = await self.base(client, update)
         else:
             x = await client.loop.run_in_executor(
-                client.executor, self.base, client, update
+                client.executor,
+                self.base,
+                client,
+                update,
             )
 
         # short circuit
@@ -91,7 +104,10 @@ class AndFilter(Filter):
             y = await self.other(client, update)
         else:
             y = await client.loop.run_in_executor(
-                client.executor, self.other, client, update
+                client.executor,
+                self.other,
+                client,
+                update,
             )
 
         return x and y
@@ -103,13 +119,18 @@ class OrFilter(Filter):
         self.other = other
 
     async def __call__(
-        self, client: "pyrogram.Client", update: Update
-    ) -> Union[Any, Literal[True]]:
+        self,
+        client: pyrogram.Client,
+        update: Update,
+    ) -> Any | Literal[True]:
         if inspect.iscoroutinefunction(self.base.__call__):
             x = await self.base(client, update)
         else:
             x = await client.loop.run_in_executor(
-                client.executor, self.base, client, update
+                client.executor,
+                self.base,
+                client,
+                update,
             )
 
         # short circuit
@@ -120,7 +141,10 @@ class OrFilter(Filter):
             y = await self.other(client, update)
         else:
             y = await client.loop.run_in_executor(
-                client.executor, self.other, client, update
+                client.executor,
+                self.other,
+                client,
+                update,
             )
 
         return x or y
@@ -129,12 +153,13 @@ class OrFilter(Filter):
 CUSTOM_FILTER_NAME = "CustomFilter"
 
 
-def create(func: Callable, name: str = None, **kwargs) -> Filter:
+def create(func: Callable, name: str | None = None, **kwargs) -> Filter:
     """Easily create a custom filter.
 
     Custom filters give you extra control over which updates are allowed or not to be processed by your handlers.
 
-    Parameters:
+    Parameters
+    ----------
         func (``Callable``):
             A function that accepts three positional arguments *(filter, client, update)* and returns a boolean: True if the
             update should be handled, False otherwise.
@@ -174,7 +199,7 @@ all = create(all_filter)
 
 # region me_filter
 async def me_filter(_, __, m: Message) -> bool:
-    return bool(m.from_user and m.from_user.is_self or getattr(m, "outgoing", False))
+    return bool((m.from_user and m.from_user.is_self) or getattr(m, "outgoing", False))
 
 
 me: Filter = create(me_filter)
@@ -339,6 +364,7 @@ game: Filter = create(game_filter)
 
 # endregion
 
+
 # region giveaway_filter
 async def giveaway_filter(_, __, m: Message):
     return bool(m.giveaway)
@@ -350,6 +376,7 @@ giveaway = create(giveaway_filter)
 
 # endregion
 
+
 # region giveaway_result_filter
 async def giveaway_result_filter(_, __, m: Message):
     return bool(m.giveaway_winners or m.giveaway_completed)
@@ -360,6 +387,7 @@ giveaway_result = create(giveaway_result_filter)
 
 
 # endregion
+
 
 # region gift_code_filter
 async def gift_code_filter(_, __, m: Message):
@@ -506,11 +534,12 @@ media_spoiler: Filter = create(media_spoiler_filter)
 
 
 # region private_filter
-async def private_filter(_, __, m: Union[Message, CallbackQuery]) -> bool:
+async def private_filter(_, __, m: Message | CallbackQuery) -> bool:
     m = getattr(m, "message", None) if isinstance(m, CallbackQuery) else m
     if not m:
+        msg = "filters.private is not supported here "
         raise ValueError(
-            "filters.private is not supported here "
+            msg,
         )
     return bool(m.chat and m.chat.type in {enums.ChatType.PRIVATE, enums.ChatType.BOT})
 
@@ -523,14 +552,15 @@ private: Filter = create(private_filter)
 
 
 # region group_filter
-async def group_filter(_, __, m: Union[Message, CallbackQuery]) -> bool:
+async def group_filter(_, __, m: Message | CallbackQuery) -> bool:
     m = getattr(m, "message", None) if isinstance(m, CallbackQuery) else m
     if not m:
+        msg = "filters.group is not supported here "
         raise ValueError(
-            "filters.group is not supported here "
+            msg,
         )
     return bool(
-        m.chat and m.chat.type in {enums.ChatType.GROUP, enums.ChatType.SUPERGROUP}
+        m.chat and m.chat.type in {enums.ChatType.GROUP, enums.ChatType.SUPERGROUP},
     )
 
 
@@ -542,11 +572,12 @@ group: Filter = create(group_filter)
 
 
 # region channel_filter
-async def channel_filter(_, __, m: Union[Message, CallbackQuery]) -> bool:
+async def channel_filter(_, __, m: Message | CallbackQuery) -> bool:
     m = getattr(m, "message", None) if isinstance(m, CallbackQuery) else m
     if not m:
+        msg = "filters.channel is not supported here "
         raise ValueError(
-            "filters.channel is not supported here "
+            msg,
         )
     return bool(m.chat and m.chat.type == enums.ChatType.CHANNEL)
 
@@ -746,19 +777,18 @@ def via_bot_filter(flt, *args):
         return bool(m.via_bot) and (
             len(flt) == 0
             or (
-                m.via_bot.id in flt or (
-                    m.via_bot.username and m.via_bot.username.lower() in flt
-                )
+                m.via_bot.id in flt
+                or (m.via_bot.username and m.via_bot.username.lower() in flt)
             )
         )
     bots = args[0] if isinstance(args[0], list) else [args[0]]
-    flt = type(flt)(u.lower().lstrip("@") if isinstance(u, str) else u for u in bots)
-    return flt
+    return type(flt)(u.lower().lstrip("@") if isinstance(u, str) else u for u in bots)
+
 
 via_bot: Filter = type(
     via_bot_filter.__name__,
     (Filter, set),
-    dict(__call__=via_bot_filter),
+    {"__call__": via_bot_filter},
 )()
 """Filter messages sent via inline bots
 
@@ -799,14 +829,12 @@ video_chat_ended: Filter = create(video_chat_ended_filter)
 
 
 # region business message
-async def tg_business_filter(_, __, m: Union[Message, list[Message]]):
-    if (
-        isinstance(m, list) and
-        len(m) > 0
-    ):
+async def tg_business_filter(_, __, m: Message | list[Message]):
+    if isinstance(m, list) and len(m) > 0:
         return bool(m[0].business_connection_id)
-    elif isinstance(m, Message):
+    if isinstance(m, Message):
         return bool(m.business_connection_id)
+    return None
 
 
 tg_business = create(tg_business_filter)
@@ -814,6 +842,7 @@ tg_business = create(tg_business_filter)
 
 
 # endregion
+
 
 # region video_chat_participants_invited_filter
 async def video_chat_participants_invited_filter(_, __, m: Message) -> bool:
@@ -826,6 +855,7 @@ video_chat_participants_invited = create(video_chat_participants_invited_filter)
 
 # endregion
 
+
 # region successful_payment_filter
 async def successful_payment_filter(_, __, m: Message):
     return bool(m.successful_payment)
@@ -836,6 +866,7 @@ successful_payment = create(successful_payment_filter)
 
 
 # endregion
+
 
 # region service_filter
 async def service_filter(_, __, m: Message) -> bool:
@@ -897,10 +928,11 @@ from_scheduled: Filter = create(from_scheduled_filter)
 # region linked_channel_filter
 async def linked_channel_filter(_, __, m: Message) -> bool:
     return bool(
-        m.forward_origin and
-        m.forward_origin.type == enums.MessageOriginType.CHANNEL and
-        m.forward_origin.chat == m.sender_chat
+        m.forward_origin
+        and m.forward_origin.type == enums.MessageOriginType.CHANNEL
+        and m.forward_origin.chat == m.sender_chat,
     )
+
 
 linked_channel: Filter = create(linked_channel_filter)
 """Filter messages that are automatically forwarded from the linked channel to the group chat."""
@@ -911,13 +943,14 @@ linked_channel: Filter = create(linked_channel_filter)
 
 # region command_filter
 def command(
-    commands: Union[str, list[str]],
-    prefixes: Union[str, list[str]] = "/",
+    commands: str | list[str],
+    prefixes: str | list[str] = "/",
     case_sensitive: bool = False,
 ) -> Filter:
     """Filter commands, i.e.: text messages starting with "/" or any other custom prefix.
 
-    Parameters:
+    Parameters
+    ----------
         commands (``str`` | ``list``):
             The command or list of commands as string the filter should look for.
             Examples: "start", ["start", "help", "settings"]. When a message text containing
@@ -932,6 +965,7 @@ def command(
         case_sensitive (``bool``, *optional*):
             Pass True if you want your command(s) to be case sensitive. Defaults to False.
             Examples: when True, command="Start" would trigger /Start but not /start.
+
     """
     command_re: Pattern[str] = re.compile(pattern=r"([\"'])(.*?)(?<!\\)\1|(\S+)")
 
@@ -1002,26 +1036,29 @@ def command(
 
 
 # region cq_data_filter
-def cq_data(data: Union[str, list[str]]):
+def cq_data(data: str | list[str]):
     """Filter callback query updates that match a given string or list of strings.
 
     Can be applied to handlers that receive :obj:`~pyrogram.types.CallbackQuery` updates.
 
-    Parameters:
+    Parameters
+    ----------
         data (``str`` | ``list[str]``):
             The data or list of data strings to match against the callback query.
 
-    Returns:
+    Returns
+    -------
         :obj:`callable`: A filter function that matches callback query updates based on the provided data.
+
     """
 
     async def func(_, __, callback_query: CallbackQuery):
         if isinstance(data, str):
             return callback_query.data == data
-        elif isinstance(data, list):
+        if isinstance(data, list):
             return callback_query.data in data
-        else:
-            return False
+        return False
+
     return create(func)
 
 
@@ -1029,7 +1066,7 @@ def cq_data(data: Union[str, list[str]]):
 
 
 # region regex_filter
-def regex(pattern: Union[str, Pattern], flags: int = 0) -> Filter:
+def regex(pattern: str | Pattern, flags: int = 0) -> Filter:
     """Filter updates that match a given regular expression pattern.
 
     Can be applied to handlers that receive one of the following updates:
@@ -1043,12 +1080,14 @@ def regex(pattern: Union[str, Pattern], flags: int = 0) -> Filter:
     When a pattern matches, all the `Match Objects <https://docs.python.org/3/library/re.html#match-objects>`_ are
     stored in the ``matches`` field of the update object itself.
 
-    Parameters:
+    Parameters
+    ----------
         pattern (``str`` | ``Pattern``):
             The regex pattern as string or as pre-compiled pattern.
 
         flags (``int``, *optional*):
             Regex flags.
+
     """
 
     async def func(flt, _, update: Update) -> bool:
@@ -1061,7 +1100,8 @@ def regex(pattern: Union[str, Pattern], flags: int = 0) -> Filter:
         elif isinstance(update, PreCheckoutQuery):
             value: str = update.invoice_payload
         else:
-            raise ValueError(f"Regex filter doesn't work with {type(update)}")
+            msg = f"Regex filter doesn't work with {type(update)}"
+            raise ValueError(msg)
 
         if value:
             update.matches = list(flt.p.finditer(value)) or None
@@ -1085,21 +1125,25 @@ class user(Filter, set):
     You can use `set bound methods <https://docs.python.org/3/library/stdtypes.html#set>`_ to manipulate the
     users container.
 
-    Parameters:
+    Parameters
+    ----------
         users (``int`` | ``str`` | ``list``):
             Pass one or more user ids/usernames to filter users.
             For you yourself, "me" or "self" can be used as well.
             Defaults to None (no users).
+
     """
 
-    def __init__(self, users: Optional[Union[int, str, list[Union[int, str]]]] = None) -> None:
+    def __init__(self, users: int | str | list[int | str] | None = None) -> None:
         users = [] if users is None else users if isinstance(users, list) else [users]
 
         super().__init__(
             (
                 "me"
                 if u in ["me", "self"]
-                else u.lower().strip("@") if isinstance(u, str) else u
+                else u.lower().strip("@")
+                if isinstance(u, str)
+                else u
             )
             for u in users
         )
@@ -1122,21 +1166,25 @@ class chat(Filter, set):
     You can use `set bound methods <https://docs.python.org/3/library/stdtypes.html#set>`_ to manipulate the
     chats container.
 
-    Parameters:
+    Parameters
+    ----------
         chats (``int`` | ``str`` | ``list``):
             Pass one or more chat ids/usernames to filter chats.
             For your personal cloud (Saved Messages) you can simply use "me" or "self".
             Defaults to None (no chats).
+
     """
 
-    def __init__(self, chats: Optional[Union[int, str, list[Union[int, str]]]] = None) -> None:
+    def __init__(self, chats: int | str | list[int | str] | None = None) -> None:
         chats = [] if chats is None else chats if isinstance(chats, list) else [chats]
 
         super().__init__(
             (
                 "me"
                 if c in ["me", "self"]
-                else c.lower().strip("@") if isinstance(c, str) else c
+                else c.lower().strip("@")
+                if isinstance(c, str)
+                else c
             )
             for c in chats
         )
@@ -1157,9 +1205,7 @@ class chat(Filter, set):
 # region chat_shared filter
 
 chat_shared: Filter = create(
-    lambda _, __, m: (
-        bool(m.chat_shared)
-    )
+    lambda _, __, m: bool(m.chat_shared),
 )
 """Filter service messages for chat shared."""
 
@@ -1169,13 +1215,12 @@ chat_shared: Filter = create(
 # region users_shared filter
 
 users_shared: Filter = create(
-    lambda _, __, m: (
-        bool(m.users_shared)
-    )
+    lambda _, __, m: bool(m.users_shared),
 )
 """Filter service messages for chat shared."""
 
 # endregion
+
 
 # noinspection PyPep8Naming
 class thread(Filter, set):
@@ -1184,18 +1229,24 @@ class thread(Filter, set):
     You can use `set bound methods <https://docs.python.org/3/library/stdtypes.html#set>`_ to manipulate the
     message_thread_ids container.
 
-    Parameters:
+    Parameters
+    ----------
         message_thread_ids (``int`` | ``list``):
             Pass one or more message thread ids to filter messages in specific threads.
             Defaults to None (no threads).
+
     """
 
-    def __init__(self, message_thread_ids: Optional[Union[int, list[int]]] = None):
-        message_thread_ids = [] if message_thread_ids is None else message_thread_ids if isinstance(message_thread_ids, list) else [message_thread_ids]
-
-        super().__init__(
-            t for t in message_thread_ids
+    def __init__(self, message_thread_ids: int | list[int] | None = None) -> None:
+        message_thread_ids = (
+            []
+            if message_thread_ids is None
+            else message_thread_ids
+            if isinstance(message_thread_ids, list)
+            else [message_thread_ids]
         )
+
+        super().__init__(t for t in message_thread_ids)
 
     async def __call__(self, _, message: Message):
         return message.message_thread_id and message.message_thread_id in self
@@ -1207,32 +1258,38 @@ class topic(Filter, set):
 
     Same as :class:`~pyrogram.filters.thread`. Pass topic ids (use ``1`` for General).
 
-    Parameters:
+    Parameters
+    ----------
         topics (``int`` | ``list``):
             One or more forum topic / message_thread ids.
+
     """
 
-    def __init__(self, topics: Optional[Union[int, list[int]]] = None):
-        topics = [] if topics is None else topics if isinstance(topics, list) else [topics]
+    def __init__(self, topics: int | list[int] | None = None) -> None:
+        topics = (
+            [] if topics is None else topics if isinstance(topics, list) else [topics]
+        )
         super().__init__(t for t in topics)
 
     async def __call__(self, _, message: Message):
         return bool(message.message_thread_id and message.message_thread_id in self)
 
+
 # region self_destruct_filter
+
 
 async def self_destruct_filter(_, __, m: Message):
     return bool(
-        m.media and
-        getattr(
+        m.media
+        and getattr(
             getattr(
                 m,
                 m.media.value,
-                None
+                None,
             ),
             "ttl_seconds",
-            None
-        )
+            None,
+        ),
     )
 
 
@@ -1247,19 +1304,20 @@ self_destruct = create(self_destruct_filter)
 # pyroblack <= 2.7.2 filter aliases / restored filters
 # ---------------------------------------------------------------------------
 
+
 # region self_destruction (alias of self_destruct) — real def for AST/API parity
 async def self_destruction_filter(_, __, m: Message):
     return bool(
-        m.media and
-        getattr(
+        m.media
+        and getattr(
             getattr(
                 m,
                 m.media.value,
-                None
+                None,
             ),
             "ttl_seconds",
-            None
-        )
+            None,
+        ),
     )
 
 
@@ -1336,6 +1394,7 @@ async def general_forum_topic_unhidden_filter(_, __, m: Message) -> bool:
 
 general_forum_topic_unhidden = create(general_forum_topic_unhidden_filter)
 """Filter service messages for unhidden general forum topics."""
+
 
 # <=2.7.2 short names + real function defs for AST/API parity
 async def general_topic_hidden_filter(_, __, m: Message) -> bool:

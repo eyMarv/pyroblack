@@ -20,7 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw
@@ -28,12 +28,12 @@ from pyrogram import raw
 
 class SetBotInfo:
     async def set_bot_info(
-        self: "pyrogram.Client",
+        self: pyrogram.Client,
         lang_code: str,
-        bot: Union[int, str] = None,
-        name: str = None,
-        about: str = None,
-        description: str = None,
+        bot: int | str | None = None,
+        name: str | None = None,
+        about: str | None = None,
+        description: str | None = None,
     ) -> bool:
         """Get the bot info in given language.
 
@@ -43,7 +43,8 @@ class SetBotInfo:
             For normal bot you can only use this method to self.
             For userbot you can only use this method if you are the owner of target bot.
 
-        Parameters:
+        Parameters
+        ----------
             lang_code (``str``):
                 A two-letter ISO 639-1 language code.
 
@@ -58,6 +59,7 @@ class SetBotInfo:
 
             description (``str``, *optional*):
                 Description of the bot;
+
         """
         peer = None
         if bot:
@@ -69,6 +71,6 @@ class SetBotInfo:
                 name=name,
                 about=about,
                 description=description,
-            )
+            ),
         )
         return bool(r)

@@ -20,8 +20,9 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 from datetime import datetime, timezone
-from typing import Union
 
 import pyrogram
 from pyrogram import raw, utils
@@ -29,19 +30,20 @@ from pyrogram import raw, utils
 
 class UpdateChatNotifications:
     async def update_chat_notifications(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
-        mute: bool = None,
-        mute_until: datetime = None,
-        stories_muted: bool = None,
-        stories_hide_sender: bool = None,
-        show_previews: bool = None
+        self: pyrogram.Client,
+        chat_id: int | str,
+        mute: bool | None = None,
+        mute_until: datetime | None = None,
+        stories_muted: bool | None = None,
+        stories_hide_sender: bool | None = None,
+        show_previews: bool | None = None,
     ) -> bool:
         """Update the notification settings for the selected chat.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
 
@@ -61,7 +63,8 @@ class UpdateChatNotifications:
             show_previews (``bool``, *optional*):
                 Pass True to show message text in notifications.
 
-        Returns:
+        Returns
+        -------
             ``bool``: True on success, False otherwise.
 
         Example:
@@ -79,6 +82,7 @@ class UpdateChatNotifications:
 
                 # Unmute a chat
                 await app.update_chat_notifications(chat_id, mute=False)
+
         """
         if not mute_until:
             # Forever when muted; zero when unmuted (pyroblack has no utils.max_datetime)
@@ -88,7 +92,7 @@ class UpdateChatNotifications:
                 else utils.zero_datetime()
             )
 
-        r = await self.invoke(
+        return await self.invoke(
             raw.functions.account.UpdateNotifySettings(
                 peer=raw.types.InputNotifyPeer(peer=await self.resolve_peer(chat_id)),
                 settings=raw.types.InputPeerNotifySettings(
@@ -97,8 +101,6 @@ class UpdateChatNotifications:
                     mute_until=utils.datetime_to_timestamp(mute_until),
                     stories_muted=stories_muted,
                     stories_hide_sender=stories_hide_sender,
-                )
-            )
+                ),
+            ),
         )
-
-        return r

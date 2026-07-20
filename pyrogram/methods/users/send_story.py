@@ -20,9 +20,11 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import os
 import re
-from typing import BinaryIO, List, Union
+from typing import BinaryIO
 
 import pyrogram
 from pyrogram import enums, raw, types, utils
@@ -35,7 +37,9 @@ class SendStory:
         return message, entities
 
     async def _upload_video(
-        self: "pyrogram.Client", file_name: str, video: Union[str, BinaryIO]
+        self: pyrogram.Client,
+        file_name: str,
+        video: str | BinaryIO,
     ):
         file = await self.save_file(video)
         return raw.types.InputMediaUploadedDocument(
@@ -43,39 +47,43 @@ class SendStory:
             file=file,
             attributes=[
                 raw.types.DocumentAttributeVideo(
-                    supports_streaming=True, duration=0, w=0, h=0
-                )
+                    supports_streaming=True,
+                    duration=0,
+                    w=0,
+                    h=0,
+                ),
             ],
         )
 
     async def send_story(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str] = None,
-        privacy: "enums.StoriesPrivacyRules" = None,
-        allowed_users: List[int] = None,
-        denied_users: List[int] = None,
+        self: pyrogram.Client,
+        chat_id: int | str | None = None,
+        privacy: enums.StoriesPrivacyRules = None,
+        allowed_users: list[int] | None = None,
+        denied_users: list[int] | None = None,
         # allowed_chats: List[int] = None,
         # denied_chats: List[int] = None,
-        photo: Union[str, BinaryIO] = None,
-        video: Union[str, BinaryIO] = None,
-        file_name: str = None,
-        pinned: bool = None,
-        protect_content: bool = None,
-        caption: str = None,
-        parse_mode: "enums.ParseMode" = None,
-        caption_entities: List["types.MessageEntity"] = None,
-        period: int = None,
-        forward_from_chat_id: Union[int, str] = None,
-        forward_from_story_id: int = None,
-        media_areas: List["types.InputMediaArea"] = None,
-    ) -> "types.Story":
+        photo: str | BinaryIO | None = None,
+        video: str | BinaryIO | None = None,
+        file_name: str | None = None,
+        pinned: bool | None = None,
+        protect_content: bool | None = None,
+        caption: str | None = None,
+        parse_mode: enums.ParseMode = None,
+        caption_entities: list[types.MessageEntity] | None = None,
+        period: int | None = None,
+        forward_from_chat_id: int | str | None = None,
+        forward_from_story_id: int | None = None,
+        media_areas: list[types.InputMediaArea] | None = None,
+    ) -> types.Story:
         """Send new story.
 
         .. include:: /_includes/usable-by/users.rst
 
         Note: You must pass one of following paramater *animation*, *photo*, *video*
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``, *optional*):
                 Unique identifier (int) or username (str) of the target channel.
                 You can also use channel public link in form of *t.me/<username>* (str).
@@ -141,7 +149,8 @@ class SendStory:
             forward_from_story_id (``int``, *optional*):
                 Single story id.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.Story` a single story is returned.
 
         Example:
@@ -151,10 +160,11 @@ class SendStory:
                 photo_id = "abcd12345"
                 await app.send_story(photo=photo_id, caption='Hello guys.')
 
-        Raises:
+        Raises
+        ------
             ValueError: In case of invalid arguments.
-        """
 
+        """
         if chat_id:
             peer = await self.resolve_peer(chat_id)
         else:
@@ -164,7 +174,7 @@ class SendStory:
             privacy_rules = [types.StoriesPrivacyRules(type=privacy)]
         else:
             privacy_rules = [
-                types.StoriesPrivacyRules(type=enums.StoriesPrivacyRules.PUBLIC)
+                types.StoriesPrivacyRules(type=enums.StoriesPrivacyRules.PUBLIC),
             ]
 
         if photo:
@@ -188,8 +198,11 @@ class SendStory:
                         file=file,
                         attributes=[
                             raw.types.DocumentAttributeVideo(
-                                supports_streaming=True, duration=0, w=0, h=0
-                            )
+                                supports_streaming=True,
+                                duration=0,
+                                w=0,
+                                h=0,
+                            ),
                         ],
                     )
                 elif re.match("^https?://", video):
@@ -199,16 +212,19 @@ class SendStory:
                     media = await self._upload_video(file_name, video)
             else:
                 media = await self._upload_video(file_name, video)
-        else:
-            if forward_from_chat_id is None:
-                raise ValueError(
-                    "You need to pass one of the following parameter photo/video/forward_from_chat_id!"
-                )
+        elif forward_from_chat_id is None:
+            msg = "You need to pass one of the following parameter photo/video/forward_from_chat_id!"
+            raise ValueError(
+                msg,
+            )
 
         text, entities = self._split(
             **await utils.parse_text_entities(
-                self, caption, parse_mode, caption_entities
-            )
+                self,
+                caption,
+                parse_mode,
+                caption_entities,
+            ),
         )
 
         """
@@ -231,8 +247,9 @@ class SendStory:
             forward_from_chat = await self.resolve_peer(forward_from_chat_id)
             media = raw.types.InputMediaEmpty()
             if forward_from_story_id is None:
+                msg = "You need to pass forward_from_story_id to forward story!"
                 raise ValueError(
-                    "You need to pass forward_from_story_id to forward story!"
+                    msg,
                 )
 
         r = await self.invoke(
@@ -251,15 +268,13 @@ class SendStory:
                     forward_from_story_id if forward_from_chat_id is not None else None
                 ),
                 fwd_modified=(
-                    True
-                    if forward_from_chat_id is not None and caption is not None
-                    else False
+                    bool(forward_from_chat_id is not None and caption is not None)
                 ),
                 media_areas=(
                     [await media_area.write(self) for media_area in media_areas]
                     if media_areas is not None
                     else None
                 ),
-            )
+            ),
         )
         return await types.Story._parse(self, r.updates[0].story, r.updates[0].peer)

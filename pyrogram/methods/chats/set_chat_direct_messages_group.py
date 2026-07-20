@@ -20,26 +20,27 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional, Union
+from __future__ import annotations
 
 import pyrogram
-from pyrogram import types, raw
+from pyrogram import raw, types
 
 
 class SetChatDirectMessagesGroup:
     async def set_chat_direct_messages_group(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
-        is_enabled: bool = Optional[None],
+        self: pyrogram.Client,
+        chat_id: int | str,
+        is_enabled: bool | None = None,
         paid_message_star_count: int = 0,
-    ) -> Union["types.Message", bool]:
+    ) -> types.Message | bool:
         """Change direct messages group settings for a channel chat.
 
         .. include:: /_includes/usable-by/users.rst
 
         Requires owner privileges in the chat.
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
 
@@ -49,11 +50,13 @@ class SetChatDirectMessagesGroup:
             paid_message_star_count (``bool``):
                 The new number of Telegram Stars that must be paid for each message that is sent to the direct messages chat unless the sender is an administrator of the channel chat, 0-``stars_paid_message_amount_max``.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.Message` | ``bool``: On success, a service message will be returned (when applicable),
             otherwise, in case a message object couldn't be returned, True is returned.
-        
-        Raises:
+
+        Raises
+        ------
             :obj:`~pyrogram.errors.RPCError`: In case of a Telegram RPC error.
 
         Example:
@@ -63,24 +66,24 @@ class SetChatDirectMessagesGroup:
                 await app.set_chat_direct_messages_group(chat_id, is_enabled=True)
 
         """
-
         r = await self.invoke(
             raw.functions.channels.UpdatePaidMessagesPrice(
                 channel=await self.resolve_peer(chat_id),
                 send_paid_messages_stars=paid_message_star_count,
-                broadcast_messages_allowed=is_enabled
-            )
+                broadcast_messages_allowed=is_enabled,
+            ),
         )
         users = {i.id: i for i in r.users}
         chats = {i.id: i for i in r.chats}
         for i in r.updates:
-            if isinstance(i, (raw.types.UpdateNewMessage, raw.types.UpdateNewChannelMessage)):
+            if isinstance(
+                i, (raw.types.UpdateNewMessage, raw.types.UpdateNewChannelMessage)
+            ):
                 return await types.Message._parse(
                     self,
                     i.message,
                     users,
                     chats,
-                    replies=self.fetch_replies
+                    replies=self.fetch_replies,
                 )
-        else:
-            return True
+        return True

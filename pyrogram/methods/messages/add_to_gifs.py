@@ -24,24 +24,27 @@ import pyrogram
 from pyrogram import raw
 from pyrogram.file_id import FileId
 
-class AddToGifs():
+
+class AddToGifs:
     async def add_to_gifs(
         self: "pyrogram.Client",
         file_id: str,
-        unsave: bool = False
+        unsave: bool = False,
     ) -> bool:
         """Add a GIF to the list of saved GIFs.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             file_id (``str``):
                 Unique identifier for the GIF.
 
             unsave (``bool``, optional):
                 Whether to remove the GIF from the list of saved GIFs. Defaults to ``False``.
 
-        Returns:
+        Returns
+        -------
             ``bool``: True on success.
 
         Example:
@@ -59,6 +62,6 @@ class AddToGifs():
                     file_reference=decoded_file_id.file_reference,
                     access_hash=decoded_file_id.access_hash,
                 ),
-                unsave=unsave
-            )
+                unsave=unsave,
+            ),
         )

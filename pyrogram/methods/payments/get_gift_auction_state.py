@@ -20,9 +20,10 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import logging
 import re
-from typing import Union
 
 import pyrogram
 from pyrogram import raw, types
@@ -32,38 +33,46 @@ log = logging.getLogger(__name__)
 
 class GetGiftAuctionState:
     async def get_gift_auction_state(
-        self: "pyrogram.Client", auction_id: Union[str, int]
-    ) -> "types.GiftAuctionState":
+        self: pyrogram.Client,
+        auction_id: str | int,
+    ) -> types.GiftAuctionState:
         """Returns auction state for a gift.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             auction_id (``str`` | ``int``):
                 Unique identifier of the auction, auction link or gift id.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.GiftAuctionState`: On success, the auction state is returned.
+
         """
         if isinstance(auction_id, int):
             auction = raw.types.InputStarGiftAuction(gift_id=auction_id)
         else:
-            match = re.match(r"^(?:https?://)?(?:www\.)?(?:t(?:elegram)?\.(?:org|me|dog)/(?:auction/))([\w-]+)$", auction_id)
+            match = re.match(
+                r"^(?:https?://)?(?:www\.)?(?:t(?:elegram)?\.(?:org|me|dog)/(?:auction/))([\w-]+)$",
+                auction_id,
+            )
 
             if match:
                 slug = match.group(1)
             elif isinstance(auction_id, str):
                 slug = auction_id
             else:
-                raise ValueError("Invalid auction link")
+                msg = "Invalid auction link"
+                raise ValueError(msg)
 
-            auction=raw.types.InputStarGiftAuctionSlug(slug=slug)
+            auction = raw.types.InputStarGiftAuctionSlug(slug=slug)
 
         r = await self.invoke(
             raw.functions.payments.GetStarGiftAuctionState(
-                auction=auction, version=0
-            )
+                auction=auction,
+                version=0,
+            ),
         )
 
         return await types.GiftAuctionState._parse(self, r)
-

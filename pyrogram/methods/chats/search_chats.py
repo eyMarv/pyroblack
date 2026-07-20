@@ -29,13 +29,14 @@ class SearchChats:
         self: "pyrogram.Client",
         query: str,
         limit: int = 10,
-        personalize_result: bool = False
+        personalize_result: bool = False,
     ) -> list["types.Chat"]:
         """Searches for the specified query in the title and username of already known chats via request to the server.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             query (``str``):
                 Query to search for.
 
@@ -45,7 +46,8 @@ class SearchChats:
             personalize_result (``bool``, *optional*):
                 True, if should return personalized results, else would return all found user identifiers. Defaults to False.
 
-        Returns:
+        Returns
+        -------
             List of :obj:`~pyrogram.types.Chat`: Returns chats in the order seen in the main chat list
 
         Example:
@@ -57,8 +59,8 @@ class SearchChats:
         r = await self.invoke(
             raw.functions.contacts.Search(
                 q=query,
-                limit=limit
-            )
+                limit=limit,
+            ),
         )
         users = {i.id: i for i in r.users}
         chats = {i.id: i for i in r.chats}
@@ -71,14 +73,14 @@ class SearchChats:
                 c.append(
                     types.Chat._parse_chat(
                         self,
-                        users[id]
-                    )
+                        users[id],
+                    ),
                 )
             else:
                 c.append(
                     types.Chat._parse_chat(
                         self,
-                        chats[id]
-                    )
+                        chats[id],
+                    ),
                 )
         return types.List(c)

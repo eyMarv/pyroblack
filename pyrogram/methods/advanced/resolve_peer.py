@@ -20,9 +20,10 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import logging
 import re
-from typing import Union
 
 import pyrogram
 from pyrogram import raw, utils
@@ -33,9 +34,9 @@ log = logging.getLogger(__name__)
 
 class ResolvePeer:
     async def resolve_peer(
-        self: "pyrogram.Client",
-        peer_id: Union[int, str]
-    ) -> Union[raw.base.InputPeer, raw.base.InputUser, raw.base.InputChannel]:
+        self: pyrogram.Client,
+        peer_id: int | str,
+    ) -> raw.base.InputPeer | raw.base.InputUser | raw.base.InputChannel:
         """Get the InputPeer of a known peer id.
         Useful whenever an InputPeer type is required.
 
@@ -47,20 +48,24 @@ class ResolvePeer:
 
         .. include:: /_includes/usable-by/users-bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             peer_id (``int`` | ``str``):
                 The peer id you want to extract the InputPeer from.
                 Can be a direct id (int), a username (str) or a phone number (str).
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.raw.base.InputPeer`: On success, the resolved peer id is returned in form of an InputPeer object.
 
-        Raises:
+        Raises
+        ------
             ``KeyError``: In case the peer doesn't exist in the internal database.
 
         """
         if not self.is_connected:
-            raise ConnectionError("Client has not been started yet")
+            msg = "Client has not been started yet"
+            raise ConnectionError(msg)
 
         if peer_id in ("self", "me"):
             return raw.types.InputPeerSelf()
@@ -79,25 +84,27 @@ class ResolvePeer:
                     except KeyError:
                         r = await self.invoke(
                             raw.functions.contacts.ResolveUsername(
-                                username=peer_id
-                            )
+                                username=peer_id,
+                            ),
                         )
 
                         userid = getattr(
                             r.peer,
                             "user_id",
-                            None
+                            None,
                         )
                         channelid = getattr(
                             r.peer,
                             "channel_id",
-                            None
+                            None,
                         )
 
                         if userid:
                             return await self.storage.get_peer_by_id(userid)
                         if channelid:
-                            return await self.storage.get_peer_by_id(utils.get_channel_id(channelid))
+                            return await self.storage.get_peer_by_id(
+                                utils.get_channel_id(channelid)
+                            )
                         return await self.storage.get_peer_by_username(peer_id)
                 else:
                     try:
@@ -114,17 +121,17 @@ class ResolvePeer:
                             id=[
                                 raw.types.InputUser(
                                     user_id=peer_id,
-                                    access_hash=0
-                                )
-                            ]
-                        )
-                    )
+                                    access_hash=0,
+                                ),
+                            ],
+                        ),
+                    ),
                 )
             elif peer_type == "chat":
                 await self.invoke(
                     raw.functions.messages.GetChats(
-                        id=[-peer_id]
-                    )
+                        id=[-peer_id],
+                    ),
                 )
             else:
                 await self.invoke(
@@ -132,10 +139,10 @@ class ResolvePeer:
                         id=[
                             raw.types.InputChannel(
                                 channel_id=utils.get_channel_id(peer_id),
-                                access_hash=0
-                            )
-                        ]
-                    )
+                                access_hash=0,
+                            ),
+                        ],
+                    ),
                 )
 
             try:

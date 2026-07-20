@@ -33,15 +33,17 @@ log = logging.getLogger(__name__)
 class InputRichMessageContent(InputMessageContent):
     """Content of a rich message to be sent as the result of an inline query.
 
-    Parameters:
+    Parameters
+    ----------
         rich_message (:obj:`pyrogram.types.InputRichMessage`):
             The message to be sent.
+
     """
 
     def __init__(
         self,
         rich_message: "types.InputRichMessage",
-    ):
+    ) -> None:
         super().__init__()
 
         self.rich_message = rich_message

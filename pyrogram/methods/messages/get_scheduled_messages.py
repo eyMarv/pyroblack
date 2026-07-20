@@ -20,32 +20,34 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import logging
-from typing import Union, List
 
 import pyrogram
-from pyrogram import raw
-from pyrogram import types
-from pyrogram import utils
+from pyrogram import raw, types, utils
 
 log = logging.getLogger(__name__)
 
 
 class GetScheduledMessages:
     async def get_scheduled_messages(
-        self: "pyrogram.Client", chat_id: Union[int, str]
-    ) -> List["types.Message"]:
+        self: pyrogram.Client,
+        chat_id: int | str,
+    ) -> list[types.Message]:
         """Get one or more scheduled messages from a chat.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
                 For your personal cloud (Saved Messages) you can simply use "me" or "self".
                 For a contact that exists in your Telegram address book you can use his phone number (str).
 
-        Returns:
+        Returns
+        -------
             :List of :obj:`~pyrogram.types.Message`: a list of messages is returned.
 
         Example:
@@ -54,13 +56,16 @@ class GetScheduledMessages:
                 # Get scheduled messages
                 await app.get_scheduled_messages(chat_id)
 
-        Raises:
+        Raises
+        ------
             ValueError: In case of invalid arguments.
+
         """
         r = await self.invoke(
             raw.functions.messages.GetScheduledHistory(
-                peer=await self.resolve_peer(chat_id), hash=0
-            )
+                peer=await self.resolve_peer(chat_id),
+                hash=0,
+            ),
         )
 
         return await utils.parse_messages(self, r, replies=0)

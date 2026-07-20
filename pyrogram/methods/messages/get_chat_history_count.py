@@ -20,8 +20,9 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import logging
-from typing import Union
 
 import pyrogram
 from pyrogram import raw
@@ -31,8 +32,8 @@ log = logging.getLogger(__name__)
 
 class GetChatHistoryCount:
     async def get_chat_history_count(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str]
+        self: pyrogram.Client,
+        chat_id: int | str,
     ) -> int:
         """Get the total count of messages in a chat.
 
@@ -44,19 +45,21 @@ class GetChatHistoryCount:
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
 
-        Returns:
+        Returns
+        -------
             ``int``: On success, the chat history count is returned.
 
         Example:
             .. code-block:: python
 
                 await app.get_chat_history_count(chat_id)
-        """
 
+        """
         r = await self.invoke(
             raw.functions.messages.GetHistory(
                 peer=await self.resolve_peer(chat_id),
@@ -66,11 +69,10 @@ class GetChatHistoryCount:
                 limit=1,
                 max_id=0,
                 min_id=0,
-                hash=0
-            )
+                hash=0,
+            ),
         )
 
         if isinstance(r, raw.types.messages.Messages):
             return len(r.messages)
-        else:
-            return r.count
+        return r.count

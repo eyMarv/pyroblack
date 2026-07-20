@@ -20,7 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional, Union
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw, types
@@ -28,17 +28,18 @@ from pyrogram import raw, types
 
 class ComposeTextWithAI:
     async def compose_text_with_ai(
-        self: "pyrogram.Client",
-        text: Union[str, "types.FormattedText"],
-        translate_to_language_code: Optional[str] = None,
-        style_name: Optional[str] = None,
-        add_emojis: Optional[bool] = None,
-    ) -> "types.FormattedText":
+        self: pyrogram.Client,
+        text: str | types.FormattedText,
+        translate_to_language_code: str | None = None,
+        style_name: str | None = None,
+        add_emojis: bool | None = None,
+    ) -> types.FormattedText:
         """Changes text using an AI model.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             text (``str`` | :obj:`~pyrogram.types.FormattedText`):
                 The original text.
 
@@ -56,7 +57,8 @@ class ComposeTextWithAI:
             add_emojis (``bool``, *optional*):
                 Pass True to add emoji to the text.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.FormattedText`: On success, information about the composed text is returned.
 
         Example:
@@ -68,6 +70,7 @@ class ComposeTextWithAI:
                     style_name="formal",
                     add_emojis=True
                 )
+
         """
         if isinstance(text, str):
             text = types.FormattedText(text=text)
@@ -76,9 +79,11 @@ class ComposeTextWithAI:
             raw.functions.messages.ComposeMessageWithAI(
                 text=await text.write(self),
                 translate_to_lang=translate_to_language_code or self.lang_code,
-                tone=raw.types.InputAiComposeToneDefault(tone=style_name) if style_name else None,
+                tone=raw.types.InputAiComposeToneDefault(tone=style_name)
+                if style_name
+                else None,
                 emojify=add_emojis,
-            )
+            ),
         )
 
         return types.FormattedText._parse(self, r.result_text)

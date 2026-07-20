@@ -20,7 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw
@@ -28,15 +28,16 @@ from pyrogram import raw
 
 class DeleteChatAdminInviteLinks:
     async def delete_chat_admin_invite_links(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
-        admin_id: Union[int, str],
+        self: pyrogram.Client,
+        chat_id: int | str,
+        admin_id: int | str,
     ) -> bool:
         """Delete all revoked invite links of an administrator.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier for the target chat or username of the target channel/supergroup
                 (in the format @username).
@@ -46,13 +47,14 @@ class DeleteChatAdminInviteLinks:
                 For you yourself you can simply use "me" or "self".
                 For a contact that exists in your Telegram address book you can use his phone number (str).
 
-        Returns:
+        Returns
+        -------
             ``bool``: On success ``True`` is returned.
-        """
 
+        """
         return await self.invoke(
             raw.functions.messages.DeleteRevokedExportedChatInvites(
                 peer=await self.resolve_peer(chat_id),
                 admin_id=await self.resolve_peer(admin_id),
-            )
+            ),
         )

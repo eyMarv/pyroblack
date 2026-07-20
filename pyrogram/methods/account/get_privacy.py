@@ -21,7 +21,7 @@
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
 import pyrogram
-from pyrogram import raw, types, enums
+from pyrogram import enums, raw, types
 
 
 class GetPrivacy:
@@ -30,11 +30,13 @@ class GetPrivacy:
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             key (:obj:`~pyrogram.enums.PrivacyKey`):
                 Privacy key.
 
-        Returns:
+        Returns
+        -------
             List of :obj:`~pyrogram.types.PrivacyRule`: On success, the list of privacy rules is returned.
 
         Example:
@@ -43,6 +45,7 @@ class GetPrivacy:
                 from pyrogram import enums
 
                 await app.get_privacy(enums.PrivacyKey.PHONE_NUMBER)
+
         """
         r = await self.invoke(raw.functions.account.GetPrivacy(key=key.value()))
 

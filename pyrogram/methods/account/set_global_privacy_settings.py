@@ -20,7 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw, types
@@ -28,21 +28,22 @@ from pyrogram import raw, types
 
 class SetGlobalPrivacySettings:
     async def set_global_privacy_settings(
-        self: "pyrogram.Client",
-        archive_and_mute_new_chats: Optional[bool] = None,
-        keep_unmuted_chats_archived: Optional[bool] = None,
-        keep_chats_from_folders_archived: Optional[bool] = None,
-        show_read_date: Optional[bool] = None,
-        allow_new_chats_from_unknown_users: Optional[bool] = None,
-        incoming_paid_message_star_count: Optional[int] = None,
-        show_gift_button: Optional[bool] = None,
-        accepted_gift_types: Optional[types.AcceptedGiftTypes] = None,
-    ) -> "types.GlobalPrivacySettings":
+        self: pyrogram.Client,
+        archive_and_mute_new_chats: bool | None = None,
+        keep_unmuted_chats_archived: bool | None = None,
+        keep_chats_from_folders_archived: bool | None = None,
+        show_read_date: bool | None = None,
+        allow_new_chats_from_unknown_users: bool | None = None,
+        incoming_paid_message_star_count: int | None = None,
+        show_gift_button: bool | None = None,
+        accepted_gift_types: types.AcceptedGiftTypes | None = None,
+    ) -> types.GlobalPrivacySettings:
         """Set account global privacy settings.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             archive_and_mute_new_chats (``bool``, *optional*):
                 Whether to archive and mute new chats from non-contacts,
 
@@ -78,7 +79,8 @@ class SetGlobalPrivacySettings:
             accepted_gift_types (:obj:`~pyrogram.types.AcceptedGiftTypes`, *optional*):
                 Information about gifts that can be received by the user.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.GlobalPrivacySettings`: On success, the new global privacy settings is returned.
 
         Example:
@@ -93,6 +95,7 @@ class SetGlobalPrivacySettings:
                 await app.set_global_privacy_settings(
                     incoming_paid_message_star_count=10
                 )
+
         """
         settings = await self.invoke(raw.functions.account.GetGlobalPrivacySettings())
 
@@ -109,7 +112,9 @@ class SetGlobalPrivacySettings:
             settings.hide_read_marks = show_read_date
 
         if allow_new_chats_from_unknown_users is not None:
-            settings.new_noncontact_peers_require_premium = allow_new_chats_from_unknown_users
+            settings.new_noncontact_peers_require_premium = (
+                allow_new_chats_from_unknown_users
+            )
 
         if incoming_paid_message_star_count is not None:
             settings.noncontact_peers_paid_stars = incoming_paid_message_star_count
@@ -122,9 +127,8 @@ class SetGlobalPrivacySettings:
 
         r = await self.invoke(
             raw.functions.account.SetGlobalPrivacySettings(
-                settings=settings
-            )
+                settings=settings,
+            ),
         )
 
         return types.GlobalPrivacySettings._parse(r)
-

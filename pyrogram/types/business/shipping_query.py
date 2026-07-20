@@ -20,19 +20,19 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union, Optional
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw, types
-
-from ..object import Object
-from ..update import Update
+from pyrogram.types.object import Object
+from pyrogram.types.update import Update
 
 
 class ShippingQuery(Object, Update):
     """This object contains information about an incoming shipping query.
 
-    Parameters:
+    Parameters
+    ----------
         id (``str``):
             Unique query identifier.
 
@@ -50,12 +50,12 @@ class ShippingQuery(Object, Update):
     def __init__(
         self,
         *,
-        client: "pyrogram.Client" = None,
+        client: pyrogram.Client = None,
         id: str,
-        from_user: "types.User",
+        from_user: types.User,
         invoice_payload: str,
-        shipping_address: "types.ShippingAddress" = None
-    ):
+        shipping_address: types.ShippingAddress = None,
+    ) -> None:
         super().__init__(client)
 
         self.id = id
@@ -65,10 +65,10 @@ class ShippingQuery(Object, Update):
 
     @staticmethod
     async def _parse(
-        client: "pyrogram.Client",
-        shipping_query: "raw.types.updateBotShippingQuery",
-        users: dict
-    ) -> "PreCheckoutQuery":
+        client: pyrogram.Client,
+        shipping_query: raw.types.updateBotShippingQuery,
+        users: dict,
+    ) -> PreCheckoutQuery:
         # Try to decode pre-checkout query payload into string. If that fails, fallback to bytes instead of decoding by
         # ignoring/replacing errors, this way, button clicks will still work.
         try:
@@ -86,16 +86,16 @@ class ShippingQuery(Object, Update):
                 city=shipping_query.shipping_address.city,
                 street_line1=shipping_query.shipping_address.street_line1,
                 street_line2=shipping_query.shipping_address.street_line2,
-                post_code=shipping_query.shipping_address.post_code
+                post_code=shipping_query.shipping_address.post_code,
             ),
-            client=client
+            client=client,
         )
 
     async def answer(
         self,
         ok: bool,
-        shipping_options: "types.ShippingOptions" = None,
-        error_message: str = None
+        shipping_options: types.ShippingOptions = None,
+        error_message: str | None = None,
     ):
         """Bound method *answer* of :obj:`~pyrogram.types.ShippingQuery`.
 
@@ -113,7 +113,8 @@ class ShippingQuery(Object, Update):
 
                 await shipping_query.answer(ok=True)
 
-        Parameters:
+        Parameters
+        ----------
             ok (``bool``):
                 Pass True if delivery to the specified address is possible and False if there are any problems (for example, if delivery to the specified address is not possible).
 
@@ -123,7 +124,8 @@ class ShippingQuery(Object, Update):
             error_message (``str``, *optional*):
                 Required if ok is False. Error message in human readable form that explains why it is impossible to complete the order (e.g. "Sorry, delivery to your desired address is unavailable'). Telegram will display this message to the user.
 
-        Returns:
+        Returns
+        -------
             ``bool``: True, on success.
 
         """
@@ -131,5 +133,5 @@ class ShippingQuery(Object, Update):
             shipping_query_id=self.id,
             ok=ok,
             shipping_options=shipping_options,
-            error_message=error_message
+            error_message=error_message,
         )

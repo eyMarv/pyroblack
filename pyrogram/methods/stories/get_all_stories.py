@@ -20,25 +20,30 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import AsyncGenerator, Optional
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import pyrogram
-from pyrogram import raw
-from pyrogram import types
+from pyrogram import raw, types
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncGenerator
 
 
 class GetAllStories:
     async def get_all_stories(
-        self: "pyrogram.Client",
-        next: Optional[bool] = None,
-        hidden: Optional[bool] = None,
-        state: Optional[str] = None,
-    ) -> AsyncGenerator["types.Story", None]:
+        self: pyrogram.Client,
+        next: bool | None = None,
+        hidden: bool | None = None,
+        state: str | None = None,
+    ) -> AsyncGenerator[types.Story, None]:
         """Get all active or hidden stories that displayed on the action bar on the homescreen.
 
         .. include:: /_includes/usable-by/users.rst
 
         Parameters
+        ----------
             next (``bool``, *optional*):
                 If next and state are both set, uses the passed state to paginate to the next results.
                 If neither state nor next are set, fetches the initial page.
@@ -52,7 +57,8 @@ class GetAllStories:
                 If neither state nor next are set, fetches the initial page.
                 If state is set and next is not set, check for changes in the active/hidden peerset.
 
-        Returns:
+        Returns
+        -------
             ``Generator``: On success, a generator yielding :obj:`~pyrogram.types.Story` objects is returned.
 
         Example:
@@ -61,14 +67,14 @@ class GetAllStories:
                 # Get all active story
                 async for story in app.get_all_stories():
                     print(story)
-        """
 
+        """
         r = await self.invoke(
             raw.functions.stories.GetAllStories(
                 next=next,
                 hidden=hidden,
-                state=state
-            )
+                state=state,
+            ),
         )
 
         users = {i.id: i for i in r.users}
@@ -84,6 +90,5 @@ class GetAllStories:
                     None,
                     None,
                     story,
-                    peer_story.peer
+                    peer_story.peer,
                 )
-

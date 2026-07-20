@@ -25,38 +25,39 @@
 # Source: tl:account.resolveBusinessChatLink
 # ***************************
 
-from typing import Union, Optional
+from __future__ import annotations
 
 import pyrogram
-from pyrogram import raw
-from pyrogram import types
+from pyrogram import raw, types
 
 
 class ResolveBusinessChatLink:
     async def resolve_business_chat_link(
-        self: "pyrogram.Client",
-        slug: Optional[str] = None,
-    ) -> "types.Message":
+        self: pyrogram.Client,
+        slug: str | None = None,
+    ) -> types.Message:
         """Resolve a business chat link slug to its info.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             slug (str): Slug from the business chat link URL
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.Message`
 
         Example:
             .. code-block:: python
 
                 await app.resolve_business_chat_link(...)
-        """
 
+        """
         r = await self.invoke(
             raw.functions.account.resolveBusinessChatLink(
                 slug=slug,
-            )
+            ),
         )
 
         # API returns account.ResolvedBusinessChatLinks (peer + message text),

@@ -20,16 +20,17 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional, Dict
+from __future__ import annotations
 
-from pyrogram import types, raw
-from ..object import Object
+from pyrogram import raw, types
+from pyrogram.types.object import Object
 
 
 class BusinessInfo(Object):
     """Business information of a user.
 
-    Parameters:
+    Parameters
+    ----------
         address (``str``, *optional*):
             Address of the business.
 
@@ -44,17 +45,18 @@ class BusinessInfo(Object):
 
         working_hours (:obj:`~pyrogram.types.BusinessWorkingHours`, *optional*):
             Working hours of the business.
+
     """
 
     def __init__(
         self,
         *,
-        address: str = None,
-        location: "types.Location" = None,
-        greeting_message: "types.BusinessMessage" = None,
-        away_message: "types.BusinessMessage" = None,
-        working_hours: "types.BusinessWorkingHours" = None,
-    ):
+        address: str | None = None,
+        location: types.Location = None,
+        greeting_message: types.BusinessMessage = None,
+        away_message: types.BusinessMessage = None,
+        working_hours: types.BusinessWorkingHours = None,
+    ) -> None:
         self.address = address
         self.location = location
         self.greeting_message = greeting_message
@@ -64,9 +66,9 @@ class BusinessInfo(Object):
     @staticmethod
     def _parse(
         client,
-        user: "raw.types.UserFull" = None,
-        users: Dict[int, "raw.types.User"] = None,
-    ) -> Optional["BusinessInfo"]:
+        user: raw.types.UserFull = None,
+        users: dict[int, raw.types.User] | None = None,
+    ) -> BusinessInfo | None:
         working_hours = getattr(user, "business_work_hours", None)
         location = getattr(user, "business_location", None)
         greeting_message = getattr(user, "business_greeting_message", None)
@@ -78,10 +80,13 @@ class BusinessInfo(Object):
         return BusinessInfo(
             address=getattr(location, "address", None),
             location=types.Location._parse(
-                client, getattr(location, "geo_point", None)
+                client,
+                getattr(location, "geo_point", None),
             ),
             greeting_message=types.BusinessMessage._parse(
-                client, greeting_message, users
+                client,
+                greeting_message,
+                users,
             ),
             away_message=types.BusinessMessage._parse(client, away_message, users),
             working_hours=types.BusinessWorkingHours._parse(working_hours),

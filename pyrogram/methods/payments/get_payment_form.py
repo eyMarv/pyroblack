@@ -20,7 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional, Union
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw, types
@@ -28,13 +28,13 @@ from pyrogram import raw, types
 
 class GetPaymentForm:
     async def get_payment_form(
-        self: "pyrogram.Client",
-        input_invoice: "types.InputInvoice" = None,
-        chat_id: Union[int, str] = None,
-        message_id: Union[int, str] = None,
-        invoice_link: str = None,
-        **kwargs
-    ) -> "types.PaymentForm":
+        self: pyrogram.Client,
+        input_invoice: types.InputInvoice = None,
+        chat_id: int | str | None = None,
+        message_id: int | str | None = None,
+        invoice_link: str | None = None,
+        **kwargs,
+    ) -> types.PaymentForm:
         """Get an invoice payment form.
 
         Supports both modern ``input_invoice`` and pyroblack <= 2.7.2
@@ -42,7 +42,8 @@ class GetPaymentForm:
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             input_invoice (:obj:`~pyrogram.types.InputInvoice`, *optional*):
                 The invoice (modern API).
 
@@ -56,8 +57,10 @@ class GetPaymentForm:
             invoice_link (``str``, *optional*):
                 Invoice link or slug.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.PaymentForm`: On success, a payment form is returned.
+
         """
         # Positional legacy: get_payment_form(chat_id, message_id)
         # First param may be chat_id (int/str) rather than InputInvoice.
@@ -74,10 +77,14 @@ class GetPaymentForm:
 
         if input_invoice is not None:
             invoice = await input_invoice.write(self)
-        elif message_id is not None and isinstance(message_id, int) and chat_id is not None:
+        elif (
+            message_id is not None
+            and isinstance(message_id, int)
+            and chat_id is not None
+        ):
             invoice = raw.types.InputInvoiceMessage(
                 peer=await self.resolve_peer(chat_id),
-                msg_id=message_id
+                msg_id=message_id,
             )
         elif message_id is not None and isinstance(message_id, str):
             match = self.INVOICE_LINK_RE.match(message_id)
@@ -88,12 +95,13 @@ class GetPaymentForm:
             slug = match.group(1) if match else invoice_link
             invoice = raw.types.InputInvoiceSlug(slug=slug)
         else:
+            msg = "Provide input_invoice, or chat_id+message_id, or invoice_link / message_id link."
             raise ValueError(
-                "Provide input_invoice, or chat_id+message_id, or invoice_link / message_id link."
+                msg,
             )
 
         r = await self.invoke(
-            raw.functions.payments.GetPaymentForm(invoice=invoice)
+            raw.functions.payments.GetPaymentForm(invoice=invoice),
         )
 
         return types.PaymentForm._parse(self, r)

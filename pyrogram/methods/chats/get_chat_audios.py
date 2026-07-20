@@ -20,27 +20,31 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 from asyncio import sleep
-from typing import AsyncGenerator, Optional, Union
+from typing import TYPE_CHECKING
 
 import pyrogram
 from pyrogram import raw, types
 
+if TYPE_CHECKING:
+    from collections.abc import AsyncGenerator
+
 
 class GetChatAudios:
     async def get_chat_audios(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
-        offset: Optional[int] = 0,
-        limit: Optional[int] = 0,
-    ) -> Optional[
-        AsyncGenerator["types.Audio", None]
-    ]:
+        self: pyrogram.Client,
+        chat_id: int | str,
+        offset: int | None = 0,
+        limit: int | None = 0,
+    ) -> AsyncGenerator[types.Audio, None] | None:
         """Get a user profile audios sequentially.
 
         .. include:: /_includes/usable-by/users-bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
                 For your personal cloud (Saved Messages) you can simply use "me" or "self".
@@ -53,7 +57,8 @@ class GetChatAudios:
                 Limits the number of audios to be retrieved.
                 By default, no limit is applied and all profile audios are returned.
 
-        Returns:
+        Returns
+        -------
             ``Generator``: A generator yielding :obj:`~pyrogram.types.Audio` objects.
 
         Example:
@@ -75,8 +80,8 @@ class GetChatAudios:
                     id=peer_id,
                     offset=offset,
                     limit=limit,
-                    hash=0
-                )
+                    hash=0,
+                ),
             )
 
             audios = []
@@ -90,11 +95,11 @@ class GetChatAudios:
                         doc,
                         attributes[raw.types.DocumentAttributeAudio],
                         getattr(
-                            attributes.get(raw.types.DocumentAttributeFilename, None),
+                            attributes.get(raw.types.DocumentAttributeFilename),
                             "file_name",
                             None,
                         ),
-                    )
+                    ),
                 )
 
             if not audios:

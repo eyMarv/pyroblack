@@ -20,7 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import errors, raw, types, utils
@@ -28,12 +28,12 @@ from pyrogram import errors, raw, types, utils
 
 class UpgradeGift:
     async def upgrade_gift(
-        self: "pyrogram.Client",
+        self: pyrogram.Client,
         owned_gift_id: str,
-        keep_original_details: Optional[bool] = None,
-        star_count: Optional[int] = None,
-        business_connection_id: Optional[str] = None
-    ) -> Optional["types.Message"]:
+        keep_original_details: bool | None = None,
+        star_count: int | None = None,
+        business_connection_id: str | None = None,
+    ) -> types.Message | None:
         """Upgrade a given regular gift to a unique gift.
 
         .. note::
@@ -43,7 +43,8 @@ class UpgradeGift:
 
         .. include:: /_includes/usable-by/users-bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             owned_gift_id (``str``):
                 Unique identifier of the regular gift that should be upgraded to a unique one.
                 For a user gift, you can use the message ID (int) of the gift message.
@@ -60,7 +61,8 @@ class UpgradeGift:
                 Unique identifier of the business connection.
                 For bots only.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.Message`: On success, the sent message is returned.
 
         Example:
@@ -71,6 +73,7 @@ class UpgradeGift:
 
                 # Upgrade gift in channel (owned_gift_id packed in format chatID_savedID)
                 await app.upgrade_gift(owned_gift_id="123_456")
+
         """
         stargift = await utils.get_input_stargift(self, owned_gift_id)
 
@@ -78,42 +81,45 @@ class UpgradeGift:
             r = await self.invoke(
                 raw.functions.payments.UpgradeStarGift(
                     stargift=stargift,
-                    keep_original_details=keep_original_details
+                    keep_original_details=keep_original_details,
                 ),
-                business_connection_id=business_connection_id
+                business_connection_id=business_connection_id,
             )
         except errors.PaymentRequired:
             invoice = raw.types.InputInvoiceStarGiftUpgrade(
                 stargift=stargift,
-                keep_original_details=keep_original_details
+                keep_original_details=keep_original_details,
             )
 
             form = await self.invoke(
                 raw.functions.payments.GetPaymentForm(
-                    invoice=invoice
+                    invoice=invoice,
                 ),
-                business_connection_id=business_connection_id
+                business_connection_id=business_connection_id,
             )
 
             if star_count is not None:
                 if star_count < 0:
-                    raise ValueError("Invalid amount of Telegram Stars specified.")
+                    msg = "Invalid amount of Telegram Stars specified."
+                    raise ValueError(msg)
 
                 if form.invoice.prices[0].amount > star_count:
-                    raise ValueError("Have not enough Telegram Stars.")
+                    msg = "Have not enough Telegram Stars."
+                    raise ValueError(msg)
 
             r = await self.invoke(
                 raw.functions.payments.SendStarsForm(
                     form_id=form.form_id,
-                    invoice=invoice
+                    invoice=invoice,
                 ),
-                business_connection_id=business_connection_id
+                business_connection_id=business_connection_id,
             )
 
         messages = await utils.parse_messages(
             client=self,
-            messages=r.updates if isinstance(r, raw.types.payments.PaymentResult) else r
+            messages=r.updates
+            if isinstance(r, raw.types.payments.PaymentResult)
+            else r,
         )
 
         return messages[0] if messages else None
-

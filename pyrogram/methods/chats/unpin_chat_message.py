@@ -20,20 +20,19 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw
-
-from ..messages.inline_session import get_session
+from pyrogram.methods.messages.inline_session import get_session
 
 
 class UnpinChatMessage:
     async def unpin_chat_message(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
+        self: pyrogram.Client,
+        chat_id: int | str,
         message_id: int = 0,
-        business_connection_id: str = None,
+        business_connection_id: str | None = None,
     ) -> bool:
         """Unpin a message in a group, channel or your own chat.
         You must be an administrator in the chat for this to work and must have the "can_pin_messages" admin
@@ -41,7 +40,8 @@ class UnpinChatMessage:
 
         .. include:: /_includes/usable-by/users-bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
 
@@ -53,40 +53,46 @@ class UnpinChatMessage:
             business_connection_id (``str``, *optional*):
                 Unique identifier of the business connection on behalf of which the message will be unpinned.
 
-        Returns:
+        Returns
+        -------
             ``bool``: True on success.
 
         Example:
             .. code-block:: python
 
                 await app.unpin_chat_message(chat_id, message_id)
+
         """
         rpc = raw.functions.messages.UpdatePinnedMessage(
             peer=await self.resolve_peer(chat_id),
             id=message_id,
-            unpin=True
+            unpin=True,
         )
-        
+
         session = None
         business_connection = None
         if business_connection_id:
-            business_connection = self.business_user_connection_cache[business_connection_id]
+            business_connection = self.business_user_connection_cache[
+                business_connection_id
+            ]
             if business_connection is None:
-                business_connection = await self.get_business_connection(business_connection_id)
+                business_connection = await self.get_business_connection(
+                    business_connection_id
+                )
             session = await get_session(
                 self,
-                business_connection._raw.connection.dc_id
+                business_connection._raw.connection.dc_id,
             )
 
         if business_connection_id:
-            r = await session.invoke(
+            await session.invoke(
                 raw.functions.InvokeWithBusinessConnection(
                     query=rpc,
-                    connection_id=business_connection_id
-                )
+                    connection_id=business_connection_id,
+                ),
             )
             # await session.stop()
         else:
-            r = await self.invoke(rpc)
+            await self.invoke(rpc)
 
         return True

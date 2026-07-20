@@ -20,16 +20,18 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-import pyrogram
+from __future__ import annotations
 
-from pyrogram import raw, types
-from ..object import Object
+import pyrogram
+from pyrogram import raw
+from pyrogram.types.object import Object
 
 
 class DirectMessagePriceChanged(Object):
     """Describes a service message about a change in the price of direct messages sent to a channel chat.
 
-    Parameters:
+    Parameters
+    ----------
         are_direct_messages_enabled (``bool``):
             True, if direct messages are enabled for the channel chat; False otherwise.
 
@@ -41,24 +43,24 @@ class DirectMessagePriceChanged(Object):
     def __init__(
         self,
         *,
-        client: "pyrogram.Client" = None,
-        are_direct_messages_enabled: bool = None,
+        client: pyrogram.Client = None,
+        are_direct_messages_enabled: bool | None = None,
         direct_message_star_count: int = 0,
-    ):
+    ) -> None:
         super().__init__(client)
 
         self.are_direct_messages_enabled = are_direct_messages_enabled
         self.direct_message_star_count = direct_message_star_count
 
-
     @staticmethod
     def _parse_action(
         client,
-        action: "raw.types.MessageActionPaidMessagesPrice"
-    ) -> "DirectMessagePriceChanged":
+        action: raw.types.MessageActionPaidMessagesPrice,
+    ) -> DirectMessagePriceChanged:
         if isinstance(action, raw.types.MessageActionPaidMessagesPrice):
             return DirectMessagePriceChanged(
                 client=client,
-                are_direct_messages_enabled=True, #action.broadcast_messages_allowed,
+                are_direct_messages_enabled=True,  # action.broadcast_messages_allowed,
                 direct_message_star_count=action.stars,
             )
+        return None

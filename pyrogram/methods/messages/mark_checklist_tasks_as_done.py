@@ -20,7 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw, types
@@ -28,18 +28,19 @@ from pyrogram import raw, types
 
 class MarkChecklistTasksAsDone:
     async def mark_checklist_tasks_as_done(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
+        self: pyrogram.Client,
+        chat_id: int | str,
         message_id: int,
         *,
-        done_task_ids: list[int] = None,
-        not_done_task_ids: list[int] = None,
-    ) -> Union["types.Message", bool]:
+        done_task_ids: list[int] | None = None,
+        not_done_task_ids: list[int] | None = None,
+    ) -> types.Message | bool:
         """Add tasks of a checklist in a message as done or not done.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
                 For your personal cloud (Saved Messages) you can simply use "me" or "self".
@@ -54,7 +55,8 @@ class MarkChecklistTasksAsDone:
             not_done_task_ids (List of ``int``):
                 Identifiers of tasks that were marked as not done.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.Message` | ``bool``: On success, an edited message or a service message will be returned (when applicable),
             otherwise, in case a message object couldn't be returned, True is returned.
 
@@ -74,17 +76,24 @@ class MarkChecklistTasksAsDone:
                 msg_id=message_id,
                 completed=done_task_ids or [],
                 incompleted=not_done_task_ids or [],
-            )
+            ),
         )
 
         for i in r.updates:
-            if isinstance(i, (raw.types.UpdateNewMessage, raw.types.UpdateEditChannelMessage, raw.types.UpdateNewChannelMessage)):
+            if isinstance(
+                i,
+                (
+                    raw.types.UpdateNewMessage,
+                    raw.types.UpdateEditChannelMessage,
+                    raw.types.UpdateNewChannelMessage,
+                ),
+            ):
                 return await types.Message._parse(
                     self,
                     i.message,
                     {i.id: i for i in r.users},
                     {i.id: i for i in r.chats},
-                    replies=self.fetch_replies
+                    replies=self.fetch_replies,
                 )
 
         return True

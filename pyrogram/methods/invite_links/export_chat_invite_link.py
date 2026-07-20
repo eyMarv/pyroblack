@@ -20,19 +20,18 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union
+from __future__ import annotations
 
 import pyrogram
-from pyrogram import raw
-from pyrogram import types
+from pyrogram import raw, types
 
 
 class ExportChatInviteLink:
     async def export_chat_invite_link(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
-        **kwargs
-    ) -> "types.ChatInviteLink":
+        self: pyrogram.Client,
+        chat_id: int | str,
+        **kwargs,
+    ) -> types.ChatInviteLink:
         """Generate a new primary invite link for a chat; any previously generated primary link is revoked.
 
         You must be an administrator in the chat for this to work and must have the appropriate admin rights.
@@ -46,12 +45,14 @@ class ExportChatInviteLink:
 
         .. include:: /_includes/usable-by/users-bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier for the target chat or username of the target channel/supergroup
                 (in the format @username).
 
-        Returns:
+        Returns
+        -------
             ``str``: On success, the new invite link as string is returned.
 
         Example:
@@ -59,12 +60,13 @@ class ExportChatInviteLink:
 
                 # Generate a new primary link
                 link = await app.export_chat_invite_link(chat_id)
+
         """
         r = await self.invoke(
             raw.functions.messages.ExportChatInvite(
                 peer=await self.resolve_peer(chat_id),
-                legacy_revoke_permanent=True
-            )
+                legacy_revoke_permanent=True,
+            ),
         )
 
         return r.link

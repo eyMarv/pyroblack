@@ -20,19 +20,19 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import datetime
+
+from __future__ import annotations
 
 import pyrogram
-
-from pyrogram import raw, types
-from ..object import Object
-
+from pyrogram import raw
+from pyrogram.types.object import Object
 
 
 class GiveawayCreated(Object):
     """This object represents a service message about the creation of a scheduled giveaway.
 
-    Parameters:
+    Parameters
+    ----------
         prize_star_count (``int``, *optional*):
             The number of Telegram Stars to be split between giveaway winners; for Telegram Star giveaways only
 
@@ -41,21 +41,21 @@ class GiveawayCreated(Object):
     def __init__(
         self,
         *,
-        client: "pyrogram.Client" = None,
-        prize_star_count: int = None
-    ):
+        client: pyrogram.Client = None,
+        prize_star_count: int | None = None,
+    ) -> None:
         super().__init__(client)
 
         self.prize_star_count = prize_star_count
 
-
     @staticmethod
     def _parse(
         client,
-        giveaway_launch: "raw.types.MessageActionGiveawayLaunch"
-    ) -> "GiveawayCreated":
+        giveaway_launch: raw.types.MessageActionGiveawayLaunch,
+    ) -> GiveawayCreated:
         if isinstance(giveaway_launch, raw.types.MessageActionGiveawayLaunch):
             return GiveawayCreated(
                 client=client,
-                prize_star_count=getattr(giveaway_launch, "stars", None)
+                prize_star_count=getattr(giveaway_launch, "stars", None),
             )
+        return None

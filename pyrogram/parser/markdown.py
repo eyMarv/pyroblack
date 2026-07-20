@@ -20,17 +20,20 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import html
 import re
 import urllib.parse
+from typing import TYPE_CHECKING
 
-from typing import Optional, Union
-
-import pyrogram
 from pyrogram.enums import MessageEntityType
 
 from . import utils
 from .html import HTML
+
+if TYPE_CHECKING:
+    import pyrogram
 
 BOLD_DELIM = "**"
 ITALIC_DELIM = "__"
@@ -42,7 +45,9 @@ PRE_DELIM = "```"
 BLOCKQUOTE_DELIM = ">"
 BLOCKQUOTE_ESCAPE_DELIM = "|>"
 BLOCKQUOTE_EXPANDABLE_DELIM = "**>"
-BLOCKQUOTE_EXPANDABLE_OPTIONAL_END_DELIM = "<**"  # Kept for backwards compatibility if imported elsewhere
+BLOCKQUOTE_EXPANDABLE_OPTIONAL_END_DELIM = (
+    "<**"  # Kept for backwards compatibility if imported elsewhere
+)
 
 MARKDOWN_RE = re.compile(
     r"({d})|(!?)\[(.+?)\]\((.+?)\)".format(
@@ -61,9 +66,9 @@ MARKDOWN_RE = re.compile(
                         SPOILER_DELIM,
                     ]
                 ]
-            ]
-        )
-    )
+            ],
+        ),
+    ),
 )
 
 OPENING_TAG = "<{}>"
@@ -78,7 +83,7 @@ URL_RE = re.compile(r"(!?)\[(.+?)\]\((.+?)\)")
 
 
 class Markdown:
-    def __init__(self, client: Optional["pyrogram.Client"]):
+    def __init__(self, client: pyrogram.Client | None) -> None:
         self.html = HTML(client)
 
     @staticmethod
@@ -107,7 +112,7 @@ class Markdown:
 
     @staticmethod
     def escape_and_create_quotes(text: str, strict: bool):
-        text_lines: list[Union[str, None]] = text.splitlines()
+        text_lines: list[str | None] = text.splitlines()
         html_escaped_list: list[int] = []
 
         i = 0
@@ -164,10 +169,14 @@ class Markdown:
                 # Check if it properly closes as an expandable blockquote
                 is_expandable = False
                 # Strict Bot API requirement: Must have started with **> AND end with ||
-                if started_as_expandable and bq_lines and bq_lines[-1].endswith(SPOILER_DELIM):
+                if (
+                    started_as_expandable
+                    and bq_lines
+                    and bq_lines[-1].endswith(SPOILER_DELIM)
+                ):
                     is_expandable = True
                     # Strip the || from the final line
-                    bq_lines[-1] = bq_lines[-1][:-len(SPOILER_DELIM)]
+                    bq_lines[-1] = bq_lines[-1][: -len(SPOILER_DELIM)]
 
                 # Escape if strict
                 if strict:
@@ -177,7 +186,9 @@ class Markdown:
                 joined_lines = "\n".join(bq_lines)
                 quote_type = " expandable" if is_expandable else ""
 
-                text_lines[start_index] = f"<blockquote{quote_type}>{joined_lines}</blockquote>"
+                text_lines[start_index] = (
+                    f"<blockquote{quote_type}>{joined_lines}</blockquote>"
+                )
                 html_escaped_list.append(start_index)
 
                 # Clear out the consumed lines
@@ -196,19 +207,19 @@ class Markdown:
 
     async def parse(self, text: str, strict: bool = False):
         text = self.escape_and_create_quotes(text, strict=strict)
-        
+
         matches = list(re.finditer(MARKDOWN_RE, text))
         valid_delims = set()
         opened = {}
         active_fixed_width = None
-        
+
         # --- Pass 1: Identify paired delimiters ---
         for i, match in enumerate(matches):
             delim, is_emoji_or_date, text_url, url = match.groups()
-            
+
             if not delim:
                 continue
-                
+
             # If we are inside a code block, ignore all other formatting
             if active_fixed_width:
                 if delim == active_fixed_width:
@@ -218,15 +229,21 @@ class Markdown:
                     del opened[delim]
                     active_fixed_width = None
                 continue
-                
+
             # Opening a new code block
             if delim in FIXED_WIDTH_DELIMS:
                 active_fixed_width = delim
                 opened[delim] = i
                 continue
-                
+
             # Standard formatting delimiters
-            if delim in [BOLD_DELIM, ITALIC_DELIM, UNDERLINE_DELIM, STRIKE_DELIM, SPOILER_DELIM]:
+            if delim in [
+                BOLD_DELIM,
+                ITALIC_DELIM,
+                UNDERLINE_DELIM,
+                STRIKE_DELIM,
+                SPOILER_DELIM,
+            ]:
                 if delim not in opened:
                     opened[delim] = i
                 else:
@@ -234,10 +251,10 @@ class Markdown:
                     valid_delims.add(opened[delim])
                     valid_delims.add(i)
                     del opened[delim]
-                    
+
         # --- Pass 2: Apply replacements ---
         delims = set()
-        
+
         for i, match in enumerate(matches):
             start, _ = match.span()
             delim, is_emoji_or_date, text_url, url = match.groups()
@@ -245,7 +262,9 @@ class Markdown:
 
             # 1. Handle Links
             if not is_emoji_or_date and text_url:
-                text = utils.replace_once(text, full, URL_MARKUP.format(url, text_url), start)
+                text = utils.replace_once(
+                    text, full, URL_MARKUP.format(url, text_url), start
+                )
                 continue
 
             # 2. Handle Emojis and Dates
@@ -257,15 +276,26 @@ class Markdown:
                 # Branch 1: Custom Emoji
                 if parsed_url.netloc == "emoji":
                     emoji_id = query_params.get("id", ["0"])[0]
-                    text = utils.replace_once(text, full, EMOJI_MARKUP.format(emoji_id, emoji), start)
+                    text = utils.replace_once(
+                        text, full, EMOJI_MARKUP.format(emoji_id, emoji), start
+                    )
                 # Branch 2: Custom Time
                 elif parsed_url.netloc == "time":
                     unix_time = query_params.get("unix", ["0"])[0]
                     fmt_string = query_params.get("format", [""])[0]
                     if fmt_string:
-                        text = utils.replace_once(text, full, DATE_TIME_FORMAT_MARKUP.format(unix_time, fmt_string, emoji), start)
+                        text = utils.replace_once(
+                            text,
+                            full,
+                            DATE_TIME_FORMAT_MARKUP.format(
+                                unix_time, fmt_string, emoji
+                            ),
+                            start,
+                        )
                     else:
-                        text = utils.replace_once(text, full, DATE_TIME_MARKUP.format(unix_time, emoji), start)
+                        text = utils.replace_once(
+                            text, full, DATE_TIME_MARKUP.format(unix_time, emoji), start
+                        )
                 continue
 
             # 3. Handle Formatting Delimiters
@@ -273,7 +303,7 @@ class Markdown:
                 # If this delimiter is unclosed (or suppressed by a code block), leave it as literal text!
                 if i not in valid_delims:
                     continue
-                    
+
                 if delim == BOLD_DELIM:
                     tag = "b"
                 elif delim == ITALIC_DELIM:
@@ -302,7 +332,7 @@ class Markdown:
                 if delim == PRE_DELIM and delim in delims:
                     # Because `text` mutates during the loop, we find the true current index
                     dynamic_start = text.find(PRE_DELIM)
-                    remainder = text[dynamic_start + len(PRE_DELIM):]
+                    remainder = text[dynamic_start + len(PRE_DELIM) :]
 
                     nl_idx = remainder.find("\n")
                     close_idx = remainder.find(PRE_DELIM)
@@ -310,14 +340,19 @@ class Markdown:
                     # Only extract language if a newline exists BEFORE the closing backticks
                     if nl_idx != -1 and (close_idx == -1 or nl_idx < close_idx):
                         language = remainder[:nl_idx].strip()
-                        delim_and_language = text[dynamic_start : dynamic_start + len(PRE_DELIM) + nl_idx]
+                        delim_and_language = text[
+                            dynamic_start : dynamic_start + len(PRE_DELIM) + nl_idx
+                        ]
                     else:
                         # Single-line pre block; the text inside is code, not a language definition
                         language = ""
                         delim_and_language = PRE_DELIM
 
                     text = utils.replace_once(
-                        text, delim_and_language, f'<pre language="{language}">', dynamic_start
+                        text,
+                        delim_and_language,
+                        f'<pre language="{language}">',
+                        dynamic_start,
                     )
                     continue
 
@@ -327,8 +362,7 @@ class Markdown:
 
     @staticmethod
     def unparse(text: str, entities: list):
-        """
-        https://github.com/LonamiWebs/Telethon/blob/141b620/telethon/extensions/markdown.py#L137-L193
+        """https://github.com/LonamiWebs/Telethon/blob/141b620/telethon/extensions/markdown.py#L137-L193.
 
         Performs the reverse operation to .parse(), effectively returning
         markdown-like syntax given a normal text and its MessageEntity's.
@@ -355,17 +389,22 @@ class Markdown:
         for i, entity in enumerate(entities):
             s = entity.offset
             e = entity.offset + entity.length
-            delimiter = delimiters.get(entity.type, None)
+            delimiter = delimiters.get(entity.type)
             if delimiter:
                 if entity.type == MessageEntityType.PRE:
                     inside_blockquote = any(
                         blk_entity.offset <= s < blk_entity.offset + blk_entity.length
-                        and blk_entity.offset < e <= blk_entity.offset + blk_entity.length
+                        and blk_entity.offset
+                        < e
+                        <= blk_entity.offset + blk_entity.length
                         for blk_entity in entities
-                        if blk_entity.type == MessageEntityType.BLOCKQUOTE
-                        or blk_entity.type == MessageEntityType.EXPANDABLE_BLOCKQUOTE
+                        if blk_entity.type
+                        in (
+                            MessageEntityType.BLOCKQUOTE,
+                            MessageEntityType.EXPANDABLE_BLOCKQUOTE,
+                        )
                     )
-                    
+
                     if inside_blockquote:
                         # Inside any blockquote, inner lines use ">"
                         if entity.language:
@@ -381,9 +420,9 @@ class Markdown:
                         close_delimiter = delimiter
                     insert_at.append((s, i, open_delimiter))
                     insert_at.append((e, -i, close_delimiter))
-                elif (
-                    entity.type != MessageEntityType.BLOCKQUOTE
-                    and entity.type != MessageEntityType.EXPANDABLE_BLOCKQUOTE
+                elif entity.type not in (
+                    MessageEntityType.BLOCKQUOTE,
+                    MessageEntityType.EXPANDABLE_BLOCKQUOTE,
                 ):
                     open_delimiter = delimiter
                     close_delimiter = delimiter
@@ -393,21 +432,31 @@ class Markdown:
                     # Handle multiline blockquotes
                     text_subset = text[s:e]
                     lines = text_subset.splitlines()
-                    for line_num, line in enumerate(lines):
+                    for line_num, _line in enumerate(lines):
                         line_start = s + sum(len(l) + 1 for l in lines[:line_num])
-                        
+
                         # Blockquote prefixes MUST be placed at the absolute start of the line.
                         # We use `-10000 + i` to ensure they are popped last and end up on the far left,
                         # wrapping perfectly around any inline entities sharing the same offset.
                         prefix_priority = -10000 + i
-                        
+
                         if entity.type == MessageEntityType.EXPANDABLE_BLOCKQUOTE:
                             if line_num == 0:
-                                insert_at.append((line_start, prefix_priority, BLOCKQUOTE_EXPANDABLE_DELIM))
+                                insert_at.append(
+                                    (
+                                        line_start,
+                                        prefix_priority,
+                                        BLOCKQUOTE_EXPANDABLE_DELIM,
+                                    )
+                                )
                             else:
-                                insert_at.append((line_start, prefix_priority, BLOCKQUOTE_DELIM))
+                                insert_at.append(
+                                    (line_start, prefix_priority, BLOCKQUOTE_DELIM)
+                                )
                         else:
-                            insert_at.append((line_start, prefix_priority, BLOCKQUOTE_DELIM))
+                            insert_at.append(
+                                (line_start, prefix_priority, BLOCKQUOTE_DELIM)
+                            )
 
                     # Append expandability mark for expandable blockquotes
                     if entity.type == MessageEntityType.EXPANDABLE_BLOCKQUOTE:

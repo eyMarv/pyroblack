@@ -21,7 +21,7 @@
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
 import pyrogram
-from pyrogram import enums, raw
+from pyrogram import raw
 
 
 class SendChatJoinRequestWebApp:
@@ -35,19 +35,22 @@ class SendChatJoinRequestWebApp:
 
         .. include:: /_includes/usable-by/bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_join_request_query_id (``str``):
                 Unique identifier of the join request query.
 
             web_app_url (``str``):
                 The URL of the Mini App to be opened.
 
-        Returns:
+        Returns
+        -------
             ``bool``: On success True is returned.
+
         """
         return await self.invoke(
             raw.functions.bots.SetJoinChatResults(
                 query_id=int(chat_join_request_query_id),
                 result=raw.types.JoinChatBotResultWebView(url=web_app_url),
-            )
+            ),
         )

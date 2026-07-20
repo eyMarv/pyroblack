@@ -20,6 +20,8 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import asyncio
 import functools
 import inspect
@@ -30,11 +32,10 @@ import os
 import time
 from hashlib import md5
 from pathlib import PurePath
-from typing import Union, BinaryIO, Callable, Optional
+from typing import BinaryIO, Callable
 
 import pyrogram
-from pyrogram import StopTransmission
-from pyrogram import raw
+from pyrogram import StopTransmission, raw
 
 log = logging.getLogger(__name__)
 
@@ -48,11 +49,11 @@ PROGRESS_INTERVAL = 0.1
 
 class SaveFile:
     async def save_file(
-        self: "pyrogram.Client",
-        path: Union[str, BinaryIO],
-        file_id: Optional[int] = None,
+        self: pyrogram.Client,
+        path: str | BinaryIO,
+        file_id: int | None = None,
         file_part: int = 0,
-        progress: Optional[Callable] = None,
+        progress: Callable | None = None,
         progress_args: tuple = (),
     ):
         """Upload a file onto Telegram servers, without actually sending the message to anyone.
@@ -61,7 +62,8 @@ class SaveFile:
 
         .. include:: /_includes/usable-by/users-bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             path (``str`` | ``BinaryIO``):
                 The path of the file you want to upload that exists on your local machine or a binary file-like object
                 with its attribute ".name" set for in-memory uploads.
@@ -81,17 +83,20 @@ class SaveFile:
             progress_args (``tuple``, *optional*):
                 Extra custom arguments for the progress callback function.
 
-        Returns:
+        Returns
+        -------
             ``InputFile | InputFileBig``: On success, the uploaded file is returned.
 
-        Raises:
+        Raises
+        ------
             RPCError: In case of a Telegram RPC error.
+
         """
         async with self.save_file_semaphore:
             if path is None:
                 return None
 
-            async def worker(session):
+            async def worker(session) -> None:
                 while True:
                     data = await queue.get()
 
@@ -106,18 +111,20 @@ class SaveFile:
                             raise
                         except Exception as e:
                             if attempt == MAX_RETRIES - 1:
-                                log.error(
-                                    f"Upload part failed after {MAX_RETRIES} attempts: {e}"
+                                log.exception(
+                                    f"Upload part failed after {MAX_RETRIES} attempts: {e}",
                                 )
                                 raise
                             log.warning(
-                                f"Retrying upload part (attempt {attempt + 1}/{MAX_RETRIES}): {e}"
+                                f"Retrying upload part (attempt {attempt + 1}/{MAX_RETRIES}): {e}",
                             )
-                            await asyncio.sleep(2 ** attempt)
+                            await asyncio.sleep(2**attempt)
 
             async def read_chunk():
                 return await self.loop.run_in_executor(
-                    self.executor, fp.read, PART_SIZE
+                    self.executor,
+                    fp.read,
+                    PART_SIZE,
                 )
 
             part_size = PART_SIZE
@@ -127,8 +134,9 @@ class SaveFile:
             elif isinstance(path, io.IOBase):
                 fp = path
             else:
+                msg = "Invalid file. Expected a file path as string or a binary (not text) file pointer"
                 raise ValueError(
-                    "Invalid file. Expected a file path as string or a binary (not text) file pointer"
+                    msg,
                 )
 
             file_name = getattr(fp, "name", "file.jpg")
@@ -138,16 +146,18 @@ class SaveFile:
             fp.seek(0)
 
             if file_size == 0:
-                raise ValueError("File size equals to 0 B")
+                msg = "File size equals to 0 B"
+                raise ValueError(msg)
 
             file_size_limit_mib = 4000 if (self.me and self.me.is_premium) else 2000
 
             if file_size > file_size_limit_mib * 1024 * 1024:
+                msg = f"Can't upload files bigger than {file_size_limit_mib} MiB"
                 raise ValueError(
-                    f"Can't upload files bigger than {file_size_limit_mib} MiB"
+                    msg,
                 )
 
-            file_total_parts = int(math.ceil(file_size / part_size))
+            file_total_parts = math.ceil(file_size / part_size)
             is_big = file_size > 10 * 1024 * 1024
             pool_size = POOL_SIZE if is_big else 1
             workers_count = WORKERS_PER_SESSION if is_big else 1
@@ -192,7 +202,8 @@ class SaveFile:
                             exc = t.exception()
                             if exc is not None:
                                 raise exc
-                        raise RuntimeError("All upload workers exited")
+                        msg = "All upload workers exited"
+                        raise RuntimeError(msg)
 
                     if is_big:
                         rpc = raw.functions.upload.SaveBigFilePart(
@@ -203,7 +214,9 @@ class SaveFile:
                         )
                     else:
                         rpc = raw.functions.upload.SaveFilePart(
-                            file_id=file_id, file_part=file_part, bytes=chunk
+                            file_id=file_id,
+                            file_part=file_part,
+                            bytes=chunk,
                         )
 
                     await queue.put(rpc)
@@ -215,7 +228,8 @@ class SaveFile:
                         results = await asyncio.gather(*workers, return_exceptions=True)
                         for r in results:
                             if isinstance(r, BaseException) and not isinstance(
-                                r, asyncio.CancelledError
+                                r,
+                                asyncio.CancelledError,
                             ):
                                 raise r
                         return None
@@ -233,7 +247,7 @@ class SaveFile:
                             _sent = min(file_part * part_size, file_size)
                             _total = file_size
 
-                            async def report(_sent=_sent, _total=_total):
+                            async def report(_sent=_sent, _total=_total) -> None:
                                 try:
                                     if inspect.iscoroutinefunction(progress):
                                         await progress(_sent, _total, *progress_args)
@@ -241,7 +255,10 @@ class SaveFile:
                                         await self.loop.run_in_executor(
                                             self.executor,
                                             functools.partial(
-                                                progress, _sent, _total, *progress_args
+                                                progress,
+                                                _sent,
+                                                _total,
+                                                *progress_args,
                                             ),
                                         )
                                 except Exception as e:
@@ -261,13 +278,12 @@ class SaveFile:
                         parts=file_total_parts,
                         name=file_name,
                     )
-                else:
-                    return raw.types.InputFile(
-                        id=file_id,
-                        parts=file_total_parts,
-                        name=file_name,
-                        md5_checksum=md5_sum,
-                    )
+                return raw.types.InputFile(
+                    id=file_id,
+                    parts=file_total_parts,
+                    name=file_name,
+                    md5_checksum=md5_sum,
+                )
             finally:
                 if next_chunk_task is not None and not next_chunk_task.done():
                     next_chunk_task.cancel()

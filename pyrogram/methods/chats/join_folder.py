@@ -35,14 +35,17 @@ class JoinFolder:
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             link (``str``):
                 Invite link of the folder.
 
-        Returns:
+        Returns
+        -------
             ``bool``: True, on success.
 
-        Raises:
+        Raises
+        ------
             BadRequest: In case the folder invite link not exists.
             ValueError: In case the folder invite link is invalid.
 
@@ -51,6 +54,7 @@ class JoinFolder:
 
                 # join folder
                 app.join_folder("t.me/addlist/ebXQ0Q0I3RnGQ")
+
         """
         match = re.match(
             r"^(?:https?://)?(?:www\.)?(?:t(?:elegram)?\.(?:org|me|dog)/(?:addlist/|\+))([\w-]+)$",
@@ -62,7 +66,8 @@ class JoinFolder:
         elif isinstance(link, str):
             slug = link
         else:
-            raise ValueError("Invalid folder invite link")
+            msg = "Invalid folder invite link"
+            raise ValueError(msg)
 
         r = await self.invoke(raw.functions.chatlists.CheckChatlistInvite(slug=slug))
 
@@ -75,7 +80,7 @@ class JoinFolder:
             raw.functions.chatlists.JoinChatlistInvite(
                 slug=slug,
                 peers=[await self.resolve_peer(utils.get_peer_id(id)) for id in peers],
-            )
+            ),
         )
 
         return True

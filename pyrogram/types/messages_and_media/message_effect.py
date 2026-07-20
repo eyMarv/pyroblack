@@ -20,16 +20,17 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional
+from __future__ import annotations
 
 from pyrogram import raw, types
-from ..object import Object
+from pyrogram.types.object import Object
 
 
 class MessageEffect(Object):
     """Contains information about an effect added to a message.
 
-    Parameters:
+    Parameters
+    ----------
         id (``int`` ``64-bit``, *optional*):
             Unique identifier of the effect.
 
@@ -55,11 +56,11 @@ class MessageEffect(Object):
         *,
         id: int,
         emoji: str,
-        static_icon: Optional["types.Sticker"] = None,
-        effect_animation: Optional["types.Document"] = None,
-        select_animation: Optional["types.Document"] = None,
-        is_premium: Optional[bool] = None
-    ):
+        static_icon: types.Sticker | None = None,
+        effect_animation: types.Document | None = None,
+        select_animation: types.Document | None = None,
+        is_premium: bool | None = None,
+    ) -> None:
         super().__init__()
 
         self.id = id
@@ -72,45 +73,50 @@ class MessageEffect(Object):
     @staticmethod
     async def _parse(
         client,
-        effect: "raw.types.AvailableEffect",
-        effect_animation_document: "raw.types.Document" = None,
-        static_icon_document: "raw.types.Document" = None,
-        select_animation_document: "raw.types.Document" = None
-    ) -> "MessageEffect":
+        effect: raw.types.AvailableEffect,
+        effect_animation_document: raw.types.Document = None,
+        static_icon_document: raw.types.Document = None,
+        select_animation_document: raw.types.Document = None,
+    ) -> MessageEffect:
         effect_animation = None
         static_icon = None
         select_animation = None
 
-        effect_sticker_id = effect.effect_sticker_id
-        static_icon_id = getattr(effect, "static_icon_id", None)
-        effect_animation_id = getattr(effect, "effect_animation_id", None)
+        getattr(effect, "static_icon_id", None)
+        getattr(effect, "effect_animation_id", None)
 
         if effect_animation_document:
             effect_animation = await types.Sticker._parse(
                 client,
                 effect_animation_document,
-                {type(i): i for i in effect_animation_document.attributes}
+                {type(i): i for i in effect_animation_document.attributes},
             )
         # TODO: FIXME!
         if static_icon_document:
-            document_attributes = {
-                type(i): i for i in static_icon_document.attributes
-            }
-            file_name = getattr(document_attributes.get(raw.types.DocumentAttributeFilename, None), "file_name", None)
+            document_attributes = {type(i): i for i in static_icon_document.attributes}
+            file_name = getattr(
+                document_attributes.get(raw.types.DocumentAttributeFilename),
+                "file_name",
+                None,
+            )
             static_icon = types.Document._parse(
                 client,
                 static_icon_document,
-                file_name
+                file_name,
             )
         if select_animation_document:
             document_attributes = {
                 type(i): i for i in select_animation_document.attributes
             }
-            file_name = getattr(document_attributes.get(raw.types.DocumentAttributeFilename, None), "file_name", None)
+            file_name = getattr(
+                document_attributes.get(raw.types.DocumentAttributeFilename),
+                "file_name",
+                None,
+            )
             select_animation = types.Document._parse(
                 client,
                 select_animation_document,
-                file_name
+                file_name,
             )
 
         return MessageEffect(
@@ -119,5 +125,5 @@ class MessageEffect(Object):
             static_icon=static_icon,
             effect_animation=effect_animation,  # TODO: FIXME!
             select_animation=select_animation,  # TODO: FIXME!
-            is_premium=getattr(effect, "premium_required", None)
+            is_premium=getattr(effect, "premium_required", None),
         )

@@ -20,7 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw, types
@@ -28,15 +28,16 @@ from pyrogram import raw, types
 
 class DeleteGiftCollection:
     async def delete_gift_collection(
-        self: "pyrogram.Client",
-        owner_id: Union[int, str],
-        collection_id: int
-    ) -> "types.GiftCollection":
+        self: pyrogram.Client,
+        owner_id: int | str,
+        collection_id: int,
+    ) -> types.GiftCollection:
         """Deletes a gift collection.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             owner_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
                 For your personal cloud (Saved Messages) you can simply use "me" or "self".
@@ -44,20 +45,19 @@ class DeleteGiftCollection:
             collection_id (``int``):
                 Identifier of the gift collection.
 
-        Returns:
+        Returns
+        -------
             ``bool``: On success, True is returned.
 
         Example:
             .. code-block:: python
 
                 await app.delete_gift_collection("me", 123)
+
         """
-        r = await self.invoke(
+        return await self.invoke(
             raw.functions.payments.DeleteStarGiftCollection(
                 peer=await self.resolve_peer(owner_id),
-                collection_id=collection_id
-            )
+                collection_id=collection_id,
+            ),
         )
-
-        return r
-

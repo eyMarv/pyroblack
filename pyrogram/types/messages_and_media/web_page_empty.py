@@ -20,23 +20,29 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from pyrogram import raw
-from ..object import Object
+from typing import TYPE_CHECKING
+
+from pyrogram.types.object import Object
+
+if TYPE_CHECKING:
+    from pyrogram import raw
 
 
 class WebPageEmpty(Object):
     # TODO: hash, cached_page
-    """A webpage preview
+    """A webpage preview.
 
-    Parameters:
+    Parameters
+    ----------
         id (``str``):
             Unique identifier for this webpage.
 
         url (``str``):
             Full URL for this webpage.
+
     """
 
-    def __init__(self, *, id: str, url: str):
+    def __init__(self, *, id: str, url: str) -> None:
         super().__init__()
 
         self.id = id

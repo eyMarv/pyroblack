@@ -34,6 +34,4 @@ class ResetSession:
             ``bool``: On success, in case the session is destroyed, True is returned. Otherwise, False is returned.
 
         """
-        r = await self.invoke(raw.functions.account.ResetAuthorization(hash=id))
-
-        return r
+        return await self.invoke(raw.functions.account.ResetAuthorization(hash=id))

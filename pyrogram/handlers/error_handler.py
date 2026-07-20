@@ -20,11 +20,15 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Any, Callable, Optional, Sequence, Union
+from __future__ import annotations
 
-import pyrogram
-from pyrogram.filters import Filter
+from collections.abc import Sequence
+from typing import TYPE_CHECKING, Any, Callable
+
 from .handler import Handler
+
+if TYPE_CHECKING:
+    from pyrogram.filters import Filter
 
 
 class ErrorHandler(Handler):
@@ -35,7 +39,8 @@ class ErrorHandler(Handler):
     For a more convenient way to register this handler, see the
     :meth:`~pyrogram.Client.on_error` decorator.
 
-    Parameters:
+    Parameters
+    ----------
         callback (``Callable``):
             A function that will be called whenever an unexpected error is raised.
 
@@ -46,14 +51,15 @@ class ErrorHandler(Handler):
         filters (:obj:`Filter`, *optional*):
             Pass one or more filters to allow only a subset of updates to be passed
             in your callback function.
+
     """
 
     def __init__(
         self,
         callback: Callable[..., Any],
-        exceptions: Optional[Union[type, Sequence[type]]] = None,
-        filters: Optional[Filter] = None,
-    ):
+        exceptions: type | Sequence[type] | None = None,
+        filters: Filter | None = None,
+    ) -> None:
         super().__init__(callback, filters)
 
         if exceptions is None:

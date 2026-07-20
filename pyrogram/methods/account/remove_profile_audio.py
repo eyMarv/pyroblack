@@ -31,11 +31,13 @@ class RemoveProfileAudio:
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             file_id (``str``):
                 Identifier of the audio file to be removed.
 
-        Returns:
+        Returns
+        -------
             ``bool``: On success, True is returned.
 
         Example:
@@ -43,13 +45,11 @@ class RemoveProfileAudio:
 
                 # Remove audio file from profile
                 await app.remove_profile_audio(file_id)
+
         """
-        r = await self.invoke(
+        return await self.invoke(
             raw.functions.account.SaveMusic(
                 id=(utils.get_input_media_from_file_id(file_id, FileType.AUDIO)).id,
-                unsave=True
-            )
+                unsave=True,
+            ),
         )
-
-        return r
-

@@ -34,18 +34,22 @@ class AnswerChatJoinRequestQuery:
 
         .. include:: /_includes/usable-by/bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_join_request_query_id (``str``):
                 Unique identifier of the join request query.
 
             result (:obj:`~pyrogram.enums.ChatJoinRequestQueryResult`):
                 Result of the query.
 
-        Returns:
+        Returns
+        -------
             ``bool``: On success True is returned.
+
         """
         return await self.invoke(
             raw.functions.bots.SetJoinChatResults(
-                query_id=int(chat_join_request_query_id), result=result.value()
-            )
+                query_id=int(chat_join_request_query_id),
+                result=result.value(),
+            ),
         )

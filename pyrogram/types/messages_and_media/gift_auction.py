@@ -24,14 +24,14 @@ from datetime import datetime
 from typing import Optional
 
 from pyrogram import raw, utils
-
-from ..object import Object
+from pyrogram.types.object import Object
 
 
 class GiftAuction(Object):
     """Describes an auction on which a gift can be purchased.
 
-    Parameters:
+    Parameters
+    ----------
         id (``str``):
             Identifier of the auction.
 
@@ -40,9 +40,10 @@ class GiftAuction(Object):
 
         start_date (:py:obj:`~datetime.datetime`):
             Date when the auction will start.
+
     """
 
-    def __init__(self, *, id: str, gifts_per_round: int, start_date: datetime):
+    def __init__(self, *, id: str, gifts_per_round: int, start_date: datetime) -> None:
         super().__init__()
 
         self.id = id
@@ -57,4 +58,4 @@ class GiftAuction(Object):
                 gifts_per_round=gift.gifts_per_round,
                 start_date=utils.timestamp_to_datetime(gift.auction_start_date),
             )
-
+        return None

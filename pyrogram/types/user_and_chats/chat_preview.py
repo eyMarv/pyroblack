@@ -20,18 +20,18 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import List
+from __future__ import annotations
 
 import pyrogram
-from pyrogram import raw
-from pyrogram import types
-from ..object import Object
+from pyrogram import raw, types
+from pyrogram.types.object import Object
 
 
 class ChatPreview(Object):
     """A chat preview.
 
-    Parameters:
+    Parameters
+    ----------
         title (``str``):
             Title of the chat.
 
@@ -46,18 +46,19 @@ class ChatPreview(Object):
 
         members (List of :obj:`~pyrogram.types.User`, *optional*):
             Preview of some of the chat members.
+
     """
 
     def __init__(
         self,
         *,
-        client: "pyrogram.Client" = None,
+        client: pyrogram.Client = None,
         title: str,
         type: str,
         members_count: int,
-        photo: "types.Photo" = None,
-        members: List["types.User"] = None,
-    ):
+        photo: types.Photo = None,
+        members: list[types.User] | None = None,
+    ) -> None:
         super().__init__(client)
 
         self.title = title
@@ -67,13 +68,15 @@ class ChatPreview(Object):
         self.members = members
 
     @staticmethod
-    def _parse(client, chat_invite: "raw.types.ChatInvite") -> "ChatPreview":
+    def _parse(client, chat_invite: raw.types.ChatInvite) -> ChatPreview:
         return ChatPreview(
             title=chat_invite.title,
             type=(
                 "group"
                 if not chat_invite.channel
-                else "channel" if chat_invite.broadcast else "supergroup"
+                else "channel"
+                if chat_invite.broadcast
+                else "supergroup"
             ),
             members_count=chat_invite.participants_count,
             photo=types.Photo._parse(client, chat_invite.photo),

@@ -20,33 +20,35 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import os
-from typing import BinaryIO, Callable, Union
+from typing import Callable
 
 import pyrogram
 from pyrogram import StopTransmission, enums, raw, types, utils
-from pyrogram.errors import FilePartMissing
 
 
 class EditStory:
     async def edit_story(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
+        self: pyrogram.Client,
+        chat_id: int | str,
         story_id: int,
-        content: "types.InputStoryContent" = None,
-        caption: str = None,
-        parse_mode: "enums.ParseMode" = None,
-        caption_entities: list["types.MessageEntity"] = None,
-        areas: list["types.StoryArea"] = None,
-        privacy_settings: "types.StoryPrivacySettings" = None,
-        progress: Callable = None,
+        content: types.InputStoryContent = None,
+        caption: str | None = None,
+        parse_mode: enums.ParseMode = None,
+        caption_entities: list[types.MessageEntity] | None = None,
+        areas: list[types.StoryArea] | None = None,
+        privacy_settings: types.StoryPrivacySettings = None,
+        progress: Callable | None = None,
         progress_args: tuple = (),
-    ) -> "types.Story":
+    ) -> types.Story:
         """Changes content, privacy settings and caption of a story.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
                 For your personal cloud (Saved Messages) you can simply use "me" or "self".
@@ -59,7 +61,7 @@ class EditStory:
 
             caption (``str``, *optional*):
                 Caption of the story, 0-2048 characters after entities parsing.
-            
+
             parse_mode (:obj:`~pyrogram.enums.ParseMode`, *optional*):
                 By default, texts are parsed using both Markdown and HTML styles.
                 You can combine both syntaxes together.
@@ -85,7 +87,8 @@ class EditStory:
                 You can pass anything you need to be available in the progress callback scope; for example, a Message
                 object or a Client instance in order to edit the message with the updated progress status.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.Story` a single story is returned.
 
         Example:
@@ -97,13 +100,15 @@ class EditStory:
                 # Post story to channel
                 await app.send_story(123456, 3, "story.png", caption='My new story!')
 
-        Raises:
+        Raises
+        ------
             ValueError: In case of invalid arguments.
             :obj:`~pyrogram.errors.RPCError`: In case of a Telegram RPC error.
 
         """
-
-        message, entities = (await utils.parse_text_entities(self, caption, parse_mode, caption_entities)).values()
+        message, entities = (
+            await utils.parse_text_entities(self, caption, parse_mode, caption_entities)
+        ).values()
 
         media = None
         if content:
@@ -121,7 +126,9 @@ class EditStory:
             try:
                 if isinstance(media, str):
                     if os.path.isfile(media):
-                        file = await self.save_file(media, progress=progress, progress_args=progress_args)
+                        file = await self.save_file(
+                            media, progress=progress, progress_args=progress_args
+                        )
                         thumb = await self.save_file(thumb) if thumb else None
                         if isinstance(content, types.InputStoryContentVideo):
                             media = raw.types.InputMediaUploadedDocument(
@@ -130,13 +137,17 @@ class EditStory:
                                 thumb=thumb,
                                 attributes=[
                                     raw.types.DocumentAttributeVideo(
-                                        supports_streaming=content.supports_streaming or None,
+                                        supports_streaming=content.supports_streaming
+                                        or None,
                                         duration=content.duration,
                                         w=content.width,
                                         h=content.height,
                                     ),
-                                    raw.types.DocumentAttributeFilename(file_name=content.file_name or os.path.basename(media))
-                                ]
+                                    raw.types.DocumentAttributeFilename(
+                                        file_name=content.file_name
+                                        or os.path.basename(media)
+                                    ),
+                                ],
                             )
                         else:
                             media = raw.types.InputMediaUploadedPhoto(
@@ -145,7 +156,9 @@ class EditStory:
                     else:
                         media = utils.get_input_media_from_file_id(media)
                 else:
-                    file = await self.save_file(media, progress=progress, progress_args=progress_args)
+                    file = await self.save_file(
+                        media, progress=progress, progress_args=progress_args
+                    )
                     thumb = await self.save_file(thumb) if thumb else None
                     if isinstance(content, types.InputStoryContentVideo):
                         media = raw.types.InputMediaUploadedDocument(
@@ -154,13 +167,16 @@ class EditStory:
                             thumb=thumb,
                             attributes=[
                                 raw.types.DocumentAttributeVideo(
-                                    supports_streaming=content.supports_streaming or None,
+                                    supports_streaming=content.supports_streaming
+                                    or None,
                                     duration=content.duration,
                                     w=content.width,
                                     h=content.height,
                                 ),
-                                raw.types.DocumentAttributeFilename(file_name=content.file_name or media.name)
-                            ]
+                                raw.types.DocumentAttributeFilename(
+                                    file_name=content.file_name or media.name
+                                ),
+                            ],
                         )
                     else:
                         media = raw.types.InputMediaUploadedPhoto(
@@ -171,12 +187,12 @@ class EditStory:
 
         privacy_rules = []
         if privacy_settings:
-            privacy_rules += (await privacy_settings.write(self))
+            privacy_rules += await privacy_settings.write(self)
         else:
-            privacy_rules += (await (types.StoryPrivacySettingsEveryone()).write(self))
+            privacy_rules += await (types.StoryPrivacySettingsEveryone()).write(self)
 
         r = await self.invoke(
-            raw.functions.stories.EditStory( 
+            raw.functions.stories.EditStory(
                 peer=await self.resolve_peer(chat_id),
                 id=story_id,
                 media=media,
@@ -184,7 +200,7 @@ class EditStory:
                 caption=message,
                 entities=entities,
                 privacy_rules=privacy_rules,
-            )
+            ),
         )
 
         for i in r.updates:
@@ -193,31 +209,33 @@ class EditStory:
                     self,
                     {i.id: i for i in r.users},
                     {i.id: i for i in r.chats},
-                    None, None,
+                    None,
+                    None,
                     i,
                     i.story,
-                    i.peer
+                    i.peer,
                 )
-
+        return None
 
     async def edit_business_story(
-        self: "pyrogram.Client",
+        self: pyrogram.Client,
         business_connection_id: str,
         story_id: int,
-        content: "types.InputStoryContent" = None,
-        caption: str = None,
-        parse_mode: "enums.ParseMode" = None,
-        caption_entities: list["types.MessageEntity"] = None,
-        areas: list["types.StoryArea"] = None,
-        privacy_settings: "types.StoryPrivacySettings" = None,
-        progress: Callable = None,
+        content: types.InputStoryContent = None,
+        caption: str | None = None,
+        parse_mode: enums.ParseMode = None,
+        caption_entities: list[types.MessageEntity] | None = None,
+        areas: list[types.StoryArea] | None = None,
+        privacy_settings: types.StoryPrivacySettings = None,
+        progress: Callable | None = None,
         progress_args: tuple = (),
-    ) -> "types.Story":
+    ) -> types.Story:
         """Edits a story previously posted by the bot on behalf of a managed business account. Requires the can_manage_stories business bot right.
 
         .. include:: /_includes/usable-by/bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             business_connection_id (``str``):
                 Unique identifier of the business connection.
 
@@ -229,7 +247,7 @@ class EditStory:
 
             caption (``str``, *optional*):
                 Caption of the story, 0-2048 characters after entities parsing.
-            
+
             parse_mode (:obj:`~pyrogram.enums.ParseMode`, *optional*):
                 By default, texts are parsed using both Markdown and HTML styles.
                 You can combine both syntaxes together.
@@ -255,21 +273,28 @@ class EditStory:
                 You can pass anything you need to be available in the progress callback scope; for example, a Message
                 object or a Client instance in order to edit the message with the updated progress status.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.Story` a story is returned.
 
-        Raises:
+        Raises
+        ------
             ValueError: In case of invalid arguments.
             :obj:`~pyrogram.errors.RPCError`: In case of a Telegram RPC error.
 
         """
         if not business_connection_id:
-            raise ValueError("business_connection_id is required")
+            msg = "business_connection_id is required"
+            raise ValueError(msg)
 
-        business_connection = self.business_user_connection_cache[business_connection_id]
+        business_connection = self.business_user_connection_cache[
+            business_connection_id
+        ]
         if business_connection is None:
-            business_connection = await self.get_business_connection(business_connection_id)
-        
+            business_connection = await self.get_business_connection(
+                business_connection_id
+            )
+
         return await self.edit_story(
             chat_id=business_connection.user_chat_id,
             story_id=story_id,
@@ -280,5 +305,5 @@ class EditStory:
             areas=areas,
             privacy_settings=privacy_settings,
             progress=progress,
-            progress_args=progress_args
+            progress_args=progress_args,
         )

@@ -20,13 +20,18 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from io import BytesIO
-from typing import cast, Union, Any
+from __future__ import annotations
 
-from .bool import BoolFalse, BoolTrue, Bool
+from typing import TYPE_CHECKING, Any, cast
+
+from pyrogram.raw.core.list import List
+from pyrogram.raw.core.tl_object import TLObject
+
+from .bool import Bool, BoolFalse, BoolTrue
 from .int import Int, Long
-from ..list import List
-from ..tl_object import TLObject
+
+if TYPE_CHECKING:
+    from io import BytesIO
 
 
 class Vector(bytes, TLObject):
@@ -35,12 +40,12 @@ class Vector(bytes, TLObject):
     # Method added to handle the special case when a query returns a bare Vector (of Ints);
     # i.e., RpcResult body starts with 0x1cb5c415 (Vector Id) - e.g., messages.GetMessagesViews.
     @staticmethod
-    def read_bare(b: BytesIO, size: int) -> Union[int, Any]:
+    def read_bare(b: BytesIO, size: int) -> int | Any:
         if size == 4:
             # cek
             e = int.from_bytes(
                 b.read(4),
-                "little"
+                "little",
             )
             # bak
             b.seek(-4, 1)
@@ -51,8 +56,7 @@ class Vector(bytes, TLObject):
             ]:
                 return Bool.read(b)
             # not
-            else:
-                return Int.read(b)
+            return Int.read(b)
 
         if size == 8:
             return Long.read(b)
@@ -67,13 +71,11 @@ class Vector(bytes, TLObject):
         data.seek(-left, 1)
 
         return List(
-            t.read(data) if t
-            else Vector.read_bare(data, size)
-            for _ in range(count)
+            t.read(data) if t else Vector.read_bare(data, size) for _ in range(count)
         )
 
     def __new__(cls, value: list, t: Any = None) -> bytes:  # type: ignore
         return b"".join(
             [Int(cls.ID, False), Int(len(value))]
-            + [cast(bytes, t(i)) if t else i.write() for i in value]
+            + [cast("bytes", t(i)) if t else i.write() for i in value],
         )

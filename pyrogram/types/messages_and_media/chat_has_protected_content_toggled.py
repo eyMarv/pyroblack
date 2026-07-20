@@ -20,16 +20,18 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-import pyrogram
-from pyrogram import raw, types
+from __future__ import annotations
 
-from ..object import Object
+import pyrogram
+from pyrogram import raw
+from pyrogram.types.object import Object
 
 
 class ChatHasProtectedContentToggled(Object):
     """Describes a service message about a chat ``has_protected_content`` setting was changed or request to change it was rejected.
 
-    Parameters:
+    Parameters
+    ----------
         request_message_id (``int``):
             Identifier of the message with the request to change the setting; can be an identifier of a deleted message or 0.
 
@@ -42,11 +44,12 @@ class ChatHasProtectedContentToggled(Object):
     """
 
     def __init__(
-        self, *,
-        request_message_id: int = None,
-        old_has_protected_content: bool = None,
-        new_has_protected_content: bool = None,
-    ):
+        self,
+        *,
+        request_message_id: int | None = None,
+        old_has_protected_content: bool | None = None,
+        new_has_protected_content: bool | None = None,
+    ) -> None:
         super().__init__()
 
         self.request_message_id = request_message_id
@@ -55,13 +58,14 @@ class ChatHasProtectedContentToggled(Object):
 
     @staticmethod
     def _parse(
-        client: "pyrogram.Client",
-        message: "raw.types.MessageService",
-    ) -> "ChatHasProtectedContentToggled":
-        action: "raw.types.MessageActionNoForwardsToggle" = message.action
+        client: pyrogram.Client,
+        message: raw.types.MessageService,
+    ) -> ChatHasProtectedContentToggled:
+        action: raw.types.MessageActionNoForwardsToggle = message.action
         if isinstance(action, raw.types.MessageActionNoForwardsToggle):
             return ChatHasProtectedContentToggled(
                 request_message_id=message.id,
                 old_has_protected_content=action.prev_value,
                 new_has_protected_content=action.new_value,
             )
+        return None

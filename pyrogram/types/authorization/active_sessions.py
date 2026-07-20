@@ -20,16 +20,18 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-import pyrogram
-from pyrogram import raw, types, utils
+from __future__ import annotations
 
-from ..object import Object
+import pyrogram
+from pyrogram import raw, types
+from pyrogram.types.object import Object
 
 
 class ActiveSessions(Object):
-    """Contains a list of sessions
+    """Contains a list of sessions.
 
-    Parameters:
+    Parameters
+    ----------
         inactive_session_ttl_days (``int``):
             Number of days of inactivity before sessions will automatically be terminated; 1-366 days.
 
@@ -41,9 +43,9 @@ class ActiveSessions(Object):
     def __init__(
         self,
         *,
-        inactive_session_ttl_days: int = None,
-        active_sessions: list["types.ActiveSession"] = None
-    ):
+        inactive_session_ttl_days: int | None = None,
+        active_sessions: list[types.ActiveSession] | None = None,
+    ) -> None:
         super().__init__()
 
         self.inactive_session_ttl_days = inactive_session_ttl_days
@@ -51,13 +53,15 @@ class ActiveSessions(Object):
 
     @staticmethod
     def _parse(
-        client: "pyrogram.Client",
-        authorizations: "raw.types.account.Authorizations"
-    ) -> "ActiveSessions":        
+        client: pyrogram.Client,
+        authorizations: raw.types.account.Authorizations,
+    ) -> ActiveSessions:
         return ActiveSessions(
             inactive_session_ttl_days=authorizations.authorization_ttl_days,
-            active_sessions=types.List([
-                types.ActiveSession._parse(client, active)
-                for active in authorizations.authorizations
-            ])
+            active_sessions=types.List(
+                [
+                    types.ActiveSession._parse(client, active)
+                    for active in authorizations.authorizations
+                ]
+            ),
         )

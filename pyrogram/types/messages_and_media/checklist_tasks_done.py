@@ -20,15 +20,20 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from pyrogram import raw
 
-from ..object import Object
+from typing import TYPE_CHECKING
+
+from pyrogram.types.object import Object
+
+if TYPE_CHECKING:
+    from pyrogram import raw
 
 
 class ChecklistTasksDone(Object):
     """Describes a service message about checklist tasks marked as done or not done.
 
-    Parameters:
+    Parameters
+    ----------
         checklist_message_id (``int``):
             Identifier of the message with the checklist.
             Can be None if the message was deleted.
@@ -46,8 +51,8 @@ class ChecklistTasksDone(Object):
         *,
         checklist_message_id: int,
         marked_as_done_task_ids: list[int],
-        marked_as_not_done_task_ids: list[int]
-    ):
+        marked_as_not_done_task_ids: list[int],
+    ) -> None:
 
         super().__init__()
 
@@ -56,11 +61,13 @@ class ChecklistTasksDone(Object):
         self.marked_as_not_done_task_ids = marked_as_not_done_task_ids
 
     @staticmethod
-    def _parse(client: "pyrogram.Client", message: "raw.types.MessageService") -> "ChecklistTasksDone":
-        action: "raw.types.MessageActionTodoCompletions" = message.action
+    def _parse(
+        client: "pyrogram.Client", message: "raw.types.MessageService"
+    ) -> "ChecklistTasksDone":
+        action: raw.types.MessageActionTodoCompletions = message.action
 
         return ChecklistTasksDone(
             checklist_message_id=getattr(message.reply_to, "reply_to_msg_id", None),
             marked_as_done_task_ids=action.completed,
-            marked_as_not_done_task_ids=action.incompleted
+            marked_as_not_done_task_ids=action.incompleted,
         )

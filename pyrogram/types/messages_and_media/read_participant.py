@@ -20,21 +20,28 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+
+from typing import TYPE_CHECKING
+
 import pyrogram
 from pyrogram import raw, utils
-from datetime import datetime
-from ..object import Object
+from pyrogram.types.object import Object
+
+if TYPE_CHECKING:
+    from datetime import datetime
 
 
 class ReadParticipant(Object):
     """Contains information about a read participant.
 
-    Parameters:
+    Parameters
+    ----------
         user (:obj:`~pyrogram.types.User`):
             User who read the message.
 
         date (:py:obj:`~datetime.datetime`):
             Date the message was read.
+
     """
 
     def __init__(
@@ -43,7 +50,7 @@ class ReadParticipant(Object):
         client: "pyrogram.Client" = None,
         user_id: "pyrogram.types.User",
         date: "datetime",
-    ):
+    ) -> None:
         super().__init__(client)
 
         self.user = user_id
@@ -51,7 +58,8 @@ class ReadParticipant(Object):
 
     @staticmethod
     async def _parse(
-        client, read_participant: "raw.base.ReadParticipantDate"
+        client,
+        read_participant: "raw.base.ReadParticipantDate",
     ) -> "ReadParticipant":
         return ReadParticipant(
             client=client,

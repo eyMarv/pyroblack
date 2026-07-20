@@ -20,28 +20,32 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import asyncio
 import inspect
-from typing import List, Optional, Union
+from typing import TYPE_CHECKING
 
 import pyrogram
 from pyrogram.errors import ListenerTimeout
-from pyrogram.filters import Filter
 from pyrogram.types import Identifier, Listener
 from pyrogram.utils import PyromodConfig
+
+if TYPE_CHECKING:
+    from pyrogram.filters import Filter
 
 
 class Listen:
     async def listen(
-        self: "pyrogram.Client",
-        filters: Optional[Filter] = None,
-        listener_type: "pyrogram.enums.ListenerTypes" = pyrogram.enums.ListenerTypes.MESSAGE,
-        timeout: Optional[int] = None,
+        self: pyrogram.Client,
+        filters: Filter | None = None,
+        listener_type: pyrogram.enums.ListenerTypes = pyrogram.enums.ListenerTypes.MESSAGE,
+        timeout: int | None = None,
         unallowed_click_alert: bool = True,
-        chat_id: Union[Union[int, str], List[Union[int, str]]] = None,
-        user_id: Union[Union[int, str], List[Union[int, str]]] = None,
-        message_id: Union[int, List[int]] = None,
-        inline_message_id: Union[str, List[str]] = None,
+        chat_id: int | str | list[int | str] | None = None,
+        user_id: int | str | list[int | str] | None = None,
+        message_id: int | list[int] | None = None,
+        inline_message_id: str | list[str] | None = None,
     ):
         """Listen for a message, callback query, etc.
 
@@ -53,7 +57,8 @@ class Listen:
 
         .. include:: /_includes/usable-by/bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str`` | Iterable of ``int`` | Iterable of ``str``, *optional*):
                 Unique identifier (int) or username (str) of the target chat.
 
@@ -80,15 +85,16 @@ class Listen:
             inline_message_id (``str``, *optional*):
                 The inline message ID to listen for.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.Message` | :obj:`~pyrogram.types.CallbackQuery`: On success, a message/callbackquery is returned.
 
         Example:
             .. code-block:: python
 
                 await app.listen(chat_id)
-        """
 
+        """
         pattern = Identifier(
             from_user_id=user_id,
             chat_id=chat_id,
@@ -119,7 +125,11 @@ class Listen:
                     await PyromodConfig.timeout_handler(pattern, listener, timeout)
                 else:
                     await self.loop.run_in_executor(
-                        None, PyromodConfig.timeout_handler, pattern, listener, timeout
+                        None,
+                        PyromodConfig.timeout_handler,
+                        pattern,
+                        listener,
+                        timeout,
                     )
             elif PyromodConfig.throw_exceptions:
                 raise ListenerTimeout(timeout)

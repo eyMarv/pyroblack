@@ -20,17 +20,17 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import List, Union
+from typing import Union
 
 import pyrogram
-from pyrogram import raw, types, enums
+from pyrogram import enums, raw, types
 
 
 class SetPrivacy:
     async def set_privacy(
         self: "pyrogram.Client",
         key: "enums.PrivacyKey",
-        rules: List[
+        rules: list[
             Union[
                 "types.InputPrivacyRuleAllowAll",
                 "types.InputPrivacyRuleAllowContacts",
@@ -48,14 +48,16 @@ class SetPrivacy:
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             key (:obj:`~pyrogram.enums.PrivacyKey`):
                 Privacy key.
 
             rules (Iterable of :obj:`~pyrogram.types.InputPrivacyRule`):
                 List of privacy rules.
 
-        Returns:
+        Returns
+        -------
             List of :obj:`~pyrogram.types.PrivacyRule`: On success, the list of privacy rules is returned.
 
         Example:
@@ -65,11 +67,13 @@ class SetPrivacy:
 
                 # Prevent everyone from seeing your phone number
                 await app.set_privacy(enums.PrivacyKey.PHONE_NUMBER, [types.InputPrivacyRuleDisallowAll()])
+
         """
         r = await self.invoke(
             raw.functions.account.SetPrivacy(
-                key=key.value(), rules=[await rule.write(self) for rule in rules]
-            )
+                key=key.value(),
+                rules=[await rule.write(self) for rule in rules],
+            ),
         )
 
         users = {i.id: i for i in r.users}

@@ -20,17 +20,23 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import datetime
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 from pyrogram import enums
 
 from .message_origin import MessageOrigin
 
+if TYPE_CHECKING:
+    from datetime import datetime
+
 
 class MessageOriginHiddenUser(MessageOrigin):
     """The message was originally sent by an unknown user.
 
-    Parameters:
+    Parameters
+    ----------
         type (:obj:`~pyrogram.enums.MessageOriginType`):
             Type of the message origin.
 
@@ -39,15 +45,16 @@ class MessageOriginHiddenUser(MessageOrigin):
 
         sender_user_name (``str``):
             Name of the user that sent the message originally.
+
     """
 
     def __init__(
         self,
         *,
-        type: "enums.MessageOriginType" = enums.MessageOriginType.HIDDEN_USER,
-        date: datetime = None,
-        sender_user_name: str = None,
-    ):
+        type: enums.MessageOriginType = enums.MessageOriginType.HIDDEN_USER,
+        date: datetime | None = None,
+        sender_user_name: str | None = None,
+    ) -> None:
         super().__init__(type=type, date=date)
 
         self.sender_user_name = sender_user_name

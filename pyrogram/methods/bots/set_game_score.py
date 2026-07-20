@@ -20,29 +20,29 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union
+from __future__ import annotations
 
 import pyrogram
-from pyrogram import raw
-from pyrogram import types
+from pyrogram import raw, types
 
 
 class SetGameScore:
     async def set_game_score(
-        self: "pyrogram.Client",
-        user_id: Union[int, str],
+        self: pyrogram.Client,
+        user_id: int | str,
         score: int,
-        force: bool = None,
-        disable_edit_message: bool = None,
-        chat_id: Union[int, str] = None,
-        message_id: int = None
-    ) -> Union["types.Message", bool]:
+        force: bool | None = None,
+        disable_edit_message: bool | None = None,
+        chat_id: int | str | None = None,
+        message_id: int | None = None,
+    ) -> types.Message | bool:
         # inline_message_id: str = None):  TODO Add inline_message_id
         """Set the score of the specified user in a game.
 
         .. include:: /_includes/usable-by/bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             user_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
                 For your personal cloud (Saved Messages) you can simply use "me" or "self".
@@ -68,11 +68,13 @@ class SetGameScore:
                 Identifier of the sent message.
                 Required if inline_message_id is not specified.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.Message` | ``bool``: On success, if the message was sent by the bot, the edited
             message is returned, True otherwise.
 
-        Raises:
+        Raises
+        ------
             :obj:`~pyrogram.errors.RPCError`: In case of a Telegram RPC error.
 
         Example:
@@ -83,6 +85,7 @@ class SetGameScore:
 
                 # Force set new score
                 await app.set_game_score(user_id, 25, force=True)
+
         """
         r = await self.invoke(
             raw.functions.messages.SetGameScore(
@@ -91,18 +94,20 @@ class SetGameScore:
                 id=message_id,
                 user_id=await self.resolve_peer(user_id),
                 force=force or None,
-                edit_message=not disable_edit_message or None
-            )
+                edit_message=not disable_edit_message or None,
+            ),
         )
 
         for i in r.updates:
-            if isinstance(i, (raw.types.UpdateEditMessage,
-                              raw.types.UpdateEditChannelMessage)):
+            if isinstance(
+                i, (raw.types.UpdateEditMessage, raw.types.UpdateEditChannelMessage)
+            ):
                 return await types.Message._parse(
-                    self, i.message,
+                    self,
+                    i.message,
                     {i.id: i for i in r.users},
                     {i.id: i for i in r.chats},
-                    replies=self.fetch_replies
+                    replies=self.fetch_replies,
                 )
 
         return True

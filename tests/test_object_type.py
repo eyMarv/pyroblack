@@ -22,13 +22,14 @@
 
 import pickle
 from datetime import datetime, timezone
+
 from pyrogram import types
 
 
-def test_restore_message_type():
+def test_restore_message_type() -> None:
     expected = types.Message(
         id=7736885,
-        date=datetime.fromtimestamp(1647531900, tz=timezone.utc)
+        date=datetime.fromtimestamp(1647531900, tz=timezone.utc),
     )
     te = pickle.dumps(expected)
     actual = pickle.loads(te)

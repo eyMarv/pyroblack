@@ -20,50 +20,52 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import logging
-from datetime import datetime
-from typing import Union, Optional
+from typing import TYPE_CHECKING
 
 import pyrogram
-from pyrogram import raw, enums, types, utils
+from pyrogram import enums, raw, types, utils
+
+if TYPE_CHECKING:
+    from datetime import datetime
 
 log = logging.getLogger(__name__)
 
 
 class SendCachedMedia:
     async def send_cached_media(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
+        self: pyrogram.Client,
+        chat_id: int | str,
         file_id: str,
         caption: str = "",
-        parse_mode: Optional["enums.ParseMode"] = None,
-        caption_entities: list["types.MessageEntity"] = None,
-        show_caption_above_media: bool = None,
-        disable_notification: bool = None,
-        message_effect_id: int = None,
-        reply_parameters: "types.ReplyParameters" = None,
-        message_thread_id: int = None,
-        business_connection_id: str = None,
-        send_as: Union[int, str] = None,
-        schedule_date: datetime = None,
-        protect_content: bool = None,
-        allow_paid_broadcast: bool = None,
-        paid_message_star_count: int = None,
-        has_spoiler: bool = None,
-        reply_markup: Union[
-            "types.InlineKeyboardMarkup",
-            "types.ReplyKeyboardMarkup",
-            "types.ReplyKeyboardRemove",
-            "types.ForceReply"
-        ] = None,
-        reply_to_chat_id: Union[int, str] = None,
-        reply_to_story_id: int = None,
-        reply_to_monoforum_id: Union[int, str] = None,
-        quote_text: str = None,
-        quote_entities: list = None,
-        invert_media: bool = None,
-        reply_to_message_id: int = None
-    ) -> Optional["types.Message"]:
+        parse_mode: enums.ParseMode | None = None,
+        caption_entities: list[types.MessageEntity] | None = None,
+        show_caption_above_media: bool | None = None,
+        disable_notification: bool | None = None,
+        message_effect_id: int | None = None,
+        reply_parameters: types.ReplyParameters = None,
+        message_thread_id: int | None = None,
+        business_connection_id: str | None = None,
+        send_as: int | str | None = None,
+        schedule_date: datetime | None = None,
+        protect_content: bool | None = None,
+        allow_paid_broadcast: bool | None = None,
+        paid_message_star_count: int | None = None,
+        has_spoiler: bool | None = None,
+        reply_markup: types.InlineKeyboardMarkup
+        | types.ReplyKeyboardMarkup
+        | types.ReplyKeyboardRemove
+        | types.ForceReply = None,
+        reply_to_chat_id: int | str | None = None,
+        reply_to_story_id: int | None = None,
+        reply_to_monoforum_id: int | str | None = None,
+        quote_text: str | None = None,
+        quote_entities: list | None = None,
+        invert_media: bool | None = None,
+        reply_to_message_id: int | None = None,
+    ) -> types.Message | None:
         """Send any media stored on the Telegram servers using a file_id.
 
         This convenience method works with any valid file_id only.
@@ -72,7 +74,8 @@ class SendCachedMedia:
 
         .. include:: /_includes/usable-by/users-bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
                 For your personal cloud (Saved Messages) you can simply use "me" or "self".
@@ -114,13 +117,13 @@ class SendCachedMedia:
             send_as (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the chat or channel to send the message as.
                 You can use this to send the message on behalf of a chat or channel where you have appropriate permissions.
-                Use the :meth:`~pyrogram.Client.get_send_as_chats` to return the list of message sender identifiers, which can be used to send messages in the chat, 
+                Use the :meth:`~pyrogram.Client.get_send_as_chats` to return the list of message sender identifiers, which can be used to send messages in the chat,
                 This setting applies to the current message and will remain effective for future messages unless explicitly changed.
                 To set this behavior permanently for all messages, use :meth:`~pyrogram.Client.set_send_as_chat`.
 
             schedule_date (:py:obj:`~datetime.datetime`, *optional*):
                 Date when the message will be automatically sent.
-            
+
             protect_content (``bool``, *optional*):
                 Pass True if the content of the message must be protected from forwarding and saving; for bots only.
 
@@ -137,15 +140,16 @@ class SendCachedMedia:
                 Additional interface options. An object for an inline keyboard, custom reply keyboard,
                 instructions to remove reply keyboard or to force a reply from the user.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.Message`: On success, the sent media message is returned.
 
         Example:
             .. code-block:: python
 
                 await app.send_cached_media("me", file_id)
-        """
 
+        """
         if invert_media is not None and show_caption_above_media is None:
             show_caption_above_media = invert_media
 
@@ -163,7 +167,7 @@ class SendCachedMedia:
         reply_to = await utils._get_reply_message_parameters(
             self,
             message_thread_id,
-            reply_parameters
+            reply_parameters,
         )
         rpc = raw.functions.messages.SendMedia(
             peer=await self.resolve_peer(chat_id),
@@ -179,15 +183,17 @@ class SendCachedMedia:
             reply_markup=await reply_markup.write(self) if reply_markup else None,
             effect=message_effect_id,
             invert_media=show_caption_above_media,
-            **await utils.parse_text_entities(self, caption, parse_mode, caption_entities)
+            **await utils.parse_text_entities(
+                self, caption, parse_mode, caption_entities
+            ),
         )
 
         if business_connection_id:
             r = await self.invoke(
                 raw.functions.InvokeWithBusinessConnection(
                     query=rpc,
-                    connection_id=business_connection_id
-                )
+                    connection_id=business_connection_id,
+                ),
             )
         else:
             r = await self.invoke(rpc)
@@ -198,30 +204,34 @@ class SendCachedMedia:
                 (
                     raw.types.UpdateNewMessage,
                     raw.types.UpdateNewChannelMessage,
-                    raw.types.UpdateNewScheduledMessage
-                )
-            ):
-                return await types.Message._parse(
-                    self, i.message,
-                    {i.id: i for i in r.users},
-                    {i.id: i for i in r.chats},
-                    is_scheduled=isinstance(i, raw.types.UpdateNewScheduledMessage),
-                    replies=self.fetch_replies
-                )
-            elif isinstance(
-                i,
-                (
-                    raw.types.UpdateBotNewBusinessMessage,
-                    # raw.types.UpdateBotEditBusinessMessage,
-                    # raw.types.UpdateBotDeleteBusinessMessage
-                )
+                    raw.types.UpdateNewScheduledMessage,
+                ),
             ):
                 return await types.Message._parse(
                     self,
                     i.message,
                     {i.id: i for i in r.users},
                     {i.id: i for i in r.chats},
-                    business_connection_id=getattr(i, "connection_id", business_connection_id),
-                    raw_reply_to_message=i.reply_to_message,
-                    replies=0
+                    is_scheduled=isinstance(i, raw.types.UpdateNewScheduledMessage),
+                    replies=self.fetch_replies,
                 )
+            if isinstance(
+                i,
+                (
+                    raw.types.UpdateBotNewBusinessMessage,
+                    # raw.types.UpdateBotEditBusinessMessage,
+                    # raw.types.UpdateBotDeleteBusinessMessage
+                ),
+            ):
+                return await types.Message._parse(
+                    self,
+                    i.message,
+                    {i.id: i for i in r.users},
+                    {i.id: i for i in r.chats},
+                    business_connection_id=getattr(
+                        i, "connection_id", business_connection_id
+                    ),
+                    raw_reply_to_message=i.reply_to_message,
+                    replies=0,
+                )
+        return None

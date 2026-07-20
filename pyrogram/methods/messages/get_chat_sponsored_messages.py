@@ -20,7 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional, Union
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw, types
@@ -28,18 +28,20 @@ from pyrogram import raw, types
 
 class GetChatSponsoredMessages:
     async def get_chat_sponsored_messages(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
-    ) -> Optional[list["types.SponsoredMessage"]]:
+        self: pyrogram.Client,
+        chat_id: int | str,
+    ) -> list[types.SponsoredMessage] | None:
         """Returns sponsored messages to be shown in a chat; for channel chats only.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
 
-        Returns:
+        Returns
+        -------
             List of :obj:`~pyrogram.types.SponsoredMessage`: a list of sponsored messages is returned.
 
         Example:
@@ -52,8 +54,8 @@ class GetChatSponsoredMessages:
         """
         r = await self.invoke(
             raw.functions.messages.GetSponsoredMessages(
-                peer=await self.resolve_peer(chat_id)
-            )
+                peer=await self.resolve_peer(chat_id),
+            ),
         )
 
         if isinstance(r, raw.types.messages.SponsoredMessagesEmpty):
@@ -61,7 +63,6 @@ class GetChatSponsoredMessages:
 
         users = {i.id: i for i in r.users}
 
-        return types.List([
-            types.SponsoredMessage._parse(self, sm, users)
-            for sm in r.messages
-        ])
+        return types.List(
+            [types.SponsoredMessage._parse(self, sm, users) for sm in r.messages]
+        )

@@ -22,6 +22,7 @@
 
 
 from .accept_terms_of_service import AcceptTermsOfService
+from .change_phone_number import ChangePhoneNumber
 from .check_password import CheckPassword
 from .connect import Connect
 from .disconnect import Disconnect
@@ -32,20 +33,19 @@ from .initialize import Initialize
 from .log_out import LogOut
 from .recover_password import RecoverPassword
 from .resend_code import ResendCode
+from .resend_phone_number_code import ResendPhoneNumberCode
+from .reset_session import ResetSession
+from .reset_sessions import ResetSessions
 from .send_code import SendCode
+from .send_phone_number_code import SendPhoneNumberCode
 from .send_recovery_code import SendRecoveryCode
 from .sign_in import SignIn
 from .sign_in_bot import SignInBot
+from .sign_in_qrcode import SignInQrcode
 from .sign_up import SignUp
 from .terminate import Terminate
 from .terminate_all_other_sessions import TerminateAllOtherSessions
 from .terminate_session import TerminateSession
-from .change_phone_number import ChangePhoneNumber
-from .send_phone_number_code import SendPhoneNumberCode
-from .resend_phone_number_code import ResendPhoneNumberCode
-from .reset_session import ResetSession
-from .reset_sessions import ResetSessions
-from .sign_in_qrcode import SignInQrcode
 
 
 class Auth(
@@ -73,6 +73,6 @@ class Auth(
     TerminateSession,
     ChangePhoneNumber,
     SendPhoneNumberCode,
-    ResendPhoneNumberCode
+    ResendPhoneNumberCode,
 ):
     pass

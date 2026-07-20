@@ -33,4 +33,3 @@ class GiftType(AutoName):
 
     UPGRADED = auto()
     "Gift is an upgraded gift"
-

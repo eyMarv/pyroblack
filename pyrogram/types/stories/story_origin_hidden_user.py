@@ -21,13 +21,16 @@
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
 
+from __future__ import annotations
+
 from .story_origin import StoryOrigin
 
 
 class StoryOriginHiddenUser(StoryOrigin):
     """The original story was posted by an unknown user.
 
-    Parameters:
+    Parameters
+    ----------
         poster_name (``str``):
             Name of the user or the chat that posted the story.
 
@@ -36,8 +39,8 @@ class StoryOriginHiddenUser(StoryOrigin):
     def __init__(
         self,
         *,
-        poster_name: str = None
-    ):
+        poster_name: str | None = None,
+    ) -> None:
         super().__init__()
 
         self.poster_name = poster_name

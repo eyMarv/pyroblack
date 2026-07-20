@@ -20,7 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw, utils
@@ -29,13 +29,16 @@ from pyrogram.file_id import FileType
 
 class SetProfileAudioPosition:
     async def set_profile_audio_position(
-        self: "pyrogram.Client", file_id: str, after_file_id: Optional[str] = None
+        self: pyrogram.Client,
+        file_id: str,
+        after_file_id: str | None = None,
     ):
         """Changes position of an audio file in the profile audio files of the current user.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             file_id (``str``):
                 Identifier of the file from profile audio files, which position will be changed.
 
@@ -43,7 +46,8 @@ class SetProfileAudioPosition:
                 Identifier of the file from profile audio files after which the file will be positioned.
                 Pass None to move the file to the beginning of the list.
 
-        Returns:
+        Returns
+        -------
             ``bool``: On success, True is returned.
 
         Example:
@@ -54,15 +58,15 @@ class SetProfileAudioPosition:
 
                 # Move audio to the beginning of profile
                 await app.set_profile_audio_position(file_id)
+
         """
-        r = await self.invoke(
+        return await self.invoke(
             raw.functions.account.SaveMusic(
                 id=(utils.get_input_media_from_file_id(file_id, FileType.AUDIO)).id,
-                after_id=(utils.get_input_media_from_file_id(after_file_id, FileType.AUDIO)).id
+                after_id=(
+                    utils.get_input_media_from_file_id(after_file_id, FileType.AUDIO)
+                ).id
                 if after_file_id
-                else None
-            )
+                else None,
+            ),
         )
-
-        return r
-

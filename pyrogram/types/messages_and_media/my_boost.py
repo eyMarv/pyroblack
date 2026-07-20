@@ -24,13 +24,14 @@ from datetime import datetime
 
 import pyrogram
 from pyrogram import raw, types, utils
-from ..object import Object
+from pyrogram.types.object import Object
 
 
 class MyBoost(Object):
     """Contains information about boost.
 
-    Parameters:
+    Parameters
+    ----------
         slot (``int``):
             Boost slot.
 
@@ -55,8 +56,8 @@ class MyBoost(Object):
         chat: "types.Chat",
         date: datetime,
         expire_date: datetime,
-        cooldown_until_date: datetime
-    ):
+        cooldown_until_date: datetime,
+    ) -> None:
         super().__init__()
 
         self.slot = slot
@@ -66,7 +67,9 @@ class MyBoost(Object):
         self.cooldown_until_date = cooldown_until_date
 
     @staticmethod
-    def _parse(client: "pyrogram.Client", my_boost: "raw.types.MyBoost", users, chats) -> "MyBoost":
+    def _parse(
+        client: "pyrogram.Client", my_boost: "raw.types.MyBoost", users, chats
+    ) -> "MyBoost":
         peer_id = utils.get_raw_peer_id(my_boost.peer)
 
         if isinstance(my_boost.peer, raw.types.PeerChannel):
@@ -79,6 +82,7 @@ class MyBoost(Object):
             chat=chat,
             date=utils.timestamp_to_datetime(my_boost.date),
             expire_date=utils.timestamp_to_datetime(my_boost.expires),
-            cooldown_until_date=utils.timestamp_to_datetime(my_boost.cooldown_until_date),
+            cooldown_until_date=utils.timestamp_to_datetime(
+                my_boost.cooldown_until_date
+            ),
         )
-

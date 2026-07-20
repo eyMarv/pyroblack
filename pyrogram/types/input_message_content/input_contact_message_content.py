@@ -20,11 +20,13 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import logging
-from typing import Optional
 
 import pyrogram
 from pyrogram import raw
+
 from .input_message_content import InputMessageContent
 
 log = logging.getLogger(__name__)
@@ -33,7 +35,8 @@ log = logging.getLogger(__name__)
 class InputContactMessageContent(InputMessageContent):
     """Content of a contact message to be sent as the result of an inline query.
 
-    Parameters:
+    Parameters
+    ----------
         phone_number (``str``):
             Phone number of the user.
 
@@ -52,9 +55,9 @@ class InputContactMessageContent(InputMessageContent):
         self,
         phone_number: str,
         first_name: str,
-        last_name: Optional[str] = None,
-        vcard: Optional[str] = None
-    ):
+        last_name: str | None = None,
+        vcard: str | None = None,
+    ) -> None:
         super().__init__()
 
         self.phone_number = phone_number
@@ -62,11 +65,11 @@ class InputContactMessageContent(InputMessageContent):
         self.last_name = last_name
         self.vcard = vcard
 
-    async def write(self, client: "pyrogram.Client", reply_markup):
+    async def write(self, client: pyrogram.Client, reply_markup):
         return raw.types.InputBotInlineMessageMediaContact(
             phone_number=self.phone_number,
             first_name=self.first_name,
             last_name=self.last_name,
             vcard=self.vcard,
-            reply_markup=await reply_markup.write(client) if reply_markup else None
+            reply_markup=await reply_markup.write(client) if reply_markup else None,
         )

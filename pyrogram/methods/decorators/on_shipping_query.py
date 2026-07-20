@@ -20,7 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Callable, Optional, Union
+from typing import Callable
 
 import pyrogram
 from pyrogram.filters import Filter
@@ -39,7 +39,8 @@ class OnShippingQuery:
 
         .. include:: /_includes/usable-by/bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             filters (:obj:`~pyrogram.filters`, *optional*):
                 Pass one or more filters to allow only a subset of callback queries to be passed
                 in your function.
@@ -51,7 +52,9 @@ class OnShippingQuery:
 
         def decorator(func: Callable) -> Callable:
             if isinstance(self, pyrogram.Client):
-                self.add_handler(pyrogram.handlers.ShippingQueryHandler(func, filters), group)
+                self.add_handler(
+                    pyrogram.handlers.ShippingQueryHandler(func, filters), group
+                )
             elif isinstance(self, Filter) or self is None:
                 if not hasattr(func, "handlers"):
                     func.handlers = []
@@ -59,8 +62,8 @@ class OnShippingQuery:
                 func.handlers.append(
                     (
                         pyrogram.handlers.ShippingQueryHandler(func, self),
-                        group if filters is None else filters
-                    )
+                        group if filters is None else filters,
+                    ),
                 )
 
             return func

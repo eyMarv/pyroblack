@@ -26,7 +26,7 @@ from pyrogram import raw, types
 
 class GetForumTopicIconStickers:
     async def get_forum_topic_icon_stickers(
-        self: "pyrogram.Client"
+        self: "pyrogram.Client",
     ) -> list["types.Sticker"]:
         """Use this method to get custom emoji stickers, which can be used as a forum topic icon by any user.
 
@@ -34,8 +34,9 @@ class GetForumTopicIconStickers:
 
         Returns:
             List of :obj:`~pyrogram.types.Sticker`: On success, a list of sticker objects is returned.
+
         """
         r, _ = await self._get_raw_stickers(
-            raw.types.InputStickerSetEmojiDefaultTopicIcons()
+            raw.types.InputStickerSetEmojiDefaultTopicIcons(),
         )
         return r

@@ -21,11 +21,13 @@
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
 
-import pathlib
+from __future__ import annotations
+
 import io
 import os
+import pathlib
 import re
-from typing import Callable, Optional, Union
+from typing import Callable
 
 import pyrogram
 from pyrogram import raw, utils
@@ -37,7 +39,8 @@ from .input_media import InputMedia
 class InputMediaSticker(InputMedia):
     """A sticker to be attached.
 
-    Parameters:
+    Parameters
+    ----------
         media (``str`` | :obj:`io.BytesIO`):
             Sticker to send.
             Pass a file_id as string to send a file that exists on the Telegram servers or
@@ -52,7 +55,7 @@ class InputMediaSticker(InputMedia):
 
     def __init__(
         self,
-        media: Union[str, "io.BytesIO"],
+        media: str | io.BytesIO,
         emoji: str = "",
     ) -> None:
         super().__init__(media)
@@ -61,17 +64,14 @@ class InputMediaSticker(InputMedia):
 
     async def write(
         self,
-        client: "pyrogram.Client",
-        chat_id: Optional[Union[int, str]] = None,
-        business_connection_id: Optional[str] = None,
-        progress: Optional[Callable] = None,
+        client: pyrogram.Client,
+        chat_id: int | str | None = None,
+        business_connection_id: str | None = None,
+        progress: Callable | None = None,
         progress_args: tuple = (),
     ) -> tuple[
-        Union[
-            "InputMediaDocument",
-            "InputMediaDocumentExternal",
-        ],
-        bool
+        InputMediaDocument | InputMediaDocumentExternal,
+        bool,
     ]:
         is_bytes_io = isinstance(self.media, io.BytesIO)
         is_uploaded_file = is_bytes_io or pathlib.Path(self.media).is_file()
@@ -88,14 +88,22 @@ class InputMediaSticker(InputMedia):
                     media=raw.types.InputMediaUploadedDocument(
                         mime_type=client.guess_mime_type(self.media) or "image/webp",
                         file=await client.save_file(
-                            self.media, progress=progress, progress_args=progress_args
+                            self.media,
+                            progress=progress,
+                            progress_args=progress_args,
                         ),
                         attributes=[
                             raw.types.DocumentAttributeFilename(
-                                file_name=None or (self.media.name if is_bytes_io else os.path.basename(self.media)),
+                                file_name=None
+                                or (
+                                    self.media.name
+                                    if is_bytes_io
+                                    else os.path.basename(self.media)
+                                ),
                             ),
                             raw.types.DocumentAttributeSticker(
-                                alt=self.emoji, stickerset=raw.types.InputStickerSetEmpty()
+                                alt=self.emoji,
+                                stickerset=raw.types.InputStickerSetEmpty(),
                             ),
                         ],
                     ),

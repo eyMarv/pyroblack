@@ -30,11 +30,13 @@ class DeleteFolder:
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             folder_id (``int``):
                 Unique identifier (int) of the target folder.
 
-        Returns:
+        Returns
+        -------
             ``bool``: True, on success.
 
         Example:
@@ -42,7 +44,8 @@ class DeleteFolder:
 
                 # Delete folder
                 app.delete_folder(folder_id)
-        """
-        r = await self.invoke(raw.functions.messages.UpdateDialogFilter(id=folder_id))
 
-        return r
+        """
+        return await self.invoke(
+            raw.functions.messages.UpdateDialogFilter(id=folder_id)
+        )

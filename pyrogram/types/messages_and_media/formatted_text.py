@@ -20,19 +20,19 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import List, Optional
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import enums, raw, types, utils
 from pyrogram.types.messages_and_media.message import Str
-
-from ..object import Object
+from pyrogram.types.object import Object
 
 
 class FormattedText(Object):
     """Contains information about a text with some entities.
 
-    Parameters:
+    Parameters
+    ----------
         text (``str``):
             The text.
 
@@ -41,15 +41,16 @@ class FormattedText(Object):
 
         entities (List of :obj:`~pyrogram.types.MessageEntity`, *optional*):
             Entities contained in the text. Entities can be nested, but must not mutually intersect with each other.
+
     """
 
     def __init__(
         self,
         *,
         text: Str,
-        parse_mode: Optional["enums.ParseMode"] = None,
-        entities: Optional[List["types.MessageEntity"]] = None,
-    ):
+        parse_mode: enums.ParseMode | None = None,
+        entities: list[types.MessageEntity] | None = None,
+    ) -> None:
         super().__init__()
 
         self.text = text
@@ -60,15 +61,20 @@ class FormattedText(Object):
         return self.text
 
     @staticmethod
-    def _parse(client: "pyrogram.Client", text: "raw.types.TextWithEntities") -> "FormattedText":
+    def _parse(
+        client: pyrogram.Client, text: raw.types.TextWithEntities
+    ) -> FormattedText:
         if not isinstance(text, raw.types.TextWithEntities):
             return None
 
         entities = types.List(
             filter(
                 lambda x: x is not None,
-                [types.MessageEntity._parse(client, entity, {}) for entity in text.entities],
-            )
+                [
+                    types.MessageEntity._parse(client, entity, {})
+                    for entity in text.entities
+                ],
+            ),
         )
 
         return FormattedText(
@@ -76,10 +82,11 @@ class FormattedText(Object):
             entities=entities or None,
         )
 
-    async def write(self, client: "pyrogram.Client") -> "raw.types.TextWithEntities":
+    async def write(self, client: pyrogram.Client) -> raw.types.TextWithEntities:
         message, entities = (
-            await utils.parse_text_entities(client, self.text, self.parse_mode or client.parse_mode, self.entities)
+            await utils.parse_text_entities(
+                client, self.text, self.parse_mode or client.parse_mode, self.entities
+            )
         ).values()
 
         return raw.types.TextWithEntities(text=message, entities=entities or [])
-

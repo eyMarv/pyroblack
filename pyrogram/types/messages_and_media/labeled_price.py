@@ -21,13 +21,14 @@
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
 from pyrogram import raw
-from ..object import Object
+from pyrogram.types.object import Object
 
 
 class LabeledPrice(Object):
     """This object represents a price for goods or services.
 
-    Parameters:
+    Parameters
+    ----------
         label (``str``):
             Portion label.
 
@@ -36,9 +37,10 @@ class LabeledPrice(Object):
             The minimum amuont for telegram stars is 1.
             The minimum amount for other currencies is US$1.
             you need to add 2 extra zeros to the amount (except stars), example 100 for 1 usd.
+
     """
 
-    def __init__(self, label: str, amount: int):
+    def __init__(self, label: str, amount: int) -> None:
         self.label = label
         self.amount = amount
 

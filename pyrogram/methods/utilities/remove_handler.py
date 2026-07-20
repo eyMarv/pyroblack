@@ -20,28 +20,33 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-import pyrogram
+from typing import TYPE_CHECKING
+
 from pyrogram.handlers import (
+    ConnectHandler,
     DisconnectHandler,
     StartHandler,
     StopHandler,
-    ConnectHandler,
 )
-from pyrogram.handlers.handler import Handler
+
+if TYPE_CHECKING:
+    import pyrogram
+    from pyrogram.handlers.handler import Handler
 
 
 class RemoveHandler:
     def remove_handler(
         self: "pyrogram.Client",
         handler: "Handler",
-        group: int = 0
-    ):
+        group: int = 0,
+    ) -> None:
         """Remove a previously-registered update handler.
 
         Make sure to provide the right group where the handler was added in. You can use the return value of the
         :meth:`~pyrogram.Client.add_handler` method, a tuple of *(handler, group)*, and pass it directly.
 
-        Parameters:
+        Parameters
+        ----------
             handler (``Handler``):
                 The handler to be removed.
 
@@ -65,6 +70,7 @@ class RemoveHandler:
                 app.remove_handler(*handler)
 
                 app.run()
+
         """
         if isinstance(handler, StartHandler):
             self.start_handler = None

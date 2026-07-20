@@ -20,8 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-import re
-from typing import List, Union
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw, types, utils
@@ -29,16 +28,17 @@ from pyrogram import raw, types, utils
 
 class AddCollectionGifts:
     async def add_collection_gifts(
-        self: "pyrogram.Client",
-        owner_id: Union[int, str],
+        self: pyrogram.Client,
+        owner_id: int | str,
         collection_id: int,
-        gift_ids: List[str]
-    ) -> "types.GiftCollection":
+        gift_ids: list[str],
+    ) -> types.GiftCollection:
         """Adds gifts to the beginning of a previously created collection.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             owner_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
                 For your personal cloud (Saved Messages) you can simply use "me" or "self".
@@ -49,13 +49,15 @@ class AddCollectionGifts:
             gift_ids (List of ``str``):
                 Identifier of the gifts to add to the collection.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.GiftCollection`: On success, a updated collection is returned.
 
         Example:
             .. code-block:: python
 
                 await app.add_collection_gifts("me", 123, ["https://t.me/nft/NekoHelmet-9215"])
+
         """
         stargifts = []
 
@@ -66,9 +68,8 @@ class AddCollectionGifts:
             raw.functions.payments.UpdateStarGiftCollection(
                 peer=await self.resolve_peer(owner_id),
                 collection_id=collection_id,
-                add_stargift=stargifts
-            )
+                add_stargift=stargifts,
+            ),
         )
 
         return await types.GiftCollection._parse(self, r)
-

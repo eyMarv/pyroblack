@@ -22,6 +22,7 @@
 
 import pyrogram
 from pyrogram import raw
+
 from .input_privacy_rule import InputPrivacyRule
 
 
@@ -30,7 +31,7 @@ class InputPrivacyRuleAllowAll(InputPrivacyRule):
 
     def __init__(
         self,
-    ):
+    ) -> None:
         super().__init__()
 
     async def write(self, client: "pyrogram.Client"):

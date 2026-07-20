@@ -30,7 +30,7 @@ class OnManagedBot:
     def on_managed_bot(
         self=None,
         filters=None,
-        group: int = 0
+        group: int = 0,
     ) -> Callable:
         """Decorator for handling new managed bot creation updates.
 
@@ -39,7 +39,8 @@ class OnManagedBot:
 
         .. include:: /_includes/usable-by/bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             filters (:obj:`~pyrogram.filters`, *optional*):
                 Pass one or more filters to allow only a subset of callback queries to be passed
                 in your function.
@@ -51,7 +52,9 @@ class OnManagedBot:
 
         def decorator(func: Callable) -> Callable:
             if isinstance(self, pyrogram.Client):
-                self.add_handler(pyrogram.handlers.ManagedBotUpdateHandler(func, filters), group)
+                self.add_handler(
+                    pyrogram.handlers.ManagedBotUpdateHandler(func, filters), group
+                )
             elif isinstance(self, Filter) or self is None:
                 if not hasattr(func, "handlers"):
                     func.handlers = []
@@ -59,8 +62,8 @@ class OnManagedBot:
                 func.handlers.append(
                     (
                         pyrogram.handlers.ManagedBotUpdateHandler(func, self),
-                        group if filters is None else filters
-                    )
+                        group if filters is None else filters,
+                    ),
                 )
 
             return func

@@ -20,13 +20,17 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-import asyncio
+from __future__ import annotations
+
 import logging
 from binascii import crc32
 from struct import pack, unpack
-from typing import Optional
+from typing import TYPE_CHECKING
 
 from .tcp import TCP
+
+if TYPE_CHECKING:
+    import asyncio
 
 log = logging.getLogger(__name__)
 
@@ -37,24 +41,24 @@ class TCPFull(TCP):
         ipv6: bool,
         proxy: dict,
         crypto_executor=None,
-        loop: Optional[asyncio.AbstractEventLoop] = None,
-    ):
+        loop: asyncio.AbstractEventLoop | None = None,
+    ) -> None:
         super().__init__(ipv6, proxy, crypto_executor, loop)
 
         self.seq_no = None
 
-    async def connect(self, address: tuple):
+    async def connect(self, address: tuple) -> None:
         await super().connect(address)
         self.seq_no = 0
 
-    async def send(self, data: bytes, *args):
+    async def send(self, data: bytes, *args) -> None:
         data = pack("<II", len(data) + 12, self.seq_no) + data
         data += pack("<I", crc32(data))
         self.seq_no += 1
 
         await super().send(data)
 
-    async def recv(self, length: int = 0) -> Optional[bytes]:
+    async def recv(self, length: int = 0) -> bytes | None:
         length = await super().recv(4)
 
         if length is None:

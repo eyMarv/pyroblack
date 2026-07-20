@@ -21,19 +21,18 @@
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
 from pyrogram.types import (
+    ForceReply,
     InlineKeyboardButton,
     InlineKeyboardMarkup,
     KeyboardButton,
     ReplyKeyboardMarkup,
-    ForceReply,
 )
 
 
 def ikb(rows=None):
-    """
-    Create an InlineKeyboardMarkup from a list of lists of buttons.
+    """Create an InlineKeyboardMarkup from a list of lists of buttons.
     :param rows: List of lists of buttons. Defaults to empty list.
-    :return: InlineKeyboardMarkup
+    :return: InlineKeyboardMarkup.
     """
     if rows is None:
         rows = []
@@ -52,8 +51,7 @@ def ikb(rows=None):
 
 
 def btn(text, value, type="callback_data"):
-    """
-    Create an InlineKeyboardButton.
+    """Create an InlineKeyboardButton.
 
     :param text: Text of the button.
     :param value: Value of the button.
@@ -66,8 +64,7 @@ def btn(text, value, type="callback_data"):
 
 # The inverse of above
 def bki(keyboard):
-    """
-    Create a list of lists of buttons from an InlineKeyboardMarkup.
+    """Create a list of lists of buttons from an InlineKeyboardMarkup.
 
     :param keyboard: InlineKeyboardMarkup
     :return: List of lists of buttons
@@ -84,8 +81,7 @@ def bki(keyboard):
 
 
 def ntb(button):
-    """
-    Create a button list from an InlineKeyboardButton.
+    """Create a button list from an InlineKeyboardButton.
 
     :param button: InlineKeyboardButton
     :return: Button as a list to be used in btn()
@@ -108,8 +104,7 @@ def ntb(button):
 
 
 def kb(rows=None, **kwargs):
-    """
-    Create a ReplyKeyboardMarkup from a list of lists of buttons.
+    """Create a ReplyKeyboardMarkup from a list of lists of buttons.
 
     :param rows: List of lists of buttons. Defaults to empty list.
     :param kwargs: Other arguments to pass to ReplyKeyboardMarkup.
@@ -140,8 +135,7 @@ Create a KeyboardButton.
 
 
 def force_reply(selective=True):
-    """
-    Create a ForceReply.
+    """Create a ForceReply.
 
     :param selective: Whether the reply should be selective. Defaults to True.
     :return: ForceReply
@@ -150,8 +144,7 @@ def force_reply(selective=True):
 
 
 def array_chunk(input_array, size):
-    """
-    Split an array into chunks.
+    """Split an array into chunks.
 
     :param input_array: The array to split.
     :param size: The size of each chunk.

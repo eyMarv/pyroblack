@@ -33,29 +33,33 @@ class CheckChatFolderInviteLink:
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             invite_link (``str``):
                 Invite link to be checked.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.ChatFolderInviteLinkInfo`: Information about the chat folder corresponding to the invite link.
 
-        Raises:
+        Raises
+        ------
             BadRequest: In case the folder invite link not exists.
             ValueError: In case the folder invite link is invalid.
+
         """
         match = self.CHATLIST_INVITE_RE.match(invite_link)
 
         if match:
             slug = match.group(1)
         else:
-            raise ValueError("Invalid folder invite link")
+            msg = "Invalid folder invite link"
+            raise ValueError(msg)
 
         r = await self.invoke(
             raw.functions.chatlists.CheckChatlistInvite(
-                slug=slug
-            )
+                slug=slug,
+            ),
         )
 
         return await types.ChatFolderInviteLinkInfo._parse(self, r)
-

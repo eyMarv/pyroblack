@@ -20,18 +20,23 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import datetime
-from typing import Dict
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import pyrogram
 from pyrogram import raw, types, utils
-from ..object import Object
+from pyrogram.types.object import Object
+
+if TYPE_CHECKING:
+    from datetime import datetime
 
 
 class GroupCallMember(Object):
     """Contains information about one member of a group call.
 
-    Parameters:
+    Parameters
+    ----------
         chat (:obj:`~pyrogram.types.Chat`, *optional*):
             Information about the user or chat.
 
@@ -76,28 +81,29 @@ class GroupCallMember(Object):
 
         is_screen_sharing_enabled (``bool``, *optional*):
             Whether this participant is currently shared screen.
+
     """
 
     def __init__(
         self,
         *,
-        client: "pyrogram.Client" = None,
-        chat: "types.Chat" = None,
-        date: datetime = None,
-        active_date: datetime = None,
-        volume: int = None,
-        can_self_unmute: bool = None,
-        is_muted: bool = None,
-        is_left: bool = None,
-        is_just_joined: bool = None,
-        is_muted_by_you: bool = None,
-        is_volume_by_admin: bool = None,
-        is_self: bool = None,
-        is_video_joined: bool = None,
-        is_hand_raised: bool = None,
-        is_video_enabled: bool = None,
-        is_screen_sharing_enabled: bool = None,
-    ):
+        client: pyrogram.Client = None,
+        chat: types.Chat = None,
+        date: datetime | None = None,
+        active_date: datetime | None = None,
+        volume: int | None = None,
+        can_self_unmute: bool | None = None,
+        is_muted: bool | None = None,
+        is_left: bool | None = None,
+        is_just_joined: bool | None = None,
+        is_muted_by_you: bool | None = None,
+        is_volume_by_admin: bool | None = None,
+        is_self: bool | None = None,
+        is_video_joined: bool | None = None,
+        is_hand_raised: bool | None = None,
+        is_video_enabled: bool | None = None,
+        is_screen_sharing_enabled: bool | None = None,
+    ) -> None:
         super().__init__(client)
 
         self.chat = chat
@@ -118,11 +124,11 @@ class GroupCallMember(Object):
 
     @staticmethod
     def _parse(
-        client: "pyrogram.Client",
-        member: "raw.types.GroupCallParticipant",
-        users: Dict[int, "raw.base.User"],
-        chats: Dict[int, "raw.base.Chat"],
-    ) -> "GroupCallMember":
+        client: pyrogram.Client,
+        member: raw.types.GroupCallParticipant,
+        users: dict[int, raw.base.User],
+        chats: dict[int, raw.base.Chat],
+    ) -> GroupCallMember:
         peer = member.peer
         peer_id = utils.get_raw_peer_id(peer)
 

@@ -20,8 +20,10 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import os
-from typing import BinaryIO, Callable, Optional, Union
+from typing import BinaryIO, Callable
 
 import pyrogram
 from pyrogram import StopTransmission, raw, utils
@@ -31,28 +33,30 @@ from pyrogram.file_id import FileType
 
 class AddProfileAudio:
     async def add_profile_audio(
-        self: "pyrogram.Client",
-        audio: Union[str, BinaryIO],
-        duration: Optional[int] = 0,
-        performer: Optional[str] = None,
-        title: Optional[str] = None,
-        thumb: Optional[Union[str, BinaryIO]] = None,
-        file_name: Optional[str] = None,
-        progress: Optional[Callable] = None,
-        progress_args: Optional[tuple] = (),
+        self: pyrogram.Client,
+        audio: str | BinaryIO,
+        duration: int | None = 0,
+        performer: str | None = None,
+        title: str | None = None,
+        thumb: str | BinaryIO | None = None,
+        file_name: str | None = None,
+        progress: Callable | None = None,
+        progress_args: tuple | None = (),
     ):
         """Adds an audio file to the beginning of the profile audio files of the current user.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             audio (``str`` | ``BinaryIO``):
                 Audio file to add.
                 Pass a file_id as string to add an audio file that exists on the Telegram servers,
                 pass a file path as string to upload a new audio file that exists on your local machine, or
                 pass a binary file-like object with its attribute ".name" set for in-memory uploads.
 
-        Returns:
+        Returns
+        -------
             ``bool`` | ``None``: On success, True is returned, otherwise, in
             case the upload is deliberately stopped with :meth:`~pyrogram.Client.stop_transmission`, None is returned.
 
@@ -72,6 +76,7 @@ class AddProfileAudio:
                     print(f"{current * 100 / total:.1f}%")
 
                 await app.add_profile_audio("audio.mp3", progress=progress)
+
         """
         file = None
 
@@ -83,7 +88,9 @@ class AddProfileAudio:
                         mime_type = "audio/opus"
                     thumb = await self.save_file(thumb)
                     file = await self.save_file(
-                        audio, progress=progress, progress_args=progress_args
+                        audio,
+                        progress=progress,
+                        progress_args=progress_args,
                     )
 
                     uploaded_media = await self.invoke(
@@ -95,14 +102,16 @@ class AddProfileAudio:
                                 thumb=thumb,
                                 attributes=[
                                     raw.types.DocumentAttributeAudio(
-                                        duration=duration, performer=performer, title=title
+                                        duration=duration,
+                                        performer=performer,
+                                        title=title,
                                     ),
                                     raw.types.DocumentAttributeFilename(
-                                        file_name=file_name or os.path.basename(audio)
+                                        file_name=file_name or os.path.basename(audio),
                                     ),
                                 ],
                             ),
-                        )
+                        ),
                     )
 
                     media = raw.types.InputDocument(
@@ -111,13 +120,19 @@ class AddProfileAudio:
                         file_reference=uploaded_media.document.file_reference,
                     )
                 else:
-                    media = (utils.get_input_media_from_file_id(audio, FileType.AUDIO)).id
+                    media = (
+                        utils.get_input_media_from_file_id(audio, FileType.AUDIO)
+                    ).id
             else:
-                mime_type = self.guess_mime_type(file_name or audio.name) or "audio/mpeg"
+                mime_type = (
+                    self.guess_mime_type(file_name or audio.name) or "audio/mpeg"
+                )
                 if mime_type == "audio/ogg":
                     mime_type = "audio/opus"
                 thumb = await self.save_file(thumb)
-                file = await self.save_file(audio, progress=progress, progress_args=progress_args)
+                file = await self.save_file(
+                    audio, progress=progress, progress_args=progress_args
+                )
 
                 uploaded_media = await self.invoke(
                     raw.functions.messages.UploadMedia(
@@ -128,14 +143,16 @@ class AddProfileAudio:
                             thumb=thumb,
                             attributes=[
                                 raw.types.DocumentAttributeAudio(
-                                    duration=duration, performer=performer, title=title
+                                    duration=duration,
+                                    performer=performer,
+                                    title=title,
                                 ),
                                 raw.types.DocumentAttributeFilename(
-                                    file_name=file_name or audio.name
+                                    file_name=file_name or audio.name,
                                 ),
                             ],
                         ),
-                    )
+                    ),
                 )
 
                 media = raw.types.InputDocument(
@@ -153,4 +170,3 @@ class AddProfileAudio:
                     return r
         except StopTransmission:
             return None
-

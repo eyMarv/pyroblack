@@ -20,66 +20,70 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import logging
-import io
 import os
 import re
-from datetime import datetime
-from typing import Union, Optional, Callable
+from typing import TYPE_CHECKING, Callable
 
 import pyrogram
 from pyrogram import StopTransmission, enums, raw, types, utils
 from pyrogram.errors import FilePartMissing
 from pyrogram.file_id import FileType
+
 from .inline_session import get_session
+
+if TYPE_CHECKING:
+    import io
+    from datetime import datetime
 
 log = logging.getLogger(__name__)
 
 
 class SendDocument:
     async def send_document(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
-        document: Union[str, "io.BytesIO"],
-        thumb: Union[str, "io.BytesIO"] = None,
+        self: pyrogram.Client,
+        chat_id: int | str,
+        document: str | io.BytesIO,
+        thumb: str | io.BytesIO | None = None,
         caption: str = "",
-        parse_mode: Optional["enums.ParseMode"] = None,
-        caption_entities: list["types.MessageEntity"] = None,
-        file_name: str = None,
+        parse_mode: enums.ParseMode | None = None,
+        caption_entities: list[types.MessageEntity] | None = None,
+        file_name: str | None = None,
         disable_content_type_detection: bool = True,
-        disable_notification: bool = None,
-        reply_parameters: "types.ReplyParameters" = None,
-        message_thread_id: int = None,
-        business_connection_id: str = None,
-        send_as: Union[int, str] = None,
-        message_effect_id: int = None,
-        schedule_date: datetime = None,
-        protect_content: bool = None,
-        allow_paid_broadcast: bool = None,
-        paid_message_star_count: int = None,
-        reply_markup: Union[
-            "types.InlineKeyboardMarkup",
-            "types.ReplyKeyboardMarkup",
-            "types.ReplyKeyboardRemove",
-            "types.ForceReply"
-        ] = None,
-        mime_type: str = None,
-        reply_to_chat_id: Union[int, str] = None,
-        reply_to_story_id: int = None,
-        reply_to_monoforum_id: Union[int, str] = None,
-        quote_text: str = None,
-        quote_entities: list = None,
-        invert_media: bool = None,
-        reply_to_message_id: int = None,
-        force_document: bool = None,
-        progress: Callable = None,
-        progress_args: tuple = ()
-    ) -> Optional["types.Message"]:
+        disable_notification: bool | None = None,
+        reply_parameters: types.ReplyParameters = None,
+        message_thread_id: int | None = None,
+        business_connection_id: str | None = None,
+        send_as: int | str | None = None,
+        message_effect_id: int | None = None,
+        schedule_date: datetime | None = None,
+        protect_content: bool | None = None,
+        allow_paid_broadcast: bool | None = None,
+        paid_message_star_count: int | None = None,
+        reply_markup: types.InlineKeyboardMarkup
+        | types.ReplyKeyboardMarkup
+        | types.ReplyKeyboardRemove
+        | types.ForceReply = None,
+        mime_type: str | None = None,
+        reply_to_chat_id: int | str | None = None,
+        reply_to_story_id: int | None = None,
+        reply_to_monoforum_id: int | str | None = None,
+        quote_text: str | None = None,
+        quote_entities: list | None = None,
+        invert_media: bool | None = None,
+        reply_to_message_id: int | None = None,
+        force_document: bool | None = None,
+        progress: Callable | None = None,
+        progress_args: tuple = (),
+    ) -> types.Message | None:
         """Send generic files.
 
         .. include:: /_includes/usable-by/users-bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
                 For your personal cloud (Saved Messages) you can simply use "me" or "self".
@@ -134,7 +138,7 @@ class SendDocument:
             send_as (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the chat or channel to send the message as.
                 You can use this to send the message on behalf of a chat or channel where you have appropriate permissions.
-                Use the :meth:`~pyrogram.Client.get_send_as_chats` to return the list of message sender identifiers, which can be used to send messages in the chat, 
+                Use the :meth:`~pyrogram.Client.get_send_as_chats` to return the list of message sender identifiers, which can be used to send messages in the chat,
                 This setting applies to the current message and will remain effective for future messages unless explicitly changed.
                 To set this behavior permanently for all messages, use :meth:`~pyrogram.Client.set_send_as_chat`.
 
@@ -156,7 +160,7 @@ class SendDocument:
             reply_markup (:obj:`~pyrogram.types.InlineKeyboardMarkup` | :obj:`~pyrogram.types.ReplyKeyboardMarkup` | :obj:`~pyrogram.types.ReplyKeyboardRemove` | :obj:`~pyrogram.types.ForceReply`, *optional*):
                 Additional interface options. An object for an inline keyboard, custom reply keyboard,
                 instructions to remove reply keyboard or to force a reply from the user.
-            
+
             mime_type (``str``, *optional*):
                 MIME type of the file; as defined by the sender.
 
@@ -171,7 +175,8 @@ class SendDocument:
                 You can pass anything you need to be available in the progress callback scope; for example, a Message
                 object or a Client instance in order to edit the message with the updated progress status.
 
-        Other Parameters:
+        Other Parameters
+        ----------------
             current (``int``):
                 The amount of bytes transmitted so far.
 
@@ -182,7 +187,8 @@ class SendDocument:
                 Extra custom arguments as defined in the ``progress_args`` parameter.
                 You can either keep ``*args`` or add every single extra argument in your function signature.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.Message` | ``None``: On success, the sent document message is returned, otherwise, in
             case the upload is deliberately stopped with :meth:`~pyrogram.Client.stop_transmission`, None is returned.
 
@@ -200,8 +206,8 @@ class SendDocument:
                     print(f"{current * 100 / total:.1f}%")
 
                 await app.send_document("me", "document.zip", progress=progress)
-        """
 
+        """
         reply_parameters = utils.resolve_legacy_reply_parameters(
             reply_parameters=reply_parameters,
             reply_to_message_id=reply_to_message_id,
@@ -214,15 +220,18 @@ class SendDocument:
         )
 
         if force_document and disable_content_type_detection:
-            raise ValueError(
+            msg = (
                 "Parameters `force_document` and `disable_content_type_detection` "
                 "are mutually exclusive."
+            )
+            raise ValueError(
+                msg,
             )
 
         if force_document is not None:
             log.warning(
                 "This property is deprecated. "
-                "Please use disable_content_type_detection instead"
+                "Please use disable_content_type_detection instead",
             )
             disable_content_type_detection = force_document
 
@@ -231,40 +240,54 @@ class SendDocument:
         try:
             if isinstance(document, str):
                 if os.path.isfile(document):
-                    file = await self.save_file(document, progress=progress, progress_args=progress_args)
+                    file = await self.save_file(
+                        document, progress=progress, progress_args=progress_args
+                    )
                     thumb = await self.save_file(thumb)
                     media = raw.types.InputMediaUploadedDocument(
-                        mime_type=mime_type or self.guess_mime_type(document) or "application/zip",
+                        mime_type=mime_type
+                        or self.guess_mime_type(document)
+                        or "application/zip",
                         file=file,
                         force_file=disable_content_type_detection or None,
                         thumb=thumb,
                         attributes=[
-                            raw.types.DocumentAttributeFilename(file_name=file_name or os.path.basename(document))
-                        ]
+                            raw.types.DocumentAttributeFilename(
+                                file_name=file_name or os.path.basename(document)
+                            ),
+                        ],
                     )
                 elif re.match("^https?://", document):
                     media = raw.types.InputMediaDocumentExternal(
-                        url=document
+                        url=document,
                     )
                 else:
-                    media = utils.get_input_media_from_file_id(document, FileType.DOCUMENT)
+                    media = utils.get_input_media_from_file_id(
+                        document, FileType.DOCUMENT
+                    )
             else:
-                file = await self.save_file(document, progress=progress, progress_args=progress_args)
+                file = await self.save_file(
+                    document, progress=progress, progress_args=progress_args
+                )
                 thumb = await self.save_file(thumb)
                 media = raw.types.InputMediaUploadedDocument(
-                    mime_type=mime_type or self.guess_mime_type(file_name or document.name) or "application/zip",
+                    mime_type=mime_type
+                    or self.guess_mime_type(file_name or document.name)
+                    or "application/zip",
                     file=file,
                     force_file=disable_content_type_detection or None,
                     thumb=thumb,
                     attributes=[
-                        raw.types.DocumentAttributeFilename(file_name=file_name or document.name)
-                    ]
+                        raw.types.DocumentAttributeFilename(
+                            file_name=file_name or document.name
+                        ),
+                    ],
                 )
 
             reply_to = await utils._get_reply_message_parameters(
                 self,
                 message_thread_id,
-                reply_parameters
+                reply_parameters,
             )
             rpc = raw.functions.messages.SendMedia(
                 peer=await self.resolve_peer(chat_id),
@@ -279,17 +302,23 @@ class SendDocument:
                 allow_paid_stars=paid_message_star_count,
                 reply_markup=await reply_markup.write(self) if reply_markup else None,
                 effect=message_effect_id,
-                **await utils.parse_text_entities(self, caption, parse_mode, caption_entities)
+                **await utils.parse_text_entities(
+                    self, caption, parse_mode, caption_entities
+                ),
             )
             session = None
             business_connection = None
             if business_connection_id:
-                business_connection = self.business_user_connection_cache[business_connection_id]
+                business_connection = self.business_user_connection_cache[
+                    business_connection_id
+                ]
                 if business_connection is None:
-                    business_connection = await self.get_business_connection(business_connection_id)
+                    business_connection = await self.get_business_connection(
+                        business_connection_id
+                    )
                 session = await get_session(
                     self,
-                    business_connection._raw.connection.dc_id
+                    business_connection._raw.connection.dc_id,
                 )
 
             while True:
@@ -298,8 +327,8 @@ class SendDocument:
                         r = await session.invoke(
                             raw.functions.InvokeWithBusinessConnection(
                                 query=rpc,
-                                connection_id=business_connection_id
-                            )
+                                connection_id=business_connection_id,
+                            ),
                         )
                         # await session.stop()
                     else:
@@ -313,30 +342,33 @@ class SendDocument:
                             (
                                 raw.types.UpdateNewMessage,
                                 raw.types.UpdateNewChannelMessage,
-                                raw.types.UpdateNewScheduledMessage
-                            )
-                        ):
-                            return await types.Message._parse(
-                                self, i.message,
-                                {i.id: i for i in r.users},
-                                {i.id: i for i in r.chats},
-                                is_scheduled=isinstance(i, raw.types.UpdateNewScheduledMessage),
-                                replies=self.fetch_replies
-                            )
-                        elif isinstance(
-                            i,
-                            (
-                                raw.types.UpdateBotNewBusinessMessage
-                            )
+                                raw.types.UpdateNewScheduledMessage,
+                            ),
                         ):
                             return await types.Message._parse(
                                 self,
                                 i.message,
                                 {i.id: i for i in r.users},
                                 {i.id: i for i in r.chats},
-                                business_connection_id=getattr(i, "connection_id", business_connection_id),
+                                is_scheduled=isinstance(
+                                    i, raw.types.UpdateNewScheduledMessage
+                                ),
+                                replies=self.fetch_replies,
+                            )
+                        if isinstance(
+                            i,
+                            (raw.types.UpdateBotNewBusinessMessage),
+                        ):
+                            return await types.Message._parse(
+                                self,
+                                i.message,
+                                {i.id: i for i in r.users},
+                                {i.id: i for i in r.chats},
+                                business_connection_id=getattr(
+                                    i, "connection_id", business_connection_id
+                                ),
                                 raw_reply_to_message=i.reply_to_message,
-                                replies=0
+                                replies=0,
                             )
 
         except StopTransmission:

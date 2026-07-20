@@ -20,27 +20,27 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union
+from __future__ import annotations
 
 import pyrogram
-from pyrogram import raw
-from pyrogram import types
+from pyrogram import raw, types
 
 
 class AddContact:
     async def add_contact(
-        self: "pyrogram.Client",
-        user_id: Union[int, str],
+        self: pyrogram.Client,
+        user_id: int | str,
         first_name: str,
         last_name: str = "",
         phone_number: str = "",
-        share_phone_number: bool = False
+        share_phone_number: bool = False,
     ):
         """Add an existing Telegram user as contact, even without a phone number.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             user_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target user.
 
@@ -57,7 +57,8 @@ class AddContact:
                 Whether or not to share the phone number with the user.
                 Defaults to False.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.User`: On success the user is returned.
 
         Example:
@@ -68,6 +69,7 @@ class AddContact:
 
                 # Add contact by username
                 await app.add_contact("username", "Bar")
+
         """
         r = await self.invoke(
             raw.functions.contacts.AddContact(
@@ -75,8 +77,8 @@ class AddContact:
                 first_name=first_name,
                 last_name=last_name,
                 phone=phone_number,
-                add_phone_privacy_exception=share_phone_number
-            )
+                add_phone_privacy_exception=share_phone_number,
+            ),
         )
 
         return types.User._parse(self, r.users[0])

@@ -21,13 +21,14 @@
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
 from pyrogram import raw, types
-from ..object import Object
+from pyrogram.types.object import Object
 
 
 class TermsOfService(Object):
     """Telegram's Terms of Service returned by :meth:`~pyrogram.Client.sign_in`.
 
-    Parameters:
+    Parameters
+    ----------
         id (``str``):
             Terms of Service identifier.
 
@@ -36,9 +37,12 @@ class TermsOfService(Object):
 
         entities (List of :obj:`~pyrogram.types.MessageEntity`):
             Special entities like URLs that appear in the text.
+
     """
 
-    def __init__(self, *, id: str, text: str, entities: list["types.MessageEntity"]):
+    def __init__(
+        self, *, id: str, text: str, entities: list["types.MessageEntity"]
+    ) -> None:
         super().__init__()
 
         self.id = id
@@ -53,5 +57,7 @@ class TermsOfService(Object):
             entities=[
                 types.MessageEntity._parse(None, entity, {})
                 for entity in terms_of_service.entities
-            ] if terms_of_service.entities else None
+            ]
+            if terms_of_service.entities
+            else None,
         )

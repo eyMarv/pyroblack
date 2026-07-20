@@ -20,18 +20,18 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw, types, utils
-
-from ..object import Object
+from pyrogram.types.object import Object
 
 
 class DirectMessagesTopic(Object):
     """Describes a topic of a direct messages chat administered by the current user.
 
-    Parameters:
+    Parameters
+    ----------
         topic_id (``int``):
             Unique identifier of the topic inside the chat.
 
@@ -65,15 +65,15 @@ class DirectMessagesTopic(Object):
         self,
         *,
         topic_id: int,
-        user: Optional["types.User"] = None,
-        can_send_unpaid_messages: Optional[bool] = None,
-        is_marked_as_unread: Optional[bool] = None,
-        unread_count: Optional[int] = None,
-        last_read_inbox_message_id: Optional[int] = None,
-        last_read_outbox_message_id: Optional[int] = None,
-        unread_reactions_count: Optional[int] = None,
-        last_message: Optional["types.Message"] = None
-    ):
+        user: types.User | None = None,
+        can_send_unpaid_messages: bool | None = None,
+        is_marked_as_unread: bool | None = None,
+        unread_count: int | None = None,
+        last_read_inbox_message_id: int | None = None,
+        last_read_outbox_message_id: int | None = None,
+        unread_reactions_count: int | None = None,
+        last_message: types.Message | None = None,
+    ) -> None:
         super().__init__()
 
         self.topic_id = topic_id
@@ -88,12 +88,18 @@ class DirectMessagesTopic(Object):
 
     @staticmethod
     def _parse_dialog(
-        client: "pyrogram.Client",
-        topic: "raw.types.MonoForumDialog",
-        messages: dict = {},
-        users: dict[int, "raw.base.User"] = {},
-        chats: dict[int, "raw.base.Chat"] = {},
-    ) -> "DirectMessagesTopic":
+        client: pyrogram.Client,
+        topic: raw.types.MonoForumDialog,
+        messages: dict | None = None,
+        users: dict[int, raw.base.User] | None = None,
+        chats: dict[int, raw.base.Chat] | None = None,
+    ) -> DirectMessagesTopic:
+        if chats is None:
+            chats = {}
+        if users is None:
+            users = {}
+        if messages is None:
+            messages = {}
         if not topic:
             return None
         user_chat_id = utils.get_raw_peer_id(topic.peer)
@@ -108,16 +114,20 @@ class DirectMessagesTopic(Object):
             last_read_inbox_message_id=topic.read_inbox_max_id,
             last_read_outbox_message_id=topic.read_outbox_max_id,
             unread_reactions_count=topic.unread_reactions_count,
-            last_message=messages.get(topic.top_message)
+            last_message=messages.get(topic.top_message),
         )
 
     @staticmethod
     def _parse_message(
-        client: "pyrogram.Client",
-        message: "raw.types.Message",
-        users: dict[int, "raw.base.User"] = {},
-        chats: dict[int, "raw.base.Chat"] = {},
-    ) -> "DirectMessagesTopic":
+        client: pyrogram.Client,
+        message: raw.types.Message,
+        users: dict[int, raw.base.User] | None = None,
+        chats: dict[int, raw.base.Chat] | None = None,
+    ) -> DirectMessagesTopic:
+        if chats is None:
+            chats = {}
+        if users is None:
+            users = {}
         user_chat_id = utils.get_raw_peer_id(message.saved_peer_id)
         if not user_chat_id:
             return None

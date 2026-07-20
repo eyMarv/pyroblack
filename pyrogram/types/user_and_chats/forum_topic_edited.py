@@ -20,15 +20,21 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from pyrogram import raw
-from ..object import Object
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+from pyrogram.types.object import Object
+
+if TYPE_CHECKING:
+    from pyrogram import raw
 
 
 class ForumTopicEdited(Object):
     """A service message about a forum topic renamed in the chat.
 
-
-    Parameters:
+    Parameters
+    ----------
         title (``String``):
             Name of the topic.
 
@@ -37,11 +43,16 @@ class ForumTopicEdited(Object):
 
         icon_custom_emoji_id (``String``, *optional*):
             Unique identifier of the custom emoji shown as the topic icon
+
     """
 
     def __init__(
-        self, *, title: str = None, icon_color: int = None, icon_emoji_id: str = None
-    ):
+        self,
+        *,
+        title: str | None = None,
+        icon_color: int | None = None,
+        icon_emoji_id: str | None = None,
+    ) -> None:
         super().__init__()
 
         self.title = title
@@ -49,7 +60,7 @@ class ForumTopicEdited(Object):
         self.icon_emoji_id = icon_emoji_id
 
     @staticmethod
-    def _parse(action: "raw.types.MessageActionTopicEdit") -> "ForumTopicEdited":
+    def _parse(action: raw.types.MessageActionTopicEdit) -> ForumTopicEdited:
         # Accept bare action or a service Message wrapping it.
         if getattr(action, "action", None) is not None:
             action = action.action

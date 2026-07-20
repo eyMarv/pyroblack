@@ -21,17 +21,18 @@
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
 from pyrogram import raw, types
-from ..object import Object
-from ..update import Update
+from pyrogram.types.object import Object
+from pyrogram.types.update import Update
 
 
 class ManagedBotUpdated(Object, Update):
     """This object contains information about the creation or token update of a bot that is managed by the current bot.
 
-    Parameters:
+    Parameters
+    ----------
         user (:obj:`~pyrogram.types.User`, *optional*):
             User that created the bot.
-        
+
         bot (:obj:`~pyrogram.types.User`, *optional*):
             Information about the bot. The bot's token can be fetched using the method :obj:`~pyrogram.raw.functions.bots.CreateBot`.
 
@@ -42,7 +43,7 @@ class ManagedBotUpdated(Object, Update):
         *,
         user: "types.User",
         bot: "types.User",
-    ):
+    ) -> None:
         super().__init__()
 
         self.user = user

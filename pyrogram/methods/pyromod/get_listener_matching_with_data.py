@@ -20,31 +20,37 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional
+from __future__ import annotations
 
-import pyrogram
-from pyrogram.types import Identifier, Listener
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    import pyrogram
+    from pyrogram.types import Identifier, Listener
 
 
 class GetListenerMatchingWithData:
     def get_listener_matching_with_data(
-        self: "pyrogram.Client",
+        self: pyrogram.Client,
         data: Identifier,
-        listener_type: "pyrogram.enums.ListenerTypes",
-    ) -> Optional[Listener]:
+        listener_type: pyrogram.enums.ListenerTypes,
+    ) -> Listener | None:
         """Gets a listener that matches the given data.
 
         .. include:: /_includes/usable-by/users-bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             data (:obj:`~pyrogram.types.Identifier`):
                 The Identifier to match agains.
 
             listener_type (:obj:`~pyrogram.enums.ListenerTypes`):
                 The type of listener to get.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.Listener`: On success, a Listener is returned.
+
         """
         matching = []
         for listener in self.listeners[listener_type]:

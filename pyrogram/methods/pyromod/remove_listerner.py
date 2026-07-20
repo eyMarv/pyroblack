@@ -20,21 +20,26 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-import pyrogram
+import contextlib
+from typing import TYPE_CHECKING
+
 from pyrogram.types import Listener
+
+if TYPE_CHECKING:
+    import pyrogram
 
 
 class RemoveListener:
-    def remove_listener(self: "pyrogram.Client", listener: Listener):
+    def remove_listener(self: "pyrogram.Client", listener: Listener) -> None:
         """Removes a listener from the :meth:`~pyrogram.Client.listeners` dictionary.
 
         .. include:: /_includes/usable-by/users-bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             listener (:obj:`~pyrogram.types.Listener`):
                 The listener to remove.
+
         """
-        try:
+        with contextlib.suppress(ValueError):
             self.listeners[listener.listener_type].remove(listener)
-        except ValueError:
-            pass

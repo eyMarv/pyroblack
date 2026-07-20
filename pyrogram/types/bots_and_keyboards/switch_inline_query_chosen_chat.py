@@ -20,39 +20,43 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from pyrogram import raw
+from __future__ import annotations
 
-from ..object import Object
+from pyrogram import raw
+from pyrogram.types.object import Object
 
 
 class SwitchInlineQueryChosenChat(Object):
     """This object represents an inline button that switches the current user to inline mode in a chosen chat, with an optional default inline query.
 
-    Parameters:
+    Parameters
+    ----------
         query (``str``, *optional*):
             The default inline query to be inserted in the input field. If left empty, only the bot's username will be inserted.
 
         allow_user_chats (``bool``, *optional*):
             True, if private chats with users can be chosen.
-        
+
         allow_bot_chats (``bool``, *optional*):
             True, if private chats with bots can be chosen.
-        
+
         allow_group_chats (``bool``, *optional*):
             True, if group and supergroup chats can be chosen.
-        
+
         allow_channel_chats (``bool``, *optional*):
             True, if channel chats can be chosen.
+
     """
 
     def __init__(
-        self, *,
+        self,
+        *,
         query: str = "",
-        allow_user_chats: bool = None,
-        allow_bot_chats: bool = None,
-        allow_group_chats: bool = None,
-        allow_channel_chats: bool = None
-    ):
+        allow_user_chats: bool | None = None,
+        allow_bot_chats: bool | None = None,
+        allow_group_chats: bool | None = None,
+        allow_channel_chats: bool | None = None,
+    ) -> None:
         super().__init__()
 
         self.query = query
@@ -62,19 +66,29 @@ class SwitchInlineQueryChosenChat(Object):
         self.allow_channel_chats = allow_channel_chats
 
     @staticmethod
-    def read(b: "raw.types.KeyboardButtonSwitchInline") -> "SwitchInlineQueryChosenChat":
+    def read(b: raw.types.KeyboardButtonSwitchInline) -> SwitchInlineQueryChosenChat:
         allow_user_chats = None
         allow_bot_chats = None
         allow_group_chats = None
         allow_channel_chats = None
         for peer_type in b.peer_types:
-            if isinstance(peer_type, raw.types.InlineQueryPeerTypeSameBotPM) or isinstance(peer_type, raw.types.InlineQueryPeerTypeBotPM):
+            if isinstance(
+                peer_type,
+                (
+                    raw.types.InlineQueryPeerTypeSameBotPM,
+                    raw.types.InlineQueryPeerTypeBotPM,
+                ),
+            ):
                 allow_bot_chats = True
             elif isinstance(peer_type, raw.types.InlineQueryPeerTypePM):
                 allow_user_chats = True
-            elif isinstance(peer_type, raw.types.InlineQueryPeerTypeChat):
-                allow_group_chats = True
-            elif isinstance(peer_type, raw.types.InlineQueryPeerTypeMegagroup):
+            elif isinstance(
+                peer_type,
+                (
+                    raw.types.InlineQueryPeerTypeChat,
+                    raw.types.InlineQueryPeerTypeMegagroup,
+                ),
+            ):
                 allow_group_chats = True
             elif isinstance(peer_type, raw.types.InlineQueryPeerTypeBroadcast):
                 allow_channel_chats = True
@@ -83,36 +97,36 @@ class SwitchInlineQueryChosenChat(Object):
             allow_user_chats=allow_user_chats,
             allow_bot_chats=allow_bot_chats,
             allow_group_chats=allow_group_chats,
-            allow_channel_chats=allow_channel_chats
+            allow_channel_chats=allow_channel_chats,
         )
 
-    def write(self, text: str, style: "raw.types.KeyboardButtonStyle"):
+    def write(self, text: str, style: raw.types.KeyboardButtonStyle):
         peer_types = []
         if self.allow_bot_chats:
             peer_types.append(
-                raw.types.InlineQueryPeerTypeSameBotPM()
+                raw.types.InlineQueryPeerTypeSameBotPM(),
             )
             peer_types.append(
-                raw.types.InlineQueryPeerTypeBotPM()
+                raw.types.InlineQueryPeerTypeBotPM(),
             )
         if self.allow_user_chats:
             peer_types.append(
-                raw.types.InlineQueryPeerTypePM()
+                raw.types.InlineQueryPeerTypePM(),
             )
         if self.allow_group_chats:
             peer_types.append(
-                raw.types.InlineQueryPeerTypeChat()
+                raw.types.InlineQueryPeerTypeChat(),
             )
             peer_types.append(
-                raw.types.InlineQueryPeerTypeMegagroup()
+                raw.types.InlineQueryPeerTypeMegagroup(),
             )
         if self.allow_channel_chats:
             peer_types.append(
-                raw.types.InlineQueryPeerTypeBroadcast()
+                raw.types.InlineQueryPeerTypeBroadcast(),
             )
         return raw.types.KeyboardButtonSwitchInline(
             text=text,
             query=self.query,
             peer_types=peer_types,
-            style=style
+            style=style,
         )

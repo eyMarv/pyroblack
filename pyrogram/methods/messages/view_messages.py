@@ -20,7 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw
@@ -28,17 +28,18 @@ from pyrogram import raw
 
 class ViewMessages:
     async def view_messages(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
-        message_ids: Union[int, list[int]] = None,
-        message_id: Union[int, list[int]] = None,  # alias for <=2.7.2
-        force_read: bool = True
+        self: pyrogram.Client,
+        chat_id: int | str,
+        message_ids: int | list[int] | None = None,
+        message_id: int | list[int] | None = None,  # alias for <=2.7.2
+        force_read: bool = True,
     ) -> bool:
         """Informs the server that messages are being viewed by the current user.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
 
@@ -48,7 +49,8 @@ class ViewMessages:
             force_read (``bool``, *optional*):
                 Pass True to mark as read the specified messages and also increment the view counter.
 
-        Returns:
+        Returns
+        -------
             ``bool``: On success, True is returned.
 
         Example:
@@ -56,19 +58,21 @@ class ViewMessages:
 
                 # Increment message views
                 await app.view_messages(chat_id, 1)
+
         """
         if message_ids is None and message_id is not None:
             message_ids = message_id
         if message_ids is None:
-            raise ValueError("message_ids (or message_id) is required")
+            msg = "message_ids (or message_id) is required"
+            raise ValueError(msg)
         ids = [message_ids] if not isinstance(message_ids, list) else message_ids
 
         r = await self.invoke(
             raw.functions.messages.GetMessagesViews(
                 peer=await self.resolve_peer(chat_id),
                 id=ids,
-                increment=force_read
-            )
+                increment=force_read,
+            ),
         )
 
         return bool(r)

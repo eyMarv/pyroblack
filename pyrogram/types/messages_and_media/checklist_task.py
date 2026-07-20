@@ -20,20 +20,25 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import datetime
-from typing import Dict, Optional
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import pyrogram
 from pyrogram import raw, types, utils
+from pyrogram.types.object import Object
 
-from ..object import Object
 from .message import Str
+
+if TYPE_CHECKING:
+    from datetime import datetime
 
 
 class ChecklistTask(Object):
     """Describes a task in a checklist.
 
-    Parameters:
+    Parameters
+    ----------
         id (``int``):
             Unique identifier of the task.
 
@@ -63,11 +68,11 @@ class ChecklistTask(Object):
         *,
         id: int,
         text: str,
-        text_entities: Optional[list["types.MessageEntity"]] = None,
-        completed_by_user: Optional["types.User"] = None,
-        completed_by_chat: Optional["types.Chat"] = None,
-        completion_date: Optional[datetime] = None,
-    ):
+        text_entities: list[types.MessageEntity] | None = None,
+        completed_by_user: types.User | None = None,
+        completed_by_chat: types.Chat | None = None,
+        completion_date: datetime | None = None,
+    ) -> None:
         super().__init__()
 
         self.id = id
@@ -79,12 +84,12 @@ class ChecklistTask(Object):
 
     @staticmethod
     def _parse(
-        client: "pyrogram.Client",
-        item: "raw.types.TodoItem",
-        completion: "raw.types.TodoCompletion",
-        users: Dict[int, "raw.base.User"],
-        chats: Dict[int, "raw.base.Chat"],
-    ) -> "ChecklistTask":
+        client: pyrogram.Client,
+        item: raw.types.TodoItem,
+        completion: raw.types.TodoCompletion,
+        users: dict[int, raw.base.User],
+        chats: dict[int, raw.base.Chat],
+    ) -> ChecklistTask:
         text_entities = [
             types.MessageEntity._parse(client, entity, users)
             for entity in item.title.entities
@@ -98,9 +103,13 @@ class ChecklistTask(Object):
         if completed_by_peer:
             completed_by_peer_id = utils.get_raw_peer_id(completed_by_peer)
             if isinstance(completed_by_peer, raw.types.PeerUser):
-                completed_by_user = types.User._parse(client, users.get(completed_by_peer_id))
+                completed_by_user = types.User._parse(
+                    client, users.get(completed_by_peer_id)
+                )
             else:
-                completed_by_chat = types.Chat._parse_chat(client, chats.get(completed_by_peer_id))
+                completed_by_chat = types.Chat._parse_chat(
+                    client, chats.get(completed_by_peer_id)
+                )
 
         return ChecklistTask(
             id=item.id,
@@ -108,5 +117,7 @@ class ChecklistTask(Object):
             text_entities=text_entities,
             completed_by_user=completed_by_user,
             completed_by_chat=completed_by_chat,
-            completion_date=utils.timestamp_to_datetime(getattr(completion, "date", None))
+            completion_date=utils.timestamp_to_datetime(
+                getattr(completion, "date", None)
+            ),
         )

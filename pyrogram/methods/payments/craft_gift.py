@@ -20,33 +20,37 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import List
 
 import pyrogram
-from pyrogram import raw, types
-from pyrogram import utils
+from pyrogram import raw, types, utils
 
 
 class CraftGift:
     async def craft_gift(
         self: "pyrogram.Client",
-        owned_gift_ids: List[str]
+        owned_gift_ids: list[str],
     ) -> "types.CraftGiftResult":
         """Crafts a new gift from other gifts that will be permanently lost.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             owned_gift_ids (List of ``str``):
                 Identifier of the gifts to use for crafting.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.CraftGiftResult`: On success, returns the result of gift crafting.
+
         """
         r = await self.invoke(
             raw.functions.payments.CraftStarGift(
-                stargift=[await utils.get_input_stargift(self, owned_gift_id) for owned_gift_id in owned_gift_ids],
-            )
+                stargift=[
+                    await utils.get_input_stargift(self, owned_gift_id)
+                    for owned_gift_id in owned_gift_ids
+                ],
+            ),
         )
 
         users = {i.id: i for i in r.users}
@@ -56,17 +60,17 @@ class CraftGift:
             if isinstance(u, raw.types.UpdateStarGiftCraftFail):
                 return types.CraftGiftResultFail()
 
-            elif isinstance(u, raw.types.UpdateNewMessage):
+            if isinstance(u, raw.types.UpdateNewMessage):
                 message = await types.Message._parse(
                     self,
                     u.message,
                     users,
                     chats,
                     business_connection_id=getattr(u, "connection_id", None),
-                    raw_reply_to_message=getattr(u, "reply_to_message", None)
+                    raw_reply_to_message=getattr(u, "reply_to_message", None),
                 )
 
                 return types.CraftGiftResultSuccess(
-                    gift=message.gift
+                    gift=message.gift,
                 )
-
+        return None

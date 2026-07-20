@@ -26,20 +26,24 @@ from pyrogram import raw, types
 
 class AnswerGuestQuery:
     async def answer_guest_query(
-        self: "pyrogram.Client", guest_query_id: str, result: "types.InlineQueryResult"
+        self: "pyrogram.Client",
+        guest_query_id: str,
+        result: "types.InlineQueryResult",
     ):
         """Use this method to reply to a received guest message.
 
         .. include:: /_includes/usable-by/bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             guest_query_id (``str``):
                 Unique identifier for the answered query.
 
             result (:obj:`~pyrogram.types.InlineQueryResult`):
                 A result for the guest query.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.SentGuestMessage`: On success, a :obj:`~pyrogram.types.SentGuestMessage` object is returned.
 
         Example:
@@ -54,12 +58,13 @@ class AnswerGuestQuery:
                         InputTextMessageContent("Message content")
                     ),
                 )
+
         """
         r = await self.invoke(
             raw.functions.messages.SetBotGuestChatResult(
                 query_id=int(guest_query_id),
                 result=await result.write(self),
-            )
+            ),
         )
 
         return await types.SentGuestMessage._parse(r)

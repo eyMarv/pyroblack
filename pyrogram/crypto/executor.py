@@ -39,7 +39,8 @@ def _has_native_mtproto() -> bool:
         import tgcrypto
 
         return hasattr(tgcrypto, "pack_message") and hasattr(
-            tgcrypto, "unpack_message"
+            tgcrypto,
+            "unpack_message",
         )
     except ImportError:
         return False
@@ -58,7 +59,7 @@ def get_crypto_executor() -> ThreadPoolExecutor:
     return _crypto_pool
 
 
-def set_crypto_executor(executor: ThreadPoolExecutor):
+def set_crypto_executor(executor: ThreadPoolExecutor) -> None:
     global _crypto_pool
     _crypto_pool = executor
 

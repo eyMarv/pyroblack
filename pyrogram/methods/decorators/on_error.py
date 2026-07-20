@@ -20,17 +20,23 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Callable, Optional, Sequence, Union
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Callable
 
 import pyrogram
-from pyrogram.filters import Filter
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+    from pyrogram.filters import Filter
 
 
 class OnError:
     def on_error(
         self=None,
-        exceptions: Optional[Union[type, Sequence[type]]] = None,
-        filters: Optional[Filter] = None,
+        exceptions: type | Sequence[type] | None = None,
+        filters: Filter | None = None,
         group: int = 0,
     ) -> Callable:
         """Decorator for handling unexpected errors.
@@ -40,7 +46,8 @@ class OnError:
 
         .. include:: /_includes/usable-by/users-bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             exceptions (``Exception`` | List of ``Exception``, *optional*):
                 An exception type or a sequence of exception types that this handler should handle.
                 If None, the handler will catch any exception that is a subclass of ``Exception``.
@@ -51,17 +58,20 @@ class OnError:
 
             group (``int``, *optional*):
                 The group identifier, defaults to 0.
+
         """
 
         def decorator(func: Callable) -> Callable:
             if isinstance(self, pyrogram.Client):
-                self.add_handler(pyrogram.handlers.ErrorHandler(func, exceptions, filters), group)
+                self.add_handler(
+                    pyrogram.handlers.ErrorHandler(func, exceptions, filters), group
+                )
             else:
                 if not hasattr(func, "handlers"):
                     func.handlers = []
 
                 func.handlers.append(
-                    (pyrogram.handlers.ErrorHandler(func, exceptions, filters), group)
+                    (pyrogram.handlers.ErrorHandler(func, exceptions, filters), group),
                 )
 
             return func

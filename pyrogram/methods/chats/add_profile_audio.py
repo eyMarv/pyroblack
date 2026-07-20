@@ -34,16 +34,19 @@ class AddProfileAudio:
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             audio (``str``):
                 Audio file to add.
                 Pass a file_id as string to add an audio file that exists on the Telegram servers.
                 The file must have been uploaded to the server using :meth:`~pyrogram.Client.send_audio`.
 
-        Returns:
+        Returns
+        -------
             ``bool``: On success, True is returned.
-        
-        Raises:
+
+        Raises
+        ------
             :obj:`~pyrogram.errors.RPCError`: In case of a Telegram RPC error.
 
         Example:
@@ -55,6 +58,6 @@ class AddProfileAudio:
         """
         return await self.invoke(
             raw.functions.account.SaveMusic(
-                id=(utils.get_input_media_from_file_id(audio, FileType.AUDIO)).id
-            )
+                id=(utils.get_input_media_from_file_id(audio, FileType.AUDIO)).id,
+            ),
         )

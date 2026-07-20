@@ -20,21 +20,21 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union, Optional
+from __future__ import annotations
 
 import pyrogram
-from pyrogram import raw, utils, enums, types
+from pyrogram import enums, raw, types, utils
 
 
 class SendMessageDraft:
     async def send_message_draft(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
+        self: pyrogram.Client,
+        chat_id: int | str,
         draft_id: int,
         text: str,
-        parse_mode: Optional["enums.ParseMode"] = None,
-        entities: list["types.MessageEntity"] = None,
-        message_thread_id: int = None,
+        parse_mode: enums.ParseMode | None = None,
+        entities: list[types.MessageEntity] | None = None,
+        message_thread_id: int | None = None,
     ) -> bool:
         """Sends a draft for a being generated text message.
 
@@ -43,7 +43,8 @@ class SendMessageDraft:
 
         .. include:: /_includes/usable-by/bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier of the target chat.
 
@@ -62,10 +63,12 @@ class SendMessageDraft:
             message_thread_id (``int``, *optional*):
                 Unique identifier for the target message thread.
 
-        Returns:
+        Returns
+        -------
             ``bool``: On success, True is returned.
 
-        Raises:
+        Raises
+        ------
             ValueError: If the text is empty or the chat type is not a private chat.
             :obj:`~pyrogram.errors.RPCError`: In case of a Telegram RPC error.
 
@@ -84,24 +87,27 @@ class SendMessageDraft:
                 await app.send_message(chat_id, text)
 
         """
-
         if not chat_id:
-            raise ValueError("chat_id is required")
+            msg = "chat_id is required"
+            raise ValueError(msg)
 
         if not text:
-            raise ValueError("text cannot be empty")
+            msg = "text cannot be empty"
+            raise ValueError(msg)
 
         peer = await self.resolve_peer(chat_id)
 
         if not isinstance(peer, (raw.types.InputPeerUser, raw.types.InputPeerSelf)):
-            raise ValueError("Streaming text is only supported in private chats (user-to-bot)")
+            msg = "Streaming text is only supported in private chats (user-to-bot)"
+            raise ValueError(msg)
 
         message, entities = (
             await utils.parse_text_entities(self, text, parse_mode, entities)
         ).values()
 
         if not message:
-            raise ValueError("text cannot be empty after parsing")
+            msg = "text cannot be empty after parsing"
+            raise ValueError(msg)
 
         return await self.invoke(
             raw.functions.messages.SetTyping(
@@ -110,9 +116,9 @@ class SendMessageDraft:
                     random_id=draft_id,
                     text=raw.types.TextWithEntities(
                         text=message,
-                        entities=entities or []
-                    )
+                        entities=entities or [],
+                    ),
                 ),
-                top_msg_id=message_thread_id
-            )
+                top_msg_id=message_thread_id,
+            ),
         )

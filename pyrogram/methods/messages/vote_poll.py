@@ -20,25 +20,25 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union
+from __future__ import annotations
 
 import pyrogram
-from pyrogram import raw
-from pyrogram import types
+from pyrogram import raw, types
 
 
 class VotePoll:
     async def vote_poll(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
+        self: pyrogram.Client,
+        chat_id: int | str,
         message_id: int,
-        options: Union[int, list[int]]
-    ) -> "types.Poll":
+        options: int | list[int],
+    ) -> types.Poll:
         """Vote a poll.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
                 For your personal cloud (Saved Messages) you can simply use "me" or "self".
@@ -50,34 +50,37 @@ class VotePoll:
             options (``Int`` | List of ``int``):
                 Index or list of indexes (for multiple answers) of the poll option(s) you want to vote for (0 to 9).
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.Poll` - On success, the poll with the chosen option is returned.
 
         Example:
             .. code-block:: python
 
                 await app.vote_poll(chat_id, message_id, 6)
-        """
 
-        poll = (await self.get_messages(
-            chat_id=chat_id,
-            message_ids=message_id
-        )).poll
+        """
+        poll = (
+            await self.get_messages(
+                chat_id=chat_id,
+                message_ids=message_id,
+            )
+        ).poll
         options = [options] if not isinstance(options, list) else options
         r = await self.invoke(
             raw.functions.messages.SendVote(
                 peer=await self.resolve_peer(chat_id),
                 msg_id=message_id,
-                options=[poll.options[option].data for option in options]
-            )
+                options=[poll.options[option].data for option in options],
+            ),
         )
         for i in r.updates:
             if isinstance(
                 i,
                 (
                     raw.types.MessageMediaPoll,
-                    raw.types.UpdateMessagePoll
-                )
+                    raw.types.UpdateMessagePoll,
+                ),
             ):
                 return await types.Poll._parse(
                     self,
@@ -85,3 +88,4 @@ class VotePoll:
                     {i.id: i for i in r.users},
                     {i.id: i for i in r.chats},
                 )
+        return None

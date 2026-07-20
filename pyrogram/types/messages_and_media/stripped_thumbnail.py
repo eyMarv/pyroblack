@@ -20,32 +20,40 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-import pyrogram
-from pyrogram import raw
-from ..object import Object
+from typing import TYPE_CHECKING
+
+from pyrogram.types.object import Object
+
+if TYPE_CHECKING:
+    import pyrogram
+    from pyrogram import raw
 
 
 class StrippedThumbnail(Object):
-    """A stripped thumbnail
+    """A stripped thumbnail.
 
-    Parameters:
+    Parameters
+    ----------
         data (``bytes``):
             Thumbnail data
+
     """
 
     def __init__(
         self,
         *,
         client: "pyrogram.Client" = None,
-        data: bytes
-    ):
+        data: bytes,
+    ) -> None:
         super().__init__(client)
 
         self.data = data
 
     @staticmethod
-    def _parse(client, stripped_thumbnail: "raw.types.PhotoStrippedSize") -> "StrippedThumbnail":
+    def _parse(
+        client, stripped_thumbnail: "raw.types.PhotoStrippedSize"
+    ) -> "StrippedThumbnail":
         return StrippedThumbnail(
             data=stripped_thumbnail.bytes,
-            client=client
+            client=client,
         )

@@ -1,4 +1,5 @@
 """Ensure pyroblack 2.7.x .session files migrate cleanly to current schema."""
+
 import asyncio
 import sqlite3
 import tempfile
@@ -7,7 +8,6 @@ from pathlib import Path
 import pytest
 
 from pyrogram.storage.sqlite_storage import SQLiteStorage
-
 
 # Minimal schema matching pyroblack 2.7.2 SCHEMA + UNAME_SCHEMA (VERSION = 4)
 LEGACY_27_SCHEMA = """
@@ -55,7 +55,7 @@ CREATE TABLE usernames
 """
 
 
-def _make_legacy_session(path: Path):
+def _make_legacy_session(path: Path) -> None:
     conn = sqlite3.connect(str(path))
     conn.executescript(LEGACY_27_SCHEMA)
     conn.execute("INSERT INTO version VALUES (4)")
@@ -86,7 +86,7 @@ def _make_legacy_session(path: Path):
 
 
 @pytest.mark.asyncio
-async def test_migrate_pyroblack_2_7_session():
+async def test_migrate_pyroblack_2_7_session() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         workdir = Path(tmp)
         session_path = workdir / "legacy.session"
@@ -109,7 +109,8 @@ async def test_migrate_pyroblack_2_7_session():
 
         # update_state still readable
         states = await storage.update_state()
-        assert states and states[0][0] == 0
+        assert states
+        assert states[0][0] == 0
 
         await storage.close()
 
@@ -120,6 +121,6 @@ async def test_migrate_pyroblack_2_7_session():
         await storage2.close()
 
 
-def test_migrate_pyroblack_2_7_session_sync():
+def test_migrate_pyroblack_2_7_session_sync() -> None:
     """Wrapper so the test runs even if pytest-asyncio isn't configured."""
     asyncio.get_event_loop().run_until_complete(test_migrate_pyroblack_2_7_session())

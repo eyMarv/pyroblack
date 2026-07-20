@@ -20,16 +20,22 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import datetime
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 from pyrogram import raw, types, utils
-from ..object import Object
+from pyrogram.types.object import Object
+
+if TYPE_CHECKING:
+    from datetime import datetime
 
 
 class CheckedGiftCode(Object):
     """Contains checked gift code data.
 
-    Parameters:
+    Parameters
+    ----------
         date (:py:obj:`~datetime.datetime`):
             Date when the giveaway was launched.
 
@@ -50,6 +56,7 @@ class CheckedGiftCode(Object):
 
         used_date (:py:obj:`~datetime.datetime`, *optional*):
             Date when the gift code was used.
+
     """
 
     def __init__(
@@ -57,12 +64,12 @@ class CheckedGiftCode(Object):
         *,
         date: datetime,
         months: int,
-        via_giveaway: bool = None,
-        from_chat: "types.Chat" = None,
-        winner: "types.User" = None,
-        giveaway_message_id: int = None,
-        used_date: datetime = None,
-    ):
+        via_giveaway: bool | None = None,
+        from_chat: types.Chat = None,
+        winner: types.User = None,
+        giveaway_message_id: int | None = None,
+        used_date: datetime | None = None,
+    ) -> None:
         super().__init__()
 
         self.date = date
@@ -75,14 +82,18 @@ class CheckedGiftCode(Object):
 
     @staticmethod
     def _parse(
-        client, checked_gift_code: "raw.types.payments.CheckedGiftCode", users, chats
+        client,
+        checked_gift_code: raw.types.payments.CheckedGiftCode,
+        users,
+        chats,
     ):
         from_chat = None
         winner = None
 
         if getattr(checked_gift_code, "from_id", None):
             from_chat = types.Chat._parse_chat(
-                client, chats.get(utils.get_raw_peer_id(checked_gift_code.from_id))
+                client,
+                chats.get(utils.get_raw_peer_id(checked_gift_code.from_id)),
             )
         if getattr(checked_gift_code, "to_id", None):
             winner = types.User._parse(client, users.get(checked_gift_code.to_id))
@@ -96,7 +107,7 @@ class CheckedGiftCode(Object):
             giveaway_message_id=getattr(checked_gift_code, "giveaway_msg_id", None),
             used_date=(
                 utils.timestamp_to_datetime(checked_gift_code.used_date)
-                if getattr(checked_gift_code, "used_date")
+                if checked_gift_code.used_date
                 else None
             ),
         )

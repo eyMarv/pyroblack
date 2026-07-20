@@ -20,17 +20,18 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw, types, utils
-from ..object import Object
+from pyrogram.types.object import Object
 
 
 class UpgradedGift(Object):
     """Describes an upgraded gift that can be gifted to another user or transferred to TON blockchain as an NFT.
 
-    Parameters:
+    Parameters
+    ----------
         id (``int``):
             Unique identifier of the gift.
 
@@ -69,19 +70,19 @@ class UpgradedGift(Object):
     def __init__(
         self,
         *,
-        client: "pyrogram.Client" = None,
+        client: pyrogram.Client = None,
         id: int,
         title: str,
         name: str,
         number: int,
         total_upgraded_count: int,
         max_upgraded_count: int,
-        owner_id: Optional["types.Chat"] = None,
-        owner_address: Optional[str] = None,
-        owner_name: Optional[str] = None,
-        gift_address: Optional[str] = None,
-        _raw: "raw.types.StarGiftUnique" = None,
-    ):
+        owner_id: types.Chat | None = None,
+        owner_address: str | None = None,
+        owner_name: str | None = None,
+        gift_address: str | None = None,
+        _raw: raw.types.StarGiftUnique = None,
+    ) -> None:
         super().__init__(client)
 
         self.id = id
@@ -96,13 +97,12 @@ class UpgradedGift(Object):
         self.gift_address = gift_address
         self._raw = _raw  # TODO
 
-
     @staticmethod
     def _parse(
         client,
-        star_gift: "raw.types.StarGiftUnique",
-        users: dict
-    ) -> "UpgradedGift":
+        star_gift: raw.types.StarGiftUnique,
+        users: dict,
+    ) -> UpgradedGift:
         owner_id = utils.get_raw_peer_id(getattr(star_gift, "owner_id", None))
         return UpgradedGift(
             id=star_gift.id,
@@ -113,13 +113,13 @@ class UpgradedGift(Object):
             max_upgraded_count=star_gift.availability_total,
             owner_id=types.Chat._parse_user_chat(
                 client,
-                users.get(owner_id, owner_id)
+                users.get(owner_id, owner_id),
             ),
             owner_address=getattr(star_gift, "owner_address", None),
             owner_name=getattr(star_gift, "owner_name", None),
             gift_address=getattr(star_gift, "gift_address", None),
             _raw=star_gift,
-            client=client
+            client=client,
         )
 
     @property

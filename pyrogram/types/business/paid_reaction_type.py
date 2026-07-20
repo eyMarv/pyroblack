@@ -20,15 +20,14 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from ..object import Object
-
 import pyrogram
-from pyrogram import raw, types
+from pyrogram import raw
+from pyrogram.types.object import Object
 
 
 class PaidReactionType(Object):
     """This object describes the type of paid message reaction.
-    
+
     It can be one of:
 
     - :obj:`~pyrogram.types.PaidReactionTypeRegular`
@@ -37,37 +36,33 @@ class PaidReactionType(Object):
 
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
-    
+
     async def write(
         self,
         client: "pyrogram.Client",
     ):
         if isinstance(self, PaidReactionTypeChat):
             return self._raw(
-                peer=await client.resolve_peer(self.chat_id)
+                peer=await client.resolve_peer(self.chat_id),
             )
-        else:
-            return self._raw()
-
+        return self._raw()
 
 
 class PaidReactionTypeRegular(PaidReactionType):
-    """A paid reaction on behalf of the current user.
+    """A paid reaction on behalf of the current user."""
 
-    """
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
         self._raw = raw.types.PaidReactionPrivacyDefault
 
 
 class PaidReactionTypeAnonymous(PaidReactionType):
-    """An anonymous paid reaction.
-    
-    """
-    def __init__(self):
+    """An anonymous paid reaction."""
+
+    def __init__(self) -> None:
         super().__init__()
 
         self._raw = raw.types.PaidReactionPrivacyAnonymous
@@ -78,13 +73,14 @@ class PaidReactionTypeChat(PaidReactionType):
 
     It is intended to be used with :obj:`~pyrogram.Client.`.
 
-    Parameters:
+    Parameters
+    ----------
         chat_id (``int``):
             Unique identifier (int) or username (str) of the target chat.
-    
+
     """
 
-    def __init__(self, chat_id: int):
+    def __init__(self, chat_id: int) -> None:
         super().__init__()
 
         self.chat_id = chat_id

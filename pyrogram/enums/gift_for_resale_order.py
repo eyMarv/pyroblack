@@ -36,4 +36,3 @@ class GiftForResaleOrder(AutoName):
 
     NUMBER = auto()
     "The gifts will be sorted by their number from the smallest to the largest"
-

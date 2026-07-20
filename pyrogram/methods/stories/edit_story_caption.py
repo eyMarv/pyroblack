@@ -20,25 +20,27 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import List, Union, Optional
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import enums, raw, types, utils
 
+
 class EditStoryCaption:
     async def edit_story_caption(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
+        self: pyrogram.Client,
+        chat_id: int | str,
         story_id: int,
         caption: str,
-        parse_mode: Optional["enums.ParseMode"] = None,
-        caption_entities: Optional[List["types.MessageEntity"]] = None,
-    ) -> "types.Story":
+        parse_mode: enums.ParseMode | None = None,
+        caption_entities: list[types.MessageEntity] | None = None,
+    ) -> types.Story:
         """Edit the caption of story.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
                 For your personal cloud (Saved Messages) you can simply use "me" or "self".
@@ -56,16 +58,19 @@ class EditStoryCaption:
             caption_entities (List of :obj:`~pyrogram.types.MessageEntity`):
                 List of special entities that appear in the caption, which can be specified instead of *parse_mode*.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.Story`: On success, the edited story is returned.
 
         Example:
             .. code-block:: python
 
                 await app.edit_story(chat_id, story_id, "new media caption")
-        """
 
-        message, entities = (await utils.parse_text_entities(self, caption, parse_mode, caption_entities)).values()
+        """
+        message, entities = (
+            await utils.parse_text_entities(self, caption, parse_mode, caption_entities)
+        ).values()
 
         r = await self.invoke(
             raw.functions.stories.EditStory(
@@ -74,7 +79,7 @@ class EditStoryCaption:
                 caption=message,
                 entities=entities or [],
                 privacy_rules=None,
-            )
+            ),
         )
 
         for i in r.updates:
@@ -87,6 +92,6 @@ class EditStoryCaption:
                     None,
                     i,
                     None,
-                    i.peer
+                    i.peer,
                 )
-
+        return None

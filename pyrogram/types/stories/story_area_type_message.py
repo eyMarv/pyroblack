@@ -20,7 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw
@@ -31,10 +31,11 @@ from .story_area_type import StoryAreaType
 class StoryAreaTypeMessage(StoryAreaType):
     """This object describes an area pointing to a message. Currently, a story can have up to 1 message area.
 
-    Parameters:
+    Parameters
+    ----------
         chat_id (``int`` | ``str``):
             Unique identifier (int) or username (str) of the target chat.
-        
+
         message_id (``int``):
             Identifier of the message.
 
@@ -42,9 +43,9 @@ class StoryAreaTypeMessage(StoryAreaType):
 
     def __init__(
         self,
-        chat_id: Union[int, str] = None,
-        message_id: int = None,
-    ):
+        chat_id: int | str | None = None,
+        message_id: int | None = None,
+    ) -> None:
         super().__init__()
 
         self.chat_id = chat_id
@@ -52,11 +53,11 @@ class StoryAreaTypeMessage(StoryAreaType):
 
     async def write(
         self,
-        client: "pyrogram.Client",
-        coordinates: "raw.types.MediaAreaCoordinates"
+        client: pyrogram.Client,
+        coordinates: raw.types.MediaAreaCoordinates,
     ):
         return raw.types.InputMediaAreaChannelPost(
             coordinates=coordinates,
             channel=await client.resolve_peer(self.chat_id),
-            msg_id=self.message_id
+            msg_id=self.message_id,
         )

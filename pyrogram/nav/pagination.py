@@ -21,15 +21,18 @@
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
 import math
+
 from pyrogram.helpers import array_chunk
 
 
 class Pagination:
-    def __init__(self, objects, page_data=None, item_data=None, item_title=None):
+    def __init__(
+        self, objects, page_data=None, item_data=None, item_title=None
+    ) -> None:
         def default_page_callback(x):
             return str(x)
 
-        def default_item_callback(i, pg):
+        def default_item_callback(i, pg) -> str:
             return f"[{pg}] {i}"
 
         self.objects = objects
@@ -46,7 +49,7 @@ class Pagination:
 
         total = len(self.objects)
         pages_range = [
-            *range(1, math.ceil(total / quant_per_page) + 1)
+            *range(1, math.ceil(total / quant_per_page) + 1),
         ]  # each item is a page
         last_page = len(pages_range)
 
@@ -64,7 +67,7 @@ class Pagination:
                     (
                         f"{last_page} »" if last_page > 5 else last_page,
                         self.page_data(last_page),
-                    )
+                    ),
                 )
         elif page >= last_page - 2:
             nav.extend(
@@ -74,7 +77,7 @@ class Pagination:
                         f"‹ {last_page - 3}" if last_page - 4 > 1 else last_page - 3,
                         self.page_data(last_page - 3),
                     ),
-                ]
+                ],
             )
             for n in range(last_page - 2, last_page + 1):
                 text = f"· {n} ·" if n == page else n

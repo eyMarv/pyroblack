@@ -20,6 +20,8 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import pyrogram
 from pyrogram import raw
 
@@ -29,7 +31,8 @@ from .story_area_type import StoryAreaType
 class StoryAreaTypeWeather(StoryAreaType):
     """This object describes a story area containing weather information. Currently, a story can have up to 3 weather areas.
 
-    Parameters:
+    Parameters
+    ----------
         temperature (``float``):
             Temperature, in degree Celsius.
 
@@ -43,10 +46,10 @@ class StoryAreaTypeWeather(StoryAreaType):
 
     def __init__(
         self,
-        temperature: float = None,
-        emoji: str = None,
-        background_color: int = None,
-    ):
+        temperature: float | None = None,
+        emoji: str | None = None,
+        background_color: int | None = None,
+    ) -> None:
         super().__init__()
 
         self.temperature = temperature
@@ -55,12 +58,12 @@ class StoryAreaTypeWeather(StoryAreaType):
 
     async def write(
         self,
-        client: "pyrogram.Client",
-        coordinates: "raw.types.MediaAreaCoordinates"
+        client: pyrogram.Client,
+        coordinates: raw.types.MediaAreaCoordinates,
     ):
         return raw.types.MediaAreaWeather(
             coordinates=coordinates,
             emoji=self.emoji,
             temperature_c=self.temperature,
-            color=self.background_color
+            color=self.background_color,
         )

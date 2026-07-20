@@ -20,14 +20,17 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 from pyrogram import raw
-from ..object import Object
+from pyrogram.types.object import Object
 
 
 class Birthday(Object):
     """Birthday information of a user.
 
-    Parameters:
+    Parameters
+    ----------
         day (``int``):
             Birthday day.
 
@@ -36,20 +39,23 @@ class Birthday(Object):
 
         year (``int``, *optional*):
             Birthday year.
+
     """
 
-    def __init__(self, *, day: int, month: int, year: int = None):
+    def __init__(self, *, day: int, month: int, year: int | None = None) -> None:
         self.day = day
         self.month = month
         self.year = year
 
     @staticmethod
-    def _parse(birthday: "raw.types.Birthday" = None) -> "Birthday":
+    def _parse(birthday: raw.types.Birthday = None) -> Birthday:
         if not birthday:
-            return
+            return None
         return Birthday(
-            day=birthday.day, month=birthday.month, year=getattr(birthday, "year", None)
+            day=birthday.day,
+            month=birthday.month,
+            year=getattr(birthday, "year", None),
         )
 
-    async def write(self) -> "raw.types.Birthday":
+    async def write(self) -> raw.types.Birthday:
         return raw.types.Birthday(day=self.day, month=self.month, year=self.year)

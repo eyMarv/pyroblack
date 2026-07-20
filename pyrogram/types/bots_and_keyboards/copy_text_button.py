@@ -20,22 +20,24 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from ..object import Object
+from pyrogram.types.object import Object
 
 
 class CopyTextButton(Object):
     """This object represents an inline keyboard button that copies specified text to the clipboard.
 
-    Parameters:
+    Parameters
+    ----------
         text (``str``):
             The text to be copied to the clipboard; 1-256 characters.
 
     """
 
     def __init__(
-        self, *,
+        self,
+        *,
         text: str = "",
-    ):
+    ) -> None:
         super().__init__()
 
         self.text = text

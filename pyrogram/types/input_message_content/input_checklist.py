@@ -20,20 +20,24 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional
+from __future__ import annotations
 
-import pyrogram
-from pyrogram import types, enums
-from ..object import Object
+from typing import TYPE_CHECKING
+
+from pyrogram.types.object import Object
+
+if TYPE_CHECKING:
+    from pyrogram import enums, types
 
 
 class InputChecklist(Object):
     """Describes a checklist to create.
 
-    Parameters:
+    Parameters
+    ----------
         title  (``str``):
             Title of the checklist; 1-255 characters after entities parsing.
-        
+
         parse_mode (:obj:`~pyrogram.enums.ParseMode`, *optional*):
             By default, texts are parsed using both Markdown and HTML styles.
             You can combine both syntaxes together.
@@ -55,13 +59,13 @@ class InputChecklist(Object):
 
     def __init__(
         self,
-        title: str = None,
-        parse_mode: "enums.ParseMode" = None,
-        title_entities: list["types.MessageEntity"] = None,
-        tasks: list["types.InputChecklistTask"] = None,
-        others_can_add_tasks: bool = None,
-        others_can_mark_tasks_as_done: bool = None,
-    ):
+        title: str | None = None,
+        parse_mode: enums.ParseMode = None,
+        title_entities: list[types.MessageEntity] | None = None,
+        tasks: list[types.InputChecklistTask] | None = None,
+        others_can_add_tasks: bool | None = None,
+        others_can_mark_tasks_as_done: bool | None = None,
+    ) -> None:
         super().__init__()
 
         self.title = title

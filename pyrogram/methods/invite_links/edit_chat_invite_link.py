@@ -20,31 +20,35 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import datetime
-from typing import Union
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import pyrogram
-from pyrogram import raw, utils
-from pyrogram import types
+from pyrogram import raw, types, utils
+
+if TYPE_CHECKING:
+    from datetime import datetime
 
 
 class EditChatInviteLink:
     async def edit_chat_invite_link(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
+        self: pyrogram.Client,
+        chat_id: int | str,
         invite_link: str,
-        name: str = None,
-        expire_date: datetime = None,
-        member_limit: int = None,
-        creates_join_request: bool = None
-    ) -> "types.ChatInviteLink":
+        name: str | None = None,
+        expire_date: datetime | None = None,
+        member_limit: int | None = None,
+        creates_join_request: bool | None = None,
+    ) -> types.ChatInviteLink:
         """Edit a non-primary invite link.
 
         You must be an administrator in the chat for this to work and must have the appropriate admin rights.
 
         .. include:: /_includes/usable-by/users-bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier for the target chat or username of the target channel/supergroup
                 (in the format @username).
@@ -68,7 +72,8 @@ class EditChatInviteLink:
                 True, if users joining the chat via the link need to be approved by chat administrators.
                 If True, member_limit can't be specified.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.ChatInviteLink`: On success, the new invite link is returned
 
         Example:
@@ -79,6 +84,7 @@ class EditChatInviteLink:
 
                 # Set no expiration date of a link
                 link = await app.edit_chat_invite_link(chat_id, invite_link, expire_date=0)
+
         """
         r = await self.invoke(
             raw.functions.messages.EditExportedChatInvite(
@@ -87,8 +93,8 @@ class EditChatInviteLink:
                 expire_date=utils.datetime_to_timestamp(expire_date),
                 usage_limit=member_limit,
                 title=name,
-                request_needed=creates_join_request
-            )
+                request_needed=creates_join_request,
+            ),
         )
 
         users = {i.id: i for i in r.users}

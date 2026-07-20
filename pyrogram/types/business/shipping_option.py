@@ -20,16 +20,15 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-import pyrogram
 from pyrogram import raw, types
-
-from ..object import Object
+from pyrogram.types.object import Object
 
 
 class ShippingOption(Object):
     """This object represents one shipping option.
 
-    Parameters:
+    Parameters
+    ----------
         id (``str``):
             Shipping option identifier.
 
@@ -45,8 +44,8 @@ class ShippingOption(Object):
         self,
         id: str,
         title: str,
-        prices: list["types.LabeledPrice"]
-    ):
+        prices: list["types.LabeledPrice"],
+    ) -> None:
         super().__init__()
 
         self.id = id
@@ -60,17 +59,14 @@ class ShippingOption(Object):
                 id=shipping_option.id,
                 title=shipping_option.title,
                 prices=[
-                    types.LabeledPrice._parse(price)
-                    for price in shipping_option.prices
-                ]
+                    types.LabeledPrice._parse(price) for price in shipping_option.prices
+                ],
             )
+        return None
 
     def write(self):
         return raw.types.ShippingOption(
             id=self.id,
             title=self.title,
-            prices=[
-                price.write()
-                for price in self.prices
-            ]
+            prices=[price.write() for price in self.prices],
         )

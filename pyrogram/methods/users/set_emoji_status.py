@@ -29,17 +29,19 @@ from pyrogram import raw, types
 class SetEmojiStatus:
     async def set_emoji_status(
         self: "pyrogram.Client",
-        emoji_status: Optional["types.EmojiStatus"] = None
+        emoji_status: Optional["types.EmojiStatus"] = None,
     ) -> bool:
         """Set the emoji status.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             emoji_status (:obj:`~pyrogram.types.EmojiStatus`, *optional*):
                 The emoji status to set. None to remove.
 
-        Returns:
+        Returns
+        -------
             ``bool``: On success, True is returned.
 
         Example:
@@ -56,8 +58,8 @@ class SetEmojiStatus:
                     emoji_status.write()
                     if emoji_status
                     else raw.types.EmojiStatusEmpty()
-                )
-            )
+                ),
+            ),
         )
 
         return True

@@ -21,12 +21,11 @@
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
 from datetime import datetime
-from typing import Optional
 
 import pyrogram
 from pyrogram import raw, types, utils
-from ..object import Object
-from ..update import Update
+from pyrogram.types.object import Object
+from pyrogram.types.update import Update
 
 
 class MessageReactionCountUpdated(Object, Update):
@@ -34,7 +33,8 @@ class MessageReactionCountUpdated(Object, Update):
 
     These updates are heavy and their changes may be delayed by a few minutes.
 
-    Parameters:
+    Parameters
+    ----------
         chat (:obj:`~pyrogram.types.Chat`):
             The chat containing the message the user reacted to
 
@@ -46,6 +46,7 @@ class MessageReactionCountUpdated(Object, Update):
 
         reactions (:obj:`~pyrogram.types.ReactionCount`):
             List of reactions that are present on the message
+
     """
 
     def __init__(
@@ -55,8 +56,8 @@ class MessageReactionCountUpdated(Object, Update):
         chat: "types.Chat",
         message_id: int,
         date: datetime,
-        reactions: list["types.ReactionCount"]
-    ):
+        reactions: list["types.ReactionCount"],
+    ) -> None:
         super().__init__(client)
 
         self.chat = chat
@@ -69,10 +70,10 @@ class MessageReactionCountUpdated(Object, Update):
         client: "pyrogram.Client",
         update: "raw.types.UpdateBotMessageReactions",
         users: dict[int, "raw.types.User"],
-        chats: dict[int, "raw.types.Chat"]
+        chats: dict[int, "raw.types.Chat"],
     ) -> "MessageReactionUpdated":
         chat = None
-        peer_id = utils.get_peer_id(update.peer)
+        utils.get_peer_id(update.peer)
         raw_peer_id = utils.get_raw_peer_id(update.peer)
         if isinstance(update.peer, raw.types.PeerUser):
             chat = types.Chat._parse_user_chat(client, users[raw_peer_id])
@@ -87,7 +88,8 @@ class MessageReactionCountUpdated(Object, Update):
             reactions=[
                 types.ReactionCount._parse(
                     client,
-                    rt
-                ) for rt in update.reactions
-            ]
+                    rt,
+                )
+                for rt in update.reactions
+            ],
         )

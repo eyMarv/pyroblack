@@ -20,26 +20,30 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import AsyncGenerator, Union
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import pyrogram
-from pyrogram import raw
-from pyrogram import types
-from pyrogram import utils
+from pyrogram import raw, types, utils
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncGenerator
 
 
 class GetPinnedStories:
     async def get_pinned_stories(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
+        self: pyrogram.Client,
+        chat_id: int | str,
         offset_id: int = 0,
         limit: int = 0,
-    ) -> AsyncGenerator["types.Story", None]:
+    ) -> AsyncGenerator[types.Story, None]:
         """Get all pinned stories from a chat by using chat identifier.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
 
@@ -51,7 +55,8 @@ class GetPinnedStories:
                 Maximum amount of events to be returned.
                 By default, all events will be returned.
 
-        Returns:
+        Returns
+        -------
             ``Generator``: On success, a generator yielding :obj:`~pyrogram.types.Story` objects is returned.
 
         Example:
@@ -60,6 +65,7 @@ class GetPinnedStories:
                 # Get all pinned story
                 async for story in app.get_pinned_stories(chat_id):
                     print(story)
+
         """
         current = 0
         total = abs(limit) or (1 << 31)
@@ -72,8 +78,8 @@ class GetPinnedStories:
                 raw.functions.stories.GetPinnedStories(
                     peer=peer,
                     offset_id=offset_id,
-                    limit=limit
-                )
+                    limit=limit,
+                ),
             )
 
             if not r.stories:
@@ -85,7 +91,9 @@ class GetPinnedStories:
             if isinstance(peer, raw.types.InputPeerChannel):
                 peer_id = utils.get_raw_peer_id(peer)
                 if peer_id not in r.chats:
-                    channel = await self.invoke(raw.functions.channels.GetChannels(id=[peer]))
+                    channel = await self.invoke(
+                        raw.functions.channels.GetChannels(id=[peer])
+                    )
                     chats.update({peer_id: channel.chats[0]})
 
             last = r.stories[-1]
@@ -100,11 +108,10 @@ class GetPinnedStories:
                     None,
                     None,
                     story,
-                    peer
+                    peer,
                 )
 
                 current += 1
 
                 if current >= total:
                     return
-

@@ -38,7 +38,8 @@ class GetBotCommands:
 
         .. include:: /_includes/usable-by/bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             scope (:obj:`~pyrogram.types.BotCommandScope`, *optional*):
                 An object describing the scope of users for which the commands are relevant.
                 Defaults to :obj:`~pyrogram.types.BotCommandScopeDefault`.
@@ -48,10 +49,12 @@ class GetBotCommands:
                 If empty, commands will be applied to all users from the given scope, for whose language there are no
                 dedicated commands.
 
-        Returns:
+        Returns
+        -------
             List of :obj:`~pyrogram.types.BotCommand`: On success, the list of bot commands is returned.
 
-        Raises:
+        Raises
+        ------
             :obj:`~pyrogram.errors.RPCError`: In case of a Telegram RPC error.
 
         Example:
@@ -60,13 +63,13 @@ class GetBotCommands:
                 # Get commands
                 commands = await app.get_bot_commands()
                 print(commands)
-        """
 
+        """
         r = await self.invoke(
             raw.functions.bots.GetBotCommands(
                 scope=await scope.write(self),
                 lang_code=language_code,
-            )
+            ),
         )
 
         return types.List(types.BotCommand.read(c) for c in r)

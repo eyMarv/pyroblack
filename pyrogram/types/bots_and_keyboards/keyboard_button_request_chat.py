@@ -20,17 +20,24 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from pyrogram import types
-from ..object import Object
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+from pyrogram.types.object import Object
+
+if TYPE_CHECKING:
+    from pyrogram import types
 
 
 class KeyboardButtonRequestChat(Object):
     """This object defines the criteria used to request a suitable chat.
     Information about the selected chat will be shared with the bot when the corresponding button is pressed.
     The bot will be granted requested rights in the сhat if appropriate.
-    `More about requesting chats. <https://core.telegram.org/bots/features#chat-and-user-selection>`_
+    `More about requesting chats. <https://core.telegram.org/bots/features#chat-and-user-selection>`_.
 
-    Parameters:
+    Parameters
+    ----------
         request_id (``int``):
             Signed 32-bit identifier of the request, which will be received back in the :obj:`~pyrogram.types.ChatShared` object. Must be unique within the message
 
@@ -65,20 +72,21 @@ class KeyboardButtonRequestChat(Object):
             Pass True to request the chat's photo
 
     """
+
     def __init__(
         self,
         request_id: int,
         chat_is_channel: bool,
-        chat_is_forum: bool = None,
-        chat_has_username: bool = None,
-        chat_is_created: bool = None,
-        user_administrator_rights: "types.ChatPrivileges" = None,
-        bot_administrator_rights: "types.ChatPrivileges" = None,
-        bot_is_member: bool = None,
-        request_title: bool = None,
-        request_username: bool = None,
-        request_photo: bool = None
-    ):
+        chat_is_forum: bool | None = None,
+        chat_has_username: bool | None = None,
+        chat_is_created: bool | None = None,
+        user_administrator_rights: types.ChatPrivileges = None,
+        bot_administrator_rights: types.ChatPrivileges = None,
+        bot_is_member: bool | None = None,
+        request_title: bool | None = None,
+        request_username: bool | None = None,
+        request_photo: bool | None = None,
+    ) -> None:
         self.request_id = request_id
         self.chat_is_channel = chat_is_channel
         self.chat_is_forum = chat_is_forum

@@ -20,23 +20,28 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from ..object import Object
+from typing import TYPE_CHECKING
 
-from pyrogram import raw
+from pyrogram.types.object import Object
+
+if TYPE_CHECKING:
+    from pyrogram import raw
 
 
 class LoginToken(Object):
     """Contains info on a login token.
 
-    Parameters:
+    Parameters
+    ----------
         token (``str``):
             The login token.
 
         expires (``int``):
             The expiration date of the token in UNIX format.
+
     """
 
-    def __init__(self, *, token: str, expires: int):
+    def __init__(self, *, token: str, expires: int) -> None:
         super().__init__()
 
         self.token = token

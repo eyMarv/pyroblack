@@ -20,25 +20,27 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import List
+
 import pyrogram
-from pyrogram import types, enums
+from pyrogram import enums, types
 
 
 class GetChatsForFolderInviteLink:
     async def get_chats_for_folder_invite_link(
         self: "pyrogram.Client",
-        chat_folder_id: int
-    ) -> List["types.Chat"]:
+        chat_folder_id: int,
+    ) -> list["types.Chat"]:
         """Returns chats from a chat folder, suitable for adding to a chat folder invite link.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_folder_id (``int``):
                 Unique identifier (int) of the target folder.
 
-        Returns:
+        Returns
+        -------
             List of :obj:`~pyrogram.types.Chat`: On success, list of suitable chats is returned.
 
         Example:
@@ -46,6 +48,7 @@ class GetChatsForFolderInviteLink:
 
                 for chat in await app.get_chats_for_folder_invite_link(folder_id):
                     print(chat.title)
+
         """
         folder = None
         chats = types.List()
@@ -56,7 +59,8 @@ class GetChatsForFolderInviteLink:
                 break
 
         if not folder:
-            raise ValueError("Folder not found")
+            msg = "Folder not found"
+            raise ValueError(msg)
 
         if (
             folder.excluded_chats
@@ -76,7 +80,11 @@ class GetChatsForFolderInviteLink:
         available_chats = pinned_chats + included_chats
 
         for chat in available_chats:
-            if chat.type in (enums.ChatType.FORUM, enums.ChatType.SUPERGROUP, enums.ChatType.CHANNEL):
+            if chat.type in (
+                enums.ChatType.FORUM,
+                enums.ChatType.SUPERGROUP,
+                enums.ChatType.CHANNEL,
+            ):
                 chats.append(chat)
 
         return chats

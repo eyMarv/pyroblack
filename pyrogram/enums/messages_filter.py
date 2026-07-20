@@ -21,11 +21,12 @@
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
 from pyrogram import raw
+
 from .auto_name import AutoName
 
 
 class MessagesFilter(AutoName):
-    """Messages filter enumeration used in :meth:`~pyrogram.Client.search_messages` and :meth:`~pyrogram.Client.search_global`"""
+    """Messages filter enumeration used in :meth:`~pyrogram.Client.search_messages` and :meth:`~pyrogram.Client.search_global`."""
 
     EMPTY = raw.types.InputMessagesFilterEmpty
     "Empty filter (Filter is absent.)"

@@ -23,8 +23,7 @@
 from typing import Optional
 
 from pyrogram import raw
-
-from ..object import Object
+from pyrogram.types.object import Object
 
 
 class UpgradedGiftAttributeRarity(Object):
@@ -38,7 +37,7 @@ class UpgradedGiftAttributeRarity(Object):
     - :obj:`~pyrogram.types.UpgradedGiftAttributeRarityLegendary`
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
     @staticmethod
@@ -47,26 +46,29 @@ class UpgradedGiftAttributeRarity(Object):
     ) -> Optional["UpgradedGiftAttributeRarity"]:
         if isinstance(rarity, raw.types.StarGiftAttributeRarity):
             return UpgradedGiftAttributeRarityPerMille(per_mille=rarity.permille)
-        elif isinstance(rarity, raw.types.StarGiftAttributeRarityUncommon):
+        if isinstance(rarity, raw.types.StarGiftAttributeRarityUncommon):
             return UpgradedGiftAttributeRarityUncommon()
-        elif isinstance(rarity, raw.types.StarGiftAttributeRarityRare):
+        if isinstance(rarity, raw.types.StarGiftAttributeRarityRare):
             return UpgradedGiftAttributeRarityRare()
-        elif isinstance(rarity, raw.types.StarGiftAttributeRarityEpic):
+        if isinstance(rarity, raw.types.StarGiftAttributeRarityEpic):
             return UpgradedGiftAttributeRarityEpic()
-        elif isinstance(rarity, raw.types.StarGiftAttributeRarityLegendary):
+        if isinstance(rarity, raw.types.StarGiftAttributeRarityLegendary):
             return UpgradedGiftAttributeRarityLegendary()
+        return None
 
 
 class UpgradedGiftAttributeRarityPerMille(UpgradedGiftAttributeRarity):
     """The rarity is represented as the numeric frequence of the model.
 
-    Parameters:
+    Parameters
+    ----------
         per_mille (``int``):
             The number of upgraded gifts that receive this attribute for each 1000 gifts upgraded.
             If 0, then it can be shown as "<0.1%".
+
     """
 
-    def __init__(self, *, per_mille: int):
+    def __init__(self, *, per_mille: int) -> None:
         super().__init__()
 
         self.per_mille = per_mille
@@ -77,12 +79,13 @@ class UpgradedGiftAttributeRarityPerMille(UpgradedGiftAttributeRarity):
     ) -> Optional["UpgradedGiftAttributeRarityPerMille"]:
         if isinstance(rarity, raw.types.StarGiftAttributeRarity):
             return UpgradedGiftAttributeRarityPerMille(per_mille=rarity.permille)
+        return None
 
 
 class UpgradedGiftAttributeRarityUncommon(UpgradedGiftAttributeRarity):
     """The attribute is uncommon."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
     @staticmethod
@@ -91,12 +94,13 @@ class UpgradedGiftAttributeRarityUncommon(UpgradedGiftAttributeRarity):
     ) -> Optional["UpgradedGiftAttributeRarityUncommon"]:
         if isinstance(rarity, raw.types.StarGiftAttributeRarityUncommon):
             return UpgradedGiftAttributeRarityUncommon()
+        return None
 
 
 class UpgradedGiftAttributeRarityRare(UpgradedGiftAttributeRarity):
     """The attribute is rare."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
     @staticmethod
@@ -105,12 +109,13 @@ class UpgradedGiftAttributeRarityRare(UpgradedGiftAttributeRarity):
     ) -> Optional["UpgradedGiftAttributeRarityRare"]:
         if isinstance(rarity, raw.types.StarGiftAttributeRarityRare):
             return UpgradedGiftAttributeRarityRare()
+        return None
 
 
 class UpgradedGiftAttributeRarityEpic(UpgradedGiftAttributeRarity):
     """The attribute is epic."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
     @staticmethod
@@ -119,12 +124,13 @@ class UpgradedGiftAttributeRarityEpic(UpgradedGiftAttributeRarity):
     ) -> Optional["UpgradedGiftAttributeRarityEpic"]:
         if isinstance(rarity, raw.types.StarGiftAttributeRarityEpic):
             return UpgradedGiftAttributeRarityEpic()
+        return None
 
 
 class UpgradedGiftAttributeRarityLegendary(UpgradedGiftAttributeRarity):
     """The attribute is legendary."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
     @staticmethod
@@ -133,4 +139,4 @@ class UpgradedGiftAttributeRarityLegendary(UpgradedGiftAttributeRarity):
     ) -> Optional["UpgradedGiftAttributeRarityLegendary"]:
         if isinstance(rarity, raw.types.StarGiftAttributeRarityLegendary):
             return UpgradedGiftAttributeRarityLegendary()
-
+        return None

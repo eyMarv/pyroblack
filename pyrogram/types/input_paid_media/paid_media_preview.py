@@ -20,17 +20,21 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-import pyrogram
-from pyrogram import types
+from __future__ import annotations
 
-from ..object import Object
+from typing import TYPE_CHECKING
+
 from .paid_media import PaidMedia
+
+if TYPE_CHECKING:
+    from pyrogram import types
 
 
 class PaidMediaPreview(PaidMedia):
     """The paid media isn't available before the payment.
 
-    Parameters:
+    Parameters
+    ----------
         width (``int``, *optional*):
             Media width as defined by the sender.
 
@@ -48,11 +52,11 @@ class PaidMediaPreview(PaidMedia):
     def __init__(
         self,
         *,
-        width: int = None,
-        height: int = None,
-        duration: int = None,
-        minithumbnail: "types.StrippedThumbnail" = None
-    ):
+        width: int | None = None,
+        height: int | None = None,
+        duration: int | None = None,
+        minithumbnail: types.StrippedThumbnail = None,
+    ) -> None:
         super().__init__()
 
         self.width = width

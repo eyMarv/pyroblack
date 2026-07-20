@@ -23,21 +23,21 @@
 from typing import Optional
 
 import pyrogram
-from pyrogram import raw
-from pyrogram import utils
-from pyrogram import types
-from ..object import Object
+from pyrogram import raw, types, utils
+from pyrogram.types.object import Object
 
 
 class FoundContacts(Object):
     """Chats found by name substring and auxiliary data.
 
-    Parameters:
+    Parameters
+    ----------
         my_results (List of :obj:`~pyrogram.types.Chat`, *optional*):
             Personalized results.
 
         global_results (List of :obj:`~pyrogram.types.Chat`, *optional*):
             List of found chats in global search.
+
     """
 
     def __init__(
@@ -46,7 +46,7 @@ class FoundContacts(Object):
         client: "pyrogram.Client" = None,
         my_results: Optional["types.Chat"] = None,
         global_results: Optional["types.Chat"] = None,
-    ):
+    ) -> None:
         super().__init__(client)
 
         self.my_results = my_results

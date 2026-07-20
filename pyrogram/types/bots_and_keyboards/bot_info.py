@@ -20,15 +20,22 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from pyrogram import raw
 
-from ..object import Object
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+from pyrogram.types.object import Object
+
+if TYPE_CHECKING:
+    from pyrogram import raw
 
 
 class BotInfo(Object):
     """A bot Information.
 
-    Parameters:
+    Parameters
+    ----------
         name (``str``):
             The bot name.
 
@@ -40,11 +47,16 @@ class BotInfo(Object):
 
         privacy_policy_url (``str``, *optional*):
             Privacy policy URL of the bot.
+
     """
 
     def __init__(
-        self, name: str, about: str, description: str, privacy_policy_url: str = None
-    ):
+        self,
+        name: str,
+        about: str,
+        description: str,
+        privacy_policy_url: str | None = None,
+    ) -> None:
         super().__init__()
 
         self.name = name
@@ -53,7 +65,7 @@ class BotInfo(Object):
         self.privacy_policy_url = privacy_policy_url
 
     @staticmethod
-    def _parse(bot_info: "raw.types.bots.BotInfo") -> "BotInfo":
+    def _parse(bot_info: raw.types.bots.BotInfo) -> BotInfo:
         return BotInfo(
             name=getattr(bot_info, "name", None),
             about=getattr(bot_info, "about", None),

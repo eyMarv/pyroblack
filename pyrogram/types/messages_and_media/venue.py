@@ -20,16 +20,18 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import pyrogram
-from pyrogram import raw
-from pyrogram import types
-from ..object import Object
+from pyrogram import raw, types
+from pyrogram.types.object import Object
 
 
 class Venue(Object):
     """A venue.
 
-    Parameters:
+    Parameters
+    ----------
         location (:obj:`~pyrogram.types.Location`):
             Venue location.
 
@@ -51,13 +53,13 @@ class Venue(Object):
     def __init__(
         self,
         *,
-        client: "pyrogram.Client" = None,
-        location: "types.Location",
+        client: pyrogram.Client = None,
+        location: types.Location,
         title: str,
         address: str,
-        foursquare_id: str = None,
-        foursquare_type: str = None
-    ):
+        foursquare_id: str | None = None,
+        foursquare_type: str | None = None,
+    ) -> None:
         super().__init__(client)
 
         self.location = location
@@ -67,12 +69,12 @@ class Venue(Object):
         self.foursquare_type = foursquare_type
 
     @staticmethod
-    def _parse(client, venue: "raw.types.MessageMediaVenue"):
+    def _parse(client, venue: raw.types.MessageMediaVenue):
         return Venue(
             location=types.Location._parse(client, venue.geo),
             title=venue.title,
             address=venue.address,
             foursquare_id=venue.venue_id,
             foursquare_type=venue.venue_type,
-            client=client
+            client=client,
         )

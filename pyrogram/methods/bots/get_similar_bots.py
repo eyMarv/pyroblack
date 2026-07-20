@@ -20,7 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw, types
@@ -28,38 +28,41 @@ from pyrogram import raw, types
 
 class GetSimilarBots:
     async def get_similar_bots(
-        self: "pyrogram.Client",
-        user_id: Union[int, str] = None,
-        bot: Union[int, str] = None,  # alias for <=2.7.2
-    ) -> list["types.User"]:
+        self: pyrogram.Client,
+        user_id: int | str | None = None,
+        bot: int | str | None = None,  # alias for <=2.7.2
+    ) -> list[types.User]:
         """Returns a list of bots similar to the given bot.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             user_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target bot.
 
-        Returns:
+        Returns
+        -------
             List of :obj:`~pyrogram.types.User`: On success.
 
-        Raises:
+        Raises
+        ------
             :obj:`~pyrogram.errors.RPCError`: In case of a Telegram RPC error.
 
         Example:
             .. code-block:: python
 
                 bots = await app.get_similar_bots()
+
         """
         user_id = user_id or bot
         if user_id is None:
-            raise ValueError("user_id (or bot) is required")
+            msg = "user_id (or bot) is required"
+            raise ValueError(msg)
 
-
-        botss = await self.invoke(raw.functions.bots.GetBotRecommendations(
-            bot=await self.resolve_peer(user_id)
-        ))
-        return types.List([
-            types.User._parse(self, b)
-            for b in botss.users
-        ])
+        botss = await self.invoke(
+            raw.functions.bots.GetBotRecommendations(
+                bot=await self.resolve_peer(user_id),
+            )
+        )
+        return types.List([types.User._parse(self, b) for b in botss.users])

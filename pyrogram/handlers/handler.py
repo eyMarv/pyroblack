@@ -21,17 +21,19 @@
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
 import inspect
-from typing import Any, Callable
+from typing import TYPE_CHECKING, Any, Callable
 
-import pyrogram
 from pyrogram.filters import Filter
 from pyrogram.types import Update
+
+if TYPE_CHECKING:
+    import pyrogram
 
 CallbackFunc: Callable = Callable[..., Any]
 
 
 class Handler:
-    def __init__(self, callback: CallbackFunc, filters: Filter = None):
+    def __init__(self, callback: CallbackFunc, filters: Filter = None) -> None:
         self.callback = callback
         self.filters = filters
 
@@ -39,11 +41,11 @@ class Handler:
         if callable(self.filters):
             if inspect.iscoroutinefunction(self.filters.__call__):
                 return await self.filters(client, update)
-            else:
-                return await client.loop.run_in_executor(
-                    client.executor,
-                    self.filters,
-                    client, update
-                )
+            return await client.loop.run_in_executor(
+                client.executor,
+                self.filters,
+                client,
+                update,
+            )
 
         return True

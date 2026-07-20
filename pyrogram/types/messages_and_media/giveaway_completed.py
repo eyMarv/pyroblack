@@ -20,22 +20,22 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import datetime
+
+from __future__ import annotations
 
 import pyrogram
-
 from pyrogram import raw, types
-from ..object import Object
-
+from pyrogram.types.object import Object
 
 
 class GiveawayCompleted(Object):
     """This object represents a service message about the completion of a giveaway without public winners.
 
-    Parameters:
+    Parameters
+    ----------
         winner_count (``int``):
             Number of winners in the giveaway
-        
+
         unclaimed_prize_count (``int``, *optional*):
             Number of undistributed prizes
 
@@ -50,12 +50,12 @@ class GiveawayCompleted(Object):
     def __init__(
         self,
         *,
-        client: "pyrogram.Client" = None,
+        client: pyrogram.Client = None,
         winner_count: int,
-        unclaimed_prize_count: int = None,
-        giveaway_message: "types.Message" = None,
-        is_star_giveaway: bool = None
-    ):
+        unclaimed_prize_count: int | None = None,
+        giveaway_message: types.Message = None,
+        is_star_giveaway: bool | None = None,
+    ) -> None:
         super().__init__(client)
 
         self.winner_count = winner_count
@@ -63,21 +63,25 @@ class GiveawayCompleted(Object):
         self.giveaway_message = giveaway_message
         self.is_star_giveaway = is_star_giveaway
 
-
     @staticmethod
     def _parse(
         client,
-        giveaway_results: "raw.types.MessageActionGiveawayResults",
-        message_id: int = None
-    ) -> "GiveawayCompleted":
+        giveaway_results: raw.types.MessageActionGiveawayResults,
+        message_id: int | None = None,
+    ) -> GiveawayCompleted:
         if isinstance(giveaway_results, raw.types.MessageActionGiveawayResults):
             return GiveawayCompleted(
                 client=client,
                 winner_count=giveaway_results.winners_count,
-                unclaimed_prize_count=getattr(giveaway_results, "unclaimed_count", None),
+                unclaimed_prize_count=getattr(
+                    giveaway_results, "unclaimed_count", None
+                ),
                 giveaway_message=types.Message(
                     client=client,
-                    id=message_id
-                ) if message_id else None,
+                    id=message_id,
+                )
+                if message_id
+                else None,
                 is_star_giveaway=getattr(giveaway_results, "stars", None),
             )
+        return None

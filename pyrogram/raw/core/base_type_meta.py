@@ -22,9 +22,10 @@
 
 from typing import get_args
 
+
 class BaseTypeMeta(type):
-    def __instancecheck__(cls, instance):
+    def __instancecheck__(cls, instance) -> bool:
         return isinstance(instance, get_args(cls.__union_types__))
 
-    def __subclasscheck__(cls, subclass):
+    def __subclasscheck__(cls, subclass) -> bool:
         return issubclass(subclass, get_args(cls.__union_types__))

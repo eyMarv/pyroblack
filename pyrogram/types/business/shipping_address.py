@@ -20,13 +20,14 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from ..object import Object
+from pyrogram.types.object import Object
 
 
 class ShippingAddress(Object):
     """This object represents a shipping address.
 
-    Parameters:
+    Parameters
+    ----------
         country_code (``str``):
             Two-letter `ISO 3166-1 alpha-2 <https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2>`_ country code.
 
@@ -55,8 +56,8 @@ class ShippingAddress(Object):
         city: str,
         street_line1: str,
         street_line2: str,
-        post_code: str
-    ):
+        post_code: str,
+    ) -> None:
         super().__init__()
 
         self.country_code = country_code

@@ -20,29 +20,33 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Any, Callable
+from typing import TYPE_CHECKING, Any, Callable
 
-import pyrogram
 from pyrogram.filters import Filter
+
 from .handler import Handler
+
+if TYPE_CHECKING:
+    import pyrogram
 
 CallbackFunc: Callable = Callable[
     [
         "pyrogram.Client",
-        "pyrogram.types.ChatBoost"
+        "pyrogram.types.ChatBoost",
     ],
-    Any
+    Any,
 ]
 
 
 class ChatBoostHandler(Handler):
     """The ChatBoost handler class. Used to handle applied chat boosts.
-    It is intended to be used with :meth:`~pyrogram.Client.add_handler`
+    It is intended to be used with :meth:`~pyrogram.Client.add_handler`.
 
     For a nicer way to register this handler, have a look at the
     :meth:`~pyrogram.Client.on_chat_boost` decorator.
 
-    Parameters:
+    Parameters
+    ----------
         callback (``Callable``):
             Pass a function that will be called when a new boost is applied. It takes *(client, boost)*
             as positional arguments.
@@ -51,13 +55,15 @@ class ChatBoostHandler(Handler):
             Pass one or more filters to allow only a subset of updates to be passed
             in your callback function.
 
-    Other parameters:
+    Other Parameters
+    ----------------
         client (:obj:`~pyrogram.Client`):
             The Client itself.
 
         boost (:obj:`~pyrogram.types.ChatBoost`):
             The applied chat boost.
+
     """
 
-    def __init__(self, callback: CallbackFunc, filters: Filter = None):
+    def __init__(self, callback: CallbackFunc, filters: Filter = None) -> None:
         super().__init__(callback, filters)

@@ -20,20 +20,25 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import datetime
-from typing import Optional
+from __future__ import annotations
+
+import contextlib
+from typing import TYPE_CHECKING
 
 import pyrogram
 from pyrogram import raw, types, utils
 from pyrogram.errors import MessageIdsEmpty
+from pyrogram.types.object import Object
 
-from ..object import Object
+if TYPE_CHECKING:
+    from datetime import datetime
 
 
 class SuggestedPostApproved(Object):
     """Describes a service message about the approval of a suggested post.
 
-    Parameters:
+    Parameters
+    ----------
         suggested_post_message_id (``int``, *optional*):
             Identifier of the message with the suggested post.
 
@@ -45,14 +50,17 @@ class SuggestedPostApproved(Object):
 
         send_date (:py:obj:`~datetime.datetime`, *optional*):
             Date when the post will be published.
+
     """
+
     def __init__(
-        self, *,
-        suggested_post_message_id: Optional[int] = None,
-        suggested_post_message: Optional["types.Message"] = None,
-        price: Optional["types.SuggestedPostPrice"] = None,
-        send_date: Optional[datetime] = None
-    ):
+        self,
+        *,
+        suggested_post_message_id: int | None = None,
+        suggested_post_message: types.Message | None = None,
+        price: types.SuggestedPostPrice | None = None,
+        send_date: datetime | None = None,
+    ) -> None:
         super().__init__()
 
         self.suggested_post_message_id = suggested_post_message_id
@@ -62,10 +70,10 @@ class SuggestedPostApproved(Object):
 
     @staticmethod
     async def _parse(
-        client: "pyrogram.Client",
-        message: "raw.types.MessageService"
-    ) -> "SuggestedPostApproved":
-        action: "raw.types.MessageActionSuggestedPostApproval" = message.action
+        client: pyrogram.Client,
+        message: raw.types.MessageService,
+    ) -> SuggestedPostApproved:
+        action: raw.types.MessageActionSuggestedPostApproval = message.action
 
         if not isinstance(action, raw.types.MessageActionSuggestedPostApproval):
             return None
@@ -81,17 +89,15 @@ class SuggestedPostApproved(Object):
             suggested_post_message_id = message.reply_to.reply_to_msg_id
 
             if client.fetch_replies:
-                try:
+                with contextlib.suppress(MessageIdsEmpty):
                     suggested_post_message = await client.get_messages(
                         chat_id=chat_id,
-                        message_ids=suggested_post_message_id
+                        message_ids=suggested_post_message_id,
                     )
-                except MessageIdsEmpty:
-                    pass
 
         return SuggestedPostApproved(
             suggested_post_message_id=suggested_post_message_id,
             suggested_post_message=suggested_post_message,
             price=types.SuggestedPostPrice._parse(action.price),
-            send_date=utils.timestamp_to_datetime(action.schedule_date)
+            send_date=utils.timestamp_to_datetime(action.schedule_date),
         )

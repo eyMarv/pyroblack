@@ -20,10 +20,12 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import io
 import os
 import re
-from typing import Callable, Optional, Union
+from typing import Callable
 
 import pyrogram
 from pyrogram import enums, raw, types, utils
@@ -35,7 +37,8 @@ from .input_media import InputMedia
 class InputMediaAnimation(InputMedia):
     """An animation file (GIF or H.264/MPEG-4 AVC video without sound) to be sent inside an album.
 
-    Parameters:
+    Parameters
+    ----------
         media (``str`` | :obj:`io.BytesIO`):
             Animation to send.
             Pass a file_id as string to send a file that exists on the Telegram servers or
@@ -74,7 +77,7 @@ class InputMediaAnimation(InputMedia):
 
         has_spoiler (``bool``, *optional*):
             Pass True if the photo needs to be covered with a spoiler animation.
-        
+
         file_name (``str``, *optional*):
             File name of the animation sent.
             Defaults to file's path basename.
@@ -83,18 +86,18 @@ class InputMediaAnimation(InputMedia):
 
     def __init__(
         self,
-        media: Union[str, "io.BytesIO"],
-        thumb: Union[str, "io.BytesIO"] = None,
+        media: str | io.BytesIO,
+        thumb: str | io.BytesIO | None = None,
         caption: str = "",
-        parse_mode: Optional["enums.ParseMode"] = None,
-        caption_entities: list["types.MessageEntity"] = None,
-        show_caption_above_media: bool = None,
+        parse_mode: enums.ParseMode | None = None,
+        caption_entities: list[types.MessageEntity] | None = None,
+        show_caption_above_media: bool | None = None,
         width: int = 0,
         height: int = 0,
         duration: int = 0,
-        has_spoiler: bool = None,
-        file_name: bool = None,
-    ):
+        has_spoiler: bool | None = None,
+        file_name: bool | None = None,
+    ) -> None:
         super().__init__(media, caption, parse_mode, caption_entities)
 
         self.thumb = thumb
@@ -107,17 +110,14 @@ class InputMediaAnimation(InputMedia):
 
     async def write(
         self,
-        client: "pyrogram.Client",
-        chat_id: Optional[Union[int, str]] = None,
-        business_connection_id: Optional[str] = None,
-        progress: Optional[Callable] = None,
+        client: pyrogram.Client,
+        chat_id: int | str | None = None,
+        business_connection_id: str | None = None,
+        progress: Callable | None = None,
         progress_args: tuple = (),
     ) -> tuple[
-        Union[
-            "InputMediaDocument",
-            "InputMediaDocumentExternal",
-        ],
-        bool
+        InputMediaDocument | InputMediaDocumentExternal,
+        bool,
     ]:
         is_bytes_io = isinstance(self.media, io.BytesIO)
         is_uploaded_file = is_bytes_io or os.path.isfile(self.media)
@@ -129,8 +129,11 @@ class InputMediaAnimation(InputMedia):
         if is_uploaded_file:
             filename_attribute = [
                 raw.types.DocumentAttributeFilename(
-                    file_name=self.file_name or (self.media.name if is_bytes_io else os.path.basename(self.media))
-                )
+                    file_name=self.file_name
+                    or (
+                        self.media.name if is_bytes_io else os.path.basename(self.media)
+                    ),
+                ),
             ]
         else:
             filename_attribute = []
@@ -141,7 +144,10 @@ class InputMediaAnimation(InputMedia):
                     business_connection_id=None,  # TODO
                     peer=await client.resolve_peer(chat_id or "me"),
                     media=raw.types.InputMediaUploadedDocument(
-                        mime_type=(None if is_bytes_io else client.guess_mime_type(self.media)) or "video/mp4",
+                        mime_type=(
+                            None if is_bytes_io else client.guess_mime_type(self.media)
+                        )
+                        or "video/mp4",
                         thumb=await client.save_file(self.thumb),
                         spoiler=self.has_spoiler,
                         file=await client.save_file(self.media),
@@ -150,28 +156,31 @@ class InputMediaAnimation(InputMedia):
                                 supports_streaming=True,
                                 duration=self.duration,
                                 w=self.width,
-                                h=self.height
+                                h=self.height,
                             ),
                             raw.types.DocumentAttributeAnimated(),
-                        ] + filename_attribute,
-                    )
-                )
+                            *filename_attribute,
+                        ],
+                    ),
+                ),
             )
 
             media = raw.types.InputMediaDocument(
                 id=raw.types.InputDocument(
                     id=uploaded_media.document.id,
                     access_hash=uploaded_media.document.access_hash,
-                    file_reference=uploaded_media.document.file_reference
+                    file_reference=uploaded_media.document.file_reference,
                 ),
-                spoiler=self.has_spoiler
+                spoiler=self.has_spoiler,
             )
         elif is_external_url:
             media = raw.types.InputMediaDocumentExternal(
                 url=self.media,
-                spoiler=self.has_spoiler
+                spoiler=self.has_spoiler,
             )
         else:
-            media = utils.get_input_media_from_file_id(self.media, FileType.ANIMATION, has_spoiler=self.has_spoiler)
+            media = utils.get_input_media_from_file_id(
+                self.media, FileType.ANIMATION, has_spoiler=self.has_spoiler
+            )
 
         return media, self.show_caption_above_media

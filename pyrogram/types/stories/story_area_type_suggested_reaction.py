@@ -20,10 +20,10 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional
+from __future__ import annotations
 
 import pyrogram
-from pyrogram import types, raw
+from pyrogram import raw, types
 
 from .story_area_type import StoryAreaType
 
@@ -31,7 +31,8 @@ from .story_area_type import StoryAreaType
 class StoryAreaTypeSuggestedReaction(StoryAreaType):
     """This object describes a story area pointing to a suggested reaction. Currently, a story can have up to 5 suggested reaction areas.
 
-    Parameters:
+    Parameters
+    ----------
         reaction_type (:obj:`~pyrogram.types.ReactionType`):
             Type of the reaction.
 
@@ -45,10 +46,10 @@ class StoryAreaTypeSuggestedReaction(StoryAreaType):
 
     def __init__(
         self,
-        reaction_type: "types.ReactionType" = None,
-        is_dark: Optional[bool] = None,
-        is_flipped: Optional[bool] = None,
-    ):
+        reaction_type: types.ReactionType = None,
+        is_dark: bool | None = None,
+        is_flipped: bool | None = None,
+    ) -> None:
         super().__init__()
 
         self.reaction_type = reaction_type
@@ -57,12 +58,12 @@ class StoryAreaTypeSuggestedReaction(StoryAreaType):
 
     async def write(
         self,
-        client: "pyrogram.Client",
-        coordinates: "raw.types.MediaAreaCoordinates"
+        client: pyrogram.Client,
+        coordinates: raw.types.MediaAreaCoordinates,
     ):
         return raw.types.MediaAreaSuggestedReaction(
             dark=self.is_dark,
             flipped=self.is_flipped,
             coordinates=coordinates,
-            reaction=self.reaction_type.write(client)
+            reaction=self.reaction_type.write(client),
         )

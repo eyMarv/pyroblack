@@ -20,13 +20,16 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import datetime
-from typing import Dict, List, Optional, Union
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import pyrogram
 from pyrogram import raw, types, utils
+from pyrogram.types.object import Object
 
-from ..object import Object
+if TYPE_CHECKING:
+    from datetime import datetime
 
 
 class RichText(Object):
@@ -63,22 +66,28 @@ class RichText(Object):
     - :obj:`~pyrogram.types.RichTextReferenceLink`
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
     @staticmethod
     async def _parse(
-        client: "pyrogram.Client",
-        rich_text: "raw.base.RichText",
-        users: Dict[int, "raw.base.User"] = {},
-        chats: Dict[int, "raw.base.Chat"] = {},
-    ) -> Optional[Union[str, List["RichText"], "RichText"]]:
+        client: pyrogram.Client,
+        rich_text: raw.base.RichText,
+        users: dict[int, raw.base.User] | None = None,
+        chats: dict[int, raw.base.Chat] | None = None,
+    ) -> str | list[RichText] | RichText | None:
         # TODO: fix anchors and references
+        if chats is None:
+            chats = {}
+        if users is None:
+            users = {}
         if isinstance(rich_text, raw.types.TextPlain):
             return rich_text.text
 
         if isinstance(rich_text, raw.types.TextConcat):
-            return types.List([await RichText._parse(client, text) for text in rich_text.texts])
+            return types.List(
+                [await RichText._parse(client, text) for text in rich_text.texts]
+            )
 
         if isinstance(rich_text, raw.types.TextBold):
             return RichTextBold(text=await RichText._parse(client, rich_text.text))
@@ -90,7 +99,9 @@ class RichText(Object):
             return RichTextUnderline(text=await RichText._parse(client, rich_text.text))
 
         if isinstance(rich_text, raw.types.TextStrike):
-            return RichTextStrikethrough(text=await RichText._parse(client, rich_text.text))
+            return RichTextStrikethrough(
+                text=await RichText._parse(client, rich_text.text)
+            )
 
         if isinstance(rich_text, raw.types.TextSpoiler):
             return RichTextSpoiler(text=await RichText._parse(client, rich_text.text))
@@ -130,7 +141,9 @@ class RichText(Object):
             return RichTextSubscript(text=await RichText._parse(client, rich_text.text))
 
         if isinstance(rich_text, raw.types.TextSuperscript):
-            return RichTextSuperscript(text=await RichText._parse(client, rich_text.text))
+            return RichTextSuperscript(
+                text=await RichText._parse(client, rich_text.text)
+            )
 
         if isinstance(rich_text, raw.types.TextMarked):
             return RichTextMarked(text=await RichText._parse(client, rich_text.text))
@@ -140,7 +153,8 @@ class RichText(Object):
 
         if isinstance(rich_text, raw.types.TextCustomEmoji):
             return RichTextCustomEmoji(
-                custom_emoji_id=str(rich_text.document_id), alternative_text=rich_text.alt
+                custom_emoji_id=str(rich_text.document_id),
+                alternative_text=rich_text.alt,
             )
 
         if isinstance(rich_text, raw.types.TextMath):
@@ -169,7 +183,8 @@ class RichText(Object):
 
         if isinstance(rich_text, raw.types.TextEmail):
             return RichTextEmailAddress(
-                text=await RichText._parse(client, rich_text.text), email_address=rich_text.email
+                text=await RichText._parse(client, rich_text.text),
+                email_address=rich_text.email,
             )
 
         if isinstance(rich_text, raw.types.TextAutoEmail):
@@ -180,7 +195,8 @@ class RichText(Object):
 
         if isinstance(rich_text, raw.types.TextPhone):
             return RichTextPhoneNumber(
-                text=await RichText._parse(client, rich_text.text), phone_number=rich_text.phone
+                text=await RichText._parse(client, rich_text.text),
+                phone_number=rich_text.phone,
             )
 
         if isinstance(rich_text, raw.types.TextAutoPhone):
@@ -230,12 +246,15 @@ class RichText(Object):
         if isinstance(rich_text, raw.types.TextAnchor):
             if isinstance(rich_text.text, raw.types.TextEmpty):
                 return RichTextAnchor(
-                    text=await RichText._parse(client, rich_text.text), name=rich_text.name
+                    text=await RichText._parse(client, rich_text.text),
+                    name=rich_text.name,
                 )
 
             return RichTextReference(
-                text=await RichText._parse(client, rich_text.text), name=rich_text.name
+                text=await RichText._parse(client, rich_text.text),
+                name=rich_text.name,
             )
+        return None
 
         # TODO: if isinstance(rich_text, raw.types.TextImage):
 
@@ -243,15 +262,17 @@ class RichText(Object):
 class RichTextBold(RichText):
     """A bold text.
 
-    Parameters:
+    Parameters
+    ----------
         text (:obj:`~pyrogram.types.RichText`):
             The text.
+
     """
 
     def __init__(
         self,
-        text: "types.RichText",
-    ):
+        text: types.RichText,
+    ) -> None:
         super().__init__()
 
         self.text = text
@@ -260,15 +281,17 @@ class RichTextBold(RichText):
 class RichTextItalic(RichText):
     """A italicized text.
 
-    Parameters:
+    Parameters
+    ----------
         text (:obj:`~pyrogram.types.RichText`):
             The text.
+
     """
 
     def __init__(
         self,
-        text: "types.RichText",
-    ):
+        text: types.RichText,
+    ) -> None:
         super().__init__()
 
         self.text = text
@@ -277,15 +300,17 @@ class RichTextItalic(RichText):
 class RichTextUnderline(RichText):
     """A underlined text.
 
-    Parameters:
+    Parameters
+    ----------
         text (:obj:`~pyrogram.types.RichText`):
             The text.
+
     """
 
     def __init__(
         self,
-        text: "types.RichText",
-    ):
+        text: types.RichText,
+    ) -> None:
         super().__init__()
 
         self.text = text
@@ -294,15 +319,17 @@ class RichTextUnderline(RichText):
 class RichTextStrikethrough(RichText):
     """A strikethrough text.
 
-    Parameters:
+    Parameters
+    ----------
         text (:obj:`~pyrogram.types.RichText`):
             The text.
+
     """
 
     def __init__(
         self,
-        text: "types.RichText",
-    ):
+        text: types.RichText,
+    ) -> None:
         super().__init__()
 
         self.text = text
@@ -311,15 +338,17 @@ class RichTextStrikethrough(RichText):
 class RichTextSpoiler(RichText):
     """A text covered by a spoiler.
 
-    Parameters:
+    Parameters
+    ----------
         text (:obj:`~pyrogram.types.RichText`):
             The text.
+
     """
 
     def __init__(
         self,
-        text: "types.RichText",
-    ):
+        text: types.RichText,
+    ) -> None:
         super().__init__()
 
         self.text = text
@@ -328,7 +357,8 @@ class RichTextSpoiler(RichText):
 class RichTextDateTime(RichText):
     """Formatted date and time.
 
-    Parameters:
+    Parameters
+    ----------
         text (:obj:`~pyrogram.types.RichText`):
             The text.
 
@@ -338,14 +368,15 @@ class RichTextDateTime(RichText):
         date_time_format (``str``, *optional*):
             The string that defines the formatting of the date and time.
             See `date-time entity formatting <https://core.telegram.org/bots/api#date-time-entity-formatting>`__ for more details.
+
     """
 
     def __init__(
         self,
-        text: "types.RichText",
+        text: types.RichText,
         date: datetime,
-        date_time_format: Optional[str] = None,
-    ):
+        date_time_format: str | None = None,
+    ) -> None:
         super().__init__()
 
         self.text = text
@@ -356,19 +387,21 @@ class RichTextDateTime(RichText):
 class RichTextTextMention(RichText):
     """A mention of a Telegram user by their identifier.
 
-    Parameters:
+    Parameters
+    ----------
         text (:obj:`~pyrogram.types.RichText`):
             The text.
 
         user (:obj:`~pyrogram.types.User`):
             The mentioned user.
+
     """
 
     def __init__(
         self,
-        text: "types.RichText",
-        user: "types.User",
-    ):
+        text: types.RichText,
+        user: types.User,
+    ) -> None:
         super().__init__()
 
         self.text = text
@@ -378,15 +411,17 @@ class RichTextTextMention(RichText):
 class RichTextSubscript(RichText):
     """A subscript text.
 
-    Parameters:
+    Parameters
+    ----------
         text (:obj:`~pyrogram.types.RichText`):
             The text.
+
     """
 
     def __init__(
         self,
-        text: "types.RichText",
-    ):
+        text: types.RichText,
+    ) -> None:
         super().__init__()
 
         self.text = text
@@ -395,15 +430,17 @@ class RichTextSubscript(RichText):
 class RichTextSuperscript(RichText):
     """A superscript text.
 
-    Parameters:
+    Parameters
+    ----------
         text (:obj:`~pyrogram.types.RichText`):
             The text.
+
     """
 
     def __init__(
         self,
-        text: "types.RichText",
-    ):
+        text: types.RichText,
+    ) -> None:
         super().__init__()
 
         self.text = text
@@ -412,15 +449,17 @@ class RichTextSuperscript(RichText):
 class RichTextMarked(RichText):
     """A marked text.
 
-    Parameters:
+    Parameters
+    ----------
         text (:obj:`~pyrogram.types.RichText`):
             The text.
+
     """
 
     def __init__(
         self,
-        text: "types.RichText",
-    ):
+        text: types.RichText,
+    ) -> None:
         super().__init__()
 
         self.text = text
@@ -429,15 +468,17 @@ class RichTextMarked(RichText):
 class RichTextCode(RichText):
     """A monowidth text.
 
-    Parameters:
+    Parameters
+    ----------
         text (:obj:`~pyrogram.types.RichText`):
             The text.
+
     """
 
     def __init__(
         self,
-        text: "types.RichText",
-    ):
+        text: types.RichText,
+    ) -> None:
         super().__init__()
 
         self.text = text
@@ -446,16 +487,18 @@ class RichTextCode(RichText):
 class RichTextCustomEmoji(RichText):
     """A custom emoji.
 
-    Parameters:
+    Parameters
+    ----------
         custom_emoji_id (``str``):
             Unique identifier of the custom emoji.
             Use :meth:`pyrogram.Client.get_custom_emoji_stickers` to get full information about the sticker.
 
         alternative_text (``str``):
             Alternative emoji for the custom emoji.
+
     """
 
-    def __init__(self, custom_emoji_id: str, alternative_text: str):
+    def __init__(self, custom_emoji_id: str, alternative_text: str) -> None:
         super().__init__()
 
         self.custom_emoji_id = custom_emoji_id
@@ -465,15 +508,17 @@ class RichTextCustomEmoji(RichText):
 class RichTextMathematicalExpression(RichText):
     """A mathematical expression.
 
-    Parameters:
+    Parameters
+    ----------
         expression (``str``):
             The expression in LaTeX format.
+
     """
 
     def __init__(
         self,
         expression: str,
-    ):
+    ) -> None:
         super().__init__()
 
         self.expression = expression
@@ -482,15 +527,17 @@ class RichTextMathematicalExpression(RichText):
 class RichTextUrl(RichText):
     """A text with a link.
 
-    Parameters:
+    Parameters
+    ----------
         text (:obj:`~pyrogram.types.RichText`):
             The text.
 
         url (``str``):
             URL of the link.
+
     """
 
-    def __init__(self, text: "types.RichText", url: str):
+    def __init__(self, text: types.RichText, url: str) -> None:
         super().__init__()
 
         self.text = text
@@ -500,15 +547,17 @@ class RichTextUrl(RichText):
 class RichTextEmailAddress(RichText):
     """A text with an email address.
 
-    Parameters:
+    Parameters
+    ----------
         text (:obj:`~pyrogram.types.RichText`):
             The text.
 
         email_address (``str``):
             The email address.
+
     """
 
-    def __init__(self, text: "types.RichText", email_address: str):
+    def __init__(self, text: types.RichText, email_address: str) -> None:
         super().__init__()
 
         self.text = text
@@ -518,15 +567,17 @@ class RichTextEmailAddress(RichText):
 class RichTextPhoneNumber(RichText):
     """A text with a phone number.
 
-    Parameters:
+    Parameters
+    ----------
         text (:obj:`~pyrogram.types.RichText`):
             The text.
 
         phone_number (``str``):
             The phone number.
+
     """
 
-    def __init__(self, text: "types.RichText", phone_number: str):
+    def __init__(self, text: types.RichText, phone_number: str) -> None:
         super().__init__()
 
         self.text = text
@@ -536,15 +587,17 @@ class RichTextPhoneNumber(RichText):
 class RichTextBankCardNumber(RichText):
     """A text with a bank card number.
 
-    Parameters:
+    Parameters
+    ----------
         text (:obj:`~pyrogram.types.RichText`):
             The text.
 
         bank_card_number (``str``):
             The bank card number.
+
     """
 
-    def __init__(self, text: "types.RichText", bank_card_number: str):
+    def __init__(self, text: types.RichText, bank_card_number: str) -> None:
         super().__init__()
 
         self.text = text
@@ -554,15 +607,17 @@ class RichTextBankCardNumber(RichText):
 class RichTextMention(RichText):
     """A mention by a username.
 
-    Parameters:
+    Parameters
+    ----------
         text (:obj:`~pyrogram.types.RichText`):
             The text.
 
         username (``str``):
             The username.
+
     """
 
-    def __init__(self, text: "types.RichText", username: str):
+    def __init__(self, text: types.RichText, username: str) -> None:
         super().__init__()
 
         self.text = text
@@ -572,15 +627,17 @@ class RichTextMention(RichText):
 class RichTextHashtag(RichText):
     """A hashtag.
 
-    Parameters:
+    Parameters
+    ----------
         text (:obj:`~pyrogram.types.RichText`):
             The text.
 
         hashtag (``str``):
             The hashtag.
+
     """
 
-    def __init__(self, text: "types.RichText", hashtag: str):
+    def __init__(self, text: types.RichText, hashtag: str) -> None:
         super().__init__()
 
         self.text = text
@@ -590,15 +647,17 @@ class RichTextHashtag(RichText):
 class RichTextCashtag(RichText):
     """A cashtag.
 
-    Parameters:
+    Parameters
+    ----------
         text (:obj:`~pyrogram.types.RichText`):
             The text.
 
         cashtag (``str``):
             The cashtag.
+
     """
 
-    def __init__(self, text: "types.RichText", cashtag: str):
+    def __init__(self, text: types.RichText, cashtag: str) -> None:
         super().__init__()
 
         self.text = text
@@ -608,15 +667,17 @@ class RichTextCashtag(RichText):
 class RichTextBotCommand(RichText):
     """A bot command.
 
-    Parameters:
+    Parameters
+    ----------
         text (:obj:`~pyrogram.types.RichText`):
             The text.
 
         bot_command (``str``):
             The bot command.
+
     """
 
-    def __init__(self, text: "types.RichText", bot_command: str):
+    def __init__(self, text: types.RichText, bot_command: str) -> None:
         super().__init__()
 
         self.text = text
@@ -626,15 +687,17 @@ class RichTextBotCommand(RichText):
 class RichTextAnchor(RichText):
     """An anchor.
 
-    Parameters:
+    Parameters
+    ----------
         text (:obj:`~pyrogram.types.RichText`):
             The text.
 
         name (``str``):
             The name of the anchor.
+
     """
 
-    def __init__(self, text: "types.RichText", name: str):
+    def __init__(self, text: types.RichText, name: str) -> None:
         super().__init__()
 
         self.text = text
@@ -644,16 +707,18 @@ class RichTextAnchor(RichText):
 class RichTextAnchorLink(RichText):
     """A link to an anchor.
 
-    Parameters:
+    Parameters
+    ----------
         text (:obj:`~pyrogram.types.RichText`):
             The text.
 
         anchor_name (``str``):
             The name of the anchor.
             If the name is empty, then the link brings back to the top of the message.
+
     """
 
-    def __init__(self, text: "types.RichText", anchor_name: str):
+    def __init__(self, text: types.RichText, anchor_name: str) -> None:
         super().__init__()
 
         self.text = text
@@ -663,15 +728,17 @@ class RichTextAnchorLink(RichText):
 class RichTextReference(RichText):
     """A reference.
 
-    Parameters:
+    Parameters
+    ----------
         text (:obj:`~pyrogram.types.RichText`):
             The text.
 
         name (``str``):
             The name of the reference.
+
     """
 
-    def __init__(self, text: "types.RichText", name: str):
+    def __init__(self, text: types.RichText, name: str) -> None:
         super().__init__()
 
         self.text = text
@@ -681,15 +748,17 @@ class RichTextReference(RichText):
 class RichTextReferenceLink(RichText):
     """A link to a reference.
 
-    Parameters:
+    Parameters
+    ----------
         text (:obj:`~pyrogram.types.RichText`):
             The text.
 
         reference_name (``str``):
             The name of the reference.
+
     """
 
-    def __init__(self, text: "types.RichText", reference_name: str):
+    def __init__(self, text: types.RichText, reference_name: str) -> None:
         super().__init__()
 
         self.text = text

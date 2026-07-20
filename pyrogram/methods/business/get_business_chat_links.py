@@ -25,11 +25,9 @@
 # Source: tl:account.getBusinessChatLinks
 # ***************************
 
-from typing import Union, Optional
 
 import pyrogram
-from pyrogram import raw
-from pyrogram import types
+from pyrogram import raw, types
 
 
 class GetBusinessChatLinks:
@@ -47,12 +45,10 @@ class GetBusinessChatLinks:
             .. code-block:: python
 
                 await app.get_business_chat_links(...)
+
         """
-
         r = await self.invoke(
-            raw.functions.account.getBusinessChatLinks(
-
-            )
+            raw.functions.account.getBusinessChatLinks(),
         )
 
         return types.BusinessChatLinks._parse(self, r)

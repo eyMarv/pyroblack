@@ -20,17 +20,17 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional
+from __future__ import annotations
 
 from pyrogram import raw
-
-from ..object import Object
+from pyrogram.types.object import Object
 
 
 class InputRichMessage(Object):
     """Describes a checklist to create.
 
-    Parameters:
+    Parameters
+    ----------
         html (``str``, *optional*):
             Content of the rich message to send described using HTML formatting.
             See `rich message formatting options <https://core.telegram.org/bots/api#rich-message-formatting-options>`__ for more details.
@@ -45,15 +45,16 @@ class InputRichMessage(Object):
         skip_entity_detection (``bool``, *optional*):
             Pass *True* to skip automatic detection of entities
             (e.g., URLs, email addresses, username mentions, hashtags, cashtags, bot commands, or phone numbers) in the text.
+
     """
 
     def __init__(
         self,
-        html: Optional[str] = None,
-        markdown: Optional[str] = None,
-        is_rtl: Optional[bool] = None,
-        skip_entity_detection: Optional[bool] = None,
-    ):
+        html: str | None = None,
+        markdown: str | None = None,
+        is_rtl: bool | None = None,
+        skip_entity_detection: bool | None = None,
+    ) -> None:
         super().__init__()
 
         self.html = html
@@ -61,20 +62,21 @@ class InputRichMessage(Object):
         self.is_rtl = is_rtl
         self.skip_entity_detection = skip_entity_detection
 
-    def write(self) -> "raw.base.InputRichMessage":
+    def write(self) -> raw.base.InputRichMessage:
         if self.html:
             input_rich_message = raw.types.InputRichMessageHTML(
                 html=self.html,
                 rtl=self.is_rtl,
-                noautolink=self.skip_entity_detection
+                noautolink=self.skip_entity_detection,
             )
         elif self.markdown:
             input_rich_message = raw.types.InputRichMessageMarkdown(
                 markdown=self.markdown,
                 rtl=self.is_rtl,
-                noautolink=self.skip_entity_detection
+                noautolink=self.skip_entity_detection,
             )
         else:
-            raise ValueError("You must provide either markdown or html in the rich message")
+            msg = "You must provide either markdown or html in the rich message"
+            raise ValueError(msg)
 
         return input_rich_message

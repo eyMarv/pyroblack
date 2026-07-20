@@ -20,28 +20,29 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional
+from __future__ import annotations
 
 import pyrogram
-from pyrogram import types, enums
+from pyrogram import enums, types
 
 
 class EditInlineCaption:
     async def edit_inline_caption(
-        self: "pyrogram.Client",
+        self: pyrogram.Client,
         inline_message_id: str,
         caption: str,
-        parse_mode: Optional["enums.ParseMode"] = None,
-        caption_entities: list["types.MessageEntity"] = None,
-        show_caption_above_media: bool = None,
-        invert_media: bool = None,
-        reply_markup: "types.InlineKeyboardMarkup" = None
+        parse_mode: enums.ParseMode | None = None,
+        caption_entities: list[types.MessageEntity] | None = None,
+        show_caption_above_media: bool | None = None,
+        invert_media: bool | None = None,
+        reply_markup: types.InlineKeyboardMarkup = None,
     ) -> bool:
         """Edit the caption of inline media messages.
 
         .. include:: /_includes/usable-by/bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             inline_message_id (``str``):
                 Identifier of the inline message.
 
@@ -61,7 +62,8 @@ class EditInlineCaption:
             reply_markup (:obj:`~pyrogram.types.InlineKeyboardMarkup`, *optional*):
                 An InlineKeyboardMarkup object.
 
-        Returns:
+        Returns
+        -------
             ``bool``: On success, True is returned.
 
         Example:
@@ -69,11 +71,12 @@ class EditInlineCaption:
 
                 # Bots only
                 await app.edit_inline_caption(inline_message_id, "new media caption")
+
         """
         link_preview_options = None
         if show_caption_above_media:
             link_preview_options = types.LinkPreviewOptions(
-                show_above_text=show_caption_above_media
+                show_above_text=show_caption_above_media,
             )
         return await self.edit_inline_text(
             inline_message_id=inline_message_id,
@@ -81,5 +84,5 @@ class EditInlineCaption:
             parse_mode=parse_mode,
             entities=caption_entities,
             link_preview_options=link_preview_options,
-            reply_markup=reply_markup
+            reply_markup=reply_markup,
         )

@@ -20,18 +20,19 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional
+from __future__ import annotations
+
 import random
 
 from pyrogram import raw, types
-
-from ..object import Object
+from pyrogram.types.object import Object
 
 
 class GiftedTon(Object):
     """Toncoins were gifted to a user.
 
-    Parameters:
+    Parameters
+    ----------
         gifter (:obj:`~pyrogram.types.User`, *optional*):
             User that gifted Telegram Premium.
             None if the gift was anonymous.
@@ -48,16 +49,18 @@ class GiftedTon(Object):
 
         sticker (:obj:`~pyrogram.types.Sticker`):
             A sticker to be shown in the message.
+
     """
+
     def __init__(
         self,
         *,
-        gifter: Optional["types.User"] = None,
-        receiver: "types.User",
-        ton_amount: Optional[int] = None,
-        transaction_id: Optional[str] = None,
-        sticker: Optional["types.Sticker"] = None,
-    ):
+        gifter: types.User | None = None,
+        receiver: types.User,
+        ton_amount: int | None = None,
+        transaction_id: str | None = None,
+        sticker: types.Sticker | None = None,
+    ) -> None:
         super().__init__()
 
         self.gifter = gifter
@@ -69,15 +72,15 @@ class GiftedTon(Object):
     @staticmethod
     async def _parse(
         client,
-        action: "raw.types.MessageActionGiftTon",
-        gifter: Optional["raw.base.User"] = None,
-        receiver: Optional["raw.base.User"] = None,
-    ) -> "GiftedTon":
+        action: raw.types.MessageActionGiftTon,
+        gifter: raw.base.User | None = None,
+        receiver: raw.base.User | None = None,
+    ) -> GiftedTon:
         raw_stickers = await client.invoke(
             raw.functions.messages.GetStickerSet(
                 stickerset=raw.types.InputStickerSetTonGifts(),
-                hash=0
-            )
+                hash=0,
+            ),
         )
 
         return GiftedTon(
@@ -91,12 +94,10 @@ class GiftedTon(Object):
                         await types.Sticker._parse(
                             client,
                             doc,
-                            {
-                                type(i): i for i in doc.attributes
-                            }
-                        ) for doc in raw_stickers.documents
-                    ]
-                )
-            )
+                            {type(i): i for i in doc.attributes},
+                        )
+                        for doc in raw_stickers.documents
+                    ],
+                ),
+            ),
         )
-

@@ -26,7 +26,7 @@ from .auto_name import AutoName
 
 
 class PhoneNumberCodeType(AutoName):
-    """Describes type of the request for which a code is sent to a phone number"""
+    """Describes type of the request for which a code is sent to a phone number."""
 
     AUTHENTICATION = auto()
     "Default authentication process."

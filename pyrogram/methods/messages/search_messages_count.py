@@ -20,27 +20,31 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import datetime
-from typing import Optional, Union
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import pyrogram
 from pyrogram import enums, raw, utils
 
+if TYPE_CHECKING:
+    from datetime import datetime
+
 
 class SearchMessagesCount:
     async def search_messages_count(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
+        self: pyrogram.Client,
+        chat_id: int | str,
         query: str = "",
-        filter: "enums.MessagesFilter" = enums.MessagesFilter.EMPTY,
-        from_user: Union[int, str] = None,
-        message_thread_id: int = None,
+        filter: enums.MessagesFilter = enums.MessagesFilter.EMPTY,
+        from_user: int | str | None = None,
+        message_thread_id: int | None = None,
         min_date: datetime = utils.zero_datetime(),
         max_date: datetime = utils.zero_datetime(),
         min_id: int = 0,
         max_id: int = 0,
-        saved_messages_topic_id: Optional[Union[int, str]] = None,
-        **kwargs
+        saved_messages_topic_id: int | str | None = None,
+        **kwargs,
     ) -> int:
         """Get the count of messages resulting from a search inside a chat.
 
@@ -48,7 +52,8 @@ class SearchMessagesCount:
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
                 For your personal cloud (Saved Messages) you can simply use "me" or "self".
@@ -71,20 +76,21 @@ class SearchMessagesCount:
 
             min_date (:py:obj:`~datetime.datetime`, *optional*):
                 Pass a date as offset to retrieve only older messages starting from that date.
-            
+
             max_date (:py:obj:`~datetime.datetime`, *optional*):
                 Pass a date as offset to retrieve only newer messages starting from that date.
-            
+
             min_id (``int``, *optional*):
                 If a positive value was provided, the method will return only messages with IDs more than min_id.
-            
+
             max_id (``int``, *optional*):
-                If a positive value was provided, the method will return only messages with IDs less than max_id.      
+                If a positive value was provided, the method will return only messages with IDs less than max_id.
 
             saved_messages_topic_id (``int`` | ``str``, *optional*):
                 If not None, only messages in the specified Saved Messages topic will be returned; pass None to return all messages, or for chats other than Saved Messages.
 
-        Returns:
+        Returns
+        -------
             ``int``: On success, the messages count is returned.
 
         """
@@ -94,25 +100,22 @@ class SearchMessagesCount:
                 q=query,
                 filter=filter.value(),
                 min_date=utils.datetime_to_timestamp(min_date),
-                max_date= utils.datetime_to_timestamp(max_date),
+                max_date=utils.datetime_to_timestamp(max_date),
                 offset_id=0,
                 add_offset=0,
                 limit=1,
                 min_id=min_id,
                 max_id=max_id,
-                from_id=(
-                    await self.resolve_peer(from_user)
-                    if from_user
-                    else None
-                ),
+                from_id=(await self.resolve_peer(from_user) if from_user else None),
                 hash=0,
                 top_msg_id=message_thread_id,
-                saved_peer_id=await self.resolve_peer(saved_messages_topic_id) if saved_messages_topic_id else None
+                saved_peer_id=await self.resolve_peer(saved_messages_topic_id)
+                if saved_messages_topic_id
+                else None,
                 # saved_reaction:flags.3?Vector<Reaction>
-            )
+            ),
         )
 
         if hasattr(r, "count"):
             return r.count
-        else:
-            return len(r.messages)
+        return len(r.messages)

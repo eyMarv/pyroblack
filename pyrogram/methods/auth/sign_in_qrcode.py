@@ -25,9 +25,8 @@ from base64 import b64encode
 from typing import Union
 
 import pyrogram
-from pyrogram import raw
-from pyrogram import types
-from pyrogram.session import Session, Auth
+from pyrogram import raw, types
+from pyrogram.session import Auth, Session
 
 log = logging.getLogger(__name__)
 
@@ -48,18 +47,21 @@ class SignInQrcode:
         Raises:
             ImportError: In case the qrcode library is not installed.
             SessionPasswordNeeded: In case a password is needed to sign in.
-        """
 
+        """
         try:
             import qrcode
         except ImportError:
+            msg = "qrcode is missing! Please install it with `pip install qrcode`"
             raise ImportError(
-                "qrcode is missing! " "Please install it with `pip install qrcode`"
+                msg,
             )
         r = await self.session.invoke(
             raw.functions.auth.ExportLoginToken(
-                api_id=self.api_id, api_hash=self.api_hash, except_ids=[]
-            )
+                api_id=self.api_id,
+                api_hash=self.api_hash,
+                except_ids=[],
+            ),
         )
         if isinstance(r, raw.types.auth.LoginToken):
             base64_token = b64encode(r.token).decode("utf-8")
@@ -73,7 +75,6 @@ class SignInQrcode:
             qr.add_data(login_url)
             qr.make(fit=True)
 
-            print("Scan the QR code with your Telegram app.")
             qr.print_ascii()
 
             return types.LoginToken._parse(r)
@@ -89,8 +90,10 @@ class SignInQrcode:
             await self.storage.dc_id(r.dc_id)
             await self.storage.auth_key(
                 await Auth(
-                    self, await self.storage.dc_id(), await self.storage.test_mode()
-                ).create()
+                    self,
+                    await self.storage.dc_id(),
+                    await self.storage.test_mode(),
+                ).create(),
             )
             self.session = Session(
                 self,
@@ -101,11 +104,12 @@ class SignInQrcode:
 
             await self.session.start()
             r = await self.session.invoke(
-                raw.functions.auth.ImportLoginToken(token=r.token)
+                raw.functions.auth.ImportLoginToken(token=r.token),
             )
             if isinstance(r, raw.types.auth.LoginTokenSuccess):
                 await self.storage.user_id(r.authorization.user.id)
                 await self.storage.is_bot(False)
 
                 return types.User._parse(self, r.authorization.user)
-        raise pyrogram.exceptions.RPCError("Unknown response type from Telegram API")
+        msg = "Unknown response type from Telegram API"
+        raise pyrogram.exceptions.RPCError(msg)

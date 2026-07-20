@@ -20,28 +20,29 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-import pyrogram
+from __future__ import annotations
 
-from typing import List, Union
+import pyrogram
 from pyrogram.types import Identifier
 
 
 class StopListening:
     async def stop_listening(
-        self: "pyrogram.Client",
-        listener_type: "pyrogram.enums.ListenerTypes" = pyrogram.enums.ListenerTypes.MESSAGE,
-        chat_id: Union[Union[int, str], List[Union[int, str]]] = None,
-        user_id: Union[Union[int, str], List[Union[int, str]]] = None,
-        message_id: Union[int, List[int]] = None,
-        inline_message_id: Union[str, List[str]] = None,
-    ):
+        self: pyrogram.Client,
+        listener_type: pyrogram.enums.ListenerTypes = pyrogram.enums.ListenerTypes.MESSAGE,
+        chat_id: int | str | list[int | str] | None = None,
+        user_id: int | str | list[int | str] | None = None,
+        message_id: int | list[int] | None = None,
+        inline_message_id: str | list[str] | None = None,
+    ) -> None:
         """Stops all listeners that match the given identifier pattern.
 
         .. include:: /_includes/usable-by/users-bots.rst
 
         Uses :meth:`~pyrogram.Client.get_many_listeners_matching_with_identifier_pattern`.
 
-        Parameters:
+        Parameters
+        ----------
             listener_type (:obj:`~pyrogram.enums.ListenerTypes`, *optional*):
                 The type of listener to stop listening for.
                 Default to Message.
@@ -57,6 +58,7 @@ class StopListening:
 
             inline_message_id (``str``, *optional*):
                 The inline message ID to stop listening for.
+
         """
         pattern = Identifier(
             from_user_id=user_id,
@@ -65,7 +67,8 @@ class StopListening:
             inline_message_id=inline_message_id,
         )
         listeners = self.get_many_listeners_matching_with_identifier_pattern(
-            pattern, listener_type
+            pattern,
+            listener_type,
         )
 
         for listener in listeners:

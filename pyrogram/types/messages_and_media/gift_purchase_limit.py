@@ -20,39 +20,41 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional
+from __future__ import annotations
 
-from ..object import Object
+from pyrogram.types.object import Object
 
 
 class GiftPurchaseLimit(Object):
     """Describes the maximum number of times that a specific gift can be purchased.
 
-    Parameters:
+    Parameters
+    ----------
         total_count (``int``, *optional*):
             The maximum number of times the gifts can be purchased.
 
         remaining_count (``int``, *optional*):
             Number of remaining times the gift can be purchased.
+
     """
+
     def __init__(
         self,
         *,
-        total_count: Optional[int] = None,
-        remaining_count: Optional[int] = None
-    ):
+        total_count: int | None = None,
+        remaining_count: int | None = None,
+    ) -> None:
         super().__init__()
 
         self.total_count = total_count
         self.remaining_count = remaining_count
 
     @staticmethod
-    def _parse(total: int, remains: int) -> Optional["GiftPurchaseLimit"]:
+    def _parse(total: int, remains: int) -> GiftPurchaseLimit | None:
         if total is None or total <= 0:
             return None
 
         return GiftPurchaseLimit(
             total_count=total,
-            remaining_count=remains
+            remaining_count=remains,
         )
-

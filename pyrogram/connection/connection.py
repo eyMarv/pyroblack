@@ -20,12 +20,14 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import asyncio
 import logging
-from typing import Optional, Type
+
+from pyrogram.session.internals import DataCenter
 
 from .transport import *
-from ..session.internals import DataCenter
 
 log = logging.getLogger(__name__)
 
@@ -50,9 +52,9 @@ class Connection:
         media: bool = False,
         mode: int = 3,
         crypto_executor=None,
-        loop: Optional[asyncio.AbstractEventLoop] = None,
-        **kwargs
-    ):
+        loop: asyncio.AbstractEventLoop | None = None,
+        **kwargs,
+    ) -> None:
         self.dc_id = dc_id
         self.test_mode = test_mode
         self.ipv6 = ipv6
@@ -65,10 +67,13 @@ class Connection:
 
         self.protocol = None  # type: TCP
 
-    async def connect(self):
-        for i in range(Connection.MAX_RETRIES):
+    async def connect(self) -> None:
+        for _i in range(Connection.MAX_RETRIES):
             self.protocol = self.mode(
-                self.ipv6, self.proxy, self.crypto_executor, self.loop
+                self.ipv6,
+                self.proxy,
+                self.crypto_executor,
+                self.loop,
             )
 
             try:
@@ -86,14 +91,14 @@ class Connection:
                         " (media)" if self.media else "",
                         "6" if self.ipv6 else "4",
                         self.mode.__name__,
-                    )
+                    ),
                 )
                 break
         else:
             log.warning("Connection failed! Trying again...")
             raise TimeoutError
 
-    async def close(self):
+    async def close(self) -> None:
         if self.protocol is None:
             return
         # Serialize against in-flight send() so we don't tear down a writer mid-drain.
@@ -101,11 +106,11 @@ class Connection:
             await self.protocol.close()
         log.info("Disconnected")
 
-    async def send(self, data: bytes):
+    async def send(self, data: bytes) -> None:
         try:
             await self.protocol.send(data)
         except Exception as e:
             raise OSError(e)
 
-    async def recv(self) -> Optional[bytes]:
+    async def recv(self) -> bytes | None:
         return await self.protocol.recv()

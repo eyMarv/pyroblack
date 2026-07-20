@@ -34,7 +34,8 @@ class Listener:
     """Designed to manage and handle different types of listeners used in pyromod.
     It enables you to wait for specific events like messages or callback queries and provides mechanisms for defining the conditions and filters that trigger these listeners.
 
-    Parameters:
+    Parameters
+    ----------
         listener_type (:obj:`~pyrogram.enums.ListenerTypes`):
             The type of listener that specifies the event you want to listen for.
             It can be either a “message” or a “callback_query.”
@@ -56,6 +57,7 @@ class Listener:
 
         callback (``Callable``, *optional*):
             The callback to call when the listener is fulfilled.
+
     """
 
     listener_type: "pyrogram.enums.ListenerTypes"

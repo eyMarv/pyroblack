@@ -20,14 +20,24 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import logging
-from datetime import datetime
+from typing import TYPE_CHECKING
 
 import pyrogram
-from pyrogram import raw, utils
-from pyrogram import types
-from pyrogram.file_id import FileId, FileType, FileUniqueId, FileUniqueType, ThumbnailSource
-from ..object import Object
+from pyrogram import raw, types, utils
+from pyrogram.file_id import (
+    FileId,
+    FileType,
+    FileUniqueId,
+    FileUniqueType,
+    ThumbnailSource,
+)
+from pyrogram.types.object import Object
+
+if TYPE_CHECKING:
+    from datetime import datetime
 
 log = logging.getLogger(__name__)
 
@@ -35,7 +45,8 @@ log = logging.getLogger(__name__)
 class Photo(Object):
     """A Photo.
 
-    Parameters:
+    Parameters
+    ----------
         sizes (List of :obj:`~pyrogram.types.Thumbnail`):
             Available variants of the photo, in different sizes.
 
@@ -53,14 +64,14 @@ class Photo(Object):
     def __init__(
         self,
         *,
-        client: "pyrogram.Client" = None,
-        sizes: list["types.Thumbnail"],
+        client: pyrogram.Client = None,
+        sizes: list[types.Thumbnail],
         date: datetime,
-        ttl_seconds: int = None,
-        has_spoiler: bool = None,
-        thumbs: list["types.Thumbnail"] = None,
-        **kwargs
-    ):
+        ttl_seconds: int | None = None,
+        has_spoiler: bool | None = None,
+        thumbs: list[types.Thumbnail] | None = None,
+        **kwargs,
+    ) -> None:
         super().__init__(client)
 
         self.sizes = sizes
@@ -72,10 +83,10 @@ class Photo(Object):
     @staticmethod
     def _parse(
         client,
-        photo: "raw.types.Photo",
-        ttl_seconds: int = None,
-        has_spoiler: bool = None,
-    ) -> "Photo":
+        photo: raw.types.Photo,
+        ttl_seconds: int | None = None,
+        has_spoiler: bool | None = None,
+    ) -> Photo:
         if isinstance(photo, raw.types.Photo):
             photos: list[raw.types.PhotoSize] = []
 
@@ -89,8 +100,8 @@ class Photo(Object):
                             type=p.type,
                             w=p.w,
                             h=p.h,
-                            size=max(p.sizes)
-                        )
+                            size=max(p.sizes),
+                        ),
                     )
 
             photos.sort(key=lambda p: p.size)
@@ -108,11 +119,11 @@ class Photo(Object):
                             thumbnail_file_type=FileType.PHOTO,
                             thumbnail_size=main.type,
                             volume_id=0,
-                            local_id=0
+                            local_id=0,
                         ).encode(),
                         file_unique_id=FileUniqueId(
                             file_unique_type=FileUniqueType.DOCUMENT,
-                            media_id=photo.id
+                            media_id=photo.id,
                         ).encode(),
                         width=main.w,
                         height=main.h,
@@ -124,14 +135,14 @@ class Photo(Object):
                 ttl_seconds=ttl_seconds,
                 has_spoiler=has_spoiler,
                 thumbs=types.Thumbnail._parse(client, photo),
-                client=client
+                client=client,
             )
+        return None
 
     @property
     def file_id(self) -> str:
         log.warning(
-            "This property is deprecated. "
-            "Please use sizes instead"
+            "This property is deprecated. Please use sizes instead",
         )
         if len(self.sizes) > 0:
             return self.sizes[-1].file_id
@@ -140,8 +151,7 @@ class Photo(Object):
     @property
     def file_unique_id(self) -> str:
         log.warning(
-            "This property is deprecated. "
-            "Please use sizes instead"
+            "This property is deprecated. Please use sizes instead",
         )
         if len(self.sizes) > 0:
             return self.sizes[-1].file_unique_id
@@ -150,8 +160,7 @@ class Photo(Object):
     @property
     def width(self) -> int:
         log.warning(
-            "This property is deprecated. "
-            "Please use sizes instead"
+            "This property is deprecated. Please use sizes instead",
         )
         if len(self.sizes) > 0:
             return self.sizes[-1].width
@@ -160,8 +169,7 @@ class Photo(Object):
     @property
     def height(self) -> int:
         log.warning(
-            "This property is deprecated. "
-            "Please use sizes instead"
+            "This property is deprecated. Please use sizes instead",
         )
         if len(self.sizes) > 0:
             return self.sizes[-1].height
@@ -170,8 +178,7 @@ class Photo(Object):
     @property
     def file_size(self) -> int:
         log.warning(
-            "This property is deprecated. "
-            "Please use sizes instead"
+            "This property is deprecated. Please use sizes instead",
         )
         if len(self.sizes) > 0:
             return self.sizes[-1].file_size

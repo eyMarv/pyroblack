@@ -20,11 +20,14 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional, Union
+from __future__ import annotations
 
-import pyrogram
-from pyrogram import raw, types, utils, enums
-from ..object import Object
+from typing import TYPE_CHECKING
+
+from pyrogram.types.object import Object
+
+if TYPE_CHECKING:
+    from pyrogram import enums, types
 
 
 class ReplyParameters(Object):
@@ -32,7 +35,8 @@ class ReplyParameters(Object):
 
     You must use exactly one of ``message_id`` OR ``story_id``.
 
-    Parameters:
+    Parameters
+    ----------
         message_id  (``int``, *optional*):
             Identifier of the message that will be replied to in the current chat,
             or in the chat chat_id if it is specified
@@ -59,10 +63,10 @@ class ReplyParameters(Object):
 
         quote_position (``int``, *optional*):
             Position of the quote in the original message in UTF-16 code units
-        
+
         checklist_task_id (``int``, *optional*):
             Identifier of the specific checklist task to be replied to.
-        
+
         direct_messages_topic_id (``int``, *optional*):
             Identifier of the direct messages topic to which the message will be sent; **required** if the message is sent to a direct messages chat; pass None if the chat is not a channel direct messages chat administered by the current user.
 
@@ -74,18 +78,18 @@ class ReplyParameters(Object):
     def __init__(
         self,
         *,
-        message_id: int = None,
-        story_id: int = None,
-        chat_id: Union[int, str] = None,
+        message_id: int | None = None,
+        story_id: int | None = None,
+        chat_id: int | str | None = None,
         # TODO
-        quote: str = None,
-        quote_parse_mode: Optional["enums.ParseMode"] = None,
-        quote_entities: list["types.MessageEntity"] = None,
-        quote_position: int = None,
-        checklist_task_id: int = None,
-        direct_messages_topic_id: int = None,
-        poll_option_id: int = None,
-    ):
+        quote: str | None = None,
+        quote_parse_mode: enums.ParseMode | None = None,
+        quote_entities: list[types.MessageEntity] | None = None,
+        quote_position: int | None = None,
+        checklist_task_id: int | None = None,
+        direct_messages_topic_id: int | None = None,
+        poll_option_id: int | None = None,
+    ) -> None:
         super().__init__()
 
         self.message_id = message_id

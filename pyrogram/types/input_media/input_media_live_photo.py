@@ -20,11 +20,13 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import io
 import os
 import pathlib
 import re
-from typing import BinaryIO, Callable, List, Optional, Union
+from typing import BinaryIO, Callable
 
 import pyrogram
 from pyrogram import enums, raw, types
@@ -36,7 +38,8 @@ from .input_media import InputMedia
 class InputMediaLivePhoto(InputMedia):
     """Represents a live photo to be sent.
 
-    Parameters:
+    Parameters
+    ----------
         media (``str`` | ``BinaryIO``):
             Video of the live photo to send.
             Pass a file_id as string to send a video that exists on the Telegram servers or
@@ -67,19 +70,20 @@ class InputMediaLivePhoto(InputMedia):
 
         has_spoiler (``bool``, *optional*):
             Pass True if the photo needs to be covered with a spoiler animation.
+
     """
 
     def __init__(
         self,
-        media: Union[str, BinaryIO],
-        photo: Union[str, BinaryIO],
-        thumb: Optional[str] = None,
+        media: str | BinaryIO,
+        photo: str | BinaryIO,
+        thumb: str | None = None,
         caption: str = "",
-        parse_mode: Optional["enums.ParseMode"] = None,
-        caption_entities: Optional[List["types.MessageEntity"]] = None,
-        show_caption_above_media: Optional[bool] = None,
-        has_spoiler: Optional[bool] = None,
-    ):
+        parse_mode: enums.ParseMode | None = None,
+        caption_entities: list[types.MessageEntity] | None = None,
+        show_caption_above_media: bool | None = None,
+        has_spoiler: bool | None = None,
+    ) -> None:
         super().__init__(media, caption, parse_mode, caption_entities)
 
         self.photo = photo
@@ -89,17 +93,19 @@ class InputMediaLivePhoto(InputMedia):
 
     async def write(
         self,
-        client: "pyrogram.Client",
-        chat_id: Optional[Union[int, str]] = None,
-        business_connection_id: Optional[str] = None,
-        progress: Optional[Callable] = None,
+        client: pyrogram.Client,
+        chat_id: int | str | None = None,
+        business_connection_id: str | None = None,
+        progress: Callable | None = None,
         progress_args: tuple = (),
         width: int = 0,
         height: int = 0,
     ):
         peer = await client.resolve_peer(chat_id or "me")
 
-        is_bytes_io = isinstance(self.media, io.BytesIO) or isinstance(self.photo, io.BytesIO)
+        is_bytes_io = isinstance(self.media, io.BytesIO) or isinstance(
+            self.photo, io.BytesIO
+        )
         is_uploaded_file = (
             is_bytes_io
             or (
@@ -119,7 +125,9 @@ class InputMediaLivePhoto(InputMedia):
                     media=raw.types.InputMediaUploadedDocument(
                         mime_type=client.guess_mime_type(self.media) or "video/mp4",
                         file=await client.save_file(
-                            self.media, progress=progress, progress_args=progress_args
+                            self.media,
+                            progress=progress,
+                            progress_args=progress_args,
                         ),
                         spoiler=self.has_spoiler,
                         attributes=[
@@ -130,7 +138,7 @@ class InputMediaLivePhoto(InputMedia):
                             ),
                         ],
                     ),
-                )
+                ),
             )
 
             uploaded_photo = await client.invoke(
@@ -138,7 +146,9 @@ class InputMediaLivePhoto(InputMedia):
                     peer=peer,
                     media=raw.types.InputMediaUploadedPhoto(
                         file=await client.save_file(
-                            self.photo, progress=progress, progress_args=progress_args
+                            self.photo,
+                            progress=progress,
+                            progress_args=progress_args,
                         ),
                         video=raw.types.InputDocument(
                             id=uploaded_media.document.id,
@@ -148,7 +158,7 @@ class InputMediaLivePhoto(InputMedia):
                         live_photo=True,
                         spoiler=self.has_spoiler,
                     ),
-                )
+                ),
             )
 
             media = raw.types.InputMediaPhoto(
@@ -173,23 +183,29 @@ class InputMediaLivePhoto(InputMedia):
             photo_decoded = FileId.decode(self.photo)
         except Exception:
             if isinstance(self.photo, str) and re.match("^https?://", self.photo):
-                raise ValueError(
+                msg = (
                     "HTTP URLs are not supported for live photo file_id reconstruction"
                 )
+                raise ValueError(
+                    msg,
+                )
+            msg = f'Failed to decode photo "{self.photo}". The value does not represent a valid file id.'
             raise ValueError(
-                f'Failed to decode photo "{self.photo}". The value does not represent a valid file id.'
+                msg,
             )
 
         if photo_decoded.file_type != FileType.PHOTO:
+            msg = f"Expected PHOTO, got {photo_decoded.file_type.name} file id instead"
             raise ValueError(
-                f"Expected PHOTO, got {photo_decoded.file_type.name} file id instead"
+                msg,
             )
 
         try:
             video_decoded = FileId.decode(self.media)
         except Exception:
+            msg = f'Failed to decode video "{self.media}". The value does not represent a valid file id.'
             raise ValueError(
-                f'Failed to decode video "{self.media}". The value does not represent a valid file id.'
+                msg,
             )
 
         media = raw.types.InputMediaPhoto(

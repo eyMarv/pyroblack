@@ -24,7 +24,7 @@ import os
 
 import pyrogram
 from pyrogram import raw
-from pyrogram.utils import compute_password_hash, compute_password_check, btoi, itob
+from pyrogram.utils import btoi, compute_password_check, compute_password_hash, itob
 
 
 class ChangeCloudPassword:
@@ -32,13 +32,14 @@ class ChangeCloudPassword:
         self: "pyrogram.Client",
         current_password: str,
         new_password: str,
-        new_hint: str = ""
+        new_hint: str = "",
     ) -> bool:
         """Change your Two-Step Verification password (Cloud Password) with a new one.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             current_password (``str``):
                 Your current password.
 
@@ -48,10 +49,12 @@ class ChangeCloudPassword:
             new_hint (``str``, *optional*):
                 A new password hint.
 
-        Returns:
+        Returns
+        -------
             ``bool``: True on success.
 
-        Raises:
+        Raises
+        ------
             ValueError: In case there is no cloud password to change.
 
         Example:
@@ -62,11 +65,13 @@ class ChangeCloudPassword:
 
                 # Change password and hint
                 await app.change_cloud_password("current_password", "new_password", new_hint="hint")
+
         """
         r = await self.invoke(raw.functions.account.GetPassword())
 
         if not r.has_password:
-            raise ValueError("There is no cloud password to change")
+            msg = "There is no cloud password to change"
+            raise ValueError(msg)
 
         r.new_algo.salt1 += os.urandom(32)
         new_hash = btoi(compute_password_hash(r.new_algo, new_password))
@@ -78,9 +83,9 @@ class ChangeCloudPassword:
                 new_settings=raw.types.account.PasswordInputSettings(
                     new_algo=r.new_algo,
                     new_password_hash=new_hash,
-                    hint=new_hint
-                )
-            )
+                    hint=new_hint,
+                ),
+            ),
         )
 
         return True

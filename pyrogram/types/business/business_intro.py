@@ -20,62 +20,55 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import datetime
 
-import pyrogram
-from pyrogram import raw, types, utils
+from __future__ import annotations
 
-from ..object import Object
+from pyrogram import raw, types
+from pyrogram.types.object import Object
 
 
 class BusinessIntro(Object):
-    """
+    """Parameters
+    title (``str``, *optional*):
+        Title text of the business intro.
 
-    Parameters:
-        title (``str``, *optional*):
-            Title text of the business intro
-        
-        message (``str``, *optional*):
-            Message text of the business intro
+    message (``str``, *optional*):
+        Message text of the business intro
 
-        sticker (:obj:`~pyrogram.types.Sticker`, *optional*):
-            Sticker of the business intro
+    sticker (:obj:`~pyrogram.types.Sticker`, *optional*):
+        Sticker of the business intro
 
     """
 
     def __init__(
         self,
         *,
-        title: str = None,
-        message: str = None,
-        sticker: "types.Sticker" = None
-    ):
+        title: str | None = None,
+        message: str | None = None,
+        sticker: types.Sticker = None,
+    ) -> None:
         super().__init__()
 
         self.title = title
         self.message = message
         self.sticker = sticker
 
-
     @staticmethod
     async def _parse(
         client,
-        business_intro: "raw.types.BusinessIntro"
-    ) -> "BusinessIntro":
+        business_intro: raw.types.BusinessIntro,
+    ) -> BusinessIntro:
         doc = getattr(business_intro, "sticker", None)
         sticker = None
-        if (
-            doc and
-            isinstance(doc, raw.types.Document)
-        ):
+        if doc and isinstance(doc, raw.types.Document):
             attributes = {type(i): i for i in doc.attributes}
             sticker = await types.Sticker._parse(
                 client,
                 doc,
-                attributes
+                attributes,
             )
         return BusinessIntro(
             title=getattr(business_intro, "title", None),
             message=getattr(business_intro, "description", None),
-            sticker=sticker
+            sticker=sticker,
         )

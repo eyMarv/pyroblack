@@ -23,10 +23,9 @@
 import logging
 
 import pyrogram
-from pyrogram import raw
-from pyrogram import types
-from pyrogram.errors import PhoneMigrate, NetworkMigrate
-from pyrogram.session import Session, Auth
+from pyrogram import raw, types
+from pyrogram.errors import NetworkMigrate, PhoneMigrate
+from pyrogram.session import Auth, Session
 
 log = logging.getLogger(__name__)
 
@@ -35,21 +34,24 @@ class SendCode:
     async def send_code(
         self: "pyrogram.Client",
         phone_number: str,
-        **kwargs
+        **kwargs,
     ) -> "types.SentCode":
         """Send the confirmation code to the given phone number.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             phone_number (``str``):
                 Phone number in international format (includes the country prefix).
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.SentCode`: On success, an object containing information on the sent confirmation code
             is returned.
 
-        Raises:
+        Raises
+        ------
             BadRequest: In case the phone number is invalid.
             :obj:`~pyrogram.errors.RPCError`: In case of a Telegram RPC error.
 
@@ -63,8 +65,8 @@ class SendCode:
                         phone_number=phone_number,
                         api_id=self.api_id,
                         api_hash=self.api_hash,
-                        settings=raw.types.CodeSettings()
-                    )
+                        settings=raw.types.CodeSettings(),
+                    ),
                 )
             except (PhoneMigrate, NetworkMigrate) as e:
                 await self.session.stop()
@@ -72,13 +74,16 @@ class SendCode:
                 await self.storage.dc_id(e.value)
                 await self.storage.auth_key(
                     await Auth(
-                        self, await self.storage.dc_id(),
-                        await self.storage.test_mode()
-                    ).create()
+                        self,
+                        await self.storage.dc_id(),
+                        await self.storage.test_mode(),
+                    ).create(),
                 )
                 self.session = Session(
-                    self, await self.storage.dc_id(),
-                    await self.storage.auth_key(), await self.storage.test_mode()
+                    self,
+                    await self.storage.dc_id(),
+                    await self.storage.auth_key(),
+                    await self.storage.test_mode(),
                 )
 
                 await self.session.start()

@@ -20,19 +20,23 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import datetime
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import pyrogram
-
 from pyrogram import raw, types, utils
-from ..object import Object
+from pyrogram.types.object import Object
 
+if TYPE_CHECKING:
+    from datetime import datetime
 
 
 class GiveawayWinners(Object):
     """This object represents a message about the completion of a giveaway with public winners.
 
-    Parameters:
+    Parameters
+    ----------
         chat (:obj:`~pyrogram.types.Chat`):
             The chat that created the giveaway
 
@@ -41,13 +45,13 @@ class GiveawayWinners(Object):
 
         winners_selection_date (:py:obj:`~datetime.datetime`):
             Point in time (Unix timestamp) when winners of the giveaway were selected
-        
+
         winner_count (``int``):
             Total number of winners in the giveaway
 
         winners (:obj:`~pyrogram.types.User`):
             List of up to 100 winners of the giveaway
-        
+
         additional_chat_count (``int``, *optional*):
             The number of other chats the user had to join in order to be eligible for the giveaway
 
@@ -62,10 +66,10 @@ class GiveawayWinners(Object):
 
         only_new_members (``bool``, *optional*):
             True, if only users who had joined the chats after the giveaway started were eligible to win
-        
+
         was_refunded (``bool``, *optional*):
             True, if the giveaway was canceled because the payment for it was refunded
-        
+
         prize_description (``str``, *optional*):
             Description of additional giveaway prize
 
@@ -74,20 +78,20 @@ class GiveawayWinners(Object):
     def __init__(
         self,
         *,
-        client: "pyrogram.Client" = None,
-        chat: "types.Chat",
+        client: pyrogram.Client = None,
+        chat: types.Chat,
         giveaway_message_id: int,
         winners_selection_date: datetime,
         winner_count: int,
-        winners: list["types.User"],
-        additional_chat_count: int = None,
-        prize_star_count: int = None,
-        premium_subscription_month_count: int = None,
-        unclaimed_prize_count: int = None,
-        only_new_members: bool = None,
-        was_refunded: bool = None,
-        prize_description: str = None
-    ):
+        winners: list[types.User],
+        additional_chat_count: int | None = None,
+        prize_star_count: int | None = None,
+        premium_subscription_month_count: int | None = None,
+        unclaimed_prize_count: int | None = None,
+        only_new_members: bool | None = None,
+        was_refunded: bool | None = None,
+        prize_description: str | None = None,
+    ) -> None:
         super().__init__(client)
 
         self.chat = chat
@@ -108,29 +112,35 @@ class GiveawayWinners(Object):
         client,
         chats: dict,
         users: dict,
-        giveaway_media: "raw.types.MessageMediaGiveawayResults"
-    ) -> "GiveawayWinners":
+        giveaway_media: raw.types.MessageMediaGiveawayResults,
+    ) -> GiveawayWinners:
         if isinstance(giveaway_media, raw.types.MessageMediaGiveawayResults):
             return GiveawayWinners(
                 client=client,
                 chat=types.Chat._parse_channel_chat(
-                    client, chats.get(giveaway_media.channel_id)
+                    client,
+                    chats.get(giveaway_media.channel_id),
                 ),
                 giveaway_message_id=giveaway_media.launch_msg_id,
-                winners_selection_date=utils.timestamp_to_datetime(giveaway_media.until_date),
+                winners_selection_date=utils.timestamp_to_datetime(
+                    giveaway_media.until_date
+                ),
                 winner_count=giveaway_media.winners_count,
                 winners=types.List(
                     types.User._parse(
                         client,
-                        users.get(user_id)
+                        users.get(user_id),
                     )
                     for user_id in giveaway_media.winners
                 ),
-                additional_chat_count=getattr(giveaway_media, "additional_peers_count", None),
+                additional_chat_count=getattr(
+                    giveaway_media, "additional_peers_count", None
+                ),
                 prize_star_count=giveaway_media.stars,
                 premium_subscription_month_count=giveaway_media.months,
                 unclaimed_prize_count=getattr(giveaway_media, "unclaimed_count", None),
                 only_new_members=getattr(giveaway_media, "only_new_subscribers", None),
                 was_refunded=getattr(giveaway_media, "refunded", None),
-                prize_description=getattr(giveaway_media, "prize_description", None)   
+                prize_description=getattr(giveaway_media, "prize_description", None),
             )
+        return None

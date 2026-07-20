@@ -21,14 +21,21 @@
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from pyrogram import raw
-from ..object import Object
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+from pyrogram.types.object import Object
+
+if TYPE_CHECKING:
+    from pyrogram import raw
 
 
 class StickerSet(Object):
     """A stickerset.
 
-    Parameters:
+    Parameters
+    ----------
         id (``Integer``):
             Identifier for this stickerset.
 
@@ -46,6 +53,7 @@ class StickerSet(Object):
 
         emojis (``Boolean``):
             Is this a emojis stickerset.
+
     """
 
     def __init__(
@@ -55,9 +63,9 @@ class StickerSet(Object):
         title: str,
         short_name: str,
         count: int,
-        masks: bool = None,
-        emojis: bool = None,
-    ):
+        masks: bool | None = None,
+        emojis: bool | None = None,
+    ) -> None:
         self.id = id
         self.title = title
         self.short_name = short_name
@@ -66,7 +74,7 @@ class StickerSet(Object):
         self.emojis = emojis
 
     @staticmethod
-    def _parse(stickerset: "raw.types.StickerSet") -> "StickerSet":
+    def _parse(stickerset: raw.types.StickerSet) -> StickerSet:
         return StickerSet(
             id=getattr(stickerset, "id", None),
             title=getattr(stickerset, "title", None),

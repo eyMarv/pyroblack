@@ -8,13 +8,13 @@ from __future__ import annotations
 
 import functools
 import inspect
-from typing import Any, Callable, Dict, Optional
+from typing import Callable
 
 # Map: method_name -> {old_kwarg: new_kwarg | None}
 # None means "accept and drop" (obsolete / no longer meaningful).
 # Special transforms are handled in _transform().
 
-CLIENT_LEGACY_KWARGS: Dict[str, Dict[str, Optional[str]]] = {
+CLIENT_LEGACY_KWARGS: dict[str, dict[str, str | None]] = {
     # Media caption position
     "edit_message_text": {"invert_media": None},  # text-only edit; accept no-op
     "edit_inline_text": {"invert_media": None},
@@ -69,7 +69,9 @@ CLIENT_LEGACY_KWARGS: Dict[str, Dict[str, Optional[str]]] = {
     # get_payment_form / send_payment_form accept chat_id+message_id natively
     # (dual API with modern input_invoice) — do not strip those kwargs.
     # Promote
-    "promote_chat_member": {"title": None},  # custom title set via privileges / separate API
+    "promote_chat_member": {
+        "title": None
+    },  # custom title set via privileges / separate API
     # Poll
     "send_poll": {
         "correct_option_id": None,  # transformed -> correct_option_ids
@@ -126,7 +128,7 @@ CLIENT_LEGACY_KWARGS: Dict[str, Dict[str, Optional[str]]] = {
     },
 }
 
-MESSAGE_LEGACY_KWARGS: Dict[str, Dict[str, Optional[str]]] = {
+MESSAGE_LEGACY_KWARGS: dict[str, dict[str, str | None]] = {
     "edit_text": {
         "invert_media": None,
         "business_connection_id": "business_connection_id",
@@ -166,12 +168,15 @@ def _transform(method_name: str, kwargs: dict) -> dict:
     if method_name == "send_poll":
         coid = kwargs.pop("correct_option_id", None)
         if coid is not None and "correct_option_ids" not in kwargs:
-            kwargs["correct_option_ids"] = [coid] if not isinstance(coid, list) else coid
+            kwargs["correct_option_ids"] = (
+                [coid] if not isinstance(coid, list) else coid
+            )
         # reply_to_message_id -> reply_parameters if needed
         rmid = kwargs.pop("reply_to_message_id", None)
         if rmid is not None and kwargs.get("reply_parameters") is None:
             try:
                 from pyrogram import types
+
                 kwargs["reply_parameters"] = types.ReplyParameters(message_id=rmid)
             except Exception:
                 pass
@@ -193,7 +198,9 @@ def _transform(method_name: str, kwargs: dict) -> dict:
     return kwargs
 
 
-def _wrap_method(func: Callable, method_name: str, aliases: Dict[str, Optional[str]]) -> Callable:
+def _wrap_method(
+    func: Callable, method_name: str, aliases: dict[str, str | None]
+) -> Callable:
     if getattr(func, "_legacy_kwargs_wrapped", False):
         return func
 
@@ -201,6 +208,7 @@ def _wrap_method(func: Callable, method_name: str, aliases: Dict[str, Optional[s
     is_async_gen = inspect.isasyncgenfunction(func)
 
     if is_async_gen:
+
         @functools.wraps(func)
         async def agen_wrapper(self, *args, **kwargs):
             kwargs = _apply_aliases(kwargs, aliases)
@@ -213,6 +221,7 @@ def _wrap_method(func: Callable, method_name: str, aliases: Dict[str, Optional[s
         return agen_wrapper
 
     if is_coro:
+
         @functools.wraps(func)
         async def async_wrapper(self, *args, **kwargs):
             kwargs = _apply_aliases(kwargs, aliases)
@@ -239,7 +248,7 @@ def _wrap_method(func: Callable, method_name: str, aliases: Dict[str, Optional[s
     return sync_wrapper
 
 
-def _apply_aliases(kwargs: dict, aliases: Dict[str, Optional[str]]) -> dict:
+def _apply_aliases(kwargs: dict, aliases: dict[str, str | None]) -> dict:
     out = dict(kwargs)
     for old, new in aliases.items():
         if old not in out:
@@ -262,12 +271,12 @@ def _open_signature(func: Callable) -> inspect.Signature:
                 inspect.Parameter("self", inspect.Parameter.POSITIONAL_OR_KEYWORD),
                 inspect.Parameter("args", inspect.Parameter.VAR_POSITIONAL),
                 inspect.Parameter("kwargs", inspect.Parameter.VAR_KEYWORD),
-            ]
+            ],
         )
     params = list(sig.parameters.values())
     if not any(p.kind == inspect.Parameter.VAR_KEYWORD for p in params):
         params.append(
-            inspect.Parameter("kwargs", inspect.Parameter.VAR_KEYWORD)
+            inspect.Parameter("kwargs", inspect.Parameter.VAR_KEYWORD),
         )
     return sig.replace(parameters=params)
 

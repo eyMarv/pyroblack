@@ -20,85 +20,84 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import logging
-from datetime import datetime
-from typing import Optional, Union
+from typing import TYPE_CHECKING
 
 import pyrogram
-from pyrogram import raw, utils, types, enums
-from pyrogram.file_id import FileType
+from pyrogram import enums, raw, types, utils
+
+if TYPE_CHECKING:
+    from datetime import datetime
 
 log = logging.getLogger(__name__)
 
 
 class SendPoll:
     async def send_poll(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
-        question: "types.FormattedText",
-        options: list["types.InputPollOption"],
+        self: pyrogram.Client,
+        chat_id: int | str,
+        question: types.FormattedText,
+        options: list[types.InputPollOption],
         is_anonymous: bool = True,
-        type: "enums.PollType" = enums.PollType.REGULAR,
-        allows_multiple_answers: bool = None,
-        allows_revoting: bool = None,
-        shuffle_options: bool = None,
-        allow_adding_options: bool = None,
-        hide_results_until_closes: bool = None,
-        correct_option_ids: list[int] = None,
-        explanation: "types.FormattedText" = None,
-        explanation_media: Optional[Union[
-            "types.InputMediaAnimation",
-            "types.InputMediaDocument",
-            "types.InputMediaAudio",
-            "types.InputMediaPhoto",
-            "types.InputMediaSticker",
-            "types.InputMediaVideo",
-            "types.Location",
-        ]] = None,
-        open_period: int = None,
-        close_date: datetime = None,
-        is_closed: bool = None,
-        description: "types.FormattedText" = None,
-        description_media: Optional[Union[
-            "types.InputMediaAnimation",
-            "types.InputMediaDocument",
-            "types.InputMediaAudio",
-            "types.InputMediaPhoto",
-            "types.InputMediaSticker",
-            "types.InputMediaVideo",
-            "types.Location",
-        ]] = None,
-        disable_notification: bool = None,
-        protect_content: bool = None,
-        allow_paid_broadcast: bool = None,
-        paid_message_star_count: int = None,
-        reply_parameters: "types.ReplyParameters" = None,
-        reply_to_message_id: int = None,
-        reply_to_chat_id: Union[int, str] = None,
-        reply_to_story_id: int = None,
-        reply_to_monoforum_id: Union[int, str] = None,
-        quote_text: str = None,
-        quote_entities: list = None,
-        invert_media: bool = None,
-        message_thread_id: int = None,
-        business_connection_id: str = None,
-        send_as: Union[int, str] = None,
-        schedule_date: datetime = None,
-        message_effect_id: int = None,
-        reply_markup: Union[
-            "types.InlineKeyboardMarkup",
-            "types.ReplyKeyboardMarkup",
-            "types.ReplyKeyboardRemove",
-            "types.ForceReply"
-        ] = None,
-        **kwargs
-    ) -> "types.Message":
+        type: enums.PollType = enums.PollType.REGULAR,
+        allows_multiple_answers: bool | None = None,
+        allows_revoting: bool | None = None,
+        shuffle_options: bool | None = None,
+        allow_adding_options: bool | None = None,
+        hide_results_until_closes: bool | None = None,
+        correct_option_ids: list[int] | None = None,
+        explanation: types.FormattedText = None,
+        explanation_media: types.InputMediaAnimation
+        | types.InputMediaDocument
+        | types.InputMediaAudio
+        | types.InputMediaPhoto
+        | types.InputMediaSticker
+        | types.InputMediaVideo
+        | types.Location
+        | None = None,
+        open_period: int | None = None,
+        close_date: datetime | None = None,
+        is_closed: bool | None = None,
+        description: types.FormattedText = None,
+        description_media: types.InputMediaAnimation
+        | types.InputMediaDocument
+        | types.InputMediaAudio
+        | types.InputMediaPhoto
+        | types.InputMediaSticker
+        | types.InputMediaVideo
+        | types.Location
+        | None = None,
+        disable_notification: bool | None = None,
+        protect_content: bool | None = None,
+        allow_paid_broadcast: bool | None = None,
+        paid_message_star_count: int | None = None,
+        reply_parameters: types.ReplyParameters = None,
+        reply_to_message_id: int | None = None,
+        reply_to_chat_id: int | str | None = None,
+        reply_to_story_id: int | None = None,
+        reply_to_monoforum_id: int | str | None = None,
+        quote_text: str | None = None,
+        quote_entities: list | None = None,
+        invert_media: bool | None = None,
+        message_thread_id: int | None = None,
+        business_connection_id: str | None = None,
+        send_as: int | str | None = None,
+        schedule_date: datetime | None = None,
+        message_effect_id: int | None = None,
+        reply_markup: types.InlineKeyboardMarkup
+        | types.ReplyKeyboardMarkup
+        | types.ReplyKeyboardRemove
+        | types.ForceReply = None,
+        **kwargs,
+    ) -> types.Message:
         """Send a native poll.
 
         .. include:: /_includes/usable-by/users-bots.rst
 
-        Parameters:
-
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
                 For your personal cloud (Saved Messages) you can simply use "me" or "self".
@@ -190,7 +189,7 @@ class SendPoll:
             send_as (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the chat or channel to send the message as.
                 You can use this to send the message on behalf of a chat or channel where you have appropriate permissions.
-                Use the :meth:`~pyrogram.Client.get_send_as_chats` to return the list of message sender identifiers, which can be used to send messages in the chat, 
+                Use the :meth:`~pyrogram.Client.get_send_as_chats` to return the list of message sender identifiers, which can be used to send messages in the chat,
                 This setting applies to the current message and will remain effective for future messages unless explicitly changed.
                 To set this behavior permanently for all messages, use :meth:`~pyrogram.Client.set_send_as_chat`.
 
@@ -204,7 +203,8 @@ class SendPoll:
                 Additional interface options. An object for an inline keyboard, custom reply keyboard,
                 instructions to remove reply keyboard or to force a reply from the user.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.Message`: On success, the sent poll message is returned.
 
         Example:
@@ -253,7 +253,6 @@ class SendPoll:
                 )
 
         """
-
         if isinstance(question, str):
             question = types.FormattedText(text=question)
 
@@ -268,8 +267,8 @@ class SendPoll:
             if isinstance(answer_, str):
                 answer_ = types.InputPollOption(
                     text=types.FormattedText(
-                        text=answer_
-                    )
+                        text=answer_,
+                    ),
                 )
             answers.append(await answer_.write(self))
 
@@ -290,13 +289,17 @@ class SendPoll:
         reply_to = await utils._get_reply_message_parameters(
             self,
             message_thread_id,
-            reply_parameters
+            reply_parameters,
         )
 
         if type == enums.PollType.QUIZ and allow_adding_options:
             allow_adding_options = False
 
-        if type == enums.PollType.QUIZ and len(correct_option_ids) > 1 and not allows_multiple_answers:
+        if (
+            type == enums.PollType.QUIZ
+            and len(correct_option_ids) > 1
+            and not allows_multiple_answers
+        ):
             allows_multiple_answers = True
 
         attached_media = None
@@ -338,7 +341,7 @@ class SendPoll:
                     revoting_disabled=not allows_revoting,
                     shuffle_answers=shuffle_options,
                     hide_results_until_close=hide_results_until_closes,
-                    # creator:flags.10?true 
+                    # creator:flags.10?true
                 ),
                 correct_answers=correct_option_ids or None,
                 solution=solution.text if solution else None,
@@ -357,14 +360,14 @@ class SendPoll:
             allow_paid_floodskip=allow_paid_broadcast,
             allow_paid_stars=paid_message_star_count,
             reply_markup=await reply_markup.write(self) if reply_markup else None,
-            effect=message_effect_id
+            effect=message_effect_id,
         )
         if business_connection_id:
             r = await self.invoke(
                 raw.functions.InvokeWithBusinessConnection(
                     query=rpc,
-                    connection_id=business_connection_id
-                )
+                    connection_id=business_connection_id,
+                ),
             )
         else:
             r = await self.invoke(rpc)
@@ -375,28 +378,30 @@ class SendPoll:
                 (
                     raw.types.UpdateNewMessage,
                     raw.types.UpdateNewChannelMessage,
-                    raw.types.UpdateNewScheduledMessage
-                )
-            ):
-                return await types.Message._parse(
-                    self, i.message,
-                    {i.id: i for i in r.users},
-                    {i.id: i for i in r.chats},
-                    is_scheduled=isinstance(i, raw.types.UpdateNewScheduledMessage),
-                    replies=self.fetch_replies
-                )
-            elif isinstance(
-                i,
-                (
-                    raw.types.UpdateBotNewBusinessMessage
-                )
+                    raw.types.UpdateNewScheduledMessage,
+                ),
             ):
                 return await types.Message._parse(
                     self,
                     i.message,
                     {i.id: i for i in r.users},
                     {i.id: i for i in r.chats},
-                    business_connection_id=getattr(i, "connection_id", business_connection_id),
-                    raw_reply_to_message=i.reply_to_message,
-                    replies=0
+                    is_scheduled=isinstance(i, raw.types.UpdateNewScheduledMessage),
+                    replies=self.fetch_replies,
                 )
+            if isinstance(
+                i,
+                (raw.types.UpdateBotNewBusinessMessage),
+            ):
+                return await types.Message._parse(
+                    self,
+                    i.message,
+                    {i.id: i for i in r.users},
+                    {i.id: i for i in r.chats},
+                    business_connection_id=getattr(
+                        i, "connection_id", business_connection_id
+                    ),
+                    raw_reply_to_message=i.reply_to_message,
+                    replies=0,
+                )
+        return None

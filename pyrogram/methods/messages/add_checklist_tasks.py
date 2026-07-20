@@ -20,7 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import List, Union
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw, types
@@ -28,16 +28,17 @@ from pyrogram import raw, types
 
 class AddChecklistTasks:
     async def add_checklist_tasks(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
+        self: pyrogram.Client,
+        chat_id: int | str,
         message_id: int,
-        tasks: List["types.InputChecklistTask"],
+        tasks: list[types.InputChecklistTask],
     ) -> int:
         """Add tasks to a checklist in a message.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
                 For your personal cloud (Saved Messages) you can simply use "me" or "self".
@@ -49,7 +50,8 @@ class AddChecklistTasks:
             tasks (List of :obj:`~pyrogram.types.InputChecklistTask`):
                 List of tasks to add to the checklist.
 
-        Returns:
+        Returns
+        -------
             ``bool``: On success, True is returned.
 
         Example:
@@ -65,13 +67,14 @@ class AddChecklistTasks:
                         )
                     ]
                 )
+
         """
         await self.invoke(
             raw.functions.messages.AppendTodoList(
                 peer=await self.resolve_peer(chat_id),
                 msg_id=message_id,
                 list=[await task.write(self) for task in tasks],
-            )
+            ),
         )
 
         return True

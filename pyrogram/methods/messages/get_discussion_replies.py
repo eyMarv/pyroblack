@@ -20,25 +20,31 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 from asyncio import sleep
-from typing import Union, Optional, AsyncGenerator
+from typing import TYPE_CHECKING
 
 import pyrogram
-from pyrogram import types, raw
+from pyrogram import raw, types
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncGenerator
 
 
 class GetDiscussionReplies:
     async def get_discussion_replies(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
+        self: pyrogram.Client,
+        chat_id: int | str,
         message_id: int,
         limit: int = 0,
-    ) -> Optional[AsyncGenerator["types.Message", None]]:
+    ) -> AsyncGenerator[types.Message, None] | None:
         """Get the message replies of a discussion thread.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
 
@@ -54,8 +60,8 @@ class GetDiscussionReplies:
 
                 async for message in app.get_discussion_replies(chat_id, message_id):
                     print(message)
-        """
 
+        """
         current = 0
         total = limit or (1 << 31) - 1
         limit = min(100, total)
@@ -71,8 +77,8 @@ class GetDiscussionReplies:
                     limit=limit,
                     max_id=0,
                     min_id=0,
-                    hash=0
-                )
+                    hash=0,
+                ),
             )
 
             users = {u.id: u for u in r.users}
@@ -89,7 +95,7 @@ class GetDiscussionReplies:
                     message,
                     users,
                     chats,
-                    replies=self.fetch_replies
+                    replies=self.fetch_replies,
                 )
 
                 current += 1

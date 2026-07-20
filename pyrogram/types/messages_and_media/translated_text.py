@@ -20,33 +20,38 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import List
+from __future__ import annotations
 
 from pyrogram import raw, types
+from pyrogram.types.object import Object
 
-from ..object import Object
 from .message import Str
 
 
 class TranslatedText(Object):
     """A translated text with entities.
 
-    Parameters:
+    Parameters
+    ----------
         text (``str``):
             Translated text.
 
         entities (``str``, *optional*):
             Entities of the text.
+
     """
 
-    def __init__(self, *, text: str, entities: List["types.MessageEntity"] = None):
+    def __init__(
+        self, *, text: str, entities: list[types.MessageEntity] | None = None
+    ) -> None:
         self.text = text
         self.entities = entities
 
     @staticmethod
     def _parse(
-        client, translate_result: "raw.types.TextWithEntities"
-    ) -> "TranslatedText":
+        client,
+        translate_result: raw.types.TextWithEntities,
+    ) -> TranslatedText:
         entities = [
             types.MessageEntity._parse(client, entity, {})
             for entity in translate_result.entities

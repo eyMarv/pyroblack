@@ -20,17 +20,17 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union
+from __future__ import annotations
 
 from pyrogram import raw
-from ..object import Object
+from pyrogram.types.object import Object
 
 
 class ForumTopicCreated(Object):
     """A service message about a new forum topic created in the chat.
 
-
-    Parameters:
+    Parameters
+    ----------
         id (``Integer``):
             Id of the topic
 
@@ -42,11 +42,17 @@ class ForumTopicCreated(Object):
 
         icon_emoji_id (``Integer``, *optional*):
             Unique identifier of the custom emoji shown as the topic icon
+
     """
 
     def __init__(
-        self, *, id: int = None, title: str = None, icon_color: int = None, icon_emoji_id: int = None
-    ):
+        self,
+        *,
+        id: int | None = None,
+        title: str | None = None,
+        icon_color: int | None = None,
+        icon_emoji_id: int | None = None,
+    ) -> None:
         super().__init__()
 
         self.id = id
@@ -63,11 +69,8 @@ class ForumTopicCreated(Object):
 
     @staticmethod
     def _parse(
-        message_or_action: Union[
-            "raw.base.Message",
-            "raw.types.MessageActionTopicCreate",
-        ]
-    ) -> "ForumTopicCreated":
+        message_or_action: raw.base.Message | raw.types.MessageActionTopicCreate,
+    ) -> ForumTopicCreated:
         """Parse from either a service :obj:`~pyrogram.raw.base.Message` or a bare
         :obj:`~pyrogram.raw.types.MessageActionTopicCreate`.
 

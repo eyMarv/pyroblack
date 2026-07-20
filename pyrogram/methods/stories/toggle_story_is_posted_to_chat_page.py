@@ -20,24 +20,30 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union, Iterable
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import pyrogram
 from pyrogram import raw, types, utils
 
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+
 
 class ToggleStoryIsPostedToChatPage:
     async def toggle_story_is_posted_to_chat_page(
-        self: "pyrogram.Client",
-        story_poster_chat_id: Union[int, str],
-        story_ids: Union[int, Iterable[int]],
+        self: pyrogram.Client,
+        story_poster_chat_id: int | str,
+        story_ids: int | Iterable[int],
         is_posted_to_chat_page: bool = True,
     ) -> list[int]:
         """Toggles whether a story is accessible after expiration.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             story_poster_chat_id (``int`` | ``str``):
                 Identifier of the chat that posted the story.
                 Unique identifier (int) or username (str) of the target chat.
@@ -45,11 +51,12 @@ class ToggleStoryIsPostedToChatPage:
 
             story_ids (``int`` | Iterable of ``int``):
                 List of identifiers of the target stories.
-            
+
             is_posted_to_chat_page (``bool``, *optional*):
                 Pass True to make the story accessible after expiration; pass False to make it private.
 
-        Returns:
+        Returns
+        -------
             List of ``int``: List of updated story IDs.
 
         Example:
@@ -66,8 +73,8 @@ class ToggleStoryIsPostedToChatPage:
             raw.functions.stories.TogglePinned(
                 peer=await self.resolve_peer(story_poster_chat_id),
                 id=story_ids,
-                pinned=is_posted_to_chat_page
-            )
+                pinned=is_posted_to_chat_page,
+            ),
         )
 
         return types.List(r)

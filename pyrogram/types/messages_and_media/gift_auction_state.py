@@ -24,14 +24,14 @@ from typing import Optional
 
 import pyrogram
 from pyrogram import raw, types
-
-from ..object import Object
+from pyrogram.types.object import Object
 
 
 class GiftAuctionState(Object):
     """Represent auction state of a gift.
 
-    Parameters:
+    Parameters
+    ----------
         gift (:obj:`~pyrogram.types.Gift`):
             The gift.
 
@@ -40,6 +40,7 @@ class GiftAuctionState(Object):
 
         raw (:obj:`~pyrogram.raw.base.StarGiftAuctionState`, *optional*):
             The raw object as received from the server.
+
     """
 
     def __init__(
@@ -48,7 +49,7 @@ class GiftAuctionState(Object):
         gift: "types.Gift",
         state: "types.AuctionState",
         raw: Optional["raw.base.StarGiftAuctionState"] = None,
-    ):
+    ) -> None:
         super().__init__()
 
         self.gift = gift
@@ -57,13 +58,16 @@ class GiftAuctionState(Object):
 
     @staticmethod
     async def _parse(
-        client: "pyrogram.Client", gift_auction_state: "raw.base.StarGiftAuctionState"
+        client: "pyrogram.Client",
+        gift_auction_state: "raw.base.StarGiftAuctionState",
     ) -> "GiftAuctionState":
         state = None
 
         if isinstance(gift_auction_state.state, raw.types.StarGiftAuctionState):
             state = await types.AuctionStateActive._parse(gift_auction_state.state)
-        elif isinstance(gift_auction_state.state, raw.types.StarGiftAuctionStateFinished):
+        elif isinstance(
+            gift_auction_state.state, raw.types.StarGiftAuctionStateFinished
+        ):
             state = await types.AuctionStateFinished._parse(gift_auction_state.state)
 
         return GiftAuctionState(
@@ -71,4 +75,3 @@ class GiftAuctionState(Object):
             state=state,
             raw=gift_auction_state,
         )
-

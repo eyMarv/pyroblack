@@ -23,8 +23,7 @@
 import logging
 
 import pyrogram
-from pyrogram import raw
-from pyrogram import types
+from pyrogram import raw, types
 
 log = logging.getLogger(__name__)
 
@@ -33,7 +32,7 @@ class ResendCode:
     async def resend_code(
         self: "pyrogram.Client",
         phone_number: str,
-        phone_code_hash: str
+        phone_code_hash: str,
     ) -> "types.SentCode":
         """Re-send the confirmation code using a different type.
 
@@ -42,18 +41,21 @@ class ResendCode:
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             phone_number (``str``):
                 Phone number in international format (includes the country prefix).
 
             phone_code_hash (``str``):
                 Confirmation code identifier.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.SentCode`: On success, an object containing information on the re-sent confirmation
             code is returned.
 
-        Raises:
+        Raises
+        ------
             BadRequest: In case the arguments are invalid.
             :obj:`~pyrogram.errors.RPCError`: In case of a Telegram RPC error.
 
@@ -63,8 +65,8 @@ class ResendCode:
         r = await self.invoke(
             raw.functions.auth.ResendCode(
                 phone_number=phone_number,
-                phone_code_hash=phone_code_hash
-            )
+                phone_code_hash=phone_code_hash,
+            ),
         )
 
         return types.SentCode._parse(r)

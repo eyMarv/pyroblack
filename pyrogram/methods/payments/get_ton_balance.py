@@ -20,7 +20,6 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional, Union
 
 import pyrogram
 from pyrogram import raw
@@ -28,7 +27,7 @@ from pyrogram import raw
 
 class GetTonBalance:
     async def get_ton_balance(
-        self: "pyrogram.Client"
+        self: "pyrogram.Client",
     ) -> float:
         """Get the current TON balance of the current account.
 
@@ -45,15 +44,15 @@ class GetTonBalance:
 
                 # Get stars balance of a bot
                 await app.get_stars_balance(chat_id="pyrogrambot")
+
         """
         r = await self.invoke(
             raw.functions.payments.GetStarsTransactions(
                 peer=raw.types.InputPeerSelf(),
                 offset="",
                 limit=0,
-                ton=True
-            )
+                ton=True,
+            ),
         )
 
         return r.balance.amount
-

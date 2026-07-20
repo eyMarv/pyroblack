@@ -20,28 +20,26 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import enums
+
 from .html import HTML
 from .markdown import Markdown
 
 
 class Parser:
-    def __init__(self, client: Optional["pyrogram.Client"]):
+    def __init__(self, client: pyrogram.Client | None) -> None:
         self.client = client
         self.html = HTML(client)
         self.markdown = Markdown(client)
 
-    async def parse(self, text: str, mode: Optional[enums.ParseMode] = None):
-        text = str(text if text else "").strip()
+    async def parse(self, text: str, mode: enums.ParseMode | None = None):
+        text = str(text or "").strip()
 
         if mode is None:
-            if self.client:
-                mode = self.client.parse_mode
-            else:
-                mode = enums.ParseMode.DEFAULT
+            mode = self.client.parse_mode if self.client else enums.ParseMode.DEFAULT
 
         if mode == enums.ParseMode.DEFAULT:
             return await self.markdown.parse(text)
@@ -55,11 +53,11 @@ class Parser:
         if mode == enums.ParseMode.DISABLED:
             return {"message": text, "entities": None}
 
-        raise ValueError(f'Invalid parse mode "{mode}"')
+        msg = f'Invalid parse mode "{mode}"'
+        raise ValueError(msg)
 
     @staticmethod
     def unparse(text: str, entities: list, is_html: bool):
         if is_html:
             return HTML.unparse(text, entities)
-        else:
-            return Markdown.unparse(text, entities)
+        return Markdown.unparse(text, entities)

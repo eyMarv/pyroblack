@@ -20,22 +20,25 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from ..object import Object
+from pyrogram.types.object import Object
 
 
 class WebAppInfo(Object):
     """Contains information about a `Web App <https://core.telegram.org/bots/webapps>`_.
 
-    Parameters:
+    Parameters
+    ----------
         url (``str``):
             An HTTPS URL of a Web App to be opened with additional data as specified in
             `Initializing Web Apps <https://core.telegram.org/bots/webapps#initializing-web-apps>`_.
+
     """
 
     def __init__(
-        self, *,
+        self,
+        *,
         url: str,
-    ):
+    ) -> None:
         super().__init__()
 
         self.url = url

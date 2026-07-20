@@ -22,91 +22,94 @@
 
 
 from .add_chat_members import AddChatMembers
+from .add_profile_audio import AddProfileAudio
 from .archive_chats import ArchiveChats
 from .ban_chat_member import BanChatMember
+
+# v2.7.2 compatibility: forum/general-topic/folder helpers that lived under chats/
+from .close_general_topic import CloseGeneralTopic
 from .create_channel import CreateChannel
+from .create_folder import CreateFolder
+from .create_folder_invite_link import CreateFolderInviteLink
 from .create_group import CreateGroup
 from .create_supergroup import CreateSupergroup
+from .delete_all_message_reactions import DeleteAllMessageReactions
 from .delete_channel import DeleteChannel
 from .delete_chat_photo import DeleteChatPhoto
+from .delete_folder import DeleteFolder
+from .delete_folder_invite_link import DeleteFolderInviteLink
+from .delete_message_reaction import DeleteMessageReaction
 from .delete_supergroup import DeleteSupergroup
 from .delete_user_history import DeleteUserHistory
+from .edit_folder_invite_link import EditFolderInviteLink
+from .edit_general_topic import EditGeneralTopic
+from .export_folder_link import ExportFolderLink
 from .get_chat import GetChat
+from .get_chat_audios import GetChatAudios
+from .get_chat_audios_count import GetChatAudiosCount
 from .get_chat_event_log import GetChatEventLog
 from .get_chat_member import GetChatMember
 from .get_chat_members import GetChatMembers
 from .get_chat_members_count import GetChatMembersCount
 from .get_chat_online_count import GetChatOnlineCount
+from .get_chat_settings import GetChatSettings
+from .get_chats_for_folder_invite_link import GetChatsForFolderInviteLink
+from .get_created_chats import GetCreatedChats
 from .get_dialogs import GetDialogs
-from .get_direct_messages_topics_by_id import GetDirectMessagesTopicsByID
-from .get_direct_messages_topics import GetDirectMessagesTopics
 from .get_dialogs_count import GetDialogsCount
+from .get_direct_messages_topics import GetDirectMessagesTopics
+from .get_direct_messages_topics_by_id import GetDirectMessagesTopicsByID
+from .get_folder_invite_links import GetFolderInviteLinks
+from .get_folders import GetFolders
+from .get_forum_topics_by_id import GetForumTopicsByID
+from .get_forum_topics_count import GetForumTopicsCount
 from .get_nearby_chats import GetNearbyChats
+from .get_personal_channels import GetPersonalChannels
 from .get_send_as_chats import GetSendAsChats
+from .get_similar_channels import GetSimilarChannels
+from .get_suitable_discussion_chats import GetSuitableDiscussionChats
+from .get_top_chats import GetTopChats
+from .hide_general_topic import HideGeneralTopic
 from .join_chat import JoinChat
+from .join_folder import JoinFolder
 from .leave_chat import LeaveChat
+from .leave_folder import LeaveFolder
 from .mark_chat_unread import MarkChatUnread
 from .pin_chat_message import PinChatMessage
+from .process_chat_has_protected_content_disable_request import (
+    ProcessChatHasProtectedContentDisableRequest,
+)
 from .promote_chat_member import PromoteChatMember
+from .remove_profile_audio import RemoveProfileAudio
+from .reopen_general_topic import ReopenGeneralTopic
+from .reorder_folders import ReorderFolders
 from .restrict_chat_member import RestrictChatMember
 from .search_chats import SearchChats
 from .set_administrator_title import SetAdministratorTitle
 from .set_chat_description import SetChatDescription
 from .set_chat_direct_messages_group import SetChatDirectMessagesGroup
+from .set_chat_discussion_group import SetChatDiscussionGroup
+from .set_chat_message_auto_delete_time import SetChatMessageAutoDeleteTime
 from .set_chat_permissions import SetChatPermissions
 from .set_chat_photo import SetChatPhoto
 from .set_chat_protected_content import SetChatProtectedContent
 from .set_chat_title import SetChatTitle
-from .set_chat_message_auto_delete_time import SetChatMessageAutoDeleteTime
 from .set_chat_username import SetChatUsername
+from .set_main_profile_tab import SetMainProfileTab
+from .set_profile_audio_position import SetProfileAudioPosition
 from .set_send_as_chat import SetSendAsChat
 from .set_slow_mode import SetSlowMode
-from .unarchive_chats import UnarchiveChats
-from .unban_chat_member import UnbanChatMember
-from .unpin_all_chat_messages import UnpinAllChatMessages
-from .unpin_chat_message import UnpinChatMessage
-from .get_created_chats import GetCreatedChats
-from .transfer_chat_ownership import TransferChatOwnership
-from .add_profile_audio import AddProfileAudio
-from .get_chat_audios_count import GetChatAudiosCount
-from .get_chat_audios import GetChatAudios
-from .remove_profile_audio import RemoveProfileAudio
-from .set_profile_audio_position import SetProfileAudioPosition
-from .get_similar_channels import GetSimilarChannels
-from .get_personal_channels import GetPersonalChannels
-from .get_suitable_discussion_chats import GetSuitableDiscussionChats
-from .get_top_chats import GetTopChats
-from .set_chat_discussion_group import SetChatDiscussionGroup
-from .set_main_profile_tab import SetMainProfileTab
 from .set_upgraded_gift_colors import SetUpgradedGiftColors
-from .update_chat_notifications import UpdateChatNotifications
-from .process_chat_has_protected_content_disable_request import ProcessChatHasProtectedContentDisableRequest
-from .reorder_folders import ReorderFolders
-from .create_folder import CreateFolder
-from .create_folder_invite_link import CreateFolderInviteLink
-from .delete_folder_invite_link import DeleteFolderInviteLink
-from .edit_folder_invite_link import EditFolderInviteLink
-from .get_folder_invite_links import GetFolderInviteLinks
-from .get_chats_for_folder_invite_link import GetChatsForFolderInviteLink
-from .delete_all_message_reactions import DeleteAllMessageReactions
-from .delete_message_reaction import DeleteMessageReaction
-from .get_chat_settings import GetChatSettings
-# v2.7.2 compatibility: forum/general-topic/folder helpers that lived under chats/
-from .close_general_topic import CloseGeneralTopic
-from .delete_folder import DeleteFolder
-from .edit_general_topic import EditGeneralTopic
-from .export_folder_link import ExportFolderLink
-from .get_folders import GetFolders
-from .get_forum_topics_by_id import GetForumTopicsByID
-from .get_forum_topics_count import GetForumTopicsCount
-from .hide_general_topic import HideGeneralTopic
-from .join_folder import JoinFolder
-from .leave_folder import LeaveFolder
-from .reopen_general_topic import ReopenGeneralTopic
 from .toggle_folder_tags import ToggleFolderTags
 from .toggle_forum_topics import ToggleForumTopics
 from .toggle_join_to_send import ToggleJoinToSend
+from .transfer_chat_ownership import TransferChatOwnership
+from .unarchive_chats import UnarchiveChats
+from .unban_chat_member import UnbanChatMember
 from .unhide_general_topic import UnhideGeneralTopic
+from .unpin_all_chat_messages import UnpinAllChatMessages
+from .unpin_chat_message import UnpinChatMessage
+from .update_chat_notifications import UpdateChatNotifications
 from .update_color import UpdateColor
 from .update_folder import UpdateFolder
 
@@ -198,6 +201,6 @@ class Chats(
     GetChatsForFolderInviteLink,
     DeleteAllMessageReactions,
     DeleteMessageReaction,
-    GetChatSettings
+    GetChatSettings,
 ):
     pass

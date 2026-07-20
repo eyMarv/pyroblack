@@ -20,55 +20,58 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import logging
-from datetime import datetime
-from typing import BinaryIO, Callable, List, Optional, Union
+from typing import TYPE_CHECKING, BinaryIO, Callable
 
 import pyrogram
 from pyrogram import StopTransmission, enums, raw, types, utils
 from pyrogram.errors import FilePartMissing
+
+if TYPE_CHECKING:
+    from datetime import datetime
 
 log = logging.getLogger(__name__)
 
 
 class SendLivePhoto:
     async def send_live_photo(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
-        live_photo: Union[str, BinaryIO],
-        photo: Union[str, BinaryIO],
+        self: pyrogram.Client,
+        chat_id: int | str,
+        live_photo: str | BinaryIO,
+        photo: str | BinaryIO,
         caption: str = "",
-        parse_mode: Optional["enums.ParseMode"] = None,
-        caption_entities: List["types.MessageEntity"] = None,
-        has_spoiler: Optional[bool] = None,
+        parse_mode: enums.ParseMode | None = None,
+        caption_entities: list[types.MessageEntity] | None = None,
+        has_spoiler: bool | None = None,
         width: int = 0,
         height: int = 0,
-        disable_notification: Optional[bool] = None,
-        message_thread_id: Optional[int] = None,
-        direct_messages_topic_id: Optional[int] = None,
-        effect_id: Optional[int] = None,
-        show_caption_above_media: Optional[bool] = None,
-        reply_parameters: "types.ReplyParameters" = None,
-        schedule_date: Optional[datetime] = None,
-        protect_content: Optional[bool] = None,
-        business_connection_id: Optional[str] = None,
-        allow_paid_broadcast: Optional[bool] = None,
-        paid_message_star_count: Optional[int] = None,
-        suggested_post_parameters: "types.SuggestedPostParameters" = None,
-        reply_markup: Union[
-            "types.InlineKeyboardMarkup",
-            "types.ReplyKeyboardMarkup",
-            "types.ReplyKeyboardRemove",
-            "types.ForceReply",
-        ] = None,
-        progress: Optional[Callable] = None,
+        disable_notification: bool | None = None,
+        message_thread_id: int | None = None,
+        direct_messages_topic_id: int | None = None,
+        effect_id: int | None = None,
+        show_caption_above_media: bool | None = None,
+        reply_parameters: types.ReplyParameters = None,
+        schedule_date: datetime | None = None,
+        protect_content: bool | None = None,
+        business_connection_id: str | None = None,
+        allow_paid_broadcast: bool | None = None,
+        paid_message_star_count: int | None = None,
+        suggested_post_parameters: types.SuggestedPostParameters = None,
+        reply_markup: types.InlineKeyboardMarkup
+        | types.ReplyKeyboardMarkup
+        | types.ReplyKeyboardRemove
+        | types.ForceReply = None,
+        progress: Callable | None = None,
         progress_args: tuple = (),
-    ) -> Optional["types.Message"]:
+    ) -> types.Message | None:
         """Send a live photo.
 
         .. include:: /_includes/usable-by/users-bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
                 For your personal cloud (Saved Messages) you can simply use "me" or "self".
@@ -160,9 +163,11 @@ class SendLivePhoto:
             progress_args (``tuple``, *optional*):
                 Extra custom arguments for the progress callback function.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.Message` | ``None``: On success, the sent live photo message is returned, otherwise, in
             case the upload is deliberately stopped with :meth:`~pyrogram.Client.stop_transmission`, None is returned.
+
         """
         peer = await self.resolve_peer(chat_id)
 
@@ -175,7 +180,7 @@ class SendLivePhoto:
         reply_to = await utils._get_reply_message_parameters(
             self,
             message_thread_id,
-            reply_parameters
+            reply_parameters,
         )
 
         try:
@@ -204,7 +209,10 @@ class SendLivePhoto:
                         invert_media = show_caption_above_media
 
                     text_entities = await utils.parse_text_entities(
-                        self, caption, parse_mode, caption_entities
+                        self,
+                        caption,
+                        parse_mode,
+                        caption_entities,
                     )
                     message = ""
                     entities = None
@@ -226,7 +234,9 @@ class SendLivePhoto:
                         suggested_post=suggested_post_parameters.write()
                         if suggested_post_parameters
                         else None,
-                        reply_markup=await reply_markup.write(self) if reply_markup else None,
+                        reply_markup=await reply_markup.write(self)
+                        if reply_markup
+                        else None,
                         effect=effect_id,
                         message=message,
                         entities=entities,
@@ -236,8 +246,8 @@ class SendLivePhoto:
                         r = await self.invoke(
                             raw.functions.InvokeWithBusinessConnection(
                                 query=rpc,
-                                connection_id=business_connection_id
-                            )
+                                connection_id=business_connection_id,
+                            ),
                         )
                     else:
                         r = await self.invoke(rpc)

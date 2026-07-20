@@ -20,25 +20,30 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 from asyncio import sleep
-from datetime import datetime
-from typing import AsyncGenerator, Optional
+from typing import TYPE_CHECKING
 
 import pyrogram
-from pyrogram import raw, enums, types, utils
+from pyrogram import enums, raw, types, utils
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncGenerator
+    from datetime import datetime
 
 
 class SearchGlobal:
     async def search_global(
-        self: "pyrogram.Client",
+        self: pyrogram.Client,
         query: str = "",
-        filter: "enums.MessagesFilter" = enums.MessagesFilter.EMPTY,
+        filter: enums.MessagesFilter = enums.MessagesFilter.EMPTY,
         limit: int = 0,
         chat_list: int = 0,
-        chat_type_filter: "enums.ChatType" = None,
+        chat_type_filter: enums.ChatType = None,
         offset_date: datetime = utils.zero_datetime(),
         offset_message_id: int = 0,
-    ) -> Optional[AsyncGenerator["types.Message", None]]:
+    ) -> AsyncGenerator[types.Message, None] | None:
         """Search messages globally from all of your chats.
 
         If you want to get the messages count only, see :meth:`~pyrogram.Client.search_global_count`.
@@ -50,11 +55,12 @@ class SearchGlobal:
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             query (``str``, *optional*):
                 Text query string.
                 Use "@" to search for mentions.
-            
+
             filter (:obj:`~pyrogram.enums.MessagesFilter`, *optional*):
                 Pass a filter in order to search for specific kind of messages only.
                 Defaults to any message (no filter).
@@ -75,7 +81,8 @@ class SearchGlobal:
             offset_message_id (``int``, *optional*):
                 The message identifier of the last message in the last found dialog, or 0 for the first request.
 
-        Returns:
+        Returns
+        -------
             ``Generator``: A generator yielding :obj:`~pyrogram.types.Message` objects.
 
         Example:
@@ -90,6 +97,7 @@ class SearchGlobal:
                 # Search for recent photos from Global. Get the first 20 results
                 async for message in app.search_global(filter=enums.MessagesFilter.PHOTO, limit=20):
                     print(message.photo)
+
         """
         current = 0
         # There seems to be an hard limit of 10k, beyond which Telegram starts spitting one message at a time.
@@ -114,13 +122,19 @@ class SearchGlobal:
                         offset_id=offset_message_id,
                         limit=limit,
                         folder_id=chat_list,
-                        broadcasts_only=(chat_type_filter == enums.ChatType.CHANNEL) if chat_type_filter else None,
-                        groups_only=(chat_type_filter == enums.ChatType.GROUP) if chat_type_filter else None,
-                        users_only=(chat_type_filter == enums.ChatType.PRIVATE) if chat_type_filter else None,
+                        broadcasts_only=(chat_type_filter == enums.ChatType.CHANNEL)
+                        if chat_type_filter
+                        else None,
+                        groups_only=(chat_type_filter == enums.ChatType.GROUP)
+                        if chat_type_filter
+                        else None,
+                        users_only=(chat_type_filter == enums.ChatType.PRIVATE)
+                        if chat_type_filter
+                        else None,
                     ),
-                    sleep_threshold=60
+                    sleep_threshold=60,
                 ),
-                replies=0
+                replies=0,
             )
 
             if not messages:

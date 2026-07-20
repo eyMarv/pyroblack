@@ -20,7 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union, Optional
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw, utils
@@ -29,16 +29,17 @@ from pyrogram.file_id import FileType
 
 class DeleteProfilePhotos:
     async def delete_profile_photos(
-        self: "pyrogram.Client",
-        photo_ids: Union[str, list[str]] = None,
+        self: pyrogram.Client,
+        photo_ids: str | list[str] | None = None,
         public: bool = False,
-        for_my_bot: Union[int, str] = None,
+        for_my_bot: int | str | None = None,
     ) -> bool:
         """Delete your own profile photos.
 
         .. include:: /_includes/usable-by/users-bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             photo_ids (``str`` | List of ``str``, *optional*):
                 A single :obj:`~pyrogram.types.Photo` id as string or multiple ids as list of strings for deleting
                 more than one photos at once.
@@ -52,7 +53,8 @@ class DeleteProfilePhotos:
                 Unique identifier (int) or username (str) of the bot for which profile photo has to be updated instead of the current user.
                 The bot should have ``can_be_edited`` property set to True.
 
-        Returns:
+        Returns
+        -------
             ``bool``: True on success.
 
         Example:
@@ -69,6 +71,7 @@ class DeleteProfilePhotos:
 
                 # Delete one photo without fetching the current profile photos of the user
                 await app.delete_profile_photos()
+
         """
         if photo_ids is None:
             return bool(
@@ -77,17 +80,19 @@ class DeleteProfilePhotos:
                         id=raw.types.InputPhotoEmpty(),
                         fallback=public,
                         bot=await self.resolve_peer(for_my_bot) if for_my_bot else None,
-                    )
-                )
+                    ),
+                ),
             )
 
         photo_ids = photo_ids if isinstance(photo_ids, list) else [photo_ids]
-        input_photos = [utils.get_input_media_from_file_id(i, FileType.PHOTO).id for i in photo_ids]
+        input_photos = [
+            utils.get_input_media_from_file_id(i, FileType.PHOTO).id for i in photo_ids
+        ]
 
         return bool(
             await self.invoke(
                 raw.functions.photos.DeletePhotos(
-                    id=input_photos
-                )
-            )
+                    id=input_photos,
+                ),
+            ),
         )

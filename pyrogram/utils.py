@@ -20,6 +20,8 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import asyncio
 import base64
 import functools
@@ -32,12 +34,10 @@ from datetime import datetime, timezone
 from getpass import getpass
 from io import BytesIO
 from types import SimpleNamespace
-from typing import Union, Optional
 
 import pyrogram
-from pyrogram import raw, enums
-from pyrogram import types
-from pyrogram.file_id import FileId, FileType, PHOTO_TYPES, DOCUMENT_TYPES
+from pyrogram import enums, raw, types
+from pyrogram.file_id import DOCUMENT_TYPES, PHOTO_TYPES, FileId, FileType
 
 PyromodConfig = SimpleNamespace(
     timeout_handler=None,
@@ -56,7 +56,8 @@ async def run_sync(func, *args, **kwargs):
     """
     loop = get_event_loop()
     return await loop.run_in_executor(
-        None, functools.partial(func, *args, **kwargs)
+        None,
+        functools.partial(func, *args, **kwargs),
     )
 
 
@@ -69,8 +70,13 @@ def get_event_loop() -> asyncio.AbstractEventLoop:
     return loop
 
 
-async def ainput(prompt: str = "", *, hide: bool = False, loop: Optional[asyncio.AbstractEventLoop] = None):
-    """Just like the built-in input, but async"""
+async def ainput(
+    prompt: str = "",
+    *,
+    hide: bool = False,
+    loop: asyncio.AbstractEventLoop | None = None,
+):
+    """Just like the built-in input, but async."""
     if loop is None:
         loop = get_event_loop()
     with ThreadPoolExecutor(1) as executor:
@@ -81,34 +87,41 @@ async def ainput(prompt: str = "", *, hide: bool = False, loop: Optional[asyncio
 def get_input_media_from_file_id(
     file_id: str,
     expected_file_type: FileType = None,
-    ttl_seconds: int = None,
-    has_spoiler: bool = None
-) -> Union["raw.types.InputMediaPhoto", "raw.types.InputMediaDocument"]:
+    ttl_seconds: int | None = None,
+    has_spoiler: bool | None = None,
+) -> raw.types.InputMediaPhoto | raw.types.InputMediaDocument:
     try:
         decoded = FileId.decode(file_id)
     except Exception:
-        raise ValueError(
+        msg = (
             f'Failed to decode "{file_id}". The value does not represent an existing local file, '
             f"HTTP URL, or valid file id."
+        )
+        raise ValueError(
+            msg,
         )
 
     file_type = decoded.file_type
 
     if expected_file_type is not None and file_type != expected_file_type:
-        raise ValueError(f"Expected {expected_file_type.name}, got {file_type.name} file id instead")
+        msg = (
+            f"Expected {expected_file_type.name}, got {file_type.name} file id instead"
+        )
+        raise ValueError(msg)
 
     if file_type in (FileType.THUMBNAIL, FileType.CHAT_PHOTO):
-        raise ValueError(f"This file id can only be used for download: {file_id}")
+        msg = f"This file id can only be used for download: {file_id}"
+        raise ValueError(msg)
 
     if file_type in PHOTO_TYPES:
         return raw.types.InputMediaPhoto(
             id=raw.types.InputPhoto(
                 id=decoded.media_id,
                 access_hash=decoded.access_hash,
-                file_reference=decoded.file_reference
+                file_reference=decoded.file_reference,
             ),
             ttl_seconds=ttl_seconds,
-            spoiler=has_spoiler
+            spoiler=has_spoiler,
         )
 
     if file_type in DOCUMENT_TYPES:
@@ -116,23 +129,24 @@ def get_input_media_from_file_id(
             id=raw.types.InputDocument(
                 id=decoded.media_id,
                 access_hash=decoded.access_hash,
-                file_reference=decoded.file_reference
+                file_reference=decoded.file_reference,
             ),
             ttl_seconds=ttl_seconds,
-            spoiler=has_spoiler
+            spoiler=has_spoiler,
         )
 
-    raise ValueError(f"Unknown file id: {file_id}")
+    msg = f"Unknown file id: {file_id}"
+    raise ValueError(msg)
 
 
 async def parse_messages(
     client,
-    messages: "raw.types.messages.Messages",
+    messages: raw.types.messages.Messages,
     is_scheduled: bool = False,
     replies: int = 1,
     business_connection_id: str = "",
-    r: "raw.base.Updates" = None
-) -> list["types.Message"]:
+    r: raw.base.Updates = None,
+) -> list[types.Message]:
     parsed_messages = []
 
     if not messages and r:
@@ -146,7 +160,7 @@ async def parse_messages(
                     raw.types.UpdateNewMessage,
                     raw.types.UpdateNewChannelMessage,
                     raw.types.UpdateNewScheduledMessage,
-                )
+                ),
             ):
                 parsed_messages.append(
                     await types.Message._parse(
@@ -155,15 +169,13 @@ async def parse_messages(
                         users,
                         chats,
                         is_scheduled=isinstance(u, raw.types.UpdateNewScheduledMessage),
-                        replies=replies
-                    )
+                        replies=replies,
+                    ),
                 )
 
             elif isinstance(
                 u,
-                (
-                    raw.types.UpdateBotNewBusinessMessage,
-                )
+                (raw.types.UpdateBotNewBusinessMessage,),
             ):
                 parsed_messages.append(
                     await types.Message._parse(
@@ -171,10 +183,12 @@ async def parse_messages(
                         u.message,
                         users,
                         chats,
-                        business_connection_id=getattr(u, "connection_id", business_connection_id),
+                        business_connection_id=getattr(
+                            u, "connection_id", business_connection_id
+                        ),
                         raw_reply_to_message=u.reply_to_message,
-                        replies=0
-                    )
+                        replies=0,
+                    ),
                 )
 
         return types.List(parsed_messages)
@@ -193,11 +207,11 @@ async def parse_messages(
                 users,
                 chats,
                 is_scheduled=is_scheduled,
-                replies=replies
-            )
+                replies=replies,
+            ),
         )
 
-    if replies and False:  # TODO
+    if False:  # TODO
         messages_with_replies = {
             # TODO: fix this logic someday
             i.id: i.reply_to.reply_to_msg_id
@@ -218,11 +232,11 @@ async def parse_messages(
             reply_messages = await client.get_replied_message(
                 chat_id=chat_id,
                 message_ids=messages_with_replies.keys(),
-                replies=replies - 1
+                replies=replies - 1,
             )
 
             for message in parsed_messages:
-                reply_id = messages_with_replies.get(message.id, None)
+                reply_id = messages_with_replies.get(message.id)
 
                 for reply in reply_messages:
                     if reply.id == reply_id:
@@ -231,13 +245,13 @@ async def parse_messages(
     return types.List(parsed_messages)
 
 
-def pack_inline_message_id(msg_id: "raw.base.InputBotInlineMessageID"):
+def pack_inline_message_id(msg_id: raw.base.InputBotInlineMessageID):
     if isinstance(msg_id, raw.types.InputBotInlineMessageID):
         inline_message_id_packed = struct.pack(
             "<iqq",
             msg_id.dc_id,
             msg_id.id,
-            msg_id.access_hash
+            msg_id.access_hash,
         )
     else:
         inline_message_id_packed = struct.pack(
@@ -245,13 +259,15 @@ def pack_inline_message_id(msg_id: "raw.base.InputBotInlineMessageID"):
             msg_id.dc_id,
             msg_id.owner_id,
             msg_id.id,
-            msg_id.access_hash
+            msg_id.access_hash,
         )
 
     return base64.urlsafe_b64encode(inline_message_id_packed).decode().rstrip("=")
 
 
-def unpack_inline_message_id(inline_message_id: str) -> "raw.base.InputBotInlineMessageID":
+def unpack_inline_message_id(
+    inline_message_id: str,
+) -> raw.base.InputBotInlineMessageID:
     padded = inline_message_id + "=" * (-len(inline_message_id) % 4)
     decoded = base64.urlsafe_b64decode(padded)
 
@@ -261,17 +277,16 @@ def unpack_inline_message_id(inline_message_id: str) -> "raw.base.InputBotInline
         return raw.types.InputBotInlineMessageID(
             dc_id=unpacked[0],
             id=unpacked[1],
-            access_hash=unpacked[2]
+            access_hash=unpacked[2],
         )
-    else:
-        unpacked = struct.unpack("<iqiq", decoded)
+    unpacked = struct.unpack("<iqiq", decoded)
 
-        return raw.types.InputBotInlineMessageID64(
-            dc_id=unpacked[0],
-            owner_id=unpacked[1],
-            id=unpacked[2],
-            access_hash=unpacked[3]
-        )
+    return raw.types.InputBotInlineMessageID64(
+        dc_id=unpacked[0],
+        owner_id=unpacked[1],
+        id=unpacked[2],
+        access_hash=unpacked[3],
+    )
 
 
 MIN_CHANNEL_ID_OLD = -1002147483647
@@ -285,8 +300,8 @@ MIN_MONOFORUM_CHANNEL_ID = 1002147483649
 MAX_MONOFORUM_CHANNEL_ID = 3000000000000
 
 
-def get_raw_peer_id(peer: raw.base.Peer) -> Optional[int]:
-    """Get the raw peer id from a Peer object"""
+def get_raw_peer_id(peer: raw.base.Peer) -> int | None:
+    """Get the raw peer id from a Peer object."""
     if isinstance(peer, raw.types.PeerUser):
         return peer.user_id
 
@@ -300,7 +315,7 @@ def get_raw_peer_id(peer: raw.base.Peer) -> Optional[int]:
 
 
 def get_peer_id(peer: raw.base.Peer) -> int:
-    """Get the non-raw peer id from a Peer object"""
+    """Get the non-raw peer id from a Peer object."""
     if isinstance(peer, raw.types.PeerUser):
         return peer.user_id
 
@@ -313,12 +328,13 @@ def get_peer_id(peer: raw.base.Peer) -> int:
 
         return MAX_CHANNEL_ID - peer.channel_id
 
-    raise ValueError(f"Peer type invalid: {peer}")
+    msg = f"Peer type invalid: {peer}"
+    raise ValueError(msg)
 
 
 def get_peer_type(peer_id: int) -> str:
     if peer_id < 0:
-        if MIN_CHAT_ID <= peer_id:
+        if peer_id >= MIN_CHAT_ID:
             return "chat"
 
         if MIN_CHANNEL_ID <= peer_id < MAX_CHANNEL_ID:
@@ -330,7 +346,8 @@ def get_peer_type(peer_id: int) -> str:
     elif MIN_MONOFORUM_CHANNEL_ID <= peer_id < MAX_MONOFORUM_CHANNEL_ID:
         return "monoforum"
 
-    raise ValueError(f"Peer id invalid: {peer_id}")
+    msg = f"Peer id invalid: {peer_id}"
+    raise ValueError(msg)
 
 
 def get_channel_id(peer_id: int) -> int:
@@ -357,7 +374,7 @@ def xor(a: bytes, b: bytes) -> bytes:
 
 def compute_password_hash(
     algo: raw.types.PasswordKdfAlgoSHA256SHA256PBKDF2HMACSHA512iter100000SHA256ModPow,
-    password: str
+    password: str,
 ) -> bytes:
     hash1 = sha256(algo.salt1 + password.encode() + algo.salt1)
     hash2 = sha256(algo.salt2 + hash1 + algo.salt2)
@@ -369,7 +386,7 @@ def compute_password_hash(
 # noinspection PyPep8Naming
 def compute_password_check(
     r: raw.types.account.Password,
-    password: str
+    password: str,
 ) -> raw.types.InputCheckPasswordSRP:
     algo = r.current_algo
 
@@ -421,18 +438,18 @@ def compute_password_check(
         + sha256(algo.salt2)
         + A_bytes
         + B_bytes
-        + K_bytes
+        + K_bytes,
     )
 
     return raw.types.InputCheckPasswordSRP(srp_id=srp_id, A=A_bytes, M1=M1_bytes)
 
 
 async def parse_text_entities(
-    client: "pyrogram.Client",
+    client: pyrogram.Client,
     text: str,
-    parse_mode: Optional[enums.ParseMode],
-    entities: list["types.MessageEntity"]
-) -> dict[str, Union[str, list[raw.base.MessageEntity]]]:
+    parse_mode: enums.ParseMode | None,
+    entities: list[types.MessageEntity],
+) -> dict[str, str | list[raw.base.MessageEntity]]:
     if entities:
         # Inject the client instance because parsing user mentions requires it
         for entity in entities:
@@ -444,11 +461,13 @@ async def parse_text_entities(
 
     return {
         "message": text,
-        "entities": entities
+        "entities": entities,
     }
 
 
-async def parse_deleted_messages(client, update, users, chats, **kwargs) -> list["types.Message"]:
+async def parse_deleted_messages(
+    client, update, users, chats, **kwargs
+) -> list[types.Message]:
     messages = update.messages
     channel_id = getattr(update, "channel_id", None)
     business_connection_id = getattr(update, "connection_id", None)
@@ -464,7 +483,7 @@ async def parse_deleted_messages(client, update, users, chats, **kwargs) -> list
         delete_chat = types.Chat(
             id=chan_id,
             type=enums.ChatType.CHANNEL,
-            client=client
+            client=client,
         )
 
     elif raw_business_peer is not None:
@@ -479,7 +498,8 @@ async def parse_deleted_messages(client, update, users, chats, **kwargs) -> list
 
             else:
                 delete_chat = types.Chat._parse_channel_chat(
-                    client, chats[chat_id]
+                    client,
+                    chats[chat_id],
                 )
 
     parsed_messages = []
@@ -490,8 +510,8 @@ async def parse_deleted_messages(client, update, users, chats, **kwargs) -> list
                 id=message,
                 chat=delete_chat,
                 business_connection_id=business_connection_id,
-                client=client
-            )
+                client=client,
+            ),
         )
 
     return types.List(parsed_messages)
@@ -501,49 +521,45 @@ def zero_datetime() -> datetime:
     return datetime.fromtimestamp(0, timezone.utc)
 
 
-def timestamp_to_datetime(ts: Optional[int]) -> Optional[datetime]:
+def timestamp_to_datetime(ts: int | None) -> datetime | None:
     return datetime.fromtimestamp(ts, tz=timezone.utc) if ts else None
 
 
-def datetime_to_timestamp(dt: Optional[datetime]) -> Optional[int]:
+def datetime_to_timestamp(dt: datetime | None) -> int | None:
     return int(dt.timestamp()) if dt else None
 
 
 async def _get_reply_message_parameters(
-    client: "pyrogram.Client",
-    message_thread_id: int = None,
-    reply_parameters: "types.ReplyParameters" = None
-) -> "raw.base.InputReplyTo":
+    client: pyrogram.Client,
+    message_thread_id: int | None = None,
+    reply_parameters: types.ReplyParameters = None,
+) -> raw.base.InputReplyTo:
     reply_to = raw.types.InputReplyToMessage(
-        reply_to_msg_id=0
+        reply_to_msg_id=0,
     )
     if not reply_parameters:
         if message_thread_id:
             reply_to = raw.types.InputReplyToMessage(
                 reply_to_msg_id=message_thread_id,
-                top_msg_id=message_thread_id
+                top_msg_id=message_thread_id,
             )
         return reply_to
-    if (
-        reply_parameters and
-        reply_parameters.story_id and
-        reply_parameters.chat_id
-    ):
+    if reply_parameters and reply_parameters.story_id and reply_parameters.chat_id:
         return raw.types.InputReplyToStory(
             peer=await client.resolve_peer(reply_parameters.chat_id),
-            story_id=reply_parameters.story_id
+            story_id=reply_parameters.story_id,
         )
     reply_to_message_id = reply_parameters.message_id
     if not reply_to_message_id:
         if reply_parameters.direct_messages_topic_id:
             return raw.types.InputReplyToMonoForum(
                 monoforum_peer_id=await client.resolve_peer(
-                    reply_parameters.direct_messages_topic_id
-                )
+                    reply_parameters.direct_messages_topic_id,
+                ),
             )
         return reply_to
     reply_to = raw.types.InputReplyToMessage(
-        reply_to_msg_id=reply_to_message_id
+        reply_to_msg_id=reply_to_message_id,
     )
     if message_thread_id:
         reply_to.top_msg_id = message_thread_id
@@ -552,12 +568,14 @@ async def _get_reply_message_parameters(
     if quote is not None:
         quote_parse_mode = reply_parameters.quote_parse_mode
         quote_entities = reply_parameters.quote_entities
-        message, entities = (await parse_text_entities(
-            client,
-            quote,
-            quote_parse_mode,
-            quote_entities
-        )).values()
+        message, entities = (
+            await parse_text_entities(
+                client,
+                quote,
+                quote_parse_mode,
+                quote_entities,
+            )
+        ).values()
         reply_to.quote_text = message
         reply_to.quote_entities = entities
     if reply_parameters.chat_id:
@@ -566,7 +584,7 @@ async def _get_reply_message_parameters(
         reply_to.quote_offset = reply_parameters.quote_position
     if reply_parameters.direct_messages_topic_id:
         reply_to.monoforum_peer_id = await client.resolve_peer(
-            reply_parameters.direct_messages_topic_id
+            reply_parameters.direct_messages_topic_id,
         )
     if reply_parameters.checklist_task_id:
         reply_to.todo_item_id = reply_parameters.checklist_task_id
@@ -577,15 +595,15 @@ async def _get_reply_message_parameters(
 
 def resolve_legacy_reply_parameters(
     *,
-    reply_parameters: "types.ReplyParameters" = None,
-    reply_to_message_id: int = None,
-    reply_to_story_id: int = None,
-    reply_to_chat_id: Union[int, str] = None,
-    reply_to_monoforum_id: Union[int, str] = None,
-    quote_text: str = None,
-    quote_entities: list = None,
-    chat_id: Union[int, str] = None,
-) -> Optional["types.ReplyParameters"]:
+    reply_parameters: types.ReplyParameters = None,
+    reply_to_message_id: int | None = None,
+    reply_to_story_id: int | None = None,
+    reply_to_chat_id: int | str | None = None,
+    reply_to_monoforum_id: int | str | None = None,
+    quote_text: str | None = None,
+    quote_entities: list | None = None,
+    chat_id: int | str | None = None,
+) -> types.ReplyParameters | None:
     """Map pyroblack <= 2.7.2 reply kwargs onto :obj:`~pyrogram.types.ReplyParameters`.
 
     Newer high-level methods only take ``reply_parameters`` (+ deprecated
@@ -622,9 +640,12 @@ def resolve_legacy_reply_parameters(
             and reply_parameters.message_id
             and reply_parameters.message_id != reply_to_message_id
         ):
-            raise ValueError(
+            msg = (
                 "Parameters `reply_parameters` and legacy reply_* kwargs are "
                 "mutually exclusive."
+            )
+            raise ValueError(
+                msg,
             )
         return reply_parameters
 
@@ -650,16 +671,16 @@ def resolve_legacy_reply_parameters(
 
 # Back-compat name used by some third-party snippets / older pyroblack docs
 async def get_reply_to(
-    client: "pyrogram.Client",
-    chat_id: Union[int, str] = None,
-    reply_to_message_id: int = None,
-    reply_to_story_id: int = None,
-    message_thread_id: int = None,
-    reply_to_monoforum_id: Union[int, str] = None,
-    reply_to_chat_id: Union[int, str] = None,
-    quote_text: str = None,
-    quote_entities: list = None,
-    parse_mode: "enums.ParseMode" = None,
+    client: pyrogram.Client,
+    chat_id: int | str | None = None,
+    reply_to_message_id: int | None = None,
+    reply_to_story_id: int | None = None,
+    message_thread_id: int | None = None,
+    reply_to_monoforum_id: int | str | None = None,
+    reply_to_chat_id: int | str | None = None,
+    quote_text: str | None = None,
+    quote_entities: list | None = None,
+    parse_mode: enums.ParseMode = None,
 ):
     """Deprecated: prefer :func:`resolve_legacy_reply_parameters` +
     :func:`_get_reply_message_parameters`. Kept for pyroblack <= 2.7.2 imports.
@@ -676,29 +697,31 @@ async def get_reply_to(
     if quote_text is not None and reply_parameters is not None:
         reply_parameters.quote_parse_mode = parse_mode
     return await _get_reply_message_parameters(
-        client, message_thread_id, reply_parameters
+        client,
+        message_thread_id,
+        reply_parameters,
     )
 
 
 def _get_reply_to_message_quote_ids(
-    reply_parameters: "types.ReplyParameters" = None,
-    message_id: int = None,
-    chat_type: "enums.ChatType" = None,
-    direct_messages_topic_id: int = None,
-    quote: bool = None,
-    reply_to_message_id: int = None,
-) -> tuple[int, "types.ReplyParameters"]:
+    reply_parameters: types.ReplyParameters = None,
+    message_id: int | None = None,
+    chat_type: enums.ChatType = None,
+    direct_messages_topic_id: int | None = None,
+    quote: bool | None = None,
+    reply_to_message_id: int | None = None,
+) -> tuple[int, types.ReplyParameters]:
     if quote is None:
         quote = chat_type != enums.ChatType.PRIVATE
 
     if not reply_parameters and quote:
         if reply_to_message_id:
             reply_parameters = types.ReplyParameters(
-                message_id=reply_to_message_id
+                message_id=reply_to_message_id,
             )
         else:
             reply_parameters = types.ReplyParameters(
-                message_id=message_id
+                message_id=message_id,
             )
         reply_to_message_id = None
 
@@ -707,28 +730,25 @@ def _get_reply_to_message_quote_ids(
             reply_parameters.direct_messages_topic_id = direct_messages_topic_id
         else:
             reply_parameters = types.ReplyParameters(
-                direct_messages_topic_id=direct_messages_topic_id
+                direct_messages_topic_id=direct_messages_topic_id,
             )
         reply_to_message_id = None
-    
+
     return reply_to_message_id, reply_parameters
 
 
 def is_plain_domain(url):
     # https://github.com/tdlib/td/blob/d963044/td/telegram/MessageEntity.cpp#L1778
     return (
-        url.find('/') >= len(url) and
-        url.find('?') >= len(url) and
-        url.find('#') >= len(url)
+        url.find("/") >= len(url)
+        and url.find("?") >= len(url)
+        and url.find("#") >= len(url)
     )
 
 
 def get_first_url(
-    message: Union[
-        "raw.types.Message",
-        "raw.types.DraftMessage"
-    ],
-**kwargs
+    message: raw.types.Message | raw.types.DraftMessage,
+    **kwargs,
 ) -> str:
     text = message.message
     entities = message.entities
@@ -737,13 +757,16 @@ def get_first_url(
     text = re.sub(r"\s*(</[\w</>]*>)\s*$", r"\1", text)
     SMP_RE = re.compile(r"[\U00010000-\U0010FFFF]")
     text_ = SMP_RE.sub(
-        lambda match:  # Split SMP in two surrogates
-        "".join(
-            chr(i) for i in struct.unpack(
-                "<HH", match.group().encode("utf-16le")
+        lambda match: (  # Split SMP in two surrogates
+            "".join(
+                chr(i)
+                for i in struct.unpack(
+                    "<HH",
+                    match.group().encode("utf-16le"),
+                )
             )
         ),
-        text
+        text,
     )
     url = None
     for entity in entities:
@@ -752,32 +775,31 @@ def get_first_url(
             if len(url) <= 4:
                 url = None
                 continue
-            else:
-                break
-        elif isinstance(entity, raw.types.MessageEntityUrl):
-            url = text_[entity.offset:entity.offset+entity.length+1]
+            break
+        if isinstance(entity, raw.types.MessageEntityUrl):
+            url = text_[entity.offset : entity.offset + entity.length + 1]
             if len(url) <= 4:
                 url = None
                 continue
-            else:
-                break
+            break
     text = text_.encode("utf-16", "surrogatepass").decode("utf-16")
     if url:
-        if (
-            url.startswith((
-                "ton:", "tg:", "ftp:"
-            )) or
-            is_plain_domain(url)
-        ):
+        if url.startswith(
+            (
+                "ton:",
+                "tg:",
+                "ftp:",
+            )
+        ) or is_plain_domain(url):
             return None
         return url
     return None
 
 
 def fix_up_voice_audio_uri(
-    client: "pyrogram.Client",
+    client: pyrogram.Client,
     file_name: str,
-    dinxe: int
+    dinxe: int,
 ) -> str:
     un_posi_mt = [
         "application/zip",  # 0
@@ -835,7 +857,7 @@ def expand_inline_bytes(bytes_data: bytes):
         b"\xb5\xb6\xb7\xb8\xb9\xba\xc2\xc3\xc4\xc5\xc6\xc7\xc8\xc9\xca\xd2\xd3\xd4"
         b"\xd5\xd6\xd7\xd8\xd9\xda\xe2\xe3\xe4\xe5\xe6\xe7\xe8\xe9\xea\xf2\xf3\xf4"
         b"\xf5\xf6\xf7\xf8\xf9\xfa\xff\xda\x00\x0c\x03\x01\x00\x02\x11\x03\x11\x00"
-        b"\x3f\x00"
+        b"\x3f\x00",
     )
     footer = bytearray(b"\xff\xd9")
     header[164] = bytes_data[1]
@@ -843,16 +865,15 @@ def expand_inline_bytes(bytes_data: bytes):
     return header + bytes_data[3:] + footer
 
 
-def from_inline_bytes(data: bytes, file_name: str = None) -> BytesIO:
+def from_inline_bytes(data: bytes, file_name: str | None = None) -> BytesIO:
     b = BytesIO()
     b.write(data)
-    b.name = file_name if file_name else f"photo_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.jpg"
+    b.name = file_name or f"photo_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.jpg"
     return b
 
 
 def is_list_like(obj):
-    """
-    Returns `True` if the given object looks like a list.
+    """Returns `True` if the given object looks like a list.
 
     Ported from https://github.com/LonamiWebs/Telethon/blob/1cb5ff1dd54ecfad41711fc5a4ecf36d2ad8eaf6/telethon/utils.py#L902
     """

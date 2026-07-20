@@ -28,10 +28,9 @@ from .story_privacy_settings import StoryPrivacySettings
 
 
 class StoryPrivacySettingsCloseFriends(StoryPrivacySettings):
-    """The story can be viewed by all close friends.
-    """
+    """The story can be viewed by all close friends."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
     async def write(self, client: "pyrogram.Client"):

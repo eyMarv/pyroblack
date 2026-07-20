@@ -20,15 +20,22 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from pyrogram import types
 
-from ..object import Object
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+from pyrogram.types.object import Object
+
+if TYPE_CHECKING:
+    from pyrogram import types
 
 
 class PaymentInfo(Object):
     """Contains information about a payment.
 
-    Parameters:
+    Parameters
+    ----------
         name (``str``, *optional*):
             User's name.
 
@@ -40,16 +47,17 @@ class PaymentInfo(Object):
 
         shipping_address (:obj:`~pyrogram.types.ShippingAddress`, *optional*):
             User's shipping address.
+
     """
 
     def __init__(
         self,
         *,
-        name: str = None,
-        phone_number: str = None,
-        email: str = None,
-        shipping_address: "types.ShippingAddress" = None,
-    ):
+        name: str | None = None,
+        phone_number: str | None = None,
+        email: str | None = None,
+        shipping_address: types.ShippingAddress = None,
+    ) -> None:
         super().__init__()
 
         self.name = name

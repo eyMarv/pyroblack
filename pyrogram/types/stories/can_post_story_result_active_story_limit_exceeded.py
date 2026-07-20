@@ -25,8 +25,7 @@ from .can_post_story_result import CanPostStoryResult
 
 
 class CanPostStoryResultActiveStoryLimitExceeded(CanPostStoryResult):
-    """The limit for the number of active stories exceeded. The user can buy Telegram Premium, delete an active story, or wait for the oldest story to expire.
-    """
+    """The limit for the number of active stories exceeded. The user can buy Telegram Premium, delete an active story, or wait for the oldest story to expire."""
 
-    def __init__(self,):
+    def __init__(self) -> None:
         super().__init__()

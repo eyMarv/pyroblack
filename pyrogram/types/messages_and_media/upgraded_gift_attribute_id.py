@@ -23,8 +23,7 @@
 from typing import Optional
 
 from pyrogram import raw, types
-
-from ..object import Object
+from pyrogram.types.object import Object
 
 
 class UpgradedGiftAttributeId(Object):
@@ -39,26 +38,26 @@ class UpgradedGiftAttributeId(Object):
 
     def __init__(
         self,
-    ):
+    ) -> None:
         super().__init__()
 
     @staticmethod
     def _parse(
-        attribute_id: "raw.base.StarGiftAttributeId"
+        attribute_id: "raw.base.StarGiftAttributeId",
     ) -> Optional["UpgradedGiftAttributeId"]:
         if not attribute_id:
             return None
 
         if isinstance(attribute_id, raw.types.StarGiftAttributeIdModel):
             return types.UpgradedfGiftAttributeIdModel(
-                sticker_id=attribute_id.document_id
+                sticker_id=attribute_id.document_id,
             )
-        elif isinstance(attribute_id, raw.types.StarGiftAttributeIdPattern):
+        if isinstance(attribute_id, raw.types.StarGiftAttributeIdPattern):
             return types.UpgradedfGiftAttributeIdSymbol(
-                sticker_id=attribute_id.document_id
+                sticker_id=attribute_id.document_id,
             )
-        elif isinstance(attribute_id, raw.types.StarGiftAttributeIdBackdrop):
+        if isinstance(attribute_id, raw.types.StarGiftAttributeIdBackdrop):
             return types.UpgradedfGiftAttributeIdBackdrop(
-                backdrop_id=attribute_id.backdrop_id
+                backdrop_id=attribute_id.backdrop_id,
             )
-
+        return None

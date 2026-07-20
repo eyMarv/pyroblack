@@ -20,12 +20,10 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import AsyncGenerator
+from collections.abc import AsyncGenerator
 
 import pyrogram
-from pyrogram import raw
-from pyrogram import types
-from pyrogram import utils
+from pyrogram import raw, types, utils
 
 
 class SearchPosts:
@@ -40,7 +38,8 @@ class SearchPosts:
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             hashtag (``str``):
                 Text query string.
 
@@ -48,7 +47,8 @@ class SearchPosts:
                 Limits the number of posts to be retrieved.
                 By default, no limit is applied and all posts are returned.
 
-        Returns:
+        Returns
+        -------
             ``Generator``: A generator yielding :obj:`~pyrogram.types.Message` objects.
 
         Example:
@@ -57,6 +57,7 @@ class SearchPosts:
                 # Search for "#pyrogram". Get the first 50 results
                 async for message in app.search_posts("#pyrogram", limit=50):
                     print(message.text)
+
         """
         current = 0
         total = abs(limit) or (1 << 31)

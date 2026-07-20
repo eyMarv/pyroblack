@@ -21,47 +21,48 @@
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
 import pyrogram
-from pyrogram import types, utils, raw
+from pyrogram import raw, types
 
 
 class GetBusinessConnection:
     async def get_business_connection(
         self: "pyrogram.Client",
-        business_connection_id: str
+        business_connection_id: str,
     ) -> "types.Message":
         """Use this method to get information about the connection of the bot with a business account.
 
         .. include:: /_includes/usable-by/bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             business_connection_id (``str``):
                 Unique identifier of the business connection
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.BusinessConnection`: On success, the the connection of the bot with a business account is returned.
-        """
 
+        """
         r = await self.invoke(
             raw.functions.account.GetBotBusinessConnection(
-                connection_id=business_connection_id
-            )
+                connection_id=business_connection_id,
+            ),
         )
         users = {i.id: i for i in r.users}
         chats = {i.id: i for i in r.chats}
         for i in r.updates:
             if isinstance(
                 i,
-                (
-                    raw.types.UpdateBotBusinessConnect
-                )
+                (raw.types.UpdateBotBusinessConnect),
             ):
                 business_connection = types.BusinessConnection._parse(
                     self,
                     i,
                     users,
-                    chats
+                    chats,
                 )
-                self.business_user_connection_cache[
-                    business_connection_id
-                ] = business_connection
+                self.business_user_connection_cache[business_connection_id] = (
+                    business_connection
+                )
                 return business_connection
+        return None

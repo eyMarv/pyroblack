@@ -20,18 +20,29 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import datetime
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import pyrogram
 from pyrogram import raw, types, utils
-from pyrogram.file_id import FileId, FileType, FileUniqueId, FileUniqueType, ThumbnailSource
-from ..object import Object
+from pyrogram.file_id import (
+    FileId,
+    FileType,
+    FileUniqueId,
+    FileUniqueType,
+)
+from pyrogram.types.object import Object
+
+if TYPE_CHECKING:
+    from datetime import datetime
 
 
 class VideoQuality(Object):
     """Describes a video file of a specific quality.
 
-    Parameters:
+    Parameters
+    ----------
         file_id (``str``):
             Identifier for this file, which can be used to download or reuse the file.
 
@@ -65,17 +76,17 @@ class VideoQuality(Object):
     def __init__(
         self,
         *,
-        client: "pyrogram.Client" = None,
+        client: pyrogram.Client = None,
         file_id: str,
         file_unique_id: str,
         width: int,
         height: int,
         codec: str,
-        file_size: int = None,
-        supports_streaming: bool = None,
-        date: datetime = None,
-        thumbs: list["types.Thumbnail"] = None
-    ):
+        file_size: int | None = None,
+        supports_streaming: bool | None = None,
+        date: datetime | None = None,
+        thumbs: list[types.Thumbnail] | None = None,
+    ) -> None:
         super().__init__(client)
 
         self.file_id = file_id
@@ -91,28 +102,34 @@ class VideoQuality(Object):
     @staticmethod
     def _parse(
         client,
-        video: "raw.types.Document",
-        video_attributes: "raw.types.DocumentAttributeVideo",
-        file_name: str
-    ) -> "VideoQuality":
+        video: raw.types.Document,
+        video_attributes: raw.types.DocumentAttributeVideo,
+        file_name: str,
+    ) -> VideoQuality:
         return VideoQuality(
             file_id=FileId(
                 file_type=FileType.VIDEO,
                 dc_id=video.dc_id,
                 media_id=video.id,
                 access_hash=video.access_hash,
-                file_reference=video.file_reference
-            ).encode() if video else None,
+                file_reference=video.file_reference,
+            ).encode()
+            if video
+            else None,
             file_unique_id=FileUniqueId(
                 file_unique_type=FileUniqueType.DOCUMENT,
-                media_id=video.id
-            ).encode() if video else None,
+                media_id=video.id,
+            ).encode()
+            if video
+            else None,
             width=video_attributes.w if video_attributes else None,
             height=video_attributes.h if video_attributes else None,
             codec=video_attributes.video_codec if video_attributes else None,
             file_size=video.size if video else None,
-            supports_streaming=video_attributes.supports_streaming if video_attributes else None,
+            supports_streaming=video_attributes.supports_streaming
+            if video_attributes
+            else None,
             date=utils.timestamp_to_datetime(video.date) if video else None,
             thumbs=types.Thumbnail._parse(client, video) if video else None,
-            client=client
+            client=client,
         )

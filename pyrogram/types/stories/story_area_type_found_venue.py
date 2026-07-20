@@ -20,10 +20,10 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional
+from __future__ import annotations
 
 import pyrogram
-from pyrogram import types, raw
+from pyrogram import raw
 
 from .story_area_type import StoryAreaType
 
@@ -31,7 +31,8 @@ from .story_area_type import StoryAreaType
 class StoryAreaTypeFoundVenue(StoryAreaType):
     """This object describes an area pointing to a venue found by the FOURSQUARE bot. Currently, a story can have up to 10 venue areas.
 
-    Parameters:
+    Parameters
+    ----------
         query_id (``int``):
             Identifier of the inline query, used to find the venue.
 
@@ -42,9 +43,9 @@ class StoryAreaTypeFoundVenue(StoryAreaType):
 
     def __init__(
         self,
-        query_id: int = None,
-        result_id: str = None,
-    ):
+        query_id: int | None = None,
+        result_id: str | None = None,
+    ) -> None:
         super().__init__()
 
         self.query_id = query_id
@@ -52,8 +53,8 @@ class StoryAreaTypeFoundVenue(StoryAreaType):
 
     async def write(
         self,
-        client: "pyrogram.Client",
-        coordinates: "raw.types.MediaAreaCoordinates"
+        client: pyrogram.Client,
+        coordinates: raw.types.MediaAreaCoordinates,
     ):
         return raw.types.InputMediaAreaVenue(
             coordinates=coordinates,

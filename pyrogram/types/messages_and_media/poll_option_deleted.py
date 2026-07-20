@@ -21,19 +21,20 @@
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
 from pyrogram import raw, types
-from ..object import Object
+from pyrogram.types.object import Object
 
 
 class PollOptionDeleted(Object):
     """This object represents a service message about an option deleted from a poll.
 
-    Parameters:
+    Parameters
+    ----------
         poll_message (:obj:`~pyrogram.types.Message`, *optional*):
             Message containing the poll to which the option was added, if known.
-        
+
         option_persistent_id (``str``):
             Unique identifier of the added option.
-        
+
         option_text (:obj:`~pyrogram.types.FormattedText`):
             Option text.
 
@@ -45,7 +46,7 @@ class PollOptionDeleted(Object):
         option_persistent_id: str,
         poll_message: "types.Message" = None,
         option_text: "types.FormattedText" = None,
-    ):
+    ) -> None:
         super().__init__()
 
         self.option_persistent_id = option_persistent_id
@@ -57,10 +58,10 @@ class PollOptionDeleted(Object):
         client,
         message: "raw.types.MessageService",
     ) -> "PollOptionDeleted":
-        action: "raw.types.MessageActionPollDeleteAnswer" = message.action
-        answer: "raw.types.PollAnswer" = action.answer
+        action: raw.types.MessageActionPollDeleteAnswer = message.action
+        answer: raw.types.PollAnswer = action.answer
         return PollOptionDeleted(
             option_persistent_id=answer.option.decode("UTF-8"),
             poll_message=None,
-            option_text=types.FormattedText._parse(client, answer.text)
+            option_text=types.FormattedText._parse(client, answer.text),
         )

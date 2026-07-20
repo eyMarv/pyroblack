@@ -30,9 +30,10 @@ from os import urandom
 import pyrogram
 from pyrogram import raw
 from pyrogram.connection import Connection
-from pyrogram.crypto import aes, rsa, prime
+from pyrogram.crypto import aes, prime, rsa
 from pyrogram.errors import SecurityCheckMismatch
-from pyrogram.raw.core import TLObject, Long, Int
+from pyrogram.raw.core import Int, Long, TLObject
+
 from .internals import MsgId
 
 log = logging.getLogger(__name__)
@@ -45,8 +46,8 @@ class Auth:
         self,
         client: "pyrogram.Client",
         dc_id: int,
-        test_mode: bool
-    ):
+        test_mode: bool,
+    ) -> None:
         self.dc_id = dc_id
         self.test_mode = test_mode
         self.ipv6 = client.ipv6
@@ -59,12 +60,7 @@ class Auth:
 
     @staticmethod
     def pack(data: TLObject) -> bytes:
-        return (
-            bytes(8)
-            + Long(MsgId())
-            + Int(len(data.write()))
-            + data.write()
-        )
+        return bytes(8) + Long(MsgId()) + Int(len(data.write())) + data.write()
 
     @staticmethod
     def unpack(b: BytesIO):
@@ -79,9 +75,8 @@ class Auth:
         return self.unpack(response)
 
     async def create(self):
-        """
-        https://core.telegram.org/mtproto/auth_key
-        https://core.telegram.org/mtproto/samples-auth_key
+        """https://core.telegram.org/mtproto/auth_key
+        https://core.telegram.org/mtproto/samples-auth_key.
         """
         retries_left = self.MAX_RETRIES
 
@@ -106,17 +101,19 @@ class Auth:
                 log.debug(f"Send req_pq: {nonce}")
                 res_pq = await self.invoke(raw.functions.ReqPqMulti(nonce=nonce))
                 log.debug(f"Got ResPq: {res_pq.server_nonce}")
-                log.debug(f"Server public key fingerprints: {res_pq.server_public_key_fingerprints}")
+                log.debug(
+                    f"Server public key fingerprints: {res_pq.server_public_key_fingerprints}"
+                )
 
                 for i in res_pq.server_public_key_fingerprints:
                     if i in rsa.server_public_keys:
                         log.debug(f"Using fingerprint: {i}")
                         public_key_fingerprint = i
                         break
-                    else:
-                        log.debug(f"Fingerprint unknown: {i}")
+                    log.debug(f"Fingerprint unknown: {i}")
                 else:
-                    raise Exception("Public key not found")
+                    msg = "Public key not found"
+                    raise Exception(msg)
 
                 # Step 3
                 pq = int.from_bytes(res_pq.pq, "big")
@@ -124,7 +121,9 @@ class Auth:
                 start = time.time()
                 g = prime.decompose(pq)
                 p, q = sorted((g, pq // g))  # p < q
-                log.debug(f"Done PQ factorization ({round(time.time() - start, 3)}s): {p} {q}")
+                log.debug(
+                    f"Done PQ factorization ({round(time.time() - start, 3)}s): {p} {q}"
+                )
 
                 # Step 4
                 server_nonce = res_pq.server_nonce
@@ -140,7 +139,7 @@ class Auth:
                 ).write()
 
                 sha = sha1(data).digest()
-                padding = urandom(- (len(data) + len(sha)) % 255)
+                padding = urandom(-(len(data) + len(sha)) % 255)
                 data_with_hash = sha + data + padding
                 encrypted_data = rsa.encrypt(data_with_hash, public_key_fingerprint)
 
@@ -155,8 +154,8 @@ class Auth:
                         p=p.to_bytes(4, "big"),
                         q=q.to_bytes(4, "big"),
                         public_key_fingerprint=public_key_fingerprint,
-                        encrypted_data=encrypted_data
-                    )
+                        encrypted_data=encrypted_data,
+                    ),
                 )
 
                 encrypted_answer = server_dh_params.encrypted_answer
@@ -171,12 +170,15 @@ class Auth:
 
                 tmp_aes_iv = (
                     sha1(server_nonce + new_nonce).digest()[12:]
-                    + sha1(new_nonce + new_nonce).digest() + new_nonce[:4]
+                    + sha1(new_nonce + new_nonce).digest()
+                    + new_nonce[:4]
                 )
 
                 server_nonce = int.from_bytes(server_nonce, "little", signed=True)
 
-                answer_with_hash = aes.ige256_decrypt(encrypted_answer, tmp_aes_key, tmp_aes_iv)
+                answer_with_hash = aes.ige256_decrypt(
+                    encrypted_answer, tmp_aes_key, tmp_aes_iv
+                )
                 answer = answer_with_hash[20:]
 
                 server_dh_inner_data = TLObject.read(BytesIO(answer))
@@ -199,21 +201,23 @@ class Auth:
                     nonce=nonce,
                     server_nonce=server_nonce,
                     retry_id=retry_id,
-                    g_b=g_b
+                    g_b=g_b,
                 ).write()
 
                 sha = sha1(data).digest()
-                padding = urandom(- (len(data) + len(sha)) % 16)
+                padding = urandom(-(len(data) + len(sha)) % 16)
                 data_with_hash = sha + data + padding
-                encrypted_data = aes.ige256_encrypt(data_with_hash, tmp_aes_key, tmp_aes_iv)
+                encrypted_data = aes.ige256_encrypt(
+                    data_with_hash, tmp_aes_key, tmp_aes_iv
+                )
 
                 log.debug("Send set_client_DH_params")
                 set_client_dh_params_answer = await self.invoke(
                     raw.functions.SetClientDHParams(
                         nonce=nonce,
                         server_nonce=server_nonce,
-                        encrypted_data=encrypted_data
-                    )
+                        encrypted_data=encrypted_data,
+                    ),
                 )
 
                 # TODO: Handle "auth_key_aux_hash" if the previous step fails
@@ -229,21 +233,30 @@ class Auth:
                 # Security checks
                 #######################
 
-                SecurityCheckMismatch.check(dh_prime == prime.CURRENT_DH_PRIME, "dh_prime == prime.CURRENT_DH_PRIME")
+                SecurityCheckMismatch.check(
+                    dh_prime == prime.CURRENT_DH_PRIME,
+                    "dh_prime == prime.CURRENT_DH_PRIME",
+                )
                 log.debug("DH parameters check: OK")
 
                 # https://core.telegram.org/mtproto/security_guidelines#g-a-and-g-b-validation
                 g_b = int.from_bytes(g_b, "big")
-                SecurityCheckMismatch.check(1 < g < dh_prime - 1, "1 < g < dh_prime - 1")
-                SecurityCheckMismatch.check(1 < g_a < dh_prime - 1, "1 < g_a < dh_prime - 1")
-                SecurityCheckMismatch.check(1 < g_b < dh_prime - 1, "1 < g_b < dh_prime - 1")
+                SecurityCheckMismatch.check(
+                    1 < g < dh_prime - 1, "1 < g < dh_prime - 1"
+                )
+                SecurityCheckMismatch.check(
+                    1 < g_a < dh_prime - 1, "1 < g_a < dh_prime - 1"
+                )
+                SecurityCheckMismatch.check(
+                    1 < g_b < dh_prime - 1, "1 < g_b < dh_prime - 1"
+                )
                 SecurityCheckMismatch.check(
                     2 ** (2048 - 64) < g_a < dh_prime - 2 ** (2048 - 64),
-                    "2 ** (2048 - 64) < g_a < dh_prime - 2 ** (2048 - 64)"
+                    "2 ** (2048 - 64) < g_a < dh_prime - 2 ** (2048 - 64)",
                 )
                 SecurityCheckMismatch.check(
                     2 ** (2048 - 64) < g_b < dh_prime - 2 ** (2048 - 64),
-                    "2 ** (2048 - 64) < g_b < dh_prime - 2 ** (2048 - 64)"
+                    "2 ** (2048 - 64) < g_b < dh_prime - 2 ** (2048 - 64)",
                 )
                 log.debug("g_a and g_b validation: OK")
 
@@ -251,28 +264,32 @@ class Auth:
                 answer = server_dh_inner_data.write()  # Call .write() to remove padding
                 SecurityCheckMismatch.check(
                     answer_with_hash[:20] == sha1(answer).digest(),
-                    "answer_with_hash[:20] == sha1(answer).digest()"
+                    "answer_with_hash[:20] == sha1(answer).digest()",
                 )
                 log.debug("SHA1 hash values check: OK")
 
                 # https://core.telegram.org/mtproto/security_guidelines#checking-nonce-server-nonce-and-new-nonce-fields
                 # 1st message
-                SecurityCheckMismatch.check(nonce == res_pq.nonce, "nonce == res_pq.nonce")
+                SecurityCheckMismatch.check(
+                    nonce == res_pq.nonce, "nonce == res_pq.nonce"
+                )
                 # 2nd message
                 server_nonce = int.from_bytes(server_nonce, "little", signed=True)
-                SecurityCheckMismatch.check(nonce == server_dh_params.nonce, "nonce == server_dh_params.nonce")
+                SecurityCheckMismatch.check(
+                    nonce == server_dh_params.nonce, "nonce == server_dh_params.nonce"
+                )
                 SecurityCheckMismatch.check(
                     server_nonce == server_dh_params.server_nonce,
-                    "server_nonce == server_dh_params.server_nonce"
+                    "server_nonce == server_dh_params.server_nonce",
                 )
                 # 3rd message
                 SecurityCheckMismatch.check(
                     nonce == set_client_dh_params_answer.nonce,
-                    "nonce == set_client_dh_params_answer.nonce"
+                    "nonce == set_client_dh_params_answer.nonce",
                 )
                 SecurityCheckMismatch.check(
                     server_nonce == set_client_dh_params_answer.server_nonce,
-                    "server_nonce == set_client_dh_params_answer.server_nonce"
+                    "server_nonce == set_client_dh_params_answer.server_nonce",
                 )
                 server_nonce = server_nonce.to_bytes(16, "little", signed=True)
                 log.debug("Nonce fields check: OK")
@@ -282,14 +299,16 @@ class Auth:
 
                 log.debug(f"Server salt: {int.from_bytes(server_salt, 'little')}")
 
-                log.info(f"Done auth key exchange: {set_client_dh_params_answer.__class__.__name__}")
+                log.info(
+                    f"Done auth key exchange: {set_client_dh_params_answer.__class__.__name__}"
+                )
             except Exception as e:
                 log.info("Retrying due to %s: %s", type(e).__name__, e)
 
                 if retries_left:
                     retries_left -= 1
                 else:
-                    raise e
+                    raise
 
                 await asyncio.sleep(1)
                 continue

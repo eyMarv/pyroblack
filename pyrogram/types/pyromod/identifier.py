@@ -20,38 +20,43 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 from dataclasses import dataclass
-from typing import Optional, Union, List
 
 
 @dataclass
 class Identifier:
-    """A dataclass that serves as a utility for matching listeners to the data of updates.
+    """A dataclass for matching listeners to update data.
 
-    Parameters:
+    Parameters
+    ----------
         inline_message_id (``str`` | Iterable of ``str``, *optional*):
-            The inline message ID to match. If None, it is not considered for matching.
+            The inline message ID to match.
+            If None, it is not considered for matching.
 
-        chat_id (``int`` | ``str`` | Iterable of ``int`` | Iterable of ``str``, *optional*):
-            The chat ID to match. If None, it is not considered for matching.
+        chat_id (``int`` | ``str`` | Iterable, *optional*):
+            The chat ID to match.
+            If None, it is not considered for matching.
 
-        message_id (``int``  | Iterable of ``int``):
-            The message ID to match. If None, it is not considered for matching.
+        message_id (``int`` | Iterable of ``int``):
+            The message ID to match.
+            If None, it is not considered for matching.
 
-        from_user_id (``int`` | ``str`` | Iterable of ``int`` | Iterable of ``str``, *optional*):
-            The user ID to match. If None, it is not considered for matching.
+        from_user_id (``int`` | ``str`` | Iterable, *optional*):
+            The user ID to match.
+            If None, it is not considered for matching.
+
     """
 
-    inline_message_id: Optional[Union[str, List[str]]] = None
-    chat_id: Optional[Union[Union[int, str], List[Union[int, str]]]] = None
-    message_id: Optional[Union[int, List[int]]] = None
-    from_user_id: Optional[Union[Union[int, str], List[Union[int, str]]]] = None
+    inline_message_id: str | list[str] | None = None
+    chat_id: int | str | list[int | str] | None = None
+    message_id: int | list[int] | None = None
+    from_user_id: int | str | list[int | str] | None = None
 
-    def matches(self, update: "Identifier") -> bool:
-        # Compare each property of other with the corresponding property in self
-        # If the property in self is None, the property in other can be anything
-        # If the property in self is not None, the property in other must be the same
-        for field in self.__annotations__:
+    def matches(self, update: Identifier) -> bool:
+        """Check if an update matches this identifier's pattern."""
+        for field in type(self).__annotations__:
             pattern_value = getattr(self, field)
             update_value = getattr(update, field)
 
@@ -69,10 +74,11 @@ class Identifier:
                     return False
         return True
 
-    def count_populated(self):
+    def count_populated(self) -> int:
+        """Count how many fields are set (non-None)."""
         non_null_count = 0
 
-        for attr in self.__annotations__:
+        for attr in type(self).__annotations__:
             if getattr(self, attr) is not None:
                 non_null_count += 1
 

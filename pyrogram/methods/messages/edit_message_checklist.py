@@ -20,7 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional, Union
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw, types, utils
@@ -28,21 +28,22 @@ from pyrogram import raw, types, utils
 
 class EditMessageChecklist:
     async def edit_message_checklist(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
+        self: pyrogram.Client,
+        chat_id: int | str,
         message_id: int,
-        checklist: "types.InputChecklist",
-        reply_markup: Optional["types.InlineKeyboardMarkup"] = None,
-        business_connection_id: Optional[str] = None,
+        checklist: types.InputChecklist,
+        reply_markup: types.InlineKeyboardMarkup | None = None,
+        business_connection_id: str | None = None,
         caption: str = "",
-        parse_mode: Optional["enums.ParseMode"] = None,
-        caption_entities: list["types.MessageEntity"] = None,
-    ) -> "types.Message":
+        parse_mode: enums.ParseMode | None = None,
+        caption_entities: list[types.MessageEntity] | None = None,
+    ) -> types.Message:
         """Use this method to edit a checklist.
 
         .. include:: /_includes/usable-by/users-bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
                 For your personal cloud (Saved Messages) you can simply use "me" or "self".
@@ -70,7 +71,8 @@ class EditMessageChecklist:
             caption_entities (List of :obj:`~pyrogram.types.MessageEntity`):
                 List of special entities that appear in the caption, which can be specified instead of *parse_mode*.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.Message`: On success, the edited message is returned.
 
         Example:
@@ -88,10 +90,16 @@ class EditMessageChecklist:
                         ]
                     )
                 )
+
         """
-        title, entities = (await utils.parse_text_entities(
-            self, checklist.title, checklist.parse_mode, checklist.title_entities
-        )).values()
+        title, entities = (
+            await utils.parse_text_entities(
+                self,
+                checklist.title,
+                checklist.parse_mode,
+                checklist.title_entities,
+            )
+        ).values()
 
         rpc = raw.functions.messages.EditMessage(
             peer=await self.resolve_peer(chat_id),
@@ -100,31 +108,37 @@ class EditMessageChecklist:
                 todo=raw.types.TodoList(
                     title=raw.types.TextWithEntities(
                         text=title,
-                        entities=entities or []
+                        entities=entities or [],
                     ),
                     list=[await task.write(self) for task in checklist.tasks],
                     others_can_append=checklist.others_can_add_tasks,
-                    others_can_complete=checklist.others_can_mark_tasks_as_done
-                )
+                    others_can_complete=checklist.others_can_mark_tasks_as_done,
+                ),
             ),
             reply_markup=await reply_markup.write(self) if reply_markup else None,
-            **await utils.parse_text_entities(self, caption, parse_mode, caption_entities)
+            **await utils.parse_text_entities(
+                self, caption, parse_mode, caption_entities
+            ),
         )
         if business_connection_id:
             r = await self.invoke(
                 raw.functions.InvokeWithBusinessConnection(
                     query=rpc,
-                    connection_id=business_connection_id
-                )
+                    connection_id=business_connection_id,
+                ),
             )
         else:
             r = await self.invoke(rpc)
 
         for i in r.updates:
-            if isinstance(i, (raw.types.UpdateEditMessage, raw.types.UpdateEditChannelMessage)):
+            if isinstance(
+                i, (raw.types.UpdateEditMessage, raw.types.UpdateEditChannelMessage)
+            ):
                 return await types.Message._parse(
-                    self, i.message,
+                    self,
+                    i.message,
                     {i.id: i for i in r.users},
                     {i.id: i for i in r.chats},
-                    replies=self.fetch_replies
+                    replies=self.fetch_replies,
                 )
+        return None

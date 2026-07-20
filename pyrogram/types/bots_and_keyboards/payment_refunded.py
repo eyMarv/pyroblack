@@ -20,17 +20,23 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-import pyrogram
 
-from pyrogram import raw
-from pyrogram import types
-from ..object import Object
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+from pyrogram.types.object import Object
+
+if TYPE_CHECKING:
+    import pyrogram
+    from pyrogram import raw, types
 
 
 class PaymentRefunded(Object):
     """Contains information about a refunded payment.
 
-    Parameters:
+    Parameters
+    ----------
         user (:obj:`~pyrogram.types.User`):
             The user that refunded the payment.
 
@@ -48,18 +54,19 @@ class PaymentRefunded(Object):
 
         provider_payment_charge_id (``str``, *optional*):
             Provider payment identifier.
+
     """
 
     def __init__(
         self,
         *,
-        user: "types.User",
+        user: types.User,
         currency: str,
         total_amount: str,
         telegram_payment_charge_id: str,
         provider_payment_charge_id: str,
-        payload: str = None,
-    ):
+        payload: str | None = None,
+    ) -> None:
         self.user = user
         self.currency = currency
         self.total_amount = total_amount
@@ -69,9 +76,9 @@ class PaymentRefunded(Object):
 
     @staticmethod
     async def _parse(
-        client: "pyrogram.Client",
-        payment_refunded: "raw.types.MessageActionPaymentRefunded",
-    ) -> "PaymentRefunded":
+        client: pyrogram.Client,
+        payment_refunded: raw.types.MessageActionPaymentRefunded,
+    ) -> PaymentRefunded:
         try:
             payload = payment_refunded.payload.decode()
         except (UnicodeDecodeError, AttributeError):

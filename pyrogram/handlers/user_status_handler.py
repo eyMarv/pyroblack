@@ -24,14 +24,15 @@ from typing import Any, Callable
 
 import pyrogram
 from pyrogram.filters import Filter
+
 from .handler import Handler
 
 CallbackFunc: Callable = Callable[
     [
         "pyrogram.Client",
-        pyrogram.types.User
+        pyrogram.types.User,
     ],
-    Any
+    Any,
 ]
 
 
@@ -41,7 +42,8 @@ class UserStatusHandler(Handler):
 
     For a nicer way to register this handler, have a look at the :meth:`~pyrogram.Client.on_user_status` decorator.
 
-    Parameters:
+    Parameters
+    ----------
         callback (``Callable``):
             Pass a function that will be called when a new user status update arrives. It takes *(client, user)*
             as positional arguments (look at the section below for a detailed description).
@@ -49,13 +51,15 @@ class UserStatusHandler(Handler):
         filters (:obj:`Filter`):
             Pass one or more filters to allow only a subset of users to be passed in your callback function.
 
-    Other parameters:
+    Other Parameters
+    ----------------
         client (:obj:`~pyrogram.Client`):
             The Client itself, useful when you want to call other API methods inside the user status handler.
 
         user (:obj:`~pyrogram.types.User`):
             The user containing the updated status.
+
     """
 
-    def __init__(self, callback: CallbackFunc, filters: Filter = None):
+    def __init__(self, callback: CallbackFunc, filters: Filter = None) -> None:
         super().__init__(callback, filters)

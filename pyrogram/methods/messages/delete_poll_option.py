@@ -20,7 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw, types
@@ -28,16 +28,17 @@ from pyrogram import raw, types
 
 class DeletePollOption:
     async def delete_poll_option(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
+        self: pyrogram.Client,
+        chat_id: int | str,
         message_id: int,
         option_id: str,
-    ) -> Union["types.Message", bool]:
+    ) -> types.Message | bool:
         """Deletes an option from a poll.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
                 For your personal cloud (Saved Messages) you can simply use "me" or "self".
@@ -49,7 +50,8 @@ class DeletePollOption:
             option_id (``str``):
                 Unique identifier of the option.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.Message` | ``bool``: On success, an edited message or a service message will be returned (when applicable),
             otherwise, in case a message object couldn't be returned, True is returned.
 
@@ -68,15 +70,22 @@ class DeletePollOption:
                 peer=await self.resolve_peer(chat_id),
                 msg_id=message_id,
                 option=option_id.encode("UTF-8"),
-            )
+            ),
         )
         for i in r.updates:
-            if isinstance(i, (raw.types.UpdateNewMessage, raw.types.UpdateEditChannelMessage, raw.types.UpdateNewChannelMessage)):
+            if isinstance(
+                i,
+                (
+                    raw.types.UpdateNewMessage,
+                    raw.types.UpdateEditChannelMessage,
+                    raw.types.UpdateNewChannelMessage,
+                ),
+            ):
                 return await types.Message._parse(
                     self,
                     i.message,
                     {i.id: i for i in r.users},
                     {i.id: i for i in r.chats},
-                    replies=self.fetch_replies
+                    replies=self.fetch_replies,
                 )
         return True

@@ -25,7 +25,9 @@ from pyrogram import raw, types
 
 
 class GetGlobalPrivacySettings:
-    async def get_global_privacy_settings(self: "pyrogram.Client") -> "types.GlobalPrivacySettings":
+    async def get_global_privacy_settings(
+        self: "pyrogram.Client",
+    ) -> "types.GlobalPrivacySettings":
         """Get account global privacy settings.
 
         .. include:: /_includes/usable-by/users.rst
@@ -37,8 +39,8 @@ class GetGlobalPrivacySettings:
             .. code-block:: python
 
                 await app.get_global_privacy_settings()
+
         """
         r = await self.invoke(raw.functions.account.GetGlobalPrivacySettings())
 
         return types.GlobalPrivacySettings._parse(r)
-

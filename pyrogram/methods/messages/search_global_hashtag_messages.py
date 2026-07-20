@@ -20,8 +20,8 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from collections.abc import AsyncGenerator
 from datetime import datetime
-from typing import AsyncGenerator
 
 import pyrogram
 from pyrogram import raw, types, utils
@@ -41,7 +41,8 @@ class SearchGlobalHashtagMessages:
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             hashtag (``str``, *optional*):
                 Hashtag to search for.
 
@@ -55,7 +56,8 @@ class SearchGlobalHashtagMessages:
                 The maximum number of messages to be returned.
                 By default, no limit is applied and all posts are returned.
 
-        Returns:
+        Returns
+        -------
             ``Generator``: A generator yielding :obj:`~pyrogram.types.Message` objects.
 
         Example:

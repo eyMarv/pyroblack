@@ -20,16 +20,17 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional, List
+from __future__ import annotations
 
-from pyrogram import types, raw
-from ..object import Object
+from pyrogram import raw, types
+from pyrogram.types.object import Object
 
 
 class BusinessWorkingHours(Object):
     """Business working hours.
 
-    Parameters:
+    Parameters
+    ----------
         timezone (``str``):
             Timezone of the business.
 
@@ -38,23 +39,24 @@ class BusinessWorkingHours(Object):
 
         is_open_now (``bool``, *optional*):
             True, if the business is open now.
+
     """
 
     def __init__(
         self,
         *,
         timezone: str,
-        working_hours: List["types.BusinessWeeklyOpen"],
-        is_open_now: bool = None,
-    ):
+        working_hours: list[types.BusinessWeeklyOpen],
+        is_open_now: bool | None = None,
+    ) -> None:
         self.timezone = timezone
         self.is_open_now = is_open_now
         self.working_hours = working_hours
 
     @staticmethod
     def _parse(
-        work_hours: "raw.types.BusinessWorkHours" = None,
-    ) -> Optional["BusinessWorkingHours"]:
+        work_hours: raw.types.BusinessWorkHours = None,
+    ) -> BusinessWorkingHours | None:
         if not work_hours:
             return None
 

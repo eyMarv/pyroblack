@@ -21,11 +21,9 @@
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
-from typing import List
 
 import pyrogram
-from pyrogram import raw
-from pyrogram import types
+from pyrogram import raw, types
 
 log = logging.getLogger(__name__)
 
@@ -33,7 +31,7 @@ log = logging.getLogger(__name__)
 class GetAvailableEffects:
     async def get_available_effects(
         self: "pyrogram.Client",
-    ) -> List["types.AvailableEffect"]:
+    ) -> list["types.AvailableEffect"]:
         """Get all available effects.
 
         .. include:: /_includes/usable-by/users.rst
@@ -46,6 +44,7 @@ class GetAvailableEffects:
 
                 # Get all available effects
                 await app.get_available_effects()
+
         """
         r = await self.invoke(raw.functions.messages.GetAvailableEffects(hash=0))
 
@@ -54,8 +53,10 @@ class GetAvailableEffects:
         return types.List(
             [
                 await types.AvailableEffect._parse(
-                    self, effect, documents.get(effect.effect_sticker_id, None)
+                    self,
+                    effect,
+                    documents.get(effect.effect_sticker_id),
                 )
                 for effect in r.effects
-            ]
+            ],
         )

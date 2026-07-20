@@ -25,36 +25,37 @@
 # Source: tl:account.updateBusinessWorkHours
 # ***************************
 
-from typing import Union, Optional
+from __future__ import annotations
 
 import pyrogram
-from pyrogram import raw
-from pyrogram import types
+from pyrogram import raw, types
 
 
 class UpdateBusinessWorkHours:
     async def update_business_work_hours(
-        self: "pyrogram.Client",
-        business_work_hours: Optional[raw.types.BusinessWorkHours] = None,
-    ) -> "types.Message":
+        self: pyrogram.Client,
+        business_work_hours: raw.types.BusinessWorkHours | None = None,
+    ) -> types.Message:
         """Update business work hours for your business account.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             business_work_hours (raw.types.BusinessWorkHours): Business work hours (timezone + weekly schedule)
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.Message`
 
         Example:
             .. code-block:: python
 
                 await app.update_business_work_hours(...)
-        """
 
-        r = await self.invoke(
+        """
+        await self.invoke(
             raw.functions.account.updateBusinessWorkHours(
                 business_work_hours=business_work_hours,
-            )
+            ),
         )

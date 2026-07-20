@@ -23,8 +23,7 @@
 import logging
 
 import pyrogram
-from pyrogram import raw
-from pyrogram import types
+from pyrogram import raw, types
 
 log = logging.getLogger(__name__)
 
@@ -35,13 +34,14 @@ class SignUp:
         phone_number: str,
         phone_code_hash: str,
         first_name: str,
-        last_name: str = ""
+        last_name: str = "",
     ) -> "types.User":
         """Register a new user in Telegram.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             phone_number (``str``):
                 Phone number in international format (includes the country prefix).
 
@@ -54,10 +54,12 @@ class SignUp:
             last_name (``str``, *optional*):
                 New user last name. Defaults to "" (empty string, no last name).
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.User`: On success, the new registered user is returned.
 
-        Raises:
+        Raises
+        ------
             BadRequest: In case the arguments are invalid.
             :obj:`~pyrogram.errors.RPCError`: In case of a Telegram RPC error.
 
@@ -70,8 +72,8 @@ class SignUp:
                 first_name=first_name,
                 last_name=last_name,
                 phone_code_hash=phone_code_hash,
-                no_joined_notifications=self.no_joined_notifications
-            )
+                no_joined_notifications=self.no_joined_notifications,
+            ),
         )
 
         await self.storage.user_id(r.user.id)

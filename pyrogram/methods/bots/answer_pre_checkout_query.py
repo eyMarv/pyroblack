@@ -20,22 +20,25 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import pyrogram
 from pyrogram import raw
 
 
 class AnswerPreCheckoutQuery:
     async def answer_pre_checkout_query(
-        self: "pyrogram.Client",
+        self: pyrogram.Client,
         pre_checkout_query_id: str,
-        success: bool = None,
-        error: str = None,
+        success: bool | None = None,
+        error: str | None = None,
     ):
         """Send answers to pre-checkout queries.
 
         .. include:: /_includes/usable-by/bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             pre_checkout_query_id (``str``):
                 Unique identifier for the query to be answered.
 
@@ -47,7 +50,8 @@ class AnswerPreCheckoutQuery:
                 Error message in human readable form that explains the reason for failure to proceed with the checkout.
                 Required if ``success`` isn't set.
 
-        Returns:
+        Returns
+        -------
             ``bool``: True, on success.
 
         Example:
@@ -58,11 +62,12 @@ class AnswerPreCheckoutQuery:
 
                 # Answer with error message
                 await app.answer_pre_checkout_query(query_id, error=error)
+
         """
         return await self.invoke(
             raw.functions.messages.SetBotPrecheckoutResults(
                 query_id=int(pre_checkout_query_id),
                 success=success or None,
                 error=error or None,
-            )
+            ),
         )

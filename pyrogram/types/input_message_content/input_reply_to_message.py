@@ -20,17 +20,17 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import List, Union
+from __future__ import annotations
 
 from pyrogram import raw
-from ..object import Object
+from pyrogram.types.object import Object
 
 
 class InputReplyToMessage(Object):
     """Contains information about a target replied message.
 
-
-    Parameters:
+    Parameters
+    ----------
         reply_to_message_id (``int``, *optional*):
             ID of the original message you want to reply.
 
@@ -49,19 +49,18 @@ class InputReplyToMessage(Object):
         quote_entities (List of :obj:`~pyrogram.raw.base.MessageEntity`):
             Entities to quote.
             for reply_to_message only.
+
     """
 
     def __init__(
         self,
         *,
-        reply_to_message_id: int = None,
-        message_thread_id: int = None,
-        reply_to_chat: Union[
-            "raw.types.InputPeerChannel", "raw.types.InputPeerUser"
-        ] = None,
-        quote_text: str = None,
-        quote_entities: List["raw.base.MessageEntity"] = None,
-    ):
+        reply_to_message_id: int | None = None,
+        message_thread_id: int | None = None,
+        reply_to_chat: raw.types.InputPeerChannel | raw.types.InputPeerUser = None,
+        quote_text: str | None = None,
+        quote_entities: list[raw.base.MessageEntity] | None = None,
+    ) -> None:
         super().__init__()
 
         self.reply_to_message_id = reply_to_message_id

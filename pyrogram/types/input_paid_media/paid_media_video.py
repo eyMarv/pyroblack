@@ -21,16 +21,19 @@
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
 
-import pyrogram
-from pyrogram import types
+from typing import TYPE_CHECKING
 
 from .paid_media import PaidMedia
+
+if TYPE_CHECKING:
+    from pyrogram import types
 
 
 class PaidMediaVideo(PaidMedia):
     """The paid media is a video.
 
-    Parameters:
+    Parameters
+    ----------
         video (:obj:`~pyrogram.types.Video`):
             The video.
 
@@ -39,8 +42,8 @@ class PaidMediaVideo(PaidMedia):
     def __init__(
         self,
         *,
-        video: "types.Video" = None
-    ):
+        video: "types.Video" = None,
+    ) -> None:
         super().__init__()
 
         self.video = video

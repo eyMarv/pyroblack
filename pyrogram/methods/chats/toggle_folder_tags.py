@@ -30,20 +30,21 @@ class ToggleFolderTags:
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             enabled (``bool``):
                 The new status. Pass True to enable folder tags.
 
-        Returns:
+        Returns
+        -------
             ``bool``: On success, True is returned.
 
         Example:
             .. code-block:: python
 
                 await app.toggle_folder_tags(True)
-        """
-        r = await self.invoke(
-            raw.functions.messages.ToggleDialogFilterTags(enabled=enabled)
-        )
 
-        return r
+        """
+        return await self.invoke(
+            raw.functions.messages.ToggleDialogFilterTags(enabled=enabled),
+        )

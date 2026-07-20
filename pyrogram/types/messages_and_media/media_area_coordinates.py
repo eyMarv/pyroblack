@@ -20,14 +20,17 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 from pyrogram import raw
-from ..object import Object
+from pyrogram.types.object import Object
 
 
 class MediaAreaCoordinates(Object):
     """A coordinates of media area.
 
-    Parameters:
+    Parameters
+    ----------
         x (``float``, *optional*):
             X position of media area.
 
@@ -42,16 +45,17 @@ class MediaAreaCoordinates(Object):
 
         rotation (``float``, *optional*):
             Media area rotation.
+
     """
 
     def __init__(
         self,
-        x: float = None,
-        y: float = None,
-        width: float = None,
-        height: float = None,
-        rotation: float = None,
-    ):
+        x: float | None = None,
+        y: float | None = None,
+        width: float | None = None,
+        height: float | None = None,
+        rotation: float | None = None,
+    ) -> None:
         super().__init__()
 
         self.x = x
@@ -61,14 +65,14 @@ class MediaAreaCoordinates(Object):
         self.rotation = rotation
 
     def _parse(
-        media_area_cordinates: "raw.types.MediaAreaCoordinates",
-    ) -> "MediaAreaCoordinates":
+        self: raw.types.MediaAreaCoordinates,
+    ) -> MediaAreaCoordinates:
         return MediaAreaCoordinates(
-            x=media_area_cordinates.x,
-            y=media_area_cordinates.y,
-            width=media_area_cordinates.w,
-            height=media_area_cordinates.h,
-            rotation=media_area_cordinates.rotation,
+            x=self.x,
+            y=self.y,
+            width=self.w,
+            height=self.h,
+            rotation=self.rotation,
         )
 
     def write(self):

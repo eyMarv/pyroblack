@@ -21,21 +21,24 @@
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
 
+from __future__ import annotations
+
 import pyrogram
 from pyrogram import enums, raw, types, utils
-from ..object import Object
+from pyrogram.types.object import Object
 
 
 class InputChecklistTask(Object):
     """Describes a task to add to a checklist.
 
-    Parameters:
+    Parameters
+    ----------
         id  (``int``):
             Unique identifier of the task; must be positive and unique among all task identifiers currently present in the checklist.
 
         text  (``str``):
             Text of the task; 1-100 characters after entities parsing.
-        
+
         parse_mode (:obj:`~pyrogram.enums.ParseMode`, *optional*):
             By default, texts are parsed using both Markdown and HTML styles.
             You can combine both syntaxes together.
@@ -48,11 +51,11 @@ class InputChecklistTask(Object):
 
     def __init__(
         self,
-        id: int = None,
-        text: str = None,
-        parse_mode: "enums.ParseMode" = None,
-        text_entities: list["types.MessageEntity"] = None,
-    ):
+        id: int | None = None,
+        text: str | None = None,
+        parse_mode: enums.ParseMode = None,
+        text_entities: list[types.MessageEntity] | None = None,
+    ) -> None:
         super().__init__()
 
         self.id = id
@@ -60,15 +63,20 @@ class InputChecklistTask(Object):
         self.parse_mode = parse_mode
         self.text_entities = text_entities
 
-    async def write(self, client: "pyrogram.Client") -> "raw.types.TodoItem":
-        text, entities = (await utils.parse_text_entities(
-            client, self.text, self.parse_mode, self.text_entities
-        )).values()
+    async def write(self, client: pyrogram.Client) -> raw.types.TodoItem:
+        text, entities = (
+            await utils.parse_text_entities(
+                client,
+                self.text,
+                self.parse_mode,
+                self.text_entities,
+            )
+        ).values()
 
         return raw.types.TodoItem(
             id=self.id,
             title=raw.types.TextWithEntities(
                 text=text,
-                entities=entities or []
-            )
+                entities=entities or [],
+            ),
         )

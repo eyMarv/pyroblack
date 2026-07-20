@@ -20,7 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import AsyncGenerator
+from collections.abc import AsyncGenerator
 
 import pyrogram
 from pyrogram import enums, raw, types, utils
@@ -37,7 +37,8 @@ class GetBlockedMessageSenders:
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             block_list (:obj:`~pyrogram.enums.BlockList`, *optional*):
                 The block list from which to return users.
 
@@ -47,7 +48,8 @@ class GetBlockedMessageSenders:
             limit (``int``, *optional*):
                 The maximum number of users and chats to return.
 
-        Returns:
+        Returns
+        -------
             AsyncGenerator of :obj:`~pyrogram.types.Chat`: An async generator that yields Chat objects.
 
         Example:
@@ -55,8 +57,8 @@ class GetBlockedMessageSenders:
 
                 async for chat in app.get_blocked_message_senders():
                     print(chat)
-        """
 
+        """
         current = 0
         total = abs(limit) or (1 << 31) - 1
         limit = min(100, total)
@@ -67,7 +69,7 @@ class GetBlockedMessageSenders:
                     offset=offset,
                     limit=limit,
                     my_stories_from=block_list == enums.BlockList.STORIES,
-                )
+                ),
             )
 
             if not r.blocked:
@@ -81,7 +83,9 @@ class GetBlockedMessageSenders:
             for blocked_user in r.blocked:
                 peer_id = utils.get_raw_peer_id(blocked_user.peer_id)
 
-                yield types.Chat._parse_chat(self, users.get(peer_id) or chats.get(peer_id))
+                yield types.Chat._parse_chat(
+                    self, users.get(peer_id) or chats.get(peer_id)
+                )
 
                 current += 1
 

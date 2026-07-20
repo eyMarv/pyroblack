@@ -20,7 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional, Union
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw
@@ -30,47 +30,49 @@ class GetOption:
     @staticmethod
     def _parse_tggob_json(obj):
         """Recursively parses Telegram's raw JSON types into native Python types."""
-        if isinstance(obj, raw.types.JsonString):
+        if isinstance(obj, (raw.types.JsonString, raw.types.JsonNumber)):
             return obj.value
-        elif isinstance(obj, raw.types.JsonNumber):
+        if isinstance(obj, raw.types.JsonBool):
             return obj.value
-        elif isinstance(obj, raw.types.JsonBool):
-            return obj.value
-        elif isinstance(obj, raw.types.JsonNull):
+        if isinstance(obj, raw.types.JsonNull):
             return None
-        elif isinstance(obj, raw.types.JsonArray):
+        if isinstance(obj, raw.types.JsonArray):
             # Recursively parse every item in the array to a Python list
             return [GetOption._parse_tggob_json(item) for item in obj.value]
-        elif isinstance(obj, raw.types.JsonObject):
+        if isinstance(obj, raw.types.JsonObject):
             # Recursively parse every key-value pair to a Python dict
-            return {item.key: GetOption._parse_tggob_json(item.value) for item in obj.value}
+            return {
+                item.key: GetOption._parse_tggob_json(item.value) for item in obj.value
+            }
         # Fallback for base values
         return obj
 
     async def get_option(
-        self: "pyrogram.Client",
+        self: pyrogram.Client,
         name: str,
-    ) -> Optional[Union[bool, int, str, list, dict]]:
+    ) -> bool | int | str | list | dict | None:
         """Returns the value of an option by its name.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             name (``str``):
                 The name of the option.
 
-        Returns:
+        Returns
+        -------
             ``bool`` | ``int`` | ``str`` | ``list`` | ``dict``: On success, the value of the option is returned.
 
         """
         app_config = await self.invoke(
             raw.functions.help.GetAppConfig(
-                hash=0
-            )
+                hash=0,
+            ),
         )
         option = next(
-            (x for x in app_config.config.value if x.key == name), 
-            None
+            (x for x in app_config.config.value if x.key == name),
+            None,
         )
         if not option:
             return option

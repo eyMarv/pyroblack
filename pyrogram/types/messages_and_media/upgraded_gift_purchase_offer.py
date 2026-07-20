@@ -20,19 +20,23 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import datetime
-from typing import Dict, Optional
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import pyrogram
 from pyrogram import enums, raw, types, utils
+from pyrogram.types.object import Object
 
-from ..object import Object
+if TYPE_CHECKING:
+    from datetime import datetime
 
 
 class UpgradedGiftPurchaseOffer(Object):
     """An offer to purchase an upgraded gift was sent or received.
 
-    Parameters:
+    Parameters
+    ----------
         gift (:obj:`~pyrogram.types.Gift`):
             The gift.
 
@@ -44,16 +48,17 @@ class UpgradedGiftPurchaseOffer(Object):
 
         expiration_date (:py:obj:`~datetime.datetime`):
             Date when the offer will expire or has expired.
+
     """
 
     def __init__(
         self,
         *,
-        gift: "types.Gift",
-        state: "enums.GiftPurchaseOfferState",
-        price: "types.GiftResalePrice",
+        gift: types.Gift,
+        state: enums.GiftPurchaseOfferState,
+        price: types.GiftResalePrice,
         expiration_date: datetime,
-    ):
+    ) -> None:
         super().__init__()
 
         self.gift = gift
@@ -63,11 +68,15 @@ class UpgradedGiftPurchaseOffer(Object):
 
     @staticmethod
     async def _parse(
-        client: "pyrogram.Client",
-        action: "raw.types.MessageActionStarGiftPurchaseOffer",
-        users: Dict[int, "raw.base.User"] = {},
-        chats: Dict[int, "raw.base.Chat"] = {},
-    ) -> "UpgradedGiftPurchaseOffer":
+        client: pyrogram.Client,
+        action: raw.types.MessageActionStarGiftPurchaseOffer,
+        users: dict[int, raw.base.User] | None = None,
+        chats: dict[int, raw.base.Chat] | None = None,
+    ) -> UpgradedGiftPurchaseOffer:
+        if chats is None:
+            chats = {}
+        if users is None:
+            users = {}
         price = None
 
         if isinstance(action.price, raw.types.StarsTonAmount):
@@ -90,7 +99,8 @@ class UpgradedGiftPurchaseOffer(Object):
 class UpgradedGiftPurchaseOfferRejected(Object):
     """An offer to purchase a gift was rejected or expired.
 
-    Parameters:
+    Parameters
+    ----------
         gift (:obj:`~pyrogram.types.Gift`):
             The gift.
 
@@ -102,16 +112,17 @@ class UpgradedGiftPurchaseOfferRejected(Object):
 
         was_expired (``bool``):
             True, if the offer has expired; otherwise, the offer was explicitly rejected.
+
     """
 
     def __init__(
         self,
         *,
-        gift: "types.Gift",
-        price: "types.GiftResalePrice",
+        gift: types.Gift,
+        price: types.GiftResalePrice,
         offer_message_id: int,
         was_expired: bool,
-    ):
+    ) -> None:
         super().__init__()
 
         self.gift = gift
@@ -121,12 +132,16 @@ class UpgradedGiftPurchaseOfferRejected(Object):
 
     @staticmethod
     async def _parse(
-        client: "pyrogram.Client",
-        action: "raw.types.MessageActionStarGiftPurchaseOfferDeclined",
-        offer_message_id: Optional[int] = None,
-        users: Dict[int, "raw.base.User"] = {},
-        chats: Dict[int, "raw.base.Chat"] = {},
-    ) -> "UpgradedGiftPurchaseOfferRejected":
+        client: pyrogram.Client,
+        action: raw.types.MessageActionStarGiftPurchaseOfferDeclined,
+        offer_message_id: int | None = None,
+        users: dict[int, raw.base.User] | None = None,
+        chats: dict[int, raw.base.Chat] | None = None,
+    ) -> UpgradedGiftPurchaseOfferRejected:
+        if chats is None:
+            chats = {}
+        if users is None:
+            users = {}
         price = None
 
         if isinstance(action.price, raw.types.StarsTonAmount):
@@ -140,4 +155,3 @@ class UpgradedGiftPurchaseOfferRejected(Object):
             offer_message_id=offer_message_id,
             was_expired=bool(action.expired),
         )
-

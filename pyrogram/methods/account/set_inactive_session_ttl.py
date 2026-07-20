@@ -26,17 +26,20 @@ from pyrogram import raw
 
 class SetInactiveSessionTTL:
     async def set_inactive_session_ttl(
-        self: "pyrogram.Client", inactive_session_ttl_days: int
+        self: "pyrogram.Client",
+        inactive_session_ttl_days: int,
     ):
         """Changes the period of inactivity after which sessions will automatically be terminated.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             inactive_session_ttl_days (``int``):
                 New number of days of inactivity before sessions will be automatically terminated, 1-366 days.
 
-        Returns:
+        Returns
+        -------
             ``bool``: On success, True is returned.
 
         Example:
@@ -44,11 +47,10 @@ class SetInactiveSessionTTL:
 
                 # Set inactive session ttl to 1 year
                 await app.set_inactive_session_ttl(365)
-        """
-        r = await self.invoke(
-            raw.functions.account.SetAuthorizationTTL(
-                authorization_ttl_days=inactive_session_ttl_days
-            )
-        )
 
-        return r
+        """
+        return await self.invoke(
+            raw.functions.account.SetAuthorizationTTL(
+                authorization_ttl_days=inactive_session_ttl_days,
+            ),
+        )

@@ -23,27 +23,28 @@
 from datetime import datetime
 
 from pyrogram import raw, utils
-
-from ..object import Object
+from pyrogram.types.object import Object
 
 
 class GiftUpgradePrice(Object):
     """Describes a price required to pay to upgrade a gift.
 
-    Parameters:
+    Parameters
+    ----------
         date (:py:obj:`~datetime.datetime`):
             Date when the price will be in effect.
 
         star_count (``int``):
             The amount of Telegram Stars required to pay to upgrade the gift.
+
     """
 
     def __init__(
         self,
         *,
         date: datetime,
-        star_count: int
-    ):
+        star_count: int,
+    ) -> None:
         super().__init__()
 
         self.date = date
@@ -53,6 +54,5 @@ class GiftUpgradePrice(Object):
     def _parse(attr: "raw.base.StarGiftUpgradePrice") -> "GiftUpgradePrice":
         return GiftUpgradePrice(
             date=utils.timestamp_to_datetime(attr.date),
-            star_count=attr.upgrade_stars
+            star_count=attr.upgrade_stars,
         )
-

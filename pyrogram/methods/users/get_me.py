@@ -21,13 +21,12 @@
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
 import pyrogram
-from pyrogram import raw
-from pyrogram import types
+from pyrogram import raw, types
 
 
 class GetMe:
     async def get_me(
-        self: "pyrogram.Client"
+        self: "pyrogram.Client",
     ) -> "types.User":
         """Get your own user identity.
 
@@ -41,11 +40,12 @@ class GetMe:
 
                 me = await app.get_me()
                 print(me)
+
         """
         r = await self.invoke(
             raw.functions.users.GetFullUser(
-                id=raw.types.InputUserSelf()
-            )
+                id=raw.types.InputUserSelf(),
+            ),
         )
 
         users = {u.id: u for u in r.users}

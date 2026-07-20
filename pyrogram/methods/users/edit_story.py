@@ -20,9 +20,10 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import os
 import re
-from typing import List
 
 import pyrogram
 from pyrogram import enums, raw, types, utils
@@ -35,27 +36,28 @@ class EditStory:
         return message, entities
 
     async def edit_story(
-        self: "pyrogram.Client",
+        self: pyrogram.Client,
         story_id: int,
-        chat_id: int = None,
-        privacy: "enums.StoriesPrivacyRules" = None,
-        allowed_users: List[int] = None,
-        denied_users: List[int] = None,
+        chat_id: int | None = None,
+        privacy: enums.StoriesPrivacyRules = None,
+        allowed_users: list[int] | None = None,
+        denied_users: list[int] | None = None,
         # allowed_chats: List[int] = None,
         # denied_chats: List[int] = None,
-        animation: str = None,
-        photo: str = None,
-        video: str = None,
-        caption: str = None,
-        parse_mode: "enums.ParseMode" = None,
-        caption_entities: List["types.MessageEntity"] = None,
-        media_areas: List["types.InputMediaArea"] = None,
-    ) -> "types.Story":
+        animation: str | None = None,
+        photo: str | None = None,
+        video: str | None = None,
+        caption: str | None = None,
+        parse_mode: enums.ParseMode = None,
+        caption_entities: list[types.MessageEntity] | None = None,
+        media_areas: list[types.InputMediaArea] | None = None,
+    ) -> types.Story:
         """Edit story.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             story_id (``int``):
                 Unique identifier (int) of the target story.
 
@@ -106,7 +108,8 @@ class EditStory:
             media_areas (List of :obj:`~pyrogram.types.InputMediaArea`):
                 List of media area object to be included in story.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.Story` a single story is returned.
 
         Example:
@@ -116,10 +119,11 @@ class EditStory:
                 photo_id = "abcd12345"
                 await app.edit_story(story_id=1, photo=photo_id)
 
-        Raises:
+        Raises
+        ------
             ValueError: In case of invalid arguments.
-        """
 
+        """
         if chat_id:
             peer = await self.resolve_peer(chat_id)
         else:
@@ -140,7 +144,10 @@ class EditStory:
                         file=file,
                         attributes=[
                             raw.types.DocumentAttributeVideo(
-                                supports_streaming=True, duration=0, w=0, h=0
+                                supports_streaming=True,
+                                duration=0,
+                                w=0,
+                                h=0,
                             ),
                             raw.types.DocumentAttributeAnimated(),
                         ],
@@ -149,7 +156,8 @@ class EditStory:
                     media = raw.types.InputMediaDocumentExternal(url=animation)
                 else:
                     media = utils.get_input_media_from_file_id(
-                        animation, FileType.ANIMATION
+                        animation,
+                        FileType.ANIMATION,
                     )
             else:
                 file = await self.save_file(animation)
@@ -158,7 +166,10 @@ class EditStory:
                     file=file,
                     attributes=[
                         raw.types.DocumentAttributeVideo(
-                            supports_streaming=True, duration=0, w=0, h=0
+                            supports_streaming=True,
+                            duration=0,
+                            w=0,
+                            h=0,
                         ),
                         raw.types.DocumentAttributeAnimated(),
                     ],
@@ -184,8 +195,11 @@ class EditStory:
                         file=file,
                         attributes=[
                             raw.types.DocumentAttributeVideo(
-                                supports_streaming=True, duration=0, w=0, h=0
-                            )
+                                supports_streaming=True,
+                                duration=0,
+                                w=0,
+                                h=0,
+                            ),
                         ],
                     )
                 elif re.match("^https?://", video):
@@ -199,8 +213,11 @@ class EditStory:
                     file=file,
                     attributes=[
                         raw.types.DocumentAttributeVideo(
-                            supports_streaming=True, duration=0, w=0, h=0
-                        )
+                            supports_streaming=True,
+                            duration=0,
+                            w=0,
+                            h=0,
+                        ),
                     ],
                 )
         text = None
@@ -208,8 +225,11 @@ class EditStory:
         if caption:
             text, entities = self._split(
                 **await utils.parse_text_entities(
-                    self, caption, parse_mode, caption_entities
-                )
+                    self,
+                    caption,
+                    parse_mode,
+                    caption_entities,
+                ),
             )
 
         """
@@ -238,6 +258,6 @@ class EditStory:
                 media_areas=[
                     await media_area.write(self) for media_area in media_areas
                 ],
-            )
+            ),
         )
         return await types.Story._parse(self, r.updates[0].story, r.updates[0].peer)

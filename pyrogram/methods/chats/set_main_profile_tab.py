@@ -20,7 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import enums, raw
@@ -28,15 +28,16 @@ from pyrogram import enums, raw
 
 class SetMainProfileTab:
     async def set_main_profile_tab(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
-        main_profile_tab: "enums.ProfileTab"
+        self: pyrogram.Client,
+        chat_id: int | str,
+        main_profile_tab: enums.ProfileTab,
     ) -> bool:
         """Changes the main profile tab of the user or channel.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
                 For your personal cloud (Saved Messages) you can simply use "me" or "self".
@@ -44,7 +45,8 @@ class SetMainProfileTab:
             main_profile_tab (:obj:`~pyrogram.enums.ProfileTab`):
                 The new value of the main profile tab.
 
-        Returns:
+        Returns
+        -------
             ``bool``: On success, True is returned.
 
         Example:
@@ -55,6 +57,7 @@ class SetMainProfileTab:
 
                 # Set channel main profile tab to "Gifts"
                 await app.set_main_profile_tab("kurigram_news", main_profile_tab=enums.ProfileTab.GIFTS)
+
         """
         peer = await self.resolve_peer(chat_id)
 
@@ -62,14 +65,14 @@ class SetMainProfileTab:
             r = await self.invoke(
                 raw.functions.account.SetMainProfileTab(
                     tab=main_profile_tab.value(),
-                )
+                ),
             )
         else:
             r = await self.invoke(
                 raw.functions.channels.SetMainProfileTab(
                     channel=peer,
-                    tab=main_profile_tab.value()
-                )
+                    tab=main_profile_tab.value(),
+                ),
             )
 
         return r

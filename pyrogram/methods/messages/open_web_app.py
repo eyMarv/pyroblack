@@ -20,7 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional, Union
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import enums, raw, types, utils
@@ -28,14 +28,14 @@ from pyrogram import enums, raw, types, utils
 
 class OpenWebApp:
     async def open_web_app(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
-        bot_user_id: Union[int, str],
-        url: Optional[str] = None,
-        message_thread_id: Optional[int] = None,
-        direct_messages_topic_id: Optional[int] = None,
-        reply_parameters: Optional["types.ReplyParameters"] = None,
-        platform: Optional["enums.ClientPlatform"] = None
+        self: pyrogram.Client,
+        chat_id: int | str,
+        bot_user_id: int | str,
+        url: str | None = None,
+        message_thread_id: int | None = None,
+        direct_messages_topic_id: int | None = None,
+        reply_parameters: types.ReplyParameters | None = None,
+        platform: enums.ClientPlatform | None = None,
     ) -> str:
         """Informs pyrogram that a Web App is being opened from the attachment menu,
         a :obj:`~pyrogram.types.MenuButton`, an url,
@@ -43,7 +43,8 @@ class OpenWebApp:
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
 
@@ -65,13 +66,15 @@ class OpenWebApp:
             platform (:obj:`~pyrogram.enums.ClientPlatform`, *optional*):
                 The platform on which the link will be opened.
 
-        Returns:
+        Returns
+        -------
             ``str``: On success, returns the url of a Web App.
 
         Example:
             .. code-block:: python
 
                 link = await app.open_web_app(chat_id, bot_user_id)
+
         """
         if platform is None:
             platform = self.client_platform
@@ -79,7 +82,7 @@ class OpenWebApp:
         if direct_messages_topic_id is not None:
             if reply_parameters is None:
                 reply_parameters = types.ReplyParameters(
-                    direct_messages_topic_id=direct_messages_topic_id
+                    direct_messages_topic_id=direct_messages_topic_id,
                 )
             elif getattr(reply_parameters, "direct_messages_topic_id", None) is None:
                 reply_parameters.direct_messages_topic_id = direct_messages_topic_id
@@ -94,9 +97,9 @@ class OpenWebApp:
                 reply_to=await utils._get_reply_message_parameters(
                     self,
                     message_thread_id,
-                    reply_parameters
+                    reply_parameters,
                 ),
-            )
+            ),
         )
 
         return r.url

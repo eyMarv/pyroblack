@@ -21,23 +21,24 @@
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
 from pyrogram import raw
-
-from ..object import Object
+from pyrogram.types.object import Object
 
 
 class BotCommand(Object):
     """A bot command with the standard slash "/" prefix.
 
-    Parameters:
+    Parameters
+    ----------
         command (``str``):
             Text of the command; 1-32 characters.
             Can contain only lowercase English letters, digits and underscores.
 
         description (``str``):
             Description of the command; 1-256 characters.
+
     """
 
-    def __init__(self, command: str, description: str):
+    def __init__(self, command: str, description: str) -> None:
         super().__init__()
 
         self.command = command
@@ -53,5 +54,5 @@ class BotCommand(Object):
     def read(c: "raw.types.BotCommand") -> "BotCommand":
         return BotCommand(
             command=c.command,
-            description=c.description
+            description=c.description,
         )

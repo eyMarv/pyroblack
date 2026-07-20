@@ -20,11 +20,13 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-import logging
+from __future__ import annotations
+
 import io
+import logging
 import os
 import re
-from typing import Callable, Optional, Union
+from typing import Callable
 
 import pyrogram
 from pyrogram import enums, raw, types, utils
@@ -32,6 +34,7 @@ from pyrogram.file_id import FileType
 
 try:
     from PIL import Image
+
     HAS_PILLOW = True
 except ImportError:
     HAS_PILLOW = False
@@ -44,7 +47,8 @@ log = logging.getLogger(__name__)
 class InputMediaPhoto(InputMedia):
     """A photo to be sent.
 
-    Parameters:
+    Parameters
+    ----------
         media (``str`` | :obj:`io.BytesIO`):
             Photo to send.
             Pass a file_id as string to send a photo that exists on the Telegram servers or
@@ -74,29 +78,29 @@ class InputMediaPhoto(InputMedia):
 
         has_spoiler (``bool``, *optional*):
             Pass True if the photo needs to be covered with a spoiler animation.
-        
+
         is_high_quality (``bool``, *optional*):
-            Pass ``True`` to locally compress the photo to High Definition quality (up to 2560x2560 resolution). 
+            Pass ``True`` to locally compress the photo to High Definition quality (up to 2560x2560 resolution).
             Pass ``False`` to locally compress the photo to Standard Definition quality (up to 1280x1280 resolution).
             Pass ``None`` to bypass local compression entirely and upload the original file unaltered.
 
             .. note::
 
-                This local compression feature requires the ``Pillow`` library to be installed and 
+                This local compression feature requires the ``Pillow`` library to be installed and
                 only applies when uploading local file paths or in-memory objects.
 
     """
 
     def __init__(
         self,
-        media: Union[str, "io.BytesIO"],
+        media: str | io.BytesIO,
         caption: str = "",
-        parse_mode: Optional["enums.ParseMode"] = None,
-        caption_entities: list["types.MessageEntity"] = None,
-        show_caption_above_media: bool = None,
-        has_spoiler: bool = None,
-        is_high_quality: bool = None,
-    ):
+        parse_mode: enums.ParseMode | None = None,
+        caption_entities: list[types.MessageEntity] | None = None,
+        show_caption_above_media: bool | None = None,
+        has_spoiler: bool | None = None,
+        is_high_quality: bool | None = None,
+    ) -> None:
         super().__init__(media, caption, parse_mode, caption_entities)
 
         self.show_caption_above_media = show_caption_above_media
@@ -105,17 +109,14 @@ class InputMediaPhoto(InputMedia):
 
     async def write(
         self,
-        client: "pyrogram.Client",
-        chat_id: Optional[Union[int, str]] = None,
-        business_connection_id: Optional[str] = None,
-        progress: Optional[Callable] = None,
+        client: pyrogram.Client,
+        chat_id: int | str | None = None,
+        business_connection_id: str | None = None,
+        progress: Callable | None = None,
         progress_args: tuple = (),
     ) -> tuple[
-        Union[
-            "InputMediaPhoto",
-            "InputMediaPhotoExternal",
-        ],
-        bool
+        InputMediaPhoto | InputMediaPhotoExternal,
+        bool,
     ]:
         is_bytes_io = isinstance(self.media, io.BytesIO)
         is_uploaded_file = is_bytes_io or os.path.isfile(self.media)
@@ -135,34 +136,33 @@ class InputMediaPhoto(InputMedia):
                     peer=await client.resolve_peer(chat_id or "me"),
                     media=raw.types.InputMediaUploadedPhoto(
                         file=await client.save_file(self.media),
-                        spoiler=self.has_spoiler
-                    )
-                )
+                        spoiler=self.has_spoiler,
+                    ),
+                ),
             )
             media = raw.types.InputMediaPhoto(
                 id=raw.types.InputPhoto(
                     id=uploaded_media.photo.id,
                     access_hash=uploaded_media.photo.access_hash,
-                    file_reference=uploaded_media.photo.file_reference
+                    file_reference=uploaded_media.photo.file_reference,
                 ),
-                spoiler=self.has_spoiler
+                spoiler=self.has_spoiler,
             )
         elif is_external_url:
             media = raw.types.InputMediaPhotoExternal(
                 url=self.media,
-                spoiler=self.has_spoiler
+                spoiler=self.has_spoiler,
             )
         else:
             media = utils.get_input_media_from_file_id(
                 self.media,
                 FileType.PHOTO,
-                has_spoiler=self.has_spoiler
+                has_spoiler=self.has_spoiler,
             )
         return media, self.show_caption_above_media
 
-    def scale_tandroid_photo(self) -> Optional["io.BytesIO"]:
-        """
-        Scales and compresses an image matching Telegram Android's internal logic,
+    def scale_tandroid_photo(self) -> io.BytesIO | None:
+        """Scales and compresses an image matching Telegram Android's internal logic,
         returning an in-memory BytesIO stream ready for Pyrogram.
         Returns None if Pillow is not installed or if processing fails.
         """
@@ -171,7 +171,7 @@ class InputMediaPhoto(InputMedia):
         if not HAS_PILLOW:
             log.warning(
                 "Pillow is not installed. High Quality photo scaling will be skipped. "
-                "Run 'pip install Pillow' for faster, optimized uploads."
+                "Run 'pip install Pillow' for faster, optimized uploads.",
             )
             return None
 
@@ -185,19 +185,23 @@ class InputMediaPhoto(InputMedia):
             # Ensure image is in RGB mode for JPEG saving (handles PNG transparency)
             if img.mode in ("RGBA", "P"):
                 img = img.convert("RGB")
-                
+
             photo_w, photo_h = float(img.width), float(img.height)
 
             if photo_w == 0 or photo_h == 0:
                 return None
 
             scale_anyway = False
-            
+
             # Calculate initial scale factor to fit within max_size
             scale_factor = max(photo_w / max_size, photo_h / max_size)
 
             # Handle minimum dimension constraints
-            if min_width != 0 and min_height != 0 and (photo_w < min_width or photo_h < min_height):
+            if (
+                min_width != 0
+                and min_height != 0
+                and (photo_w < min_width or photo_h < min_height)
+            ):
                 if photo_w < min_width and photo_h > min_height:
                     scale_factor = photo_w / min_width
                 elif photo_w > min_width and photo_h < min_height:
@@ -219,13 +223,13 @@ class InputMediaPhoto(InputMedia):
 
             # Create the in-memory byte buffer
             photo_stream = io.BytesIO()
-            
+
             # Pyrogram requires a name to guess the mime-type
             photo_stream.name = "photo.jpg"
-            
+
             # Save the image data into the buffer using Telegram's compression rules
             img.save(photo_stream, format="JPEG", quality=quality, optimize=True)
 
-            photo_stream.seek(0)            
+            photo_stream.seek(0)
             return photo_stream
         return None

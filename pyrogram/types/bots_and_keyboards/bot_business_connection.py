@@ -20,17 +20,23 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-import datetime
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 import pyrogram
 from pyrogram import raw, utils
+from pyrogram.types.object import Object
 
-from ..object import Object
+if TYPE_CHECKING:
+    import datetime
 
 
 class BotBusinessConnection(Object):
     """A bot business connection Information.
 
-    Parameters:
+    Parameters
+    ----------
         bot_connection_id (``str``):
             The business connection identifier.
 
@@ -48,19 +54,20 @@ class BotBusinessConnection(Object):
 
         is_disabled (``bool``, *optional*):
             Whether the connection is disabled.
+
     """
 
     def __init__(
         self,
         *,
-        client: "pyrogram.Client" = None,
+        client: pyrogram.Client = None,
         bot_connection_id: str,
-        user: "pyrogram.types.User",
+        user: pyrogram.types.User,
         dc_id: int,
-        date: "datetime.datetime",
-        can_reply: bool = None,
-        is_disabled: bool = None,
-    ):
+        date: datetime.datetime,
+        can_reply: bool | None = None,
+        is_disabled: bool | None = None,
+    ) -> None:
         super().__init__(client)
 
         self.bot_connection_id = bot_connection_id
@@ -72,8 +79,9 @@ class BotBusinessConnection(Object):
 
     @staticmethod
     async def _parse(
-        client: "pyrogram.Client", bot_connection: "raw.types.BotBusinessConnection"
-    ) -> "BotBusinessConnection":
+        client: pyrogram.Client,
+        bot_connection: raw.types.BotBusinessConnection,
+    ) -> BotBusinessConnection:
         return BotBusinessConnection(
             bot_connection_id=bot_connection.connection_id,
             user=await client.get_users(bot_connection.user_id),

@@ -20,27 +20,28 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import logging
-from typing import Union
 
 import pyrogram
-from pyrogram import raw
-from pyrogram import types
+from pyrogram import raw, types
 
 log = logging.getLogger(__name__)
 
 
 class ExportStoryLink:
     async def export_story_link(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
+        self: pyrogram.Client,
+        chat_id: int | str,
         story_id: int,
     ) -> types.ExportedStoryLink:
         """Get one story link from an user by using story identifiers.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target user/channel.
                 For your personal story you can simply use "me" or "self".
@@ -50,7 +51,8 @@ class ExportStoryLink:
             story_id (``int``):
                 Pass a single story identifier of story (as integers).
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.ExportedStoryLink`: a single story link is returned.
 
         Example:
@@ -59,10 +61,11 @@ class ExportStoryLink:
                 # Get story link
                 await app.export_story_link(chat_id, 12345)
 
-        Raises:
+        Raises
+        ------
             ValueError: In case of invalid arguments.
-        """
 
+        """
         peer = await self.resolve_peer(chat_id)
 
         rpc = raw.functions.stories.ExportStoryLink(peer=peer, id=story_id)

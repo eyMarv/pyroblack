@@ -20,29 +20,33 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union
+from __future__ import annotations
 
-from datetime import datetime
+from typing import TYPE_CHECKING
 
 import pyrogram
-from pyrogram import types, raw, utils
+from pyrogram import raw, types, utils
+
+if TYPE_CHECKING:
+    from datetime import datetime
 
 
 class CreateVideoChat:
     async def create_video_chat(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
-        title: str = None,
+        self: pyrogram.Client,
+        chat_id: int | str,
+        title: str | None = None,
         start_date: datetime = utils.zero_datetime(),
-        is_rtmp_stream: bool = None
-    ) -> "types.Message":
+        is_rtmp_stream: bool | None = None,
+    ) -> types.Message:
         """Creates a video chat (a group call bound to a chat).
-        
+
         Available only for basic groups, supergroups and channels; requires can_manage_video_chats administrator right.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat in which the video chat will be created. A chat can be either a basic group, supergroup or a channel.
 
@@ -55,7 +59,8 @@ class CreateVideoChat:
             is_rtmp_stream (``bool``, *optional*):
                 Pass true to create an RTMP stream instead of an ordinary video chat; requires owner privileges.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.Message`: On success, the sent service message is returned.
 
         Example:
@@ -67,8 +72,9 @@ class CreateVideoChat:
         peer = await self.resolve_peer(chat_id)
 
         if not isinstance(peer, (raw.types.InputPeerChat, raw.types.InputPeerChannel)):
+            msg = "Target chat should be group, supergroup or channel."
             raise ValueError(
-                "Target chat should be group, supergroup or channel."
+                msg,
             )
 
         r = await self.invoke(
@@ -79,7 +85,7 @@ class CreateVideoChat:
                 random_id=self.rnd_id() >> 32,
                 title=title,
                 schedule_date=utils.datetime_to_timestamp(start_date),
-            )
+            ),
         )
 
         for i in r.updates:
@@ -98,3 +104,4 @@ class CreateVideoChat:
                     {i.id: i for i in r.chats},
                     is_scheduled=isinstance(i, raw.types.UpdateNewScheduledMessage),
                 )
+        return None

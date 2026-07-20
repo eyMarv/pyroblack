@@ -20,18 +20,18 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Dict, Optional
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw, types, utils
-
-from ..object import Object
+from pyrogram.types.object import Object
 
 
 class PaidReactor(Object):
     """Contains information about a user that added paid reactions.
 
-    Parameters:
+    Parameters
+    ----------
         sender (:obj:`~pyrogram.types.Chat`, *optional*):
             Identifier of the user or chat that added the reactions.
             May be None for anonymous reactors that aren't the current user
@@ -48,17 +48,18 @@ class PaidReactor(Object):
 
         is_anonymous (``bool``, *optional*):
             True, if the reactor is anonymous.
+
     """
 
     def __init__(
         self,
         *,
-        sender: Optional["types.Chat"] = None,
-        star_count: Optional[int] = None,
-        is_top: Optional[bool] = None,
-        is_me: Optional[bool] = None,
-        is_anonymous: Optional[bool] = None,
-    ):
+        sender: types.Chat | None = None,
+        star_count: int | None = None,
+        is_top: bool | None = None,
+        is_me: bool | None = None,
+        is_anonymous: bool | None = None,
+    ) -> None:
         super().__init__()
 
         self.sender = sender
@@ -69,16 +70,16 @@ class PaidReactor(Object):
 
     @staticmethod
     def _parse(
-        client: "pyrogram.Client",
-        paid_reactor: Optional["raw.base.MessageReactor"],
-        users: Dict[int, "raw.base.User"],
-        chats: Dict[int, "raw.base.Chat"],
-    ) -> Optional["PaidReactor"]:
+        client: pyrogram.Client,
+        paid_reactor: raw.base.MessageReactor | None,
+        users: dict[int, raw.base.User],
+        chats: dict[int, raw.base.Chat],
+    ) -> PaidReactor | None:
         if not paid_reactor:
             return None
 
         chat = chats.get(utils.get_raw_peer_id(paid_reactor.peer_id)) or users.get(
-            utils.get_raw_peer_id(paid_reactor.peer_id)
+            utils.get_raw_peer_id(paid_reactor.peer_id),
         )
 
         return PaidReactor(

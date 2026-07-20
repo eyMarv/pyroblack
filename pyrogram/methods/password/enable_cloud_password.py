@@ -20,19 +20,21 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import os
 
 import pyrogram
 from pyrogram import raw
-from pyrogram.utils import compute_password_hash, btoi, itob
+from pyrogram.utils import btoi, compute_password_hash, itob
 
 
 class EnableCloudPassword:
     async def enable_cloud_password(
-        self: "pyrogram.Client",
+        self: pyrogram.Client,
         password: str,
         hint: str = "",
-        email: str = None
+        email: str | None = None,
     ) -> bool:
         """Enable the Two-Step Verification security feature (Cloud Password) on your account.
 
@@ -40,7 +42,8 @@ class EnableCloudPassword:
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             password (``str``):
                 Your password.
 
@@ -50,10 +53,12 @@ class EnableCloudPassword:
             email (``str``, *optional*):
                 Recovery e-mail.
 
-        Returns:
+        Returns
+        -------
             ``bool``: True on success.
 
-        Raises:
+        Raises
+        ------
             ValueError: In case there is already a cloud password enabled.
 
         Example:
@@ -67,11 +72,13 @@ class EnableCloudPassword:
 
                 # Enable password with hint and email
                 await app.enable_cloud_password("password", hint="hint", email="user@email.com")
+
         """
         r = await self.invoke(raw.functions.account.GetPassword())
 
         if r.has_password:
-            raise ValueError("There is already a cloud password enabled")
+            msg = "There is already a cloud password enabled"
+            raise ValueError(msg)
 
         r.new_algo.salt1 += os.urandom(32)
         new_hash = btoi(compute_password_hash(r.new_algo, password))
@@ -84,9 +91,9 @@ class EnableCloudPassword:
                     new_algo=r.new_algo,
                     new_password_hash=new_hash,
                     hint=hint,
-                    email=email
-                )
-            )
+                    email=email,
+                ),
+            ),
         )
 
         return True

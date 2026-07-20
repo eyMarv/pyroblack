@@ -20,19 +20,19 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Dict, List, Optional
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw, types
-
-from ..messages_and_media.message import Str
-from ..object import Object
+from pyrogram.types.messages_and_media.message import Str
+from pyrogram.types.object import Object
 
 
 class TextQuote(Object):
     """Describes manually or automatically chosen quote from another message.
 
-    Parameters:
+    Parameters
+    ----------
         text (``str``):
             Text of the quoted part of a message that is replied to by the given message.
 
@@ -52,11 +52,11 @@ class TextQuote(Object):
     def __init__(
         self,
         *,
-        text: Optional[str] = None,
-        entities: Optional[List["types.MessageEntity"]] = None,
-        position: Optional[int] = None,
-        is_manual: Optional[bool] = None,
-    ):
+        text: str | None = None,
+        entities: list[types.MessageEntity] | None = None,
+        position: int | None = None,
+        is_manual: bool | None = None,
+    ) -> None:
         super().__init__()
 
         self.text = text
@@ -66,11 +66,11 @@ class TextQuote(Object):
 
     @staticmethod
     def _parse(
-        client: "pyrogram.Client",
+        client: pyrogram.Client,
         chats: dict,
-        users: Dict[int, "raw.types.User"],
-        reply_to: "raw.types.MessageReplyHeader",
-    ) -> Optional["TextQuote"]:
+        users: dict[int, raw.types.User],
+        reply_to: raw.types.MessageReplyHeader,
+    ) -> TextQuote | None:
         # Signature matches Message._parse call site:
         #   TextQuote._parse(client, chats, users, message.reply_to)
         # (chats is unused here but required for call-site consistency with
@@ -89,11 +89,13 @@ class TextQuote(Object):
                     types.MessageEntity._parse(client, entity, users)
                     for entity in getattr(reply_to, "quote_entities", []) or []
                 ],
-            )
+            ),
         )
 
         return TextQuote(
-            text=Str(reply_to.quote_text).init(entities) if reply_to.quote_text else None,
+            text=Str(reply_to.quote_text).init(entities)
+            if reply_to.quote_text
+            else None,
             entities=entities or None,
             position=reply_to.quote_offset or 0,
             is_manual=bool(reply_to.quote) or None,

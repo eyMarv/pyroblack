@@ -20,18 +20,19 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from pyrogram.errors.exceptions.bad_request_400 import PeerIdInvalid
+from typing import Union
 
 import pyrogram
 from pyrogram import raw, types, utils
-from ..object import Object
-from typing import Union
+from pyrogram.errors.exceptions.bad_request_400 import PeerIdInvalid
+from pyrogram.types.object import Object
 
 
 class MessageStory(Object):
     """Contains information about a forwarded story.
 
-    Parameters:
+    Parameters
+    ----------
         from_user (:obj:`~pyrogram.types.User`, *optional*):
             Sender of the story.
 
@@ -40,6 +41,7 @@ class MessageStory(Object):
 
         story_id (``int``):
             Unique story identifier.
+
     """
 
     def __init__(
@@ -48,7 +50,7 @@ class MessageStory(Object):
         from_user: "types.User" = None,
         sender_chat: "types.Chat" = None,
         story_id: int,
-    ):
+    ) -> None:
         super().__init__()
 
         self.from_user = from_user
@@ -57,7 +59,8 @@ class MessageStory(Object):
 
     @staticmethod
     async def _parse(
-        client: "pyrogram.Client", message_story: "raw.types.MessageMediaStory"
+        client: "pyrogram.Client",
+        message_story: "raw.types.MessageMediaStory",
     ) -> Union["MessageStory", "types.Story"]:
         from_user = None
         sender_chat = None
@@ -68,8 +71,8 @@ class MessageStory(Object):
                 chat_id = utils.get_channel_id(message_story.peer.channel_id)
                 chat = await client.invoke(
                     raw.functions.channels.GetChannels(
-                        id=[await client.resolve_peer(chat_id)]
-                    )
+                        id=[await client.resolve_peer(chat_id)],
+                    ),
                 )
                 sender_chat = types.Chat._parse_chat(client, chat.chats[0])
             else:
@@ -82,5 +85,7 @@ class MessageStory(Object):
         except Exception:
             pass
         return MessageStory(
-            from_user=from_user, sender_chat=sender_chat, story_id=message_story.id
+            from_user=from_user,
+            sender_chat=sender_chat,
+            story_id=message_story.id,
         )

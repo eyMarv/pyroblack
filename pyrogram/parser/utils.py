@@ -30,9 +30,10 @@ SMP_RE = re.compile(r"[\U00010000-\U0010FFFF]")
 def add_surrogates(text):
     # Replace each SMP code point with a surrogate pair
     return SMP_RE.sub(
-        lambda match:  # Split SMP in two surrogates
-        "".join(chr(i) for i in unpack("<HH", match.group().encode("utf-16le"))),
-        text
+        lambda match: (  # Split SMP in two surrogates
+            "".join(chr(i) for i in unpack("<HH", match.group().encode("utf-16le")))
+        ),
+        text,
     )
 
 
@@ -46,8 +47,7 @@ def replace_once(source: str, old: str, new: str, start: int):
 
 
 def within_surrogate(text, index, *, length=None):
-    """
-    https://github.com/LonamiWebs/Telethon/blob/63d9b26/telethon/helpers.py#L52-L63
+    """https://github.com/LonamiWebs/Telethon/blob/63d9b26/telethon/helpers.py#L52-L63.
 
     `True` if ``index`` is within a surrogate (before and after it, not at!).
     """
@@ -55,9 +55,9 @@ def within_surrogate(text, index, *, length=None):
         length = len(text)
 
     return (
-            1 < index < len(text) and  # in bounds
-            '\ud800' <= text[index - 1] <= '\udbff' and  # previous is
-            '\ud800' <= text[index] <= '\udfff'  # current is
+        1 < index < len(text)  # in bounds
+        and "\ud800" <= text[index - 1] <= "\udbff"  # previous is
+        and "\ud800" <= text[index] <= "\udfff"  # current is
     )
 
 
@@ -76,8 +76,9 @@ def parse_date_time_format_tl(args, date_time_format: str):
     if date_time_format:
         # Strictly validate against TDLib's required regex
         if not re.fullmatch(dtf_reegex, date_time_format):
-            raise ValueError(f"Invalid date-time format string: '{date_time_format}'")
-        
+            msg = f"Invalid date-time format string: '{date_time_format}'"
+            raise ValueError(msg)
+
         # Handle the mutually exclusive relative flag
         if date_time_format == "r":
             args["relative"] = True
@@ -85,15 +86,15 @@ def parse_date_time_format_tl(args, date_time_format: str):
             # Map the remaining control characters
             if "w" in date_time_format:
                 args["day_of_week"] = True
-                
+
             if "d" in date_time_format:
                 args["short_date"] = True
             elif "D" in date_time_format:
                 args["long_date"] = True
-                
+
             if "t" in date_time_format:
                 args["short_time"] = True
             elif "T" in date_time_format:
                 args["long_time"] = True
-    
+
     return args

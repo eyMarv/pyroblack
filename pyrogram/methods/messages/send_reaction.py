@@ -20,7 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union, List
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw, types
@@ -28,14 +28,14 @@ from pyrogram import raw, types
 
 class SendReaction:
     async def send_reaction(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
-        message_id: int = None,
-        story_id: int = None,
-        emoji: Union[int, str, List[Union[int, str]]] = None,
+        self: pyrogram.Client,
+        chat_id: int | str,
+        message_id: int | None = None,
+        story_id: int | None = None,
+        emoji: int | str | list[int | str] | None = None,
         big: bool = False,
         add_to_recent: bool = False,
-    ) -> "types.MessageReactions":
+    ) -> types.MessageReactions:
         """Use this method to send reactions on a message/stories.
         Automatically forwarded messages from a channel to its discussion group have the same available reactions as messages in the channel.
         Bots can't use paid reactions.
@@ -51,7 +51,8 @@ class SendReaction:
             If you specify, ``story_id``
                 .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
                 You can also use chat public link in form of *t.me/<username>* (str).
@@ -76,7 +77,8 @@ class SendReaction:
                 Pass True if the reaction should appear in the recently used reactions.
                 This option is applicable only for users.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.MessageReactions`: On success, True is returned.
 
         Example:
@@ -92,6 +94,7 @@ class SendReaction:
                 # Retract a reaction
                 await app.send_reaction(chat_id, message_id=message_id)
                 await app.send_reaction(chat_id, story_id=story_id)
+
         """
         if isinstance(emoji, list):
             reaction = (
@@ -106,11 +109,10 @@ class SendReaction:
                 if emoji
                 else None
             )
+        elif isinstance(emoji, int):
+            reaction = [raw.types.ReactionCustomEmoji(document_id=emoji)]
         else:
-            if isinstance(emoji, int):
-                reaction = [raw.types.ReactionCustomEmoji(document_id=emoji)]
-            else:
-                reaction = [raw.types.ReactionEmoji(emoticon=emoji)] if emoji else None
+            reaction = [raw.types.ReactionEmoji(emoticon=emoji)] if emoji else None
         if message_id is not None:
             r = await self.invoke(
                 raw.functions.messages.SendReaction(
@@ -119,14 +121,17 @@ class SendReaction:
                     reaction=reaction,
                     big=big,
                     add_to_recent=add_to_recent,
-                )
+                ),
             )
             users = {i.id: i for i in r.users}
             chats = {i.id: i for i in r.chats}
             for i in r.updates:
                 if isinstance(i, raw.types.UpdateMessageReactions):
                     return types.MessageReactions._parse(
-                        self, i.reactions, users, chats
+                        self,
+                        i.reactions,
+                        users,
+                        chats,
                     )
         elif story_id is not None:
             await self.invoke(
@@ -135,8 +140,10 @@ class SendReaction:
                     story_id=story_id,
                     reaction=raw.types.ReactionEmoji(emoticon=emoji) if emoji else None,
                     add_to_recent=add_to_recent,
-                )
+                ),
             )
             return True
         else:
-            raise ValueError("You need to pass one of message_id!")
+            msg = "You need to pass one of message_id!"
+            raise ValueError(msg)
+        return None

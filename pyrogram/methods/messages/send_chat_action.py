@@ -20,25 +20,26 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 from json import dumps
 from random import randint
-from typing import Union
 
 import pyrogram
-from pyrogram import raw, enums
+from pyrogram import enums, raw
 
 
 class SendChatAction:
     async def send_chat_action(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
-        action: "enums.ChatAction",
+        self: pyrogram.Client,
+        chat_id: int | str,
+        action: enums.ChatAction,
         progress: int = 0,
-        message_thread_id: int = None,
-        business_connection_id: str = None,
-        emoji: str = None,
-        emoji_message_id: int = None,
-        emoji_message_interaction: "raw.types.DataJSON" = None
+        message_thread_id: int | None = None,
+        business_connection_id: str | None = None,
+        emoji: str | None = None,
+        emoji_message_id: int | None = None,
+        emoji_message_interaction: raw.types.DataJSON = None,
     ) -> bool:
         """Use this method when you need to tell the user that something is happening on the bot's side.
         The status is set for 5 seconds or less (when a message arrives from your bot, Telegram clients clear its typing status).
@@ -47,7 +48,8 @@ class SendChatAction:
 
         We only recommend using this method when a response from the bot will take a **noticeable** amount of time to arrive.
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
                 For your personal cloud (Saved Messages) you can simply use "me" or "self".
@@ -74,10 +76,12 @@ class SendChatAction:
             emoji_message_interaction (:obj:`raw.types.DataJSON`, *optional*):
                 Only supported for :obj:`~pyrogram.enums.ChatAction.TRIGGER_EMOJI_ANIMATION`.
 
-        Returns:
+        Returns
+        -------
             ``bool``: On success, True is returned.
 
-        Raises:
+        Raises
+        ------
             ValueError: In case the provided string is not a valid chat action.
 
         Example:
@@ -96,53 +100,49 @@ class SendChatAction:
 
                 # Cancel any current chat action
                 await app.send_chat_action(chat_id, enums.ChatAction.CANCEL)
-        """
 
+        """
         action_name = action.name.lower()
 
-        if (
-            "upload" in action_name or
-            "import" in action_name
-        ):
+        if "upload" in action_name or "import" in action_name:
             action = action.value(progress=progress)
         elif "watch_emoji" in action_name:
             if emoji is None:
+                msg = "Invalid Argument Provided"
                 raise ValueError(
-                    "Invalid Argument Provided"
+                    msg,
                 )
             action = action.value(emoticon=emoji)
         elif "trigger_emoji" in action_name:
-            if (
-                emoji is None or
-                emoji_message_id is None
-            ):
+            if emoji is None or emoji_message_id is None:
+                msg = "Invalid Argument Provided"
                 raise ValueError(
-                    "Invalid Argument Provided"
+                    msg,
                 )
             if emoji_message_interaction is None:
                 _, sticker_set = await self._get_raw_stickers(
-                    raw.types.InputStickerSetAnimatedEmojiAnimations()
+                    raw.types.InputStickerSetAnimatedEmojiAnimations(),
                 )
                 emoji_message_interaction = raw.types.DataJSON(
                     data=dumps(
                         {
                             "v": 1,
-                            "a":[
+                            "a": [
                                 {
                                     "t": 0,
                                     "i": randint(
                                         1,
-                                        sticker_set.count
-                                    )
-                                }
-                            ]
-                        }
-                    )
+                                        sticker_set.count,
+                                    ),
+                                },
+                            ],
+                        },
+                    ),
                 )
             action = action.value(
                 emoticon=emoji,
                 msg_id=emoji_message_id,
-                interaction=emoji_message_interaction
+                interaction=emoji_message_interaction,
             )
         else:
             action = action.value()
@@ -150,14 +150,13 @@ class SendChatAction:
         rpc = raw.functions.messages.SetTyping(
             peer=await self.resolve_peer(chat_id),
             action=action,
-            top_msg_id=message_thread_id
+            top_msg_id=message_thread_id,
         )
         if business_connection_id:
             return await self.invoke(
                 raw.functions.InvokeWithBusinessConnection(
                     query=rpc,
-                    connection_id=business_connection_id
-                )
+                    connection_id=business_connection_id,
+                ),
             )
-        else:
-            return await self.invoke(rpc)
+        return await self.invoke(rpc)

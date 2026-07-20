@@ -20,15 +20,22 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from pyrogram import types
 
-from ..object import Object
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+from pyrogram.types.object import Object
+
+if TYPE_CHECKING:
+    from pyrogram import types
 
 
 class RequestPeerTypeChannel(Object):
     """Object used to request clients to send a channel identifier.
 
-    Parameters:
+    Parameters
+    ----------
         is_creator (``bool``, *optional*):
             If True, show only Channel which user is the owner.
 
@@ -56,20 +63,21 @@ class RequestPeerTypeChannel(Object):
 
         bot_privileges (:obj:`~pyrogram.types.ChatPrivileges`, *optional*):
             Privileged actions that a bot administrator is able to take.
+
     """  # TODO user_admin_rights, bot_admin_rights
 
     def __init__(
         self,
         button_id: int = 0,
-        is_creator: bool = None,
-        is_username: bool = None,
+        is_creator: bool | None = None,
+        is_username: bool | None = None,
         max: int = 1,
         is_name_requested: bool = True,
         is_username_requested: bool = True,
         is_photo_requested: bool = True,
-        user_privileges: "types.ChatPrivileges" = None,
-        bot_privileges: "types.ChatPrivileges" = None,
-    ):
+        user_privileges: types.ChatPrivileges = None,
+        bot_privileges: types.ChatPrivileges = None,
+    ) -> None:
         super().__init__()
 
         self.is_creator = is_creator

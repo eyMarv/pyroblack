@@ -20,13 +20,19 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from pyrogram import raw
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from pyrogram import raw
 
 
 class TranscribedAudio:
     """Transcribes the audio of a voice message.
 
-    Parameters:
+    Parameters
+    ----------
         transcription_id (``int``):
             Unique identifier of the transcription.
 
@@ -41,6 +47,7 @@ class TranscribedAudio:
 
         trial_remains_until_date (``int``, *optional*):
             Date the trial remains until.
+
     """
 
     def __init__(
@@ -48,10 +55,10 @@ class TranscribedAudio:
         *,
         transcription_id: int,
         text: str,
-        pending: bool = None,
-        trial_remains_num: int = None,
-        trial_remains_until_date: int = None,
-    ):
+        pending: bool | None = None,
+        trial_remains_num: int | None = None,
+        trial_remains_until_date: int | None = None,
+    ) -> None:
         self.transcription_id = transcription_id
         self.text = text
         self.pending = pending
@@ -60,8 +67,8 @@ class TranscribedAudio:
 
     @staticmethod
     def _parse(
-        transcribe_result: "raw.types.messages.TranscribedAudio",
-    ) -> "TranscribeAudio":
+        transcribe_result: raw.types.messages.TranscribedAudio,
+    ) -> TranscribeAudio:
         return TranscribedAudio(
             transcription_id=transcribe_result.id,
             text=transcribe_result.text,

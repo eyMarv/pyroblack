@@ -20,22 +20,26 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import List, Callable
+from typing import TYPE_CHECKING, Callable
 
-import pyrogram
 from pyrogram.filters import Filter
 from pyrogram.types import Message
+
 from .handler import Handler
+
+if TYPE_CHECKING:
+    import pyrogram
 
 
 class DeletedBotBusinessMessagesHandler(Handler):
     """The deleted bot business messages handler class. Used to handle deleted messages coming from any chat
-    (private, group, channel). It is intended to be used with :meth:`~pyrogram.Client.add_handler`
+    (private, group, channel). It is intended to be used with :meth:`~pyrogram.Client.add_handler`.
 
     For a nicer way to register this handler, have a look at the
     :meth:`~pyrogram.Client.on_deleted_bot_business_messages` decorator.
 
-    Parameters:
+    Parameters
+    ----------
         callback (``Callable``):
             Pass a function that will be called when one or more messages have been deleted.
             It takes *(client, messages)* as positional arguments (look at the section below for a detailed description).
@@ -44,18 +48,20 @@ class DeletedBotBusinessMessagesHandler(Handler):
             Pass one or more filters to allow only a subset of messages to be passed
             in your callback function.
 
-    Other parameters:
+    Other Parameters
+    ----------------
         client (:obj:`~pyrogram.Client`):
             The Client itself, useful when you want to call other API methods inside the message handler.
 
         messages (List of :obj:`~pyrogram.types.Message`):
             The deleted messages, as list.
+
     """
 
-    def __init__(self, callback: Callable, filters: Filter = None):
+    def __init__(self, callback: Callable, filters: Filter = None) -> None:
         super().__init__(callback, filters)
 
-    async def check(self, client: "pyrogram.Client", messages: List[Message]):
+    async def check(self, client: "pyrogram.Client", messages: list[Message]) -> bool:
         # Every message should be checked, if at least one matches the filter True is returned
         # otherwise, or if the list is empty, False is returned
         for message in messages:

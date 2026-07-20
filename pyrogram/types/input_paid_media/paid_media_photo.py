@@ -20,17 +20,20 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-import pyrogram
-from pyrogram import types
 
-from ..object import Object
+from typing import TYPE_CHECKING
+
 from .paid_media import PaidMedia
+
+if TYPE_CHECKING:
+    from pyrogram import types
 
 
 class PaidMediaPhoto(PaidMedia):
     """The paid media is a photo.
 
-    Parameters:
+    Parameters
+    ----------
         photo (:obj:`~pyrogram.types.Photo`):
             The photo.
 
@@ -39,8 +42,8 @@ class PaidMediaPhoto(PaidMedia):
     def __init__(
         self,
         *,
-        photo: "types.Photo" = None
-    ):
+        photo: "types.Photo" = None,
+    ) -> None:
         super().__init__()
 
         self.photo = photo

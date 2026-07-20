@@ -21,22 +21,24 @@
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
 from pyrogram import raw, types
-from ..object import Object
+from pyrogram.types.object import Object
 
 
 class VideoChatParticipantsInvited(Object):
     """A service message about new members invited to a voice chat.
 
-
-    Parameters:
+    Parameters
+    ----------
         users (List of :obj:`~pyrogram.types.User`):
             New members that were invited to the voice chat.
+
     """
 
     def __init__(
-        self, *,
-        users: list["types.User"]
-    ):
+        self,
+        *,
+        users: list["types.User"],
+    ) -> None:
         super().__init__()
 
         self.users = users
@@ -45,7 +47,7 @@ class VideoChatParticipantsInvited(Object):
     def _parse(
         client,
         action: "raw.types.MessageActionInviteToGroupCall",
-        users: dict[int, "raw.types.User"]
+        users: dict[int, "raw.types.User"],
     ) -> "VideoChatParticipantsInvited":
         users = [types.User._parse(client, users[i]) for i in action.users]
 

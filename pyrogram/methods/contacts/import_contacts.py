@@ -21,24 +21,25 @@
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
 import pyrogram
-from pyrogram import raw
-from pyrogram import types
+from pyrogram import raw, types
 
 
 class ImportContacts:
     async def import_contacts(
         self: "pyrogram.Client",
-        contacts: list["types.InputPhoneContact"]
+        contacts: list["types.InputPhoneContact"],
     ):
         """Import contacts to your Telegram address book.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             contacts (List of :obj:`~pyrogram.types.InputPhoneContact`):
                 The contact list to be added
 
-        Returns:
+        Returns
+        -------
             :obj:`types.contacts.ImportedContacts`
 
         Example:
@@ -50,11 +51,11 @@ class ImportContacts:
                     InputPhoneContact("+1-123-456-7890", "Foo"),
                     InputPhoneContact("+1-456-789-0123", "Bar"),
                     InputPhoneContact("+1-789-012-3456", "Baz")])
+
         """
-        imported_contacts = await self.invoke(
+        return await self.invoke(
             raw.functions.contacts.ImportContacts(
-                contacts=contacts
-            )
+                contacts=contacts,
+            ),
         )
         # TODO: Don't return the raw type
-        return imported_contacts

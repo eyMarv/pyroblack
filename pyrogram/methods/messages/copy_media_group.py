@@ -20,39 +20,44 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import logging
-from datetime import datetime
-from typing import Union
+from typing import TYPE_CHECKING
 
 import pyrogram
-from pyrogram import enums, raw, types, utils
+from pyrogram import raw, types, utils
+
+if TYPE_CHECKING:
+    from datetime import datetime
 
 log = logging.getLogger(__name__)
 
 
 class CopyMediaGroup:
     async def copy_media_group(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
-        from_chat_id: Union[int, str],
+        self: pyrogram.Client,
+        chat_id: int | str,
+        from_chat_id: int | str,
         message_id: int,
-        captions: Union[list[str], str] = None,
-        disable_notification: bool = None,
-        reply_parameters: "types.ReplyParameters" = None,
-        message_thread_id: int = None,
-        send_as: Union[int, str] = None,
-        schedule_date: datetime = None,
-        protect_content: bool = None,
-        allow_paid_broadcast: bool = None,
-        paid_message_star_count: int = None,
-        message_effect_id: int = None,
-        reply_to_message_id: int = None
-    ) -> list["types.Message"]:
+        captions: list[str] | str | None = None,
+        disable_notification: bool | None = None,
+        reply_parameters: types.ReplyParameters = None,
+        message_thread_id: int | None = None,
+        send_as: int | str | None = None,
+        schedule_date: datetime | None = None,
+        protect_content: bool | None = None,
+        allow_paid_broadcast: bool | None = None,
+        paid_message_star_count: int | None = None,
+        message_effect_id: int | None = None,
+        reply_to_message_id: int | None = None,
+    ) -> list[types.Message]:
         """Copy a media group by providing one of the message ids.
 
         .. include:: /_includes/usable-by/users-bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
                 For your personal cloud (Saved Messages) you can simply use "me" or "self".
@@ -84,11 +89,11 @@ class CopyMediaGroup:
 
             message_thread_id (``int``, *optional*):
                 If the message is in a thread, ID of the original message.
-            
+
             send_as (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the chat or channel to send the message as.
                 You can use this to send the message on behalf of a chat or channel where you have appropriate permissions.
-                Use the :meth:`~pyrogram.Client.get_send_as_chats` to return the list of message sender identifiers, which can be used to send messages in the chat, 
+                Use the :meth:`~pyrogram.Client.get_send_as_chats` to return the list of message sender identifiers, which can be used to send messages in the chat,
                 This setting applies to the current message and will remain effective for future messages unless explicitly changed.
                 To set this behavior permanently for all messages, use :meth:`~pyrogram.Client.set_send_as_chat`.
 
@@ -107,7 +112,8 @@ class CopyMediaGroup:
             message_effect_id (``int`` ``64-bit``, *optional*):
                 Unique identifier of the message effect to be added to the message; for private chats only.
 
-        Returns:
+        Returns
+        -------
             List of :obj:`~pyrogram.types.Message`: On success, a list of copied messages is returned.
 
         Example:
@@ -117,21 +123,23 @@ class CopyMediaGroup:
                 await app.copy_media_group(to_chat, from_chat, 123)
 
                 await app.copy_media_group(to_chat, from_chat, 123, captions="single caption")
-                
+
                 await app.copy_media_group(to_chat, from_chat, 123,
                     captions=["caption 1", None, ""])
-        """
 
+        """
         if reply_to_message_id and reply_parameters:
-            raise ValueError(
+            msg = (
                 "Parameters `reply_to_message_id` and `reply_parameters` are mutually "
                 "exclusive."
             )
-        
+            raise ValueError(
+                msg,
+            )
+
         if reply_to_message_id is not None:
             log.warning(
-                "This property is deprecated. "
-                "Please use reply_parameters instead"
+                "This property is deprecated. Please use reply_parameters instead",
             )
             reply_parameters = types.ReplyParameters(message_id=reply_to_message_id)
 
@@ -149,17 +157,38 @@ class CopyMediaGroup:
             elif message.video:
                 file_id = message.video.file_id
             else:
-                raise ValueError("Message with this type can't be copied.")
+                msg = "Message with this type can't be copied."
+                raise ValueError(msg)
 
             media = utils.get_input_media_from_file_id(file_id=file_id)
 
             sent_message, sent_entities = None, None
-            if isinstance(captions, list) and i < len(captions) and isinstance(captions[i], str):
-                sent_message, sent_entities = (await utils.parse_text_entities(self, captions[i], self.parse_mode, None)).values()
+            if (
+                isinstance(captions, list)
+                and i < len(captions)
+                and isinstance(captions[i], str)
+            ):
+                sent_message, sent_entities = (
+                    await utils.parse_text_entities(
+                        self, captions[i], self.parse_mode, None
+                    )
+                ).values()
             elif isinstance(captions, str) and i == 0:
-                sent_message, sent_entities = (await utils.parse_text_entities(self, captions, self.parse_mode, None)).values()
-            elif message.caption and message.caption != "None" and not type(captions) is str:  # TODO
-                sent_message, sent_entities = (await utils.parse_text_entities(self, message.caption, None, message.caption_entities)).values()
+                sent_message, sent_entities = (
+                    await utils.parse_text_entities(
+                        self, captions, self.parse_mode, None
+                    )
+                ).values()
+            elif (
+                message.caption
+                and message.caption != "None"
+                and type(captions) is not str
+            ):  # TODO
+                sent_message, sent_entities = (
+                    await utils.parse_text_entities(
+                        self, message.caption, None, message.caption_entities
+                    )
+                ).values()
             else:
                 sent_message, sent_entities = "", None
 
@@ -168,15 +197,15 @@ class CopyMediaGroup:
                     media=media,
                     random_id=self.rnd_id(),
                     message=sent_message,
-                    entities=sent_entities
-                )
+                    entities=sent_entities,
+                ),
             )
             show_caption_above_media.append(message.show_caption_above_media)
 
         reply_to = await utils._get_reply_message_parameters(
             self,
             message_thread_id,
-            reply_parameters
+            reply_parameters,
         )
 
         r = await self.invoke(
@@ -191,13 +220,13 @@ class CopyMediaGroup:
                 allow_paid_floodskip=allow_paid_broadcast,
                 allow_paid_stars=paid_message_star_count,
                 effect=message_effect_id,
-                invert_media=any(show_caption_above_media)
+                invert_media=any(show_caption_above_media),
             ),
-            sleep_threshold=60
+            sleep_threshold=60,
         )
 
         return await utils.parse_messages(
             client=self,
             messages=None,
-            r=r
+            r=r,
         )

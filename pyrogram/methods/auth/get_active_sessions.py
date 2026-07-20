@@ -26,7 +26,7 @@ from pyrogram import raw, types
 
 class GetActiveSessions:
     async def get_active_sessions(
-        self: "pyrogram.Client"
+        self: "pyrogram.Client",
     ) -> "types.ActiveSessions":
         """Returns all active sessions of the current user.
 
@@ -40,6 +40,6 @@ class GetActiveSessions:
 
         """
         r = await self.invoke(
-            raw.functions.account.GetAuthorizations()
+            raw.functions.account.GetAuthorizations(),
         )
         return types.ActiveSessions._parse(self, r)

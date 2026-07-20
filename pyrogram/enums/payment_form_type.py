@@ -36,4 +36,3 @@ class PaymentFormType(AutoName):
 
     STAR_SUBSCRIPTION = auto()
     "The payment form is for a payment in Telegram Stars for subscription"
-

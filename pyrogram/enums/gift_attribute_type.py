@@ -21,6 +21,7 @@
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
 from pyrogram import raw
+
 from .auto_name import AutoName
 
 
@@ -38,4 +39,3 @@ class GiftAttributeType(AutoName):
 
     ORIGINAL_DETAILS = raw.types.StarGiftAttributeOriginalDetails
     "Original details attribute"
-

@@ -20,15 +20,22 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import datetime
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from pyrogram import raw, utils
-from ..object import Object
+from pyrogram.types.object import Object
+
+if TYPE_CHECKING:
+    from datetime import datetime
 
 
 class ChatPermissions(Object):
     """Describes actions that a non-administrator user is allowed to take in a chat.
 
-    Parameters:
+    Parameters
+    ----------
         can_send_messages (``bool``, *optional*):
             True, if the user is allowed to send text messages, contacts, giveaways, giveaway winners, invoices, locations and venues
 
@@ -89,25 +96,28 @@ class ChatPermissions(Object):
     def __init__(
         self,
         *,
-        can_send_messages: bool = None,  # Text, contacts, giveaways, giveaway winners, invoices, locations and venues
-        can_send_audios: bool = None,
-        can_send_documents: bool = None,
-        can_send_photos: bool = None,
-        can_send_videos: bool = None,
-        can_send_video_notes: bool = None,
-        can_send_voice_notes: bool = None,
-        can_send_polls: bool = None,
-        can_send_other_messages: bool = None,  # animations, games, stickers, inline bots
-        can_add_web_page_previews: bool = None,
-        can_change_info: bool = None,
-        can_invite_users: bool = None,
-        can_pin_messages: bool = None,
-        can_manage_topics: bool = None,
-        can_send_media_messages: bool = None,  # Audio files, documents, photos, videos, video notes and voice notes
-        can_edit_tag: bool = None,
-        can_react_to_messages: bool = None,
-        **kwargs
-    ):
+        can_send_messages: bool
+        | None = None,  # Text, contacts, giveaways, giveaway winners, invoices, locations and venues
+        can_send_audios: bool | None = None,
+        can_send_documents: bool | None = None,
+        can_send_photos: bool | None = None,
+        can_send_videos: bool | None = None,
+        can_send_video_notes: bool | None = None,
+        can_send_voice_notes: bool | None = None,
+        can_send_polls: bool | None = None,
+        can_send_other_messages: bool
+        | None = None,  # animations, games, stickers, inline bots
+        can_add_web_page_previews: bool | None = None,
+        can_change_info: bool | None = None,
+        can_invite_users: bool | None = None,
+        can_pin_messages: bool | None = None,
+        can_manage_topics: bool | None = None,
+        can_send_media_messages: bool
+        | None = None,  # Audio files, documents, photos, videos, video notes and voice notes
+        can_edit_tag: bool | None = None,
+        can_react_to_messages: bool | None = None,
+        **kwargs,
+    ) -> None:
         super().__init__(None)
 
         self.can_send_messages = can_send_messages
@@ -140,16 +150,26 @@ class ChatPermissions(Object):
         self.can_send_inline = can_send_other_messages
         # True when every known permission is unrestricted
         perms = (
-            can_send_messages, can_send_audios, can_send_documents, can_send_photos,
-            can_send_videos, can_send_video_notes, can_send_voice_notes, can_send_polls,
-            can_send_other_messages, can_add_web_page_previews, can_change_info,
-            can_invite_users, can_pin_messages, can_manage_topics,
+            can_send_messages,
+            can_send_audios,
+            can_send_documents,
+            can_send_photos,
+            can_send_videos,
+            can_send_video_notes,
+            can_send_voice_notes,
+            can_send_polls,
+            can_send_other_messages,
+            can_add_web_page_previews,
+            can_change_info,
+            can_invite_users,
+            can_pin_messages,
+            can_manage_topics,
         )
         known = [p for p in perms if p is not None]
         self.all_perms = all(known) if known else None
 
     @staticmethod
-    def _parse(denied_permissions: "raw.base.ChatBannedRights") -> "ChatPermissions":
+    def _parse(denied_permissions: raw.base.ChatBannedRights) -> ChatPermissions:
         can_send_messages = False
         can_send_audios = False
         can_send_documents = False
@@ -171,12 +191,14 @@ class ChatPermissions(Object):
         if isinstance(denied_permissions, raw.types.ChatBannedRights):
             can_send_messages = not denied_permissions.send_messages
             can_send_polls = not denied_permissions.send_polls
-            can_send_other_messages = any([
-                not denied_permissions.send_gifs,
-                not denied_permissions.send_games,
-                not denied_permissions.send_stickers,
-                not denied_permissions.send_inline
-            ])
+            can_send_other_messages = any(
+                [
+                    not denied_permissions.send_gifs,
+                    not denied_permissions.send_games,
+                    not denied_permissions.send_stickers,
+                    not denied_permissions.send_inline,
+                ]
+            )
             can_add_web_page_previews = not denied_permissions.embed_links
             can_change_info = not denied_permissions.change_info
             can_invite_users = not denied_permissions.invite_users
@@ -186,12 +208,12 @@ class ChatPermissions(Object):
             else:
                 can_manage_topics = can_pin_messages
             if (
-                denied_permissions.send_audios is not None or
-                denied_permissions.send_docs is not None or
-                denied_permissions.send_photos is not None or
-                denied_permissions.send_videos is not None or
-                denied_permissions.send_roundvideos is not None or
-                denied_permissions.send_voices is not None
+                denied_permissions.send_audios is not None
+                or denied_permissions.send_docs is not None
+                or denied_permissions.send_photos is not None
+                or denied_permissions.send_videos is not None
+                or denied_permissions.send_roundvideos is not None
+                or denied_permissions.send_voices is not None
             ):
                 can_send_audios = not denied_permissions.send_audios
                 can_send_documents = not denied_permissions.send_docs
@@ -227,39 +249,40 @@ class ChatPermissions(Object):
                 can_manage_topics=can_manage_topics,
                 can_send_media_messages=can_send_media_messages,
                 can_edit_tag=can_edit_tag,
-                can_react_to_messages=can_react_to_messages
+                can_react_to_messages=can_react_to_messages,
             )
+        return None
 
     def write(
-        permissions: "ChatPermissions",
+        self: ChatPermissions,
         use_independent_chat_permissions: bool,
-        until_date: datetime = utils.zero_datetime()
-    ) -> "raw.base.ChatBannedRights":
+        until_date: datetime = utils.zero_datetime(),
+    ) -> raw.base.ChatBannedRights:
         return raw.types.ChatBannedRights(
             until_date=utils.datetime_to_timestamp(until_date),
-            send_messages=not permissions.can_send_messages,
-            send_media=not permissions.can_send_media_messages,
-            send_stickers=not permissions.can_send_other_messages,
-            send_gifs=not permissions.can_send_other_messages,
-            send_games=not permissions.can_send_other_messages,
-            send_inline=not permissions.can_send_other_messages,
-            embed_links=not permissions.can_add_web_page_previews,
-            send_polls=not permissions.can_send_polls,
-            change_info=not permissions.can_change_info,
-            invite_users=not permissions.can_invite_users,
-            pin_messages=not permissions.can_pin_messages,
-            manage_topics=(
-                permissions.can_manage_topics and
-                not permissions.can_manage_topics
-            ) or not permissions.can_pin_messages,
+            send_messages=not self.can_send_messages,
+            send_media=not self.can_send_media_messages,
+            send_stickers=not self.can_send_other_messages,
+            send_gifs=not self.can_send_other_messages,
+            send_games=not self.can_send_other_messages,
+            send_inline=not self.can_send_other_messages,
+            embed_links=not self.can_add_web_page_previews,
+            send_polls=not self.can_send_polls,
+            change_info=not self.can_change_info,
+            invite_users=not self.can_invite_users,
+            pin_messages=not self.can_pin_messages,
+            manage_topics=(self.can_manage_topics and not self.can_manage_topics)
+            or not self.can_pin_messages,
             # view_messages:flags.0?true
-            send_audios=not permissions.can_send_audios,# TODO
-            send_docs=not permissions.can_send_documents,# TODO
-            send_photos=not permissions.can_send_photos,# TODO
-            send_videos=not permissions.can_send_videos,# TODO
-            send_roundvideos=not permissions.can_send_video_notes,# TODO
-            send_voices=not permissions.can_send_voice_notes,# TODO
+            send_audios=not self.can_send_audios,  # TODO
+            send_docs=not self.can_send_documents,  # TODO
+            send_photos=not self.can_send_photos,  # TODO
+            send_videos=not self.can_send_videos,  # TODO
+            send_roundvideos=not self.can_send_video_notes,  # TODO
+            send_voices=not self.can_send_voice_notes,  # TODO
             # send_plain:flags.25?true
-            edit_rank=not permissions.can_edit_tag,
-            send_reactions=not permissions.can_react_to_messages if permissions.can_react_to_messages is not None else not permissions.can_send_messages,
+            edit_rank=not self.can_edit_tag,
+            send_reactions=not self.can_react_to_messages
+            if self.can_react_to_messages is not None
+            else not self.can_send_messages,
         )

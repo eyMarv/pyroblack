@@ -20,27 +20,32 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import datetime
-from typing import Union
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import pyrogram
 from pyrogram import raw, utils
 
+if TYPE_CHECKING:
+    from datetime import datetime
+
 
 class DeleteDirectMessagesChatTopicHistory:
     async def delete_direct_messages_chat_topic_history(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
-        topic_id: int = None,
+        self: pyrogram.Client,
+        chat_id: int | str,
+        topic_id: int | None = None,
         max_id: int = 0,
-        min_date: datetime = None,
-        max_date: datetime = None,
+        min_date: datetime | None = None,
+        max_date: datetime | None = None,
     ) -> int:
         """Delete messages in the topic in a channel direct messages chat administered by the current user.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
 
@@ -56,7 +61,8 @@ class DeleteDirectMessagesChatTopicHistory:
             max_date (:py:obj:`~datetime.datetime`, *optional*):
                 Delete all messages older than this time.
 
-        Returns:
+        Returns
+        -------
             ``int``: Amount of affected messages
 
         Example:
@@ -64,6 +70,7 @@ class DeleteDirectMessagesChatTopicHistory:
 
                 # Delete all messages in topic
                 await app.delete_direct_messages_chat_topic_history(chat_id, topic_id)
+
         """
         r = await self.invoke(
             raw.functions.messages.DeleteSavedHistory(
@@ -71,8 +78,8 @@ class DeleteDirectMessagesChatTopicHistory:
                 peer=await self.resolve_peer(topic_id),
                 max_id=max_id,
                 min_date=utils.datetime_to_timestamp(min_date),
-                max_date=utils.datetime_to_timestamp(max_date)
-            )
+                max_date=utils.datetime_to_timestamp(max_date),
+            ),
         )
 
         return r.pts_count

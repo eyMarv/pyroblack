@@ -20,7 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw
@@ -28,8 +28,8 @@ from pyrogram import raw
 
 class EditUserStarSubscription:
     async def edit_user_star_subscription(
-        self: "pyrogram.Client",
-        user_id: Union[int, str],
+        self: pyrogram.Client,
+        user_id: int | str,
         telegram_payment_charge_id: str,
         is_canceled: bool,
     ) -> bool:
@@ -37,7 +37,8 @@ class EditUserStarSubscription:
 
         .. include:: /_includes/usable-by/bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             user_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target user.
 
@@ -48,13 +49,15 @@ class EditUserStarSubscription:
                 Pass True to cancel the subscription.
                 Pass False to allow the user to enable it.
 
-        Returns:
+        Returns
+        -------
             ``bool``: On success, True is returned.
+
         """
         return await self.invoke(
             raw.functions.payments.BotCancelStarsSubscription(
                 user_id=await self.resolve_peer(user_id),
                 charge_id=telegram_payment_charge_id,
                 restore=is_canceled,
-            )
+            ),
         )

@@ -20,7 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw
@@ -28,10 +28,10 @@ from pyrogram import raw
 
 class SetBotInfoDescription:
     async def set_bot_info_description(
-        self: "pyrogram.Client",
+        self: pyrogram.Client,
         description: str,
         language_code: str = "",
-        for_my_bot: Union[int, str] = None,
+        for_my_bot: int | str | None = None,
     ) -> bool:
         """Use this method to change the bot's description, which is shown in the chat with the bot if the chat is empty.
 
@@ -41,7 +41,8 @@ class SetBotInfoDescription:
 
         .. include:: /_includes/usable-by/users-bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             description (``str``):
                 New bot description; 0-512 characters. Pass an empty string to remove the dedicated description for the given language.
 
@@ -52,22 +53,24 @@ class SetBotInfoDescription:
                 Unique identifier (int) or username (str) of the bot for which profile photo has to be updated instead of the current user.
                 The bot should have ``can_be_edited`` property set to True.
 
-        Returns:
+        Returns
+        -------
             ``bool``: True on success.
 
-        Raises:
+        Raises
+        ------
             :obj:`~pyrogram.errors.RPCError`: In case of a Telegram RPC error.
 
         Example:
             .. code-block:: python
 
                 await app.set_bot_info_description("")
-        """
 
+        """
         return await self.invoke(
             raw.functions.bots.SetBotInfo(
                 bot=await self.resolve_peer(for_my_bot) if for_my_bot else None,
                 lang_code=language_code,
-                description=description
-            )
+                description=description,
+            ),
         )

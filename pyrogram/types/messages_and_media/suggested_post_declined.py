@@ -20,19 +20,21 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional
+from __future__ import annotations
+
+import contextlib
 
 import pyrogram
 from pyrogram import raw, types, utils
 from pyrogram.errors import MessageIdsEmpty
-
-from ..object import Object
+from pyrogram.types.object import Object
 
 
 class SuggestedPostDeclined(Object):
     """Describes a service message about the rejection of a suggested post.
 
-    Parameters:
+    Parameters
+    ----------
         suggested_post_message_id (``int``, *optional*):
             Identifier of the message with the suggested post.
 
@@ -41,13 +43,16 @@ class SuggestedPostDeclined(Object):
 
         comment (``str``, *optional*):
             Comment added by administrator of the channel when the post was declined.
+
     """
+
     def __init__(
-        self, *,
-        suggested_post_message_id: Optional[int] = None,
-        suggested_post_message: Optional["types.Message"] = None,
-        comment: Optional[str] = None
-    ):
+        self,
+        *,
+        suggested_post_message_id: int | None = None,
+        suggested_post_message: types.Message | None = None,
+        comment: str | None = None,
+    ) -> None:
         super().__init__()
 
         self.suggested_post_message_id = suggested_post_message_id
@@ -56,10 +61,10 @@ class SuggestedPostDeclined(Object):
 
     @staticmethod
     async def _parse(
-        client: "pyrogram.Client",
-        message: "raw.types.MessageService"
-    ) -> "SuggestedPostDeclined":
-        action: "raw.types.MessageActionSuggestedPostApproval" = message.action
+        client: pyrogram.Client,
+        message: raw.types.MessageService,
+    ) -> SuggestedPostDeclined:
+        action: raw.types.MessageActionSuggestedPostApproval = message.action
 
         if not isinstance(action, raw.types.MessageActionSuggestedPostApproval):
             return None
@@ -75,16 +80,14 @@ class SuggestedPostDeclined(Object):
             suggested_post_message_id = message.reply_to.reply_to_msg_id
 
             if client.fetch_replies:
-                try:
+                with contextlib.suppress(MessageIdsEmpty):
                     suggested_post_message = await client.get_messages(
                         chat_id=chat_id,
-                        message_ids=suggested_post_message_id
+                        message_ids=suggested_post_message_id,
                     )
-                except MessageIdsEmpty:
-                    pass
 
         return SuggestedPostDeclined(
             suggested_post_message_id=suggested_post_message_id,
             suggested_post_message=suggested_post_message,
-            comment=action.reject_comment or None
+            comment=action.reject_comment or None,
         )

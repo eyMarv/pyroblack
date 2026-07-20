@@ -20,19 +20,19 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union, Optional
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw, types
-
-from ..object import Object
-from ..update import Update
+from pyrogram.types.object import Object
+from pyrogram.types.update import Update
 
 
 class PreCheckoutQuery(Object, Update):
     """This object contains information about an incoming pre-checkout query.
 
-    Parameters:
+    Parameters
+    ----------
         id (``str``):
             Unique query identifier.
 
@@ -59,15 +59,15 @@ class PreCheckoutQuery(Object, Update):
     def __init__(
         self,
         *,
-        client: "pyrogram.Client" = None,
+        client: pyrogram.Client = None,
         id: str,
-        from_user: "types.User",
+        from_user: types.User,
         currency: str,
         total_amount: int,
         invoice_payload: str,
-        shipping_option_id: str = None,
-        order_info: "types.OrderInfo" = None
-    ):
+        shipping_option_id: str | None = None,
+        order_info: types.OrderInfo = None,
+    ) -> None:
         super().__init__(client)
 
         self.id = id
@@ -80,10 +80,10 @@ class PreCheckoutQuery(Object, Update):
 
     @staticmethod
     async def _parse(
-        client: "pyrogram.Client",
-        pre_checkout_query: "raw.types.UpdateBotPrecheckoutQuery",
-        users: dict
-    ) -> "PreCheckoutQuery":
+        client: pyrogram.Client,
+        pre_checkout_query: raw.types.UpdateBotPrecheckoutQuery,
+        users: dict,
+    ) -> PreCheckoutQuery:
         # Try to decode pre-checkout query payload into string. If that fails, fallback to bytes instead of decoding by
         # ignoring/replacing errors, this way, button clicks will still work.
         try:
@@ -108,16 +108,18 @@ class PreCheckoutQuery(Object, Update):
                     city=pre_checkout_query.info.shipping_address.city,
                     street_line1=pre_checkout_query.info.shipping_address.street_line1,
                     street_line2=pre_checkout_query.info.shipping_address.street_line2,
-                    post_code=pre_checkout_query.info.shipping_address.post_code
-                )
-            ) if pre_checkout_query.info else None,
-            client=client
+                    post_code=pre_checkout_query.info.shipping_address.post_code,
+                ),
+            )
+            if pre_checkout_query.info
+            else None,
+            client=client,
         )
 
     async def answer(
         self,
         ok: bool,
-        error_message: str = None
+        error_message: str | None = None,
     ):
         """Bound method *answer* of :obj:`~pyrogram.types.PreCheckoutQuery`.
 
@@ -135,19 +137,21 @@ class PreCheckoutQuery(Object, Update):
 
                 await pre_checkout_query.answer(ok=True)
 
-        Parameters:
+        Parameters
+        ----------
             ok (``bool``):
                 Specify True if everything is alright (goods are available, etc.) and the bot is ready to proceed with the order. Use False if there are any problems.
 
             error_message (``str``, *optional*):
                 Required if ok is False. Error message in human readable form that explains the reason for failure to proceed with the checkout (e.g. "Sorry, somebody just bought the last of our amazing black T-shirts while you were busy filling out your payment details. Please choose a different color or garment!"). Telegram will display this message to the user.
 
-        Returns:
+        Returns
+        -------
             ``bool``: True, on success.
 
         """
         return await self._client.answer_pre_checkout_query(
             pre_checkout_query_id=self.id,
             ok=ok,
-            error_message=error_message
+            error_message=error_message,
         )

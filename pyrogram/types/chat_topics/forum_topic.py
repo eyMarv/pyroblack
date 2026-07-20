@@ -20,18 +20,23 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import datetime
-from typing import Optional
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import pyrogram
-from pyrogram import raw, types, utils, enums
-from ..object import Object
+from pyrogram import raw, types, utils
+from pyrogram.types.object import Object
+
+if TYPE_CHECKING:
+    from datetime import datetime
 
 
 class ForumTopic(Object):
     """This object represents a forum topic.
 
-    Parameters:
+    Parameters
+    ----------
         message_thread_id (``int``):
             Unique identifier of the forum topic
 
@@ -43,7 +48,7 @@ class ForumTopic(Object):
 
         icon_custom_emoji_id (``str``, *optional*):
             Unique identifier of the custom emoji shown as the topic icon
-        
+
         is_name_implicit (``bool``, *optional*):
             True, if the name of the topic wasn't specified explicitly by its creator and likely needs to be changed by the bot.
 
@@ -52,7 +57,7 @@ class ForumTopic(Object):
 
         creator (:obj:`~pyrogram.types.Chat`, *optional*):
             Identifier of the creator of the topic
-        
+
         outgoing (``bool``, *optional*):
             True, if the topic was created by the current user
 
@@ -61,13 +66,13 @@ class ForumTopic(Object):
 
         is_hidden (``bool``, *optional*):
             True, if the topic is hidden above the topic list and closed; for General topic only
-        
+
         is_deleted (``bool``, *optional*):
             True, if the topic is delete
 
         last_message (:obj:`~pyrogram.types.Message`, *optional*):
             Last message in the topic; may be None if unknown
-        
+
         is_pinned (``bool``, *optional*):
             True, if the topic is pinned
 
@@ -101,25 +106,24 @@ class ForumTopic(Object):
         message_thread_id: int,
         name: str,
         icon_color: int,
-        icon_custom_emoji_id: str = None,
-        is_name_implicit: bool = None,
-        creation_date: datetime = None,
-        creator: "types.Chat" = None,
-        outgoing: bool = None,
-        is_closed: bool = None,
-        is_hidden: bool = None,
-        is_deleted: bool = None,
-        last_message: "types.Message" = None,
-        is_pinned: bool = None,
-        unread_count: int = None,
-        last_read_inbox_message_id: int = None,
-        last_read_outbox_message_id: int = None,
-        unread_mention_count: int = None,
-        unread_reaction_count: int = None,
-        unread_poll_vote_count: int = None,
-
-        is_reduced_version: bool = None
-    ):
+        icon_custom_emoji_id: str | None = None,
+        is_name_implicit: bool | None = None,
+        creation_date: datetime | None = None,
+        creator: types.Chat = None,
+        outgoing: bool | None = None,
+        is_closed: bool | None = None,
+        is_hidden: bool | None = None,
+        is_deleted: bool | None = None,
+        last_message: types.Message = None,
+        is_pinned: bool | None = None,
+        unread_count: int | None = None,
+        last_read_inbox_message_id: int | None = None,
+        last_read_outbox_message_id: int | None = None,
+        unread_mention_count: int | None = None,
+        unread_reaction_count: int | None = None,
+        unread_poll_vote_count: int | None = None,
+        is_reduced_version: bool | None = None,
+    ) -> None:
         super().__init__()
 
         self.message_thread_id = message_thread_id
@@ -145,15 +149,14 @@ class ForumTopic(Object):
 
         self.is_reduced_version = is_reduced_version
 
-
     @staticmethod
     def _parse(
-        client: "pyrogram.Client",
-        forum_topic: "raw.base.ForumTopic",
-        messages: dict, # friendly
-        users: dict, # raw
-        chats: dict, # raw 
-    ) -> "ForumTopic":
+        client: pyrogram.Client,
+        forum_topic: raw.base.ForumTopic,
+        messages: dict,  # friendly
+        users: dict,  # raw
+        chats: dict,  # raw
+    ) -> ForumTopic:
         if not forum_topic:
             return None
 
@@ -162,7 +165,7 @@ class ForumTopic(Object):
                 message_thread_id=forum_topic.id,
                 name=None,
                 icon_color=None,
-                is_deleted=True
+                is_deleted=True,
             )
 
         creator = None
@@ -171,17 +174,19 @@ class ForumTopic(Object):
             peer_id = utils.get_raw_peer_id(peer)
             if isinstance(peer, raw.types.PeerUser):
                 creator = types.Chat._parse_user_chat(
-                    client, users[peer_id]
+                    client,
+                    users[peer_id],
                 )
             else:
                 creator = types.Chat._parse_channel_chat(
-                    client, chats[peer_id]
+                    client,
+                    chats[peer_id],
                 )
 
         last_message = None
         top_message_id = getattr(forum_topic, "top_message", None)
         if top_message_id:
-            last_message = messages.get(top_message_id, None)
+            last_message = messages.get(top_message_id)
 
         return ForumTopic(
             message_thread_id=forum_topic.id,

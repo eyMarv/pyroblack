@@ -20,18 +20,18 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union
+from __future__ import annotations
 
 import pyrogram
-from pyrogram import raw, enums
+from pyrogram import enums, raw
 
 
 class GetWebAppUrl:
     async def get_web_app_url(
-        self: "pyrogram.Client",
-        bot_user_id: Union[int, str],
-        url: str = None,
-        platform: "enums.ClientPlatform" = None
+        self: pyrogram.Client,
+        bot_user_id: int | str,
+        url: str | None = None,
+        platform: enums.ClientPlatform = None,
     ) -> str:
         """Returns an HTTPS URL of a Web App to open from the side menu,
         a :obj:`~pyrogram.types.KeyboardButton` button with web app type,
@@ -39,7 +39,8 @@ class GetWebAppUrl:
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             bot_user_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target bot.
 
@@ -51,13 +52,15 @@ class GetWebAppUrl:
             platform (:obj:`~pyrogram.enums.ClientPlatform`, *optional*):
                 The platform on which the link will be opened.
 
-        Returns:
+        Returns
+        -------
             ``str``: On success, returns the url of a Web App.
 
         Example:
             .. code-block:: python
 
                 link = await client.get_web_app_url(bot_user_id)
+
         """
         if platform is None:
             platform = self.client_platform
@@ -67,8 +70,8 @@ class GetWebAppUrl:
                 bot=await self.resolve_peer(bot_user_id),
                 platform=platform.value,
                 from_side_menu=True if url is None else None,
-                url=url
-            )
+                url=url,
+            ),
         )
 
         return r.url

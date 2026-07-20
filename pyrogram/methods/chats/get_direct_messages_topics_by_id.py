@@ -20,29 +20,32 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import logging
-from typing import Iterable, Union
+from typing import TYPE_CHECKING
 
 import pyrogram
 from pyrogram import raw, types, utils
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
 
 log = logging.getLogger(__name__)
 
 
 class GetDirectMessagesTopicsByID:
     async def get_direct_messages_topics_by_id(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
-        topic_ids: Union[int, Iterable[int]]
-    ) -> Union[
-        "types.DirectMessagesTopic",
-        list["types.DirectMessagesTopic"]
-    ]:
+        self: pyrogram.Client,
+        chat_id: int | str,
+        topic_ids: int | Iterable[int],
+    ) -> types.DirectMessagesTopic | list[types.DirectMessagesTopic]:
         """Get one or more direct message topic from a chat by using topic identifiers.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
 
@@ -50,7 +53,8 @@ class GetDirectMessagesTopicsByID:
                 Pass a single topic identifier or an iterable of topic ids (as integers) to get the information of the
                 topic themselves.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.DirectMessagesTopic` | List of :obj:`~pyrogram.types.DirectMessagesTopic`: In case *topic_ids* was not
             a list, a single topic is returned, otherwise a list of topics is returned.
 
@@ -64,15 +68,14 @@ class GetDirectMessagesTopicsByID:
                 await app.get_direct_messages_topics_by_id(chat_id, [12345, 12346])
 
         """
-
         is_iterable = utils.is_list_like(topic_ids)
         ids = list(topic_ids) if is_iterable else [topic_ids]
 
         r = await self.invoke(
             raw.functions.messages.GetSavedDialogsByID(
                 ids=[await self.resolve_peer(i) for i in ids],
-                parent_peer=await self.resolve_peer(chat_id)
-            )
+                parent_peer=await self.resolve_peer(chat_id),
+            ),
         )
 
         users = {i.id: i for i in r.users}
@@ -86,8 +89,8 @@ class GetDirectMessagesTopicsByID:
                     client=self,
                     topic=i,
                     users=users,
-                    chats=chats
-                )
+                    chats=chats,
+                ),
             )
 
         return topics if is_iterable else topics[0] if topics else None

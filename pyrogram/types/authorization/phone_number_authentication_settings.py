@@ -20,17 +20,17 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import List, Optional
+from __future__ import annotations
 
 from pyrogram import raw, types
-
-from ..object import Object
+from pyrogram.types.object import Object
 
 
 class PhoneNumberAuthenticationSettings(Object):
     """Contains settings for the authentication of the user's phone number.
 
-    Parameters:
+    Parameters
+    ----------
         allow_flash_call (``bool``, *optional*):
             Pass True if the authentication code may be sent via a flash call to the specified phone number.
 
@@ -54,19 +54,21 @@ class PhoneNumberAuthenticationSettings(Object):
 
         authentication_tokens (List of ``bytes``, *optional*)
             List of up to 20 authentication tokens, recently received in previously logged out sessions.
+
     """
 
     def __init__(
         self,
         *,
-        allow_flash_call: Optional[bool] = None,
-        allow_missed_call: Optional[bool] = None,
-        is_current_phone_number: Optional[bool] = None,
-        has_unknown_phone_number: Optional[bool] = None,
-        allow_sms_retriever_api: Optional[bool] = None,
-        firebase_authentication_settings: Optional["types.FirebaseAuthenticationSettings"] = None,
-        authentication_tokens: Optional[List[bytes]] = None,
-    ):
+        allow_flash_call: bool | None = None,
+        allow_missed_call: bool | None = None,
+        is_current_phone_number: bool | None = None,
+        has_unknown_phone_number: bool | None = None,
+        allow_sms_retriever_api: bool | None = None,
+        firebase_authentication_settings: types.FirebaseAuthenticationSettings
+        | None = None,
+        authentication_tokens: list[bytes] | None = None,
+    ) -> None:
         super().__init__()
 
         self.allow_flash_call = allow_flash_call
@@ -89,5 +91,7 @@ class PhoneNumberAuthenticationSettings(Object):
             unknown_number=self.has_unknown_phone_number,
             logout_tokens=self.authentication_tokens,
             token=getattr(self.firebase_authentication_settings, "device_token", None),
-            app_sandbox=getattr(self.firebase_authentication_settings, "is_app_sandbox", None),
+            app_sandbox=getattr(
+                self.firebase_authentication_settings, "is_app_sandbox", None
+            ),
         )

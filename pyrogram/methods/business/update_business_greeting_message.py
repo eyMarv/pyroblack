@@ -25,36 +25,37 @@
 # Source: tl:account.updateBusinessGreetingMessage
 # ***************************
 
-from typing import Union, Optional
+from __future__ import annotations
 
 import pyrogram
-from pyrogram import raw
-from pyrogram import types
+from pyrogram import raw, types
 
 
 class UpdateBusinessGreetingMessage:
     async def update_business_greeting_message(
-        self: "pyrogram.Client",
-        message: Optional[raw.types.InputBusinessGreetingMessage] = None,
-    ) -> "types.Message":
+        self: pyrogram.Client,
+        message: raw.types.InputBusinessGreetingMessage | None = None,
+    ) -> types.Message:
         """Set an automatic greeting message for new conversations.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             message (raw.types.InputBusinessGreetingMessage): Greeting message config (shortcut_id + recipients + no_activity_days)
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.Message`
 
         Example:
             .. code-block:: python
 
                 await app.update_business_greeting_message(...)
-        """
 
-        r = await self.invoke(
+        """
+        await self.invoke(
             raw.functions.account.updateBusinessGreetingMessage(
                 message=message,
-            )
+            ),
         )

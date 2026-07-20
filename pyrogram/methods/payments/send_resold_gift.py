@@ -21,7 +21,7 @@
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from typing import Optional, Union
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw, types, utils
@@ -29,11 +29,11 @@ from pyrogram import raw, types, utils
 
 class SendResoldGift:
     async def send_resold_gift(
-        self: "pyrogram.Client",
+        self: pyrogram.Client,
         gift_link: str,
-        new_owner_chat_id: Union[int, str],
-        price: "types.GiftResalePrice",
-    ) -> Optional["types.Message"]:
+        new_owner_chat_id: int | str,
+        price: types.GiftResalePrice,
+    ) -> types.Message | None:
         """Send an upgraded gift that is available for resale to another user or channel chat.
 
         .. note::
@@ -42,7 +42,8 @@ class SendResoldGift:
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             gift_link (``str``):
                 Link to the gift.
 
@@ -54,7 +55,8 @@ class SendResoldGift:
             price (:obj:`~pyrogram.types.GiftResalePrice`):
                 The price that the user agreed to pay for the gift.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.Message`: On success, the sent message is returned.
 
         Example:
@@ -77,12 +79,14 @@ class SendResoldGift:
                         toncoin_cent_count=utils.to_nano(5) # 5 ton
                     )
                 )
+
         """
         match = self.UPGRADED_GIFT_RE.match(gift_link)
 
         if not match:
+            msg = "Invalid gift link provided."
             raise ValueError(
-                "Invalid gift link provided."
+                msg,
             )
 
         peer = await self.resolve_peer(new_owner_chat_id)
@@ -90,13 +94,13 @@ class SendResoldGift:
         invoice = raw.types.InputInvoiceStarGiftResale(
             slug=match.group(1),
             to_id=peer,
-            ton=isinstance(price, types.GiftResalePriceTon)
+            ton=isinstance(price, types.GiftResalePriceTon),
         )
 
         form = await self.invoke(
             raw.functions.payments.GetPaymentForm(
-                invoice=invoice
-            )
+                invoice=invoice,
+            ),
         )
 
         if isinstance(price, types.GiftResalePriceTon):
@@ -105,24 +109,29 @@ class SendResoldGift:
             amount = price.star_count
 
         if amount < 0:
-            raise ValueError("Invalid price specified.")
+            msg = "Invalid price specified."
+            raise ValueError(msg)
 
         if form.invoice.prices[0].amount > amount:
-            raise ValueError("Have not enough {}".format(
-                "Toncoins" if isinstance(price, types.GiftResalePriceTon) else "Telegram Stars"
-            ))
+            msg = "Have not enough {}".format(
+                "Toncoins"
+                if isinstance(price, types.GiftResalePriceTon)
+                else "Telegram Stars",
+            )
+            raise ValueError(msg)
 
         r = await self.invoke(
             raw.functions.payments.SendStarsForm(
                 form_id=form.form_id,
-                invoice=invoice
-            )
+                invoice=invoice,
+            ),
         )
 
         messages = await utils.parse_messages(
             client=self,
-            messages=r.updates if isinstance(r, raw.types.payments.PaymentResult) else r
+            messages=r.updates
+            if isinstance(r, raw.types.payments.PaymentResult)
+            else r,
         )
 
         return messages[0] if messages else None
-

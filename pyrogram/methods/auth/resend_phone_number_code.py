@@ -31,7 +31,9 @@ log = logging.getLogger(__name__)
 
 class ResendPhoneNumberCode:
     async def resend_phone_number_code(
-        self: "pyrogram.Client", phone_number: str, phone_code_hash: str
+        self: "pyrogram.Client",
+        phone_number: str,
+        phone_code_hash: str,
     ) -> "types.SentCode":
         """Re-send the confirmation code using a different type.
 
@@ -40,26 +42,31 @@ class ResendPhoneNumberCode:
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             phone_number (``str``):
                 Phone number in international format (includes the country prefix).
 
             phone_code_hash (``str``):
                 Confirmation code identifier.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.SentCode`: On success, an object containing information on the re-sent confirmation
             code is returned.
 
-        Raises:
+        Raises
+        ------
             BadRequest: In case the arguments are invalid.
+
         """
         phone_number = re.sub(r"\D", "", phone_number)
 
         r = await self.invoke(
             raw.functions.auth.ResendCode(
-                phone_number=phone_number, phone_code_hash=phone_code_hash
-            )
+                phone_number=phone_number,
+                phone_code_hash=phone_code_hash,
+            ),
         )
 
         return types.SentCode._parse(r)

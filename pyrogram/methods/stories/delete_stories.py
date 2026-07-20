@@ -20,23 +20,29 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union, Iterable
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import pyrogram
 from pyrogram import raw, types, utils
 
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+
 
 class DeleteStories:
     async def delete_stories(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
-        story_ids: Union[int, Iterable[int]],
+        self: pyrogram.Client,
+        chat_id: int | str,
+        story_ids: int | Iterable[int],
     ) -> list[int]:
         """Deletes a previously sent story.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
                 For your personal cloud (Saved Messages) you can simply use "me" or "self".
@@ -44,7 +50,8 @@ class DeleteStories:
             story_ids (``int`` | Iterable of ``int``, *optional*):
                 Unique identifier (int) or list of unique identifiers (list of int) for the target stories.
 
-        Returns:
+        Returns
+        -------
             List of ``int``: List of deleted stories IDs.
 
         Example:
@@ -62,41 +69,47 @@ class DeleteStories:
         r = await self.invoke(
             raw.functions.stories.DeleteStories(
                 peer=await self.resolve_peer(chat_id),
-                id=ids
-            )
+                id=ids,
+            ),
         )
         return types.List(r)
 
-
     async def delete_business_story(
-        self: "pyrogram.Client",
+        self: pyrogram.Client,
         business_connection_id: str,
         story_id: int,
     ) -> list[int]:
         """Deletes a story previously posted by the bot on behalf of a managed business account.
-        
+
         Requires the can_manage_stories business bot right.
 
         .. include:: /_includes/usable-by/bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             business_connection_id (``str``):
                 Unique identifier of the business connection.
-            
+
             story_id (``int``):
                 Unique identifier of the story to delete.
-        
-        Returns:
+
+        Returns
+        -------
             List of ``int``: List of deleted stories IDs.
 
         """
         if not business_connection_id:
-            raise ValueError("business_connection_id is required")
+            msg = "business_connection_id is required"
+            raise ValueError(msg)
 
-        business_connection = self.business_user_connection_cache[business_connection_id]
+        business_connection = self.business_user_connection_cache[
+            business_connection_id
+        ]
         if business_connection is None:
-            business_connection = await self.get_business_connection(business_connection_id)
+            business_connection = await self.get_business_connection(
+                business_connection_id
+            )
         return await self.delete_stories(
             chat_id=business_connection.user_chat_id,
-            story_ids=story_id
+            story_ids=story_id,
         )

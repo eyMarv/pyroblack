@@ -21,25 +21,31 @@
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
 import inspect
-import pyrogram
+from typing import TYPE_CHECKING
 
 from pyrogram.errors import ListenerStopped
 from pyrogram.types import Listener
 from pyrogram.utils import PyromodConfig
 
+if TYPE_CHECKING:
+    import pyrogram
+
 
 class StopListener:
-    async def stop_listener(self: "pyrogram.Client", listener: Listener):
+    async def stop_listener(self: "pyrogram.Client", listener: Listener) -> None:
         """Stops a listener, calling stopped_handler if applicable or raising ListenerStopped if throw_exceptions is True.
 
         .. include:: /_includes/usable-by/users-bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             listener (:obj:`~pyrogram.types.Listener`):
                 The listener to remove.
 
-        Raises:
+        Raises
+        ------
             ListenerStopped: If throw_exceptions is True.
+
         """
         self.remove_listener(listener)
 
@@ -51,7 +57,10 @@ class StopListener:
                 await PyromodConfig.stopped_handler(None, listener)
             else:
                 await self.loop.run_in_executor(
-                    None, PyromodConfig.stopped_handler, None, listener
+                    None,
+                    PyromodConfig.stopped_handler,
+                    None,
+                    listener,
                 )
         elif PyromodConfig.throw_exceptions:
             listener.future.set_exception(ListenerStopped())

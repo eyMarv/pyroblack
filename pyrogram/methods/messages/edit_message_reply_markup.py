@@ -20,7 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw, types
@@ -30,17 +30,18 @@ from .inline_session import get_session
 
 class EditMessageReplyMarkup:
     async def edit_message_reply_markup(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
+        self: pyrogram.Client,
+        chat_id: int | str,
         message_id: int,
-        reply_markup: "types.InlineKeyboardMarkup" = None,
-        business_connection_id: str = None
-    ) -> "types.Message":
+        reply_markup: types.InlineKeyboardMarkup = None,
+        business_connection_id: str | None = None,
+    ) -> types.Message:
         """Edit only the reply markup of messages sent by the bot.
 
         .. include:: /_includes/usable-by/bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
                 For your personal cloud (Saved Messages) you can simply use "me" or "self".
@@ -55,7 +56,8 @@ class EditMessageReplyMarkup:
             business_connection_id (``str``, *optional*):
                 Unique identifier of the business connection on behalf of which the message to be edited was sent
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.Message`: On success, the edited message is returned.
 
         Example:
@@ -68,6 +70,7 @@ class EditMessageReplyMarkup:
                     chat_id, message_id,
                     InlineKeyboardMarkup([[
                         InlineKeyboardButton("New button", callback_data="new_data")]]))
+
         """
         rpc = raw.functions.messages.EditMessage(
             peer=await self.resolve_peer(chat_id),
@@ -77,19 +80,23 @@ class EditMessageReplyMarkup:
         session = None
         business_connection = None
         if business_connection_id:
-            business_connection = self.business_user_connection_cache[business_connection_id]
+            business_connection = self.business_user_connection_cache[
+                business_connection_id
+            ]
             if business_connection is None:
-                business_connection = await self.get_business_connection(business_connection_id)
+                business_connection = await self.get_business_connection(
+                    business_connection_id
+                )
             session = await get_session(
                 self,
-                business_connection._raw.connection.dc_id
+                business_connection._raw.connection.dc_id,
             )
         if business_connection_id:
             r = await session.invoke(
                 raw.functions.InvokeWithBusinessConnection(
                     query=rpc,
-                    connection_id=business_connection_id
-                )
+                    connection_id=business_connection_id,
+                ),
             )
             # await session.stop()
         else:
@@ -100,27 +107,29 @@ class EditMessageReplyMarkup:
                 i,
                 (
                     raw.types.UpdateEditMessage,
-                    raw.types.UpdateEditChannelMessage
-                )
-            ):
-                return await types.Message._parse(
-                    self, i.message,
-                    {i.id: i for i in r.users},
-                    {i.id: i for i in r.chats},
-                    replies=self.fetch_replies
-                )
-            elif isinstance(
-                i,
-                (
-                    raw.types.UpdateBotEditBusinessMessage
-                )
+                    raw.types.UpdateEditChannelMessage,
+                ),
             ):
                 return await types.Message._parse(
                     self,
                     i.message,
                     {i.id: i for i in r.users},
                     {i.id: i for i in r.chats},
-                    business_connection_id=getattr(i, "connection_id", business_connection_id),
-                    raw_reply_to_message=i.reply_to_message,
-                    replies=0
+                    replies=self.fetch_replies,
                 )
+            if isinstance(
+                i,
+                (raw.types.UpdateBotEditBusinessMessage),
+            ):
+                return await types.Message._parse(
+                    self,
+                    i.message,
+                    {i.id: i for i in r.users},
+                    {i.id: i for i in r.chats},
+                    business_connection_id=getattr(
+                        i, "connection_id", business_connection_id
+                    ),
+                    raw_reply_to_message=i.reply_to_message,
+                    replies=0,
+                )
+        return None

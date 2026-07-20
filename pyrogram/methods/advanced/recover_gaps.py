@@ -21,7 +21,6 @@
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
-from typing import Tuple
 
 import pyrogram
 from pyrogram import raw
@@ -37,7 +36,7 @@ log = logging.getLogger(__name__)
 
 
 class RecoverGaps:
-    async def recover_gaps(self: "pyrogram.Client") -> Tuple[int, int]:
+    async def recover_gaps(self: "pyrogram.Client") -> tuple[int, int]:
         """Restores updates for the time while the client was offline.
 
         .. note::
@@ -48,6 +47,7 @@ class RecoverGaps:
 
         Returns:
             ``tuple``: The number of messages and updates recovered is returned.
+
         """
         message_updates_counter = 0
         other_updates_counter = 0
@@ -65,7 +65,7 @@ class RecoverGaps:
         log.info("Started gaps recovering...")
 
         for local_state in states:
-            id, local_pts, local_qts, local_date, local_seq = local_state
+            id, local_pts, _local_qts, local_date, local_seq = local_state
 
             prev_pts = 0
 
@@ -81,8 +81,10 @@ class RecoverGaps:
                         )
                         if id < 0 or id > MIN_MONOFORUM_CHANNEL_ID
                         else raw.functions.updates.GetDifference(
-                            pts=local_pts, date=local_date, qts=0
-                        )
+                            pts=local_pts,
+                            date=local_date,
+                            qts=0,
+                        ),
                     )
                 except (ChannelPrivate, ChannelInvalid):
                     await self.storage.update_state(id)
@@ -92,16 +94,16 @@ class RecoverGaps:
 
                 if isinstance(diff, raw.types.updates.DifferenceEmpty):
                     await self.storage.update_state(
-                        (id, local_pts, None, diff.date, diff.seq)
+                        (id, local_pts, None, diff.date, diff.seq),
                     )
                     break
-                elif isinstance(diff, raw.types.updates.DifferenceTooLong):
+                if isinstance(diff, raw.types.updates.DifferenceTooLong):
                     local_pts = diff.pts
                     await self.storage.update_state(
-                        (id, local_pts, None, local_date, local_seq)
+                        (id, local_pts, None, local_date, local_seq),
                     )
                     continue
-                elif isinstance(diff, raw.types.updates.Difference):
+                if isinstance(diff, raw.types.updates.Difference):
                     local_pts = diff.state.pts
                     local_date = diff.state.date
                     local_seq = diff.state.seq
@@ -116,13 +118,13 @@ class RecoverGaps:
                     prev_pts = local_pts
                 elif isinstance(diff, raw.types.updates.ChannelDifferenceEmpty):
                     await self.storage.update_state(
-                        (id, diff.pts, None, local_date, local_seq)
+                        (id, diff.pts, None, local_date, local_seq),
                     )
                     break
                 elif isinstance(diff, raw.types.updates.ChannelDifferenceTooLong):
                     local_pts = diff.dialog.pts
                     await self.storage.update_state(
-                        (id, local_pts, None, local_date, local_seq)
+                        (id, local_pts, None, local_date, local_seq),
                     )
                     continue
                 elif isinstance(diff, raw.types.updates.ChannelDifference):
@@ -136,11 +138,13 @@ class RecoverGaps:
                     self.dispatcher.updates_queue.put_nowait(
                         (
                             raw.types.UpdateNewMessage(
-                                message=message, pts=local_pts, pts_count=-1
+                                message=message,
+                                pts=local_pts,
+                                pts_count=-1,
                             ),
                             users,
                             chats,
-                        )
+                        ),
                     )
 
                 for update in diff.other_updates:
@@ -154,7 +158,7 @@ class RecoverGaps:
                     break
 
             await self.storage.update_state(
-                (id, local_pts, None, local_date, local_seq)
+                (id, local_pts, None, local_date, local_seq),
             )
 
         log.info(

@@ -21,16 +21,16 @@
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
 import pyrogram
-from pyrogram import raw
-from pyrogram import types
-from ..object import Object
+from pyrogram import raw, types
+from pyrogram.types.object import Object
 
 
 class Game(Object):
     """A game.
     Use BotFather to create and edit games, their short names will act as unique identifiers.
 
-    Parameters:
+    Parameters
+    ----------
         id (``int``):
             Unique identifier of the game.
 
@@ -49,6 +49,7 @@ class Game(Object):
         animation (:obj:`~pyrogram.types.Animation`, *optional*):
             Animation that will be displayed in the game message in chats.
             Upload via BotFather.
+
     """
 
     def __init__(
@@ -60,8 +61,8 @@ class Game(Object):
         short_name: str,
         description: str,
         photo: "types.Photo",
-        animation: "types.Animation" = None
-    ):
+        animation: "types.Animation" = None,
+    ) -> None:
         super().__init__(client)
 
         self.id = id
@@ -79,16 +80,16 @@ class Game(Object):
             attributes = {type(i): i for i in game.document.attributes}
 
             file_name = getattr(
-                attributes.get(
-                    raw.types.DocumentAttributeFilename, None
-                ), "file_name", None
+                attributes.get(raw.types.DocumentAttributeFilename),
+                "file_name",
+                None,
             )
 
             animation = types.Animation._parse(
                 client,
                 game.document,
-                attributes.get(raw.types.DocumentAttributeVideo, None),
-                file_name
+                attributes.get(raw.types.DocumentAttributeVideo),
+                file_name,
             )
 
         return Game(
@@ -98,5 +99,5 @@ class Game(Object):
             description=game.description,
             photo=types.Photo._parse(client, game.photo),
             animation=animation,
-            client=client
+            client=client,
         )

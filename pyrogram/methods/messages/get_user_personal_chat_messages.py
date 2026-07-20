@@ -20,30 +20,36 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import logging
-from typing import AsyncIterator, Union
+from typing import TYPE_CHECKING
 
 import pyrogram
 from pyrogram import raw, types, utils
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncIterator
 
 log = logging.getLogger(__name__)
 
 
 class GetUserPersonalChatMessages:
     async def get_user_personal_chat_messages(
-        self: "pyrogram.Client",
-        user_id: Union[int, str],
+        self: pyrogram.Client,
+        user_id: int | str,
         limit: int = 0,
         min_id: int = 0,
         max_id: int = 0,
-    ) -> AsyncIterator["types.Message"]:
+    ) -> AsyncIterator[types.Message]:
         """Use this method to get the last messages from the personal chat (i.e., the chat currently added to their profile) of a given user.
 
         The messages are returned in reverse chronological order.
 
         .. include:: /_includes/usable-by/bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             user_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
                 For your personal cloud (Saved Messages) you can simply use "me" or "self".
@@ -61,8 +67,10 @@ class GetUserPersonalChatMessages:
                 If a positive value was provided, the method will return only messages
                 with IDs less than or equal to max_id (inclusive).
 
-        Returns:
+        Returns
+        -------
             ``Generator``: A generator yielding :obj:`~pyrogram.types.Message` objects.
+
         """
         current = 0
         total = limit or (1 << 31) - 1

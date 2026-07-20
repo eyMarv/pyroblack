@@ -20,14 +20,19 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from pyrogram import raw
-from ..object import Object
+from typing import TYPE_CHECKING
+
+from pyrogram.types.object import Object
+
+if TYPE_CHECKING:
+    from pyrogram import raw
 
 
 class Restriction(Object):
     """A restriction applied to bots or chats.
 
-    Parameters:
+    Parameters
+    ----------
         platform (``str``):
             The platform the restriction is applied to, e.g. "ios", "android"
 
@@ -36,9 +41,10 @@ class Restriction(Object):
 
         text (``str``):
             The restriction text.
+
     """
 
-    def __init__(self, *, platform: str, reason: str, text: str):
+    def __init__(self, *, platform: str, reason: str, text: str) -> None:
         super().__init__(None)
 
         self.platform = platform
@@ -50,5 +56,5 @@ class Restriction(Object):
         return Restriction(
             platform=restriction.platform,
             reason=restriction.reason,
-            text=restriction.text
+            text=restriction.text,
         )

@@ -20,7 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw, types
@@ -30,19 +30,20 @@ from .inline_session import get_session
 
 class StopPoll:
     async def stop_poll(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
+        self: pyrogram.Client,
+        chat_id: int | str,
         message_id: int,
-        reply_markup: "types.InlineKeyboardMarkup" = None,
-        business_connection_id: str = None
-    ) -> "types.Poll":
+        reply_markup: types.InlineKeyboardMarkup = None,
+        business_connection_id: str | None = None,
+    ) -> types.Poll:
         """Stop a poll which was sent by you.
 
         Stopped polls can't be reopened and nobody will be able to vote in it anymore.
 
         .. include:: /_includes/usable-by/users-bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
                 For your personal cloud (Saved Messages) you can simply use "me" or "self".
@@ -57,18 +58,22 @@ class StopPoll:
             business_connection_id (``str``, *optional*):
                 Unique identifier of the business connection on behalf of which the message to be edited was sent
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.Poll`: On success, the stopped poll with the final results is returned.
 
         Example:
             .. code-block:: python
 
                 await app.stop_poll(chat_id, message_id)
+
         """
-        poll = (await self.get_messages(
-            chat_id=chat_id,
-            message_ids=message_id
-        ))._raw.media.poll
+        poll = (
+            await self.get_messages(
+                chat_id=chat_id,
+                message_ids=message_id,
+            )
+        )._raw.media.poll
         # TODO
         rpc = raw.functions.messages.EditMessage(
             peer=await self.resolve_peer(chat_id),
@@ -79,27 +84,31 @@ class StopPoll:
                     hash=poll.hash,
                     closed=True,
                     question=raw.types.TextWithEntities(text="", entities=[]),
-                    answers=[]
-                )
+                    answers=[],
+                ),
             ),
-            reply_markup=await reply_markup.write(self) if reply_markup else None
+            reply_markup=await reply_markup.write(self) if reply_markup else None,
         )
         session = None
         business_connection = None
         if business_connection_id:
-            business_connection = self.business_user_connection_cache[business_connection_id]
+            business_connection = self.business_user_connection_cache[
+                business_connection_id
+            ]
             if business_connection is None:
-                business_connection = await self.get_business_connection(business_connection_id)
+                business_connection = await self.get_business_connection(
+                    business_connection_id
+                )
             session = await get_session(
                 self,
-                business_connection._raw.connection.dc_id
+                business_connection._raw.connection.dc_id,
             )
         if business_connection_id:
             r = await session.invoke(
                 raw.functions.InvokeWithBusinessConnection(
                     query=rpc,
-                    connection_id=business_connection_id
-                )
+                    connection_id=business_connection_id,
+                ),
             )
             # await session.stop()
         else:
@@ -109,8 +118,8 @@ class StopPoll:
                 i,
                 (
                     raw.types.MessageMediaPoll,
-                    raw.types.UpdateMessagePoll
-                )
+                    raw.types.UpdateMessagePoll,
+                ),
             ):
                 return await types.Poll._parse(
                     self,
@@ -118,4 +127,4 @@ class StopPoll:
                     {i.id: i for i in r.users},
                     {i.id: i for i in r.chats},
                 )
-
+        return None

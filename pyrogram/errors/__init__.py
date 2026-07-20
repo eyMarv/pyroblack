@@ -21,6 +21,8 @@
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
 # EXCEPTION_AVAIL kept for pyroblack <= 2.7.2 compatibility
+from __future__ import annotations
+
 EXCEPTION_AVAIL = False
 try:
     from .exceptions import *
@@ -29,9 +31,11 @@ except ImportError:
 else:
     EXCEPTION_AVAIL = True
 
-from .rpc_error import RPCError, UnknownError
+from typing import Optional
+
 from .pyromod.listener_stopped import ListenerStopped
 from .pyromod.listener_timeout import ListenerTimeout
+from .rpc_error import RPCError, UnknownError
 
 
 class BadMsgNotification(Exception):
@@ -39,7 +43,7 @@ class BadMsgNotification(Exception):
         16: "The msg_id is too low, the client time has to be synchronized.",
         17: "The msg_id is too high, the client time has to be synchronized.",
         18: "Incorrect two lower order of the msg_id bits, the server expects the client message "
-            "msg_id to be divisible by 4.",
+        "msg_id to be divisible by 4.",
         19: "The container msg_id is the same as the msg_id of a previously received message.",
         20: "The message is too old, it cannot be verified by the server.",
         32: "The msg_seqno is too low.",
@@ -47,10 +51,10 @@ class BadMsgNotification(Exception):
         34: "An even msg_seqno was expected, but an odd one was received.",
         35: "An odd msg_seqno was expected, but an even one was received.",
         48: "Incorrect server salt.",
-        64: "Invalid container."
+        64: "Invalid container.",
     }
 
-    def __init__(self, code):
+    def __init__(self, code) -> None:
         description = self.descriptions.get(code, "Unknown error code")
         super().__init__(f"[{code}] {description}")
 
@@ -59,21 +63,26 @@ class SecurityError(Exception):
     """Generic security error."""
 
     @classmethod
-    def check(cls, cond: bool, msg: str):
-        """Raises this exception if the condition is false"""
+    def check(cls, cond: bool, msg: str) -> None:
+        """Raises this exception if the condition is false."""
         if not cond:
-            raise cls(f"Check failed: {msg}")
+            msg_0 = f"Check failed: {msg}"
+            raise cls(msg_0)
 
 
 class SecurityCheckMismatch(SecurityError):
     """Raised when a security check mismatch occurs."""
 
-    def __init__(self, msg: str = None):
-        super().__init__("A security check mismatch has occurred." if msg is None else msg)
+    def __init__(self, msg: str | None = None) -> None:
+        super().__init__(
+            "A security check mismatch has occurred." if msg is None else msg
+        )
 
 
 class CDNFileHashMismatch(SecurityError):
     """Raised when a CDN file hash mismatch occurs."""
 
-    def __init__(self, msg: str = None):
-        super().__init__("A CDN file hash mismatch has occurred." if msg is None else msg)
+    def __init__(self, msg: str | None = None) -> None:
+        super().__init__(
+            "A CDN file hash mismatch has occurred." if msg is None else msg
+        )

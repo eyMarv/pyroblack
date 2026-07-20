@@ -20,7 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw
@@ -28,20 +28,22 @@ from pyrogram import raw
 
 class GetChatAudiosCount:
     async def get_chat_audios_count(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str]
+        self: pyrogram.Client,
+        chat_id: int | str,
     ) -> int:
         """Get the total count of audios for a chat.
 
         .. include:: /_includes/usable-by/users-bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
                 For your personal cloud (Saved Messages) you can simply use "me" or "self".
                 For a contact that exists in your Telegram address book you can use his phone number (str).
 
-        Returns:
+        Returns
+        -------
             ``int``: On success, the user profile audios count is returned.
 
         Example:
@@ -51,7 +53,6 @@ class GetChatAudiosCount:
                 print(count)
 
         """
-
         peer_id = await self.resolve_peer(chat_id)
 
         r = await self.invoke(
@@ -59,8 +60,8 @@ class GetChatAudiosCount:
                 id=peer_id,
                 offset=0,
                 limit=1,
-                hash=0
-            )
+                hash=0,
+            ),
         )
 
         return r.count

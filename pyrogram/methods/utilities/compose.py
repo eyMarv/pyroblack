@@ -21,22 +21,26 @@
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
 import asyncio
+from typing import TYPE_CHECKING
 
-import pyrogram
 from .idle import idle
+
+if TYPE_CHECKING:
+    import pyrogram
 
 
 async def compose(
     clients: list["pyrogram.Client"],
-    sequential: bool = False
-):
+    sequential: bool = False,
+) -> None:
     """Run multiple clients at once.
 
     This method can be used to run multiple clients at once and can be found directly in the ``pyrogram`` package.
 
     If you want to run a single client, you can use Client's bound method :meth:`~pyrogram.Client.run`.
 
-    Parameters:
+    Parameters
+    ----------
         clients (List of :obj:`~pyrogram.Client`):
             A list of client objects to run.
 

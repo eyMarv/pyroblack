@@ -20,17 +20,23 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import datetime
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import pyrogram
 from pyrogram import raw, types, utils
-from ..object import Object
+from pyrogram.types.object import Object
+
+if TYPE_CHECKING:
+    from datetime import datetime
 
 
 class ChatJoiner(Object):
     """Contains information about a joiner member of a chat.
 
-    Parameters:
+    Parameters
+    ----------
         user (:obj:`~pyrogram.types.User`):
             Information about the user.
 
@@ -45,18 +51,19 @@ class ChatJoiner(Object):
 
         approved_by (:obj:`~pyrogram.types.User`, *optional*):
             Administrator who approved this chat joiner.
+
     """
 
     def __init__(
         self,
         *,
-        client: "pyrogram.Client",
-        user: "types.User",
-        date: datetime = None,
-        bio: str = None,
-        pending: bool = None,
-        approved_by: "types.User" = None,
-    ):
+        client: pyrogram.Client,
+        user: types.User,
+        date: datetime | None = None,
+        bio: str | None = None,
+        pending: bool | None = None,
+        approved_by: types.User = None,
+    ) -> None:
         super().__init__(client)
 
         self.user = user
@@ -67,10 +74,10 @@ class ChatJoiner(Object):
 
     @staticmethod
     def _parse(
-        client: "pyrogram.Client",
-        joiner: "raw.base.ChatInviteImporter",
-        users: dict[int, "raw.base.User"],
-    ) -> "ChatJoiner":
+        client: pyrogram.Client,
+        joiner: raw.base.ChatInviteImporter,
+        users: dict[int, raw.base.User],
+    ) -> ChatJoiner:
         return ChatJoiner(
             user=types.User._parse(client, users[joiner.user_id]),
             date=utils.timestamp_to_datetime(joiner.date),
@@ -81,5 +88,5 @@ class ChatJoiner(Object):
                 if joiner.approved_by
                 else None
             ),
-            client=client
+            client=client,
         )

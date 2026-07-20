@@ -20,16 +20,17 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional
+from __future__ import annotations
+
 import pyrogram
 from pyrogram import raw, utils
 
 
 class ConvertGiftToStars:
     async def convert_gift_to_stars(
-        self: "pyrogram.Client",
+        self: pyrogram.Client,
         owned_gift_id: str,
-        business_connection_id: Optional[str] = None
+        business_connection_id: str | None = None,
     ) -> bool:
         """Convert a given regular gift to Telegram Stars.
 
@@ -39,7 +40,8 @@ class ConvertGiftToStars:
 
         .. include:: /_includes/usable-by/users-bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             owned_gift_id (``str``):
                 Unique identifier of the regular gift that should be converted to Telegram Stars.
 
@@ -47,7 +49,8 @@ class ConvertGiftToStars:
                 Unique identifier of the business connection.
                 For bots only.
 
-        Returns:
+        Returns
+        -------
             ``bool``: On success, True is returned.
 
         Example:
@@ -55,13 +58,11 @@ class ConvertGiftToStars:
 
                 # Convert gift
                 await app.convert_gift_to_stars(message_id=123)
+
         """
-        r = await self.invoke(
+        return await self.invoke(
             raw.functions.payments.ConvertStarGift(
-                stargift=await utils.get_input_stargift(self, owned_gift_id)
+                stargift=await utils.get_input_stargift(self, owned_gift_id),
             ),
-            business_connection_id=business_connection_id
+            business_connection_id=business_connection_id,
         )
-
-        return r
-

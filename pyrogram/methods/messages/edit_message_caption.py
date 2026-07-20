@@ -20,32 +20,37 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import datetime
-from typing import Union, Optional
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import pyrogram
-from pyrogram import types, enums
+from pyrogram import enums, types
+
+if TYPE_CHECKING:
+    from datetime import datetime
 
 
 class EditMessageCaption:
     async def edit_message_caption(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
+        self: pyrogram.Client,
+        chat_id: int | str,
         message_id: int,
         caption: str,
-        parse_mode: Optional["enums.ParseMode"] = None,
-        caption_entities: list["types.MessageEntity"] = None,
-        show_caption_above_media: bool = None,
-        invert_media: bool = None,
-        reply_markup: "types.InlineKeyboardMarkup" = None,
-        schedule_date: datetime = None,
-        business_connection_id: str = None
-    ) -> "types.Message":
+        parse_mode: enums.ParseMode | None = None,
+        caption_entities: list[types.MessageEntity] | None = None,
+        show_caption_above_media: bool | None = None,
+        invert_media: bool | None = None,
+        reply_markup: types.InlineKeyboardMarkup = None,
+        schedule_date: datetime | None = None,
+        business_connection_id: str | None = None,
+    ) -> types.Message:
         """Edit the caption of media messages.
 
         .. include:: /_includes/usable-by/users-bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
                 For your personal cloud (Saved Messages) you can simply use "me" or "self".
@@ -76,18 +81,20 @@ class EditMessageCaption:
             business_connection_id (``str``, *optional*):
                 Unique identifier of the business connection on behalf of which the message to be edited was sent
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.Message`: On success, the edited message is returned.
 
         Example:
             .. code-block:: python
 
                 await app.edit_message_caption(chat_id, message_id, "new media caption")
+
         """
         link_preview_options = None
         if show_caption_above_media:
             link_preview_options = types.LinkPreviewOptions(
-                show_above_text=show_caption_above_media
+                show_above_text=show_caption_above_media,
             )
 
         return await self.edit_message_text(
@@ -99,5 +106,5 @@ class EditMessageCaption:
             reply_markup=reply_markup,
             link_preview_options=link_preview_options,
             schedule_date=schedule_date,
-            business_connection_id=business_connection_id
+            business_connection_id=business_connection_id,
         )

@@ -20,33 +20,37 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import logging
-from datetime import datetime
-from typing import Union, Optional
+from typing import TYPE_CHECKING
 
 import pyrogram
-from pyrogram import raw, enums, types, utils
+from pyrogram import enums, raw, types, utils
 
 from .inline_session import get_session
+
+if TYPE_CHECKING:
+    from datetime import datetime
 
 log = logging.getLogger(__name__)
 
 
 class EditCachedMedia:
     async def edit_cached_media(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
+        self: pyrogram.Client,
+        chat_id: int | str,
         message_id: int,
         file_id: str,
         caption: str = "",
-        parse_mode: Optional["enums.ParseMode"] = None,
-        caption_entities: list["types.MessageEntity"] = None,
-        show_caption_above_media: bool = None,
-        schedule_date: datetime = None,
-        has_spoiler: bool = None,
-        reply_markup: "types.InlineKeyboardMarkup" = None,
-        business_connection_id: str = None
-    ) -> Optional["types.Message"]:
+        parse_mode: enums.ParseMode | None = None,
+        caption_entities: list[types.MessageEntity] | None = None,
+        show_caption_above_media: bool | None = None,
+        schedule_date: datetime | None = None,
+        has_spoiler: bool | None = None,
+        reply_markup: types.InlineKeyboardMarkup = None,
+        business_connection_id: str | None = None,
+    ) -> types.Message | None:
         """Edit a media stored on the Telegram servers using a file_id.
 
         This convenience method works with any valid file_id only.
@@ -55,7 +59,8 @@ class EditCachedMedia:
 
         .. include:: /_includes/usable-by/users-bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
                 For your personal cloud (Saved Messages) you can simply use "me" or "self".
@@ -93,15 +98,16 @@ class EditCachedMedia:
             business_connection_id (``str``, *optional*):
                 Unique identifier of the business connection on behalf of which the message to be edited was sent
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.Message`: On success, the edited media message is returned.
 
         Example:
             .. code-block:: python
 
                 await app.edit_cached_media(chat_id, message_id, file_id)
-        """
 
+        """
         rpc = raw.functions.messages.EditMessage(
             peer=await self.resolve_peer(chat_id),
             id=message_id,
@@ -109,24 +115,30 @@ class EditCachedMedia:
             reply_markup=await reply_markup.write(self) if reply_markup else None,
             schedule_date=utils.datetime_to_timestamp(schedule_date),
             invert_media=show_caption_above_media,
-            **await utils.parse_text_entities(self, caption, parse_mode, caption_entities)
+            **await utils.parse_text_entities(
+                self, caption, parse_mode, caption_entities
+            ),
         )
         session = None
         business_connection = None
         if business_connection_id:
-            business_connection = self.business_user_connection_cache[business_connection_id]
+            business_connection = self.business_user_connection_cache[
+                business_connection_id
+            ]
             if business_connection is None:
-                business_connection = await self.get_business_connection(business_connection_id)
+                business_connection = await self.get_business_connection(
+                    business_connection_id
+                )
             session = await get_session(
                 self,
-                business_connection._raw.connection.dc_id
+                business_connection._raw.connection.dc_id,
             )
         if business_connection_id:
             r = await session.invoke(
                 raw.functions.InvokeWithBusinessConnection(
                     query=rpc,
-                    connection_id=business_connection_id
-                )
+                    connection_id=business_connection_id,
+                ),
             )
             # await session.stop()
         else:
@@ -138,28 +150,30 @@ class EditCachedMedia:
                 (
                     raw.types.UpdateEditMessage,
                     raw.types.UpdateEditChannelMessage,
-                    raw.types.UpdateNewScheduledMessage
-                )
-            ):
-                return await types.Message._parse(
-                    self, i.message,
-                    {i.id: i for i in r.users},
-                    {i.id: i for i in r.chats},
-                    is_scheduled=isinstance(i, raw.types.UpdateNewScheduledMessage),
-                    replies=self.fetch_replies
-                )
-            elif isinstance(
-                i,
-                (
-                    raw.types.UpdateBotEditBusinessMessage
-                )
+                    raw.types.UpdateNewScheduledMessage,
+                ),
             ):
                 return await types.Message._parse(
                     self,
                     i.message,
                     {i.id: i for i in r.users},
                     {i.id: i for i in r.chats},
-                    business_connection_id=getattr(i, "connection_id", business_connection_id),
-                    raw_reply_to_message=i.reply_to_message,
-                    replies=0
+                    is_scheduled=isinstance(i, raw.types.UpdateNewScheduledMessage),
+                    replies=self.fetch_replies,
                 )
+            if isinstance(
+                i,
+                (raw.types.UpdateBotEditBusinessMessage),
+            ):
+                return await types.Message._parse(
+                    self,
+                    i.message,
+                    {i.id: i for i in r.users},
+                    {i.id: i for i in r.chats},
+                    business_connection_id=getattr(
+                        i, "connection_id", business_connection_id
+                    ),
+                    raw_reply_to_message=i.reply_to_message,
+                    replies=0,
+                )
+        return None

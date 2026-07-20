@@ -20,15 +20,17 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from pyrogram import raw, utils
-from ..object import Object
-from typing import Optional
+from __future__ import annotations
+
+from pyrogram import raw
+from pyrogram.types.object import Object
 
 
 class LinkPreviewOptions(Object):
     """Describes the options used for link preview generation.
 
-    Parameters:
+    Parameters
+    ----------
         is_disabled (``bool``, *optional*):
             True, if the link preview is disabled
 
@@ -39,30 +41,31 @@ class LinkPreviewOptions(Object):
         prefer_small_media (``bool``, *optional*):
             True, if the media in the link preview is suppposed to be shrunk;
             ignored if the URL isn't explicitly specified or media size change isn't supported for the preview
-        
+
         prefer_large_media (``bool``, *optional*):
             True, if the media in the link preview is suppposed to be enlarged;
             ignored if the URL isn't explicitly specified or media size change isn't supported for the preview
-        
+
         show_above_text (``bool``, *optional*):
             True, if the link preview must be shown above the message text; otherwise, the link preview will be shown below the message text
-        
+
         manual (``bool``, *optional*):
 
         safe (``bool``, *optional*):
+
     """
 
     def __init__(
         self,
         *,
-        is_disabled: bool = None,
-        url: str = None,
-        prefer_small_media: bool = None,
-        prefer_large_media: bool = None,
-        show_above_text: bool = None,
-        manual: bool = None,
-        safe: bool = None
-    ):
+        is_disabled: bool | None = None,
+        url: str | None = None,
+        prefer_small_media: bool | None = None,
+        prefer_large_media: bool | None = None,
+        show_above_text: bool | None = None,
+        manual: bool | None = None,
+        safe: bool | None = None,
+    ) -> None:
         super().__init__()
 
         self.is_disabled = is_disabled
@@ -76,24 +79,21 @@ class LinkPreviewOptions(Object):
     @staticmethod
     def _parse(
         client,
-        media_webpage: "raw.types.MessageMediaWebPage",
-        media_first_url: str = None,
-        invert_media: bool = False
-    ) -> Optional["LinkPreviewOptions"]:
-        if (
-            media_webpage and
-            isinstance(media_webpage, raw.types.MessageMediaWebPage)
-        ):
+        media_webpage: raw.types.MessageMediaWebPage,
+        media_first_url: str | None = None,
+        invert_media: bool = False,
+    ) -> LinkPreviewOptions | None:
+        if media_webpage and isinstance(media_webpage, raw.types.MessageMediaWebPage):
             if media_webpage.webpage:
                 media_first_url = media_webpage.webpage.url
             return LinkPreviewOptions(
                 is_disabled=False,
                 url=media_first_url,
-                prefer_small_media=getattr(media_webpage, "force_small_media"),
-                prefer_large_media=getattr(media_webpage, "force_large_media"),
+                prefer_small_media=media_webpage.force_small_media,
+                prefer_large_media=media_webpage.force_large_media,
                 show_above_text=invert_media,
-                manual=getattr(media_webpage, "manual"),
-                safe=getattr(media_webpage, "safe")
+                manual=media_webpage.manual,
+                safe=media_webpage.safe,
             )
         if media_first_url:
             return LinkPreviewOptions(
@@ -101,3 +101,4 @@ class LinkPreviewOptions(Object):
                 url=media_first_url,
                 show_above_text=invert_media,
             )
+        return None

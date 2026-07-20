@@ -20,20 +20,24 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import logging
-from datetime import datetime
-from typing import Union
+from typing import TYPE_CHECKING
 
 import pyrogram
-from pyrogram import raw, utils, types
+from pyrogram import raw, types, utils
+
+if TYPE_CHECKING:
+    from datetime import datetime
 
 log = logging.getLogger(__name__)
 
 
 class SendVenue:
     async def send_venue(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
+        self: pyrogram.Client,
+        chat_id: int | str,
         latitude: float,
         longitude: float,
         title: str,
@@ -42,36 +46,35 @@ class SendVenue:
         foursquare_type: str = "",
         google_place_id: str = "",
         google_place_type: str = "",
-        disable_notification: bool = None,
-        reply_parameters: "types.ReplyParameters" = None,
-        message_thread_id: int = None,
-        business_connection_id: str = None,
-        send_as: Union[int, str] = None,
-        schedule_date: datetime = None,
-        protect_content: bool = None,
-        allow_paid_broadcast: bool = None,
-        paid_message_star_count: int = None,
-        message_effect_id: int = None,
-        reply_markup: Union[
-            "types.InlineKeyboardMarkup",
-            "types.ReplyKeyboardMarkup",
-            "types.ReplyKeyboardRemove",
-            "types.ForceReply"
-        ] = None,
-        reply_to_chat_id: Union[int, str] = None,
-        reply_to_story_id: int = None,
-        reply_to_monoforum_id: Union[int, str] = None,
-        quote_text: str = None,
-        quote_entities: list = None,
-        invert_media: bool = None,
-        reply_to_message_id: int = None,
-        **kwargs
-    ) -> "types.Message":
+        disable_notification: bool | None = None,
+        reply_parameters: types.ReplyParameters = None,
+        message_thread_id: int | None = None,
+        business_connection_id: str | None = None,
+        send_as: int | str | None = None,
+        schedule_date: datetime | None = None,
+        protect_content: bool | None = None,
+        allow_paid_broadcast: bool | None = None,
+        paid_message_star_count: int | None = None,
+        message_effect_id: int | None = None,
+        reply_markup: types.InlineKeyboardMarkup
+        | types.ReplyKeyboardMarkup
+        | types.ReplyKeyboardRemove
+        | types.ForceReply = None,
+        reply_to_chat_id: int | str | None = None,
+        reply_to_story_id: int | None = None,
+        reply_to_monoforum_id: int | str | None = None,
+        quote_text: str | None = None,
+        quote_entities: list | None = None,
+        invert_media: bool | None = None,
+        reply_to_message_id: int | None = None,
+        **kwargs,
+    ) -> types.Message:
         """Send information about a venue.
 
         .. include:: /_includes/usable-by/users-bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
                 For your personal cloud (Saved Messages) you can simply use "me" or "self".
@@ -112,7 +115,7 @@ class SendVenue:
             send_as (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the chat or channel to send the message as.
                 You can use this to send the message on behalf of a chat or channel where you have appropriate permissions.
-                Use the :meth:`~pyrogram.Client.get_send_as_chats` to return the list of message sender identifiers, which can be used to send messages in the chat, 
+                Use the :meth:`~pyrogram.Client.get_send_as_chats` to return the list of message sender identifiers, which can be used to send messages in the chat,
                 This setting applies to the current message and will remain effective for future messages unless explicitly changed.
                 To set this behavior permanently for all messages, use :meth:`~pyrogram.Client.set_send_as_chat`.
 
@@ -135,7 +138,8 @@ class SendVenue:
                 Additional interface options. An object for an inline keyboard, custom reply keyboard,
                 instructions to remove reply keyboard or to force a reply from the user.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.Message`: On success, the sent venue message is returned.
 
         Example:
@@ -144,8 +148,8 @@ class SendVenue:
                 app.send_venue(
                     "me", latitude, longitude,
                     "Venue title", "Venue address")
-        """
 
+        """
         reply_parameters = utils.resolve_legacy_reply_parameters(
             reply_parameters=reply_parameters,
             reply_to_message_id=reply_to_message_id,
@@ -160,7 +164,7 @@ class SendVenue:
         reply_to = await utils._get_reply_message_parameters(
             self,
             message_thread_id,
-            reply_parameters
+            reply_parameters,
         )
 
         rpc = raw.functions.messages.SendMedia(
@@ -168,13 +172,13 @@ class SendVenue:
             media=raw.types.InputMediaVenue(
                 geo_point=raw.types.InputGeoPoint(
                     lat=latitude,
-                    long=longitude
+                    long=longitude,
                 ),
                 title=title,
                 address=address,
-                provider="", # TODO
+                provider="",  # TODO
                 venue_id=foursquare_id,
-                venue_type=foursquare_type
+                venue_type=foursquare_type,
             ),
             message="",
             silent=disable_notification or None,
@@ -186,14 +190,14 @@ class SendVenue:
             allow_paid_floodskip=allow_paid_broadcast,
             allow_paid_stars=paid_message_star_count,
             reply_markup=await reply_markup.write(self) if reply_markup else None,
-            effect=message_effect_id
+            effect=message_effect_id,
         )
         if business_connection_id:
             r = await self.invoke(
                 raw.functions.InvokeWithBusinessConnection(
                     query=rpc,
-                    connection_id=business_connection_id
-                )
+                    connection_id=business_connection_id,
+                ),
             )
         else:
             r = await self.invoke(rpc)
@@ -204,28 +208,30 @@ class SendVenue:
                 (
                     raw.types.UpdateNewMessage,
                     raw.types.UpdateNewChannelMessage,
-                    raw.types.UpdateNewScheduledMessage
-                )
-            ):
-                return await types.Message._parse(
-                    self, i.message,
-                    {i.id: i for i in r.users},
-                    {i.id: i for i in r.chats},
-                    is_scheduled=isinstance(i, raw.types.UpdateNewScheduledMessage),
-                    replies=self.fetch_replies
-                )
-            elif isinstance(
-                i,
-                (
-                    raw.types.UpdateBotNewBusinessMessage
-                )
+                    raw.types.UpdateNewScheduledMessage,
+                ),
             ):
                 return await types.Message._parse(
                     self,
                     i.message,
                     {i.id: i for i in r.users},
                     {i.id: i for i in r.chats},
-                    business_connection_id=getattr(i, "connection_id", business_connection_id),
-                    raw_reply_to_message=i.reply_to_message,
-                    replies=0
+                    is_scheduled=isinstance(i, raw.types.UpdateNewScheduledMessage),
+                    replies=self.fetch_replies,
                 )
+            if isinstance(
+                i,
+                (raw.types.UpdateBotNewBusinessMessage),
+            ):
+                return await types.Message._parse(
+                    self,
+                    i.message,
+                    {i.id: i for i in r.users},
+                    {i.id: i for i in r.chats},
+                    business_connection_id=getattr(
+                        i, "connection_id", business_connection_id
+                    ),
+                    raw_reply_to_message=i.reply_to_message,
+                    replies=0,
+                )
+        return None

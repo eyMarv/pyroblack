@@ -20,12 +20,12 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import datetime
-from typing import Union
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import pyrogram
-from pyrogram import raw, utils
-from pyrogram import types
+from pyrogram import raw, types, utils
 from pyrogram.file_id import (
     FileId,
     FileType,
@@ -33,13 +33,17 @@ from pyrogram.file_id import (
     FileUniqueType,
     ThumbnailSource,
 )
-from ..object import Object
+from pyrogram.types.object import Object
+
+if TYPE_CHECKING:
+    from datetime import datetime
 
 
 class ChatBackground(Object):
     """Describes a background set for a specific chat.
 
-    Parameters:
+    Parameters
+    ----------
         file_id (``str``, *optional*):
             Identifier for this file, which can be used to download the file.
 
@@ -67,15 +71,15 @@ class ChatBackground(Object):
     def __init__(
         self,
         *,
-        client: "pyrogram.Client" = None,
-        file_id: str = None,
-        file_unique_id: str = None,
-        file_size: int = None,
-        date: datetime = None,
-        slug: str = None,
-        thumbs: list["types.Thumbnail"] = None,
-        _raw: "raw.base.WallPaper" = None,
-    ):
+        client: pyrogram.Client = None,
+        file_id: str | None = None,
+        file_unique_id: str | None = None,
+        file_size: int | None = None,
+        date: datetime | None = None,
+        slug: str | None = None,
+        thumbs: list[types.Thumbnail] | None = None,
+        _raw: raw.base.WallPaper = None,
+    ) -> None:
         super().__init__(client)
 
         self.file_id = file_id
@@ -93,8 +97,8 @@ class ChatBackground(Object):
     @staticmethod
     def _parse(
         client,
-        wallpaper: "raw.base.WallPaper",
-    ) -> "ChatBackground":
+        wallpaper: raw.base.WallPaper,
+    ) -> ChatBackground:
         if isinstance(wallpaper, raw.types.WallPaperNoFile):
             return ChatBackground(
                 _raw=wallpaper,
@@ -114,7 +118,8 @@ class ChatBackground(Object):
                     thumbnail_file_type=FileType.BACKGROUND,
                 ).encode(),
                 file_unique_id=FileUniqueId(
-                    file_unique_type=FileUniqueType.DOCUMENT, media_id=wallpaper.document.id
+                    file_unique_type=FileUniqueType.DOCUMENT,
+                    media_id=wallpaper.document.id,
                 ).encode(),
                 file_size=wallpaper.document.size,
                 slug=wallpaper.slug,
@@ -123,3 +128,4 @@ class ChatBackground(Object):
                 _raw=wallpaper,
                 client=client,
             )
+        return None

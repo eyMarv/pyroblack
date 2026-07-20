@@ -20,11 +20,13 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import logging
-from typing import Optional, Union
 
 import pyrogram
 from pyrogram import raw, types
+
 from .input_message_content import InputMessageContent
 
 log = logging.getLogger(__name__)
@@ -33,7 +35,8 @@ log = logging.getLogger(__name__)
 class InputInvoiceMessageContent(InputMessageContent):
     """Content of an invoice message to be sent as the result of an inline query.
 
-    Parameters:
+    Parameters
+    ----------
         title (``str``):
             Product name, 1-32 characters.
 
@@ -100,25 +103,25 @@ class InputInvoiceMessageContent(InputMessageContent):
         self,
         title: str,
         description: str,
-        payload: Union[str, bytes],
+        payload: str | bytes,
         currency: str,
-        prices: list["types.LabeledPrice"],
-        provider_token: Optional[str] = None,
-        max_tip_amount: Optional[int] = None,
-        suggested_tip_amounts: list[int] = None,
-        provider_data: Optional[str] = None,
-        photo_url: Optional[str] = None,
-        photo_size: Optional[int] = None,
-        photo_width: Optional[int] = None,
-        photo_height: Optional[int] = None,
-        need_name: Optional[bool] = None,
-        need_phone_number: Optional[bool] = None,
-        need_email: Optional[bool] = None,
-        need_shipping_address: Optional[bool] = None,
-        send_phone_number_to_provider: Optional[bool] = None,
-        send_email_to_provider: Optional[bool] = None,
-        is_flexible: Optional[bool] = None
-    ):
+        prices: list[types.LabeledPrice],
+        provider_token: str | None = None,
+        max_tip_amount: int | None = None,
+        suggested_tip_amounts: list[int] | None = None,
+        provider_data: str | None = None,
+        photo_url: str | None = None,
+        photo_size: int | None = None,
+        photo_width: int | None = None,
+        photo_height: int | None = None,
+        need_name: bool | None = None,
+        need_phone_number: bool | None = None,
+        need_email: bool | None = None,
+        need_shipping_address: bool | None = None,
+        send_phone_number_to_provider: bool | None = None,
+        send_email_to_provider: bool | None = None,
+        is_flexible: bool | None = None,
+    ) -> None:
         super().__init__()
 
         self.title = title
@@ -142,7 +145,7 @@ class InputInvoiceMessageContent(InputMessageContent):
         self.send_email_to_provider = send_email_to_provider
         self.is_flexible = is_flexible
 
-    async def write(self, client: "pyrogram.Client", reply_markup):
+    async def write(self, client: pyrogram.Client, reply_markup):
         return raw.types.InputBotInlineMessageMediaInvoice(
             title=self.title,
             description=self.description,
@@ -153,10 +156,12 @@ class InputInvoiceMessageContent(InputMessageContent):
                 attributes=[
                     raw.types.DocumentAttributeImageSize(
                         w=self.photo_width,
-                        h=self.photo_height
-                    )
-                ]
-            ) if self.photo_url else None,
+                        h=self.photo_height,
+                    ),
+                ],
+            )
+            if self.photo_url
+            else None,
             invoice=raw.types.Invoice(
                 currency=self.currency,
                 prices=[i.write() for i in self.prices],
@@ -167,12 +172,14 @@ class InputInvoiceMessageContent(InputMessageContent):
                 shipping_address_requested=self.need_shipping_address,
                 flexible=self.is_flexible,
                 phone_to_provider=self.send_phone_number_to_provider,
-                email_to_provider=self.send_email_to_provider
+                email_to_provider=self.send_email_to_provider,
             ),
-            payload=self.payload.encode() if isinstance(self.payload, str) else self.payload,
+            payload=self.payload.encode()
+            if isinstance(self.payload, str)
+            else self.payload,
             provider=self.provider_token,
             provider_data=raw.types.DataJSON(
-                data=self.provider_data if self.provider_data else "{}"
+                data=self.provider_data or "{}",
             ),
-            reply_markup=await reply_markup.write(client) if reply_markup else None
+            reply_markup=await reply_markup.write(client) if reply_markup else None,
         )

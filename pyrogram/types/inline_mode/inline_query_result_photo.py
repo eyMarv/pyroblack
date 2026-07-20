@@ -20,11 +20,13 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import logging
-from typing import Optional
 
 import pyrogram
-from pyrogram import raw, types, utils, enums
+from pyrogram import enums, raw, types, utils
+
 from .inline_query_result import InlineQueryResult
 
 log = logging.getLogger(__name__)
@@ -37,11 +39,12 @@ class InlineQueryResultPhoto(InlineQueryResult):
     Alternatively, you can use *input_message_content* to send a message with the specified content instead of the
     photo.
 
-    Parameters:
+    Parameters
+    ----------
         photo_url (``str``):
             A valid URL of the photo.
             Photo must be in *JPEG* format.
-            Photo size must not exceed 5MB. 
+            Photo size must not exceed 5MB.
 
         thumbnail_url (``str``, *optional*):
             URL of the thumbnail for the photo.
@@ -81,35 +84,35 @@ class InlineQueryResultPhoto(InlineQueryResult):
 
         input_message_content (:obj:`~pyrogram.types.InputMessageContent`):
             Content of the message to be sent instead of the photo.
+
     """
 
     def __init__(
         self,
         photo_url: str,
-        thumbnail_url: str = None,
+        thumbnail_url: str | None = None,
         photo_width: int = 0,
         photo_height: int = 0,
-        id: str = None,
-        title: str = None,
-        description: str = None,
+        id: str | None = None,
+        title: str | None = None,
+        description: str | None = None,
         caption: str = "",
-        parse_mode: Optional["enums.ParseMode"] = None,
-        caption_entities: list["types.MessageEntity"] = None,
-        show_caption_above_media: bool = None,
-        reply_markup: "types.InlineKeyboardMarkup" = None,
-        input_message_content: "types.InputMessageContent" = None,
-        thumb_url: str = None
-    ):
+        parse_mode: enums.ParseMode | None = None,
+        caption_entities: list[types.MessageEntity] | None = None,
+        show_caption_above_media: bool | None = None,
+        reply_markup: types.InlineKeyboardMarkup = None,
+        input_message_content: types.InputMessageContent = None,
+        thumb_url: str | None = None,
+    ) -> None:
         if thumb_url and thumbnail_url:
+            msg = "Parameters `thumb_url` and `thumbnail_url` are mutually exclusive."
             raise ValueError(
-                "Parameters `thumb_url` and `thumbnail_url` are mutually "
-                "exclusive."
+                msg,
             )
-        
+
         if thumb_url is not None:
             log.warning(
-                "This property is deprecated. "
-                "Please use thumbnail_url instead"
+                "This property is deprecated. Please use thumbnail_url instead",
             )
             thumbnail_url = thumb_url
 
@@ -129,7 +132,7 @@ class InlineQueryResultPhoto(InlineQueryResult):
         self.reply_markup = reply_markup
         self.input_message_content = input_message_content
 
-    async def write(self, client: "pyrogram.Client"):
+    async def write(self, client: pyrogram.Client):
         photo = raw.types.InputWebDocument(
             url=self.photo_url,
             size=0,
@@ -137,9 +140,9 @@ class InlineQueryResultPhoto(InlineQueryResult):
             attributes=[
                 raw.types.DocumentAttributeImageSize(
                     w=self.photo_width,
-                    h=self.photo_height
-                )
-            ]
+                    h=self.photo_height,
+                ),
+            ],
         )
 
         if self.thumbnail_url is None:
@@ -149,12 +152,17 @@ class InlineQueryResultPhoto(InlineQueryResult):
                 url=self.thumbnail_url,
                 size=0,
                 mime_type="image/jpeg",
-                attributes=[]
+                attributes=[],
             )
 
-        message, entities = (await utils.parse_text_entities(
-            client, self.caption, self.parse_mode, self.caption_entities
-        )).values()
+        message, entities = (
+            await utils.parse_text_entities(
+                client,
+                self.caption,
+                self.parse_mode,
+                self.caption_entities,
+            )
+        ).values()
 
         return raw.types.InputBotInlineResult(
             id=self.id,
@@ -167,10 +175,12 @@ class InlineQueryResultPhoto(InlineQueryResult):
                 await self.input_message_content.write(client, self.reply_markup)
                 if self.input_message_content
                 else raw.types.InputBotInlineMessageMediaAuto(
-                    reply_markup=await self.reply_markup.write(client) if self.reply_markup else None,
+                    reply_markup=await self.reply_markup.write(client)
+                    if self.reply_markup
+                    else None,
                     message=message,
                     entities=entities,
-                    invert_media=self.show_caption_above_media
+                    invert_media=self.show_caption_above_media,
                 )
-            )
+            ),
         )

@@ -20,10 +20,13 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import logging
 
 import pyrogram
 from pyrogram import raw, types
+
 from .inline_query_result import InlineQueryResult
 
 log = logging.getLogger(__name__)
@@ -32,7 +35,8 @@ log = logging.getLogger(__name__)
 class InlineQueryResultGame(InlineQueryResult):
     """Represents a :obj:`~pyrogram.types.Game`.
 
-    Parameters:
+    Parameters
+    ----------
         game_short_name (``str``):
             Short name of the game.
 
@@ -48,19 +52,21 @@ class InlineQueryResultGame(InlineQueryResult):
     def __init__(
         self,
         game_short_name: str,
-        id: str = None,
-        reply_markup: "types.InlineKeyboardMarkup" = None
-    ):
+        id: str | None = None,
+        reply_markup: types.InlineKeyboardMarkup = None,
+    ) -> None:
         super().__init__("game", id, None, reply_markup)
 
         self.game_short_name = game_short_name
 
-    async def write(self, client: "pyrogram.Client"):
+    async def write(self, client: pyrogram.Client):
         return raw.types.InputBotInlineResultGame(
             id=self.id,
             short_name=self.game_short_name,
             title=self.first_name,
             send_message=raw.types.InputBotInlineMessageGame(
-                reply_markup=await self.reply_markup.write(client) if self.reply_markup else None,
-            )
+                reply_markup=await self.reply_markup.write(client)
+                if self.reply_markup
+                else None,
+            ),
         )

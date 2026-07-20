@@ -21,16 +21,17 @@
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
 
-import pyrogram
-from pyrogram import raw, utils
+from __future__ import annotations
 
-from ..object import Object
+from pyrogram import raw, utils
+from pyrogram.types.object import Object
 
 
 class StoryStealthMode(Object):
     """Story stealth mode.
 
-    Parameters:
+    Parameters
+    ----------
         active_until_date (``int``):
             Point in time (Unix timestamp) until stealth mode is active; None if it is disabled.
 
@@ -42,17 +43,21 @@ class StoryStealthMode(Object):
     def __init__(
         self,
         *,
-        active_until_date: int = None,
-        cooldown_until_date: int = None,
-    ):
+        active_until_date: int | None = None,
+        cooldown_until_date: int | None = None,
+    ) -> None:
         super().__init__()
 
         self.active_until_date = active_until_date
         self.cooldown_until_date = cooldown_until_date
 
     @staticmethod
-    def _parse(ssm: "raw.types.StoriesStealthMode") -> "StoryStealthMode":
+    def _parse(ssm: raw.types.StoriesStealthMode) -> StoryStealthMode:
         return StoryStealthMode(
-            active_until_date=utils.timestamp_to_datetime(getattr(ssm, "active_until_date", 0)),
-            cooldown_until_date=utils.timestamp_to_datetime(getattr(ssm, "cooldown_until_date", 0)),
+            active_until_date=utils.timestamp_to_datetime(
+                getattr(ssm, "active_until_date", 0)
+            ),
+            cooldown_until_date=utils.timestamp_to_datetime(
+                getattr(ssm, "cooldown_until_date", 0)
+            ),
         )

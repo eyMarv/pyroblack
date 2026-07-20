@@ -21,13 +21,16 @@
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from ..object import Object
+from __future__ import annotations
+
+from pyrogram.types.object import Object
 
 
 class LocationAddress(Object):
     """This object describes the physical address of a location.
 
-    Parameters:
+    Parameters
+    ----------
         country_code (``str``):
             The two-letter ISO 3166-1 alpha-2 country code of the country where the location is located.
 
@@ -36,7 +39,7 @@ class LocationAddress(Object):
 
         city (``str``, *optional*):
             City of the location.
-        
+
         street (``str``, *optional*):
             Street address of the location.
 
@@ -44,11 +47,11 @@ class LocationAddress(Object):
 
     def __init__(
         self,
-        country_code: str = None,
-        state: str = None,
-        city: str = None,
-        street: str = None,
-    ):
+        country_code: str | None = None,
+        state: str | None = None,
+        city: str | None = None,
+        street: str | None = None,
+    ) -> None:
         super().__init__()
 
         self.country_code = country_code

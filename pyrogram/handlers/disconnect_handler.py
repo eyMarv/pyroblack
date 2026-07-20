@@ -20,32 +20,36 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Any, Callable
+from typing import TYPE_CHECKING, Any, Callable
 
-import pyrogram
 from .handler import Handler
+
+if TYPE_CHECKING:
+    import pyrogram
 
 CallbackFunc: Callable = Callable[["pyrogram.Client"], Any]
 
 
 class DisconnectHandler(Handler):
     """The Disconnect handler class. Used to handle disconnections. It is intended to be used with
-    :meth:`~pyrogram.Client.add_handler`
+    :meth:`~pyrogram.Client.add_handler`.
 
     For a nicer way to register this handler, have a look at the
     :meth:`~pyrogram.Client.on_disconnect` decorator.
 
-    Parameters:
+    Parameters
+    ----------
         callback (``Callable``):
             Pass a function that will be called when a disconnection occurs. It takes *(client)*
             as positional argument (look at the section below for a detailed description).
 
-    Other parameters:
+    Other Parameters
+    ----------------
         client (:obj:`~pyrogram.Client`):
             The Client itself. Useful, for example, when you want to change the proxy before a new connection
             is established.
 
     """
 
-    def __init__(self, callback: CallbackFunc):
+    def __init__(self, callback: CallbackFunc) -> None:
         super().__init__(callback)

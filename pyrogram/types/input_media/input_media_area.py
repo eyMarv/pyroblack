@@ -20,9 +20,13 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from pyrogram import types
 
-from ..object import Object
+from typing import TYPE_CHECKING
+
+from pyrogram.types.object import Object
+
+if TYPE_CHECKING:
+    from pyrogram import types
 
 
 class InputMediaArea(Object):
@@ -35,7 +39,7 @@ class InputMediaArea(Object):
 
     # TODO: InputMediaAreaVenue
 
-    def __init__(self, coordinates: "types.MediaAreaCoordinates"):
+    def __init__(self, coordinates: "types.MediaAreaCoordinates") -> None:
         super().__init__()
 
         self.coordinates = coordinates

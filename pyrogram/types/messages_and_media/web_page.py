@@ -20,17 +20,19 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import pyrogram
-from pyrogram import raw
-from pyrogram import types
-from ..object import Object
+from pyrogram import raw, types
+from pyrogram.types.object import Object
 
 
 class WebPage(Object):
     # TODO: hash, cached_page
-    """A webpage preview
+    """A webpage preview.
 
-    Parameters:
+    Parameters
+    ----------
         id (``str``):
             Unique identifier for this webpage.
 
@@ -86,31 +88,32 @@ class WebPage(Object):
 
         author (``str``, *optional*):
             Author of the webpage, eg the Twitter user for a tweet, or the author in an article.
+
     """
 
     def __init__(
         self,
         *,
-        client: "pyrogram.Client" = None,
+        client: pyrogram.Client = None,
         id: str,
         url: str,
         display_url: str,
-        type: str = None,
-        site_name: str = None,
-        title: str = None,
-        description: str = None,
-        audio: "types.Audio" = None,
-        document: "types.Document" = None,
-        photo: "types.Photo" = None,
-        animation: "types.Animation" = None,
-        video: "types.Video" = None,
-        embed_url: str = None,
-        embed_type: str = None,
-        embed_width: int = None,
-        embed_height: int = None,
-        duration: int = None,
-        author: str = None
-    ):
+        type: str | None = None,
+        site_name: str | None = None,
+        title: str | None = None,
+        description: str | None = None,
+        audio: types.Audio = None,
+        document: types.Document = None,
+        photo: types.Photo = None,
+        animation: types.Animation = None,
+        video: types.Video = None,
+        embed_url: str | None = None,
+        embed_type: str | None = None,
+        embed_width: int | None = None,
+        embed_height: int | None = None,
+        duration: int | None = None,
+        author: str | None = None,
+    ) -> None:
         super().__init__(client)
 
         self.id = id
@@ -133,7 +136,7 @@ class WebPage(Object):
         self.author = author
 
     @staticmethod
-    def _parse(client, webpage: "raw.types.WebPage") -> "WebPage":
+    def _parse(client, webpage: raw.types.WebPage) -> WebPage:
         audio = None
         document = None
         photo = None
@@ -149,9 +152,9 @@ class WebPage(Object):
             attributes = {type(i): i for i in doc.attributes}
 
             file_name = getattr(
-                attributes.get(
-                    raw.types.DocumentAttributeFilename, None
-                ), "file_name", None
+                attributes.get(raw.types.DocumentAttributeFilename),
+                "file_name",
+                None,
             )
 
             if raw.types.DocumentAttributeAudio in attributes:
@@ -159,12 +162,16 @@ class WebPage(Object):
                 audio = types.Audio._parse(client, doc, audio_attributes, file_name)
 
             elif raw.types.DocumentAttributeAnimated in attributes:
-                video_attributes = attributes.get(raw.types.DocumentAttributeVideo, None)
-                animation = types.Animation._parse(client, doc, video_attributes, file_name)
+                video_attributes = attributes.get(raw.types.DocumentAttributeVideo)
+                animation = types.Animation._parse(
+                    client, doc, video_attributes, file_name
+                )
 
             elif raw.types.DocumentAttributeVideo in attributes:
                 video_attributes = attributes[raw.types.DocumentAttributeVideo]
-                video = types.Video._parse(client, None, video_attributes, file_name, video=doc)
+                video = types.Video._parse(
+                    client, None, video_attributes, file_name, video=doc
+                )
 
             else:
                 document = types.Document._parse(client, doc, file_name)
@@ -187,5 +194,5 @@ class WebPage(Object):
             embed_width=webpage.embed_width,
             embed_height=webpage.embed_height,
             duration=webpage.duration,
-            author=webpage.author
+            author=webpage.author,
         )

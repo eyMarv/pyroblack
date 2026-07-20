@@ -24,14 +24,15 @@ from typing import Any, Callable
 
 import pyrogram
 from pyrogram.filters import Filter
+
 from .handler import Handler
 
 CallbackFunc: Callable = Callable[
     [
         "pyrogram.Client",
-        pyrogram.types.ChatMemberUpdated
+        pyrogram.types.ChatMemberUpdated,
     ],
-    Any
+    Any,
 ]
 
 
@@ -42,7 +43,8 @@ class ChatMemberUpdatedHandler(Handler):
     For a nicer way to register this handler, have a look at the
     :meth:`~pyrogram.Client.on_chat_member_updated` decorator.
 
-    Parameters:
+    Parameters
+    ----------
         callback (``Callable``):
             Pass a function that will be called when a new ChatMemberUpdated event arrives. It takes
             *(client, chat_member_updated)* as positional arguments (look at the section below for a detailed
@@ -51,7 +53,8 @@ class ChatMemberUpdatedHandler(Handler):
         filters (:obj:`Filter`):
             Pass one or more filters to allow only a subset of updates to be passed in your callback function.
 
-    Other parameters:
+    Other Parameters
+    ----------------
         client (:obj:`~pyrogram.Client`):
             The Client itself, useful when you want to call other API methods inside the chat member updated
             handler.
@@ -61,5 +64,5 @@ class ChatMemberUpdatedHandler(Handler):
 
     """
 
-    def __init__(self, callback: CallbackFunc, filters: Filter = None):
+    def __init__(self, callback: CallbackFunc, filters: Filter = None) -> None:
         super().__init__(callback, filters)

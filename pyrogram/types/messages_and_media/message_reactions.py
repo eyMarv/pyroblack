@@ -20,28 +20,30 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw, types
-from ..object import Object
+from pyrogram.types.object import Object
 
 
 class MessageReactions(Object):
     """Contains information about a message reactions.
 
-    Parameters:
+    Parameters
+    ----------
         reactions (List of :obj:`~pyrogram.types.Reaction`):
             Reactions list.
+
     """
 
     def __init__(
         self,
         *,
-        client: "pyrogram.Client" = None,
-        reactions: Optional[list["types.Reaction"]] = None,
-        top_reactors: Optional[list] = None,
-    ):
+        client: pyrogram.Client = None,
+        reactions: list[types.Reaction] | None = None,
+        top_reactors: list | None = None,
+    ) -> None:
         super().__init__(client)
 
         self.reactions = reactions
@@ -50,25 +52,29 @@ class MessageReactions(Object):
 
     @staticmethod
     def _parse(
-        client: "pyrogram.Client",
-        message_reactions: Optional["raw.base.MessageReactions"] = None,
-        users: dict = None,
-        chats: dict = None,
-    ) -> Optional["MessageReactions"]:
+        client: pyrogram.Client,
+        message_reactions: raw.base.MessageReactions | None = None,
+        users: dict | None = None,
+        chats: dict | None = None,
+    ) -> MessageReactions | None:
         # users/chats accepted for call-site compatibility (send_reaction etc.)
         if not message_reactions:
             return None
 
         top_reactors = None
         raw_top = getattr(message_reactions, "top_reactors", None) or getattr(
-            message_reactions, "recent_reactions", None
+            message_reactions,
+            "recent_reactions",
+            None,
         )
         if raw_top:
             try:
-                top_reactors = types.List([
-                    types.MessageReactor._parse(client, r, users or {}, chats or {})
-                    for r in raw_top
-                ])
+                top_reactors = types.List(
+                    [
+                        types.MessageReactor._parse(client, r, users or {}, chats or {})
+                        for r in raw_top
+                    ]
+                )
             except Exception:
                 top_reactors = None
 

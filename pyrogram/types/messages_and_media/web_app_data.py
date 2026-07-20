@@ -20,14 +20,19 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from pyrogram import raw
-from ..object import Object
+from typing import TYPE_CHECKING
+
+from pyrogram.types.object import Object
+
+if TYPE_CHECKING:
+    from pyrogram import raw
 
 
 class WebAppData(Object):
     """Contains data sent from a `Web App <https://core.telegram.org/bots/webapps>`_ to the bot.
 
-    Parameters:
+    Parameters
+    ----------
         data (``str``, *optional*):
             The data. Be aware that a bad client can send arbitrary data in this field.
 
@@ -41,7 +46,7 @@ class WebAppData(Object):
         *,
         data: str,
         button_text: str,
-    ):
+    ) -> None:
         super().__init__()
 
         self.data = data
@@ -51,5 +56,5 @@ class WebAppData(Object):
     def _parse(action: "raw.types.MessageActionWebViewDataSentMe"):
         return WebAppData(
             data=getattr(action, "data", None),
-            button_text=action.text
+            button_text=action.text,
         )

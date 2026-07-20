@@ -20,27 +20,32 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import logging
-from typing import Union, List, Iterable
+from typing import TYPE_CHECKING
 
 import pyrogram
-from pyrogram import raw
-from pyrogram import types
+from pyrogram import raw, types
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
 
 log = logging.getLogger(__name__)
 
 
 class GetStories:
     async def get_stories(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
-        story_ids: Union[int, Iterable[int]],
-    ) -> Union["types.Story", List["types.Story"]]:
+        self: pyrogram.Client,
+        chat_id: int | str,
+        story_ids: int | Iterable[int],
+    ) -> types.Story | list[types.Story]:
         """Get one or more story from an user by using story identifiers.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target user/channel.
                 For your personal story you can simply use "me" or "self".
@@ -51,7 +56,8 @@ class GetStories:
                 Pass a single story identifier or an iterable of story ids (as integers) to get the content of the
                 story themselves.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.Story` | List of :obj:`~pyrogram.types.Story`: In case *story_ids* was not
             a list, a single story is returned, otherwise a list of stories is returned.
 
@@ -64,10 +70,11 @@ class GetStories:
                 # Get more than one story (list of stories)
                 await app.get_stories(chat_id, [12345, 12346])
 
-        Raises:
+        Raises
+        ------
             ValueError: In case of invalid arguments.
-        """
 
+        """
         peer = await self.resolve_peer(chat_id)
 
         is_iterable = not isinstance(story_ids, int)
@@ -79,7 +86,7 @@ class GetStories:
 
         if is_iterable:
             return types.List(
-                [await types.Story._parse(self, story, peer) for story in r.stories]
+                [await types.Story._parse(self, story, peer) for story in r.stories],
             )
         return (
             await types.Story._parse(self, r.stories[0], peer)

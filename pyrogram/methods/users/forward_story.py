@@ -20,10 +20,13 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import List, Union
+from __future__ import annotations
 
-import pyrogram
-from pyrogram import enums, types
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    import pyrogram
+    from pyrogram import enums, types
 
 
 class ForwardStory:
@@ -32,27 +35,28 @@ class ForwardStory:
         return message, entities
 
     async def forward_story(
-        self: "pyrogram.Client",
-        from_chat_id: Union[int, str],
+        self: pyrogram.Client,
+        from_chat_id: int | str,
         from_story_id: int,
-        chat_id: Union[int, str] = None,
-        privacy: "enums.StoriesPrivacyRules" = None,
-        allowed_users: List[int] = None,
-        denied_users: List[int] = None,
+        chat_id: int | str | None = None,
+        privacy: enums.StoriesPrivacyRules = None,
+        allowed_users: list[int] | None = None,
+        denied_users: list[int] | None = None,
         # allowed_chats: List[int] = None,
         # denied_chats: List[int] = None,
-        pinned: bool = None,
-        protect_content: bool = None,
-        caption: str = None,
-        parse_mode: "enums.ParseMode" = None,
-        caption_entities: List["types.MessageEntity"] = None,
-        period: int = None,
-    ) -> "types.Story":
+        pinned: bool | None = None,
+        protect_content: bool | None = None,
+        caption: str | None = None,
+        parse_mode: enums.ParseMode = None,
+        caption_entities: list[types.MessageEntity] | None = None,
+        period: int | None = None,
+    ) -> types.Story:
         """Forward a story.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             from_chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat/user.
                 For your personal story you can simply use "me" or "self".
@@ -99,7 +103,8 @@ class ForwardStory:
                 How long the story will posted, in secs.
                 only for premium users.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.Story` a single story is returned.
 
         Example:
@@ -108,10 +113,11 @@ class ForwardStory:
                 # forward a story
                 await app.forward_story(from_chat_id='wulan17', from_story_id=1, caption='Hello guys.')
 
-        Raises:
+        Raises
+        ------
             ValueError: In case of invalid arguments.
-        """
 
+        """
         return await self.send_story(
             chat_id=chat_id,
             privacy=privacy,

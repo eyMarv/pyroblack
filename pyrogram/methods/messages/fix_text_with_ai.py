@@ -35,19 +35,22 @@ class FixTextWithAI:
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             text (``str`` | :obj:`~pyrogram.types.FormattedText`):
                 The original text.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.FormattedText`: On success, information about the fixed text is returned.
 
-        Example: 
+        Example:
             .. code-block:: python
-            
+
                 app.fix_text_with_ai(
                     "This statement maay havve feew mistakes"
                 )
+
         """
         if isinstance(text, str):
             text = types.FormattedText(text=text)
@@ -56,7 +59,7 @@ class FixTextWithAI:
             raw.functions.messages.ComposeMessageWithAI(
                 text=await text.write(self),
                 proofread=True,
-            )
+            ),
         )
 
         return types.FormattedText._parse(self, r.result_text)

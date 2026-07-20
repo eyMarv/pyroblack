@@ -20,18 +20,22 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import datetime
-from typing import Optional
+from __future__ import annotations
 
-from pyrogram import raw, types, utils, enums
+from typing import TYPE_CHECKING
 
-from ..object import Object
+from pyrogram import enums, raw, types, utils
+from pyrogram.types.object import Object
+
+if TYPE_CHECKING:
+    from datetime import datetime
 
 
 class SuggestedPostInfo(Object):
     """Contains information about a suggested post.
 
-    Parameters:
+    Parameters
+    ----------
         price (:obj:`~pyrogram.types.SuggestedPostPrice`, *optional*):
             Proposed price of the post.
             If the field is omitted, then the post is unpaid.
@@ -43,13 +47,16 @@ class SuggestedPostInfo(Object):
 
         state (:obj:`~pyrogram.enums.SuggestedPostState`, *optional*):
             State of the suggested post.
+
     """
+
     def __init__(
-        self, *,
-        price: Optional["types.SuggestedPostPrice"] = None,
-        send_date: Optional[datetime] = None,
-        state: Optional["enums.SuggestedPostState"] = None
-    ):
+        self,
+        *,
+        price: types.SuggestedPostPrice | None = None,
+        send_date: datetime | None = None,
+        state: enums.SuggestedPostState | None = None,
+    ) -> None:
         super().__init__()
 
         self.price = price
@@ -57,7 +64,7 @@ class SuggestedPostInfo(Object):
         self.state = state
 
     @staticmethod
-    def _parse(suggested_post: "raw.types.SuggestedPost") -> Optional["SuggestedPostInfo"]:
+    def _parse(suggested_post: raw.types.SuggestedPost) -> SuggestedPostInfo | None:
         if not suggested_post:
             return None
 

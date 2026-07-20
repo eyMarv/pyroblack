@@ -20,6 +20,8 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import pyrogram
 from pyrogram import raw
 
@@ -29,7 +31,8 @@ from .story_area_type import StoryAreaType
 class StoryAreaTypeUniqueGift(StoryAreaType):
     """This object describes a story area pointing to a unique gift. Currently, a story can have at most 1 unique gift area.
 
-    Parameters:
+    Parameters
+    ----------
         name (``str``):
             Unique name of the gift.
 
@@ -37,18 +40,18 @@ class StoryAreaTypeUniqueGift(StoryAreaType):
 
     def __init__(
         self,
-        name: str = None,
-    ):
+        name: str | None = None,
+    ) -> None:
         super().__init__()
 
         self.name = name
 
     async def write(
         self,
-        client: "pyrogram.Client",
-        coordinates: "raw.types.MediaAreaCoordinates"
+        client: pyrogram.Client,
+        coordinates: raw.types.MediaAreaCoordinates,
     ):
         return raw.types.MediaAreaStarGift(
             coordinates=coordinates,
-            slug=self.name
+            slug=self.name,
         )

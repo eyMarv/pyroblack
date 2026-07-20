@@ -20,38 +20,40 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import logging
-from typing import Iterable, Optional, Union
+from typing import TYPE_CHECKING
 
 import pyrogram
 from pyrogram import raw, types, utils
 from pyrogram.types.messages_and_media.message import Str
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
 
 log = logging.getLogger(__name__)
 
 
 class GetMessages:
     async def get_messages(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str] = None,
-        message_ids: Union[int, Iterable[int]] = None,
+        self: pyrogram.Client,
+        chat_id: int | str | None = None,
+        message_ids: int | Iterable[int] | None = None,
         replies: int = 1,
         is_scheduled: bool = False,
-        link: str = None,
-        reply_to_message_ids: Union[int, Iterable[int]] = None,
-        **kwargs
-    ) -> Union[
-        "types.Message",
-        list["types.Message"],
-        "types.DraftMessage"
-    ]:
+        link: str | None = None,
+        reply_to_message_ids: int | Iterable[int] | None = None,
+        **kwargs,
+    ) -> types.Message | list[types.Message] | types.DraftMessage:
         """Get one or more messages from a chat by using message identifiers. You can retrieve up to 200 messages at once.
 
         .. include:: /_includes/usable-by/users-bots.rst
 
         You must use exactly one of ``message_ids`` OR (``chat_id``, ``message_ids``) OR ``link``.
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``, *optional*, **kwargs):
                 Unique identifier (int) or username (str) of the target chat.
                 For your personal cloud (Saved Messages) you can simply use "me" or "self".
@@ -74,7 +76,8 @@ class GetMessages:
             link (``str``):
                 A link of the message, usually can be copied using ``Copy Link`` functionality OR obtained using :obj:`~pyrogram.raw.types.Message.link` OR  :obj:`~pyrogram.raw.functions.channels.ExportMessageLink`
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.Message` | List of :obj:`~pyrogram.types.Message` | :obj:`~pyrogram.types.DraftMessage`: In case *message_ids* was not
             a list, a single message is returned, otherwise a list of messages is returned.
 
@@ -93,8 +96,10 @@ class GetMessages:
                 # Get message with all chained replied-to messages
                 await app.get_messages(chat_id=chat_id, message_ids=message_id, replies=-1)
 
-        Raises:
+        Raises
+        ------
             ValueError: In case of invalid arguments.
+
         """
         # pyroblack <= 2.7.2 alias
         if reply_to_message_ids is not None and message_ids is None:
@@ -112,7 +117,7 @@ class GetMessages:
             if chat_id and is_scheduled:
                 rpc = raw.functions.messages.GetScheduledMessages(
                     peer=peer,
-                    id=ids
+                    id=ids,
                 )
             else:
                 ids = [raw.types.InputMessageID(id=i) for i in ids]
@@ -127,79 +132,76 @@ class GetMessages:
                 self,
                 r,
                 is_scheduled=is_scheduled,
-                replies=replies
+                replies=replies,
             )
 
             return messages if is_iterable else messages[0] if messages else None
 
         if link:
             linkps = link.split("/")
-            raw_chat_id, message_thread_id, message_id = None, None, None
-            if (
-                len(linkps) == 7 and
-                linkps[3] == "c"
-            ):
+            raw_chat_id, _message_thread_id, message_id = None, None, None
+            if len(linkps) == 7 and linkps[3] == "c":
                 # https://t.me/c/1192302355/322/487
                 raw_chat_id = utils.get_channel_id(
-                    int(linkps[4])
+                    int(linkps[4]),
                 )
-                message_thread_id = int(linkps[5])
+                int(linkps[5])
                 message_id = int(linkps[6])
             elif len(linkps) == 6:
                 if linkps[3] == "c":
                     # https://t.me/c/1387666944/609282
                     raw_chat_id = utils.get_channel_id(
-                        int(linkps[4])
+                        int(linkps[4]),
                     )
                     message_id = int(linkps[5])
                 elif linkps[4] == "s":
                     # https://t.me/yehudalev/s/1
-                    if (
-                        self.me and
-                        self.me.is_bot
-                    ):
+                    if self.me and self.me.is_bot:
+                        msg = "Invalid ClientType used to parse this story link"
                         raise ValueError(
-                            "Invalid ClientType used to parse this story link"
+                            msg,
                         )
                     raw_chat_id = linkps[3]
                     story_id = int(linkps[5])
 
                     story = await self.get_stories(
                         story_poster_chat_id=raw_chat_id,
-                        story_ids=story_id
+                        story_ids=story_id,
                     )
                     return types.Message(
                         client=self,
                         id=0,
                         story=story,
-                        empty=True
+                        empty=True,
                     )
                 else:
                     # https://t.me/TheForum/322/487
                     raw_chat_id = linkps[3]
-                    message_thread_id = int(linkps[4])
+                    int(linkps[4])
                     message_id = int(linkps[5])
 
             elif (
-                not (self.me and self.me.is_bot) and
-                len(linkps) == 5 and
-                linkps[3] == "m"
+                not (self.me and self.me.is_bot)
+                and len(linkps) == 5
+                and linkps[3] == "m"
             ):
                 r = await self.invoke(
                     raw.functions.account.ResolveBusinessChatLink(
-                        slug=linkps[4]
-                    )
+                        slug=linkps[4],
+                    ),
                 )
                 users = {i.id: i for i in r.users}
-                chats = {i.id: i for i in r.chats}
+                {i.id: i for i in r.chats}
                 entities = [
                     types.MessageEntity._parse(
-                        self, entity, users
+                        self,
+                        entity,
+                        users,
                     )
                     for entity in getattr(r, "entities", [])
                 ]
                 entities = types.List(
-                    filter(lambda x: x is not None, entities)
+                    filter(lambda x: x is not None, entities),
                 )
                 chat = None
                 cat_id = utils.get_raw_peer_id(r.peer)
@@ -222,30 +224,32 @@ class GetMessages:
                 # https://t.me/pyrogramchat/609282
                 raw_chat_id = linkps[3]
                 if raw_chat_id == "m":
+                    msg = "Invalid ClientType used to parse this link to start chat"
                     raise ValueError(
-                        "Invalid ClientType used to parse this link to start chat"
+                        msg,
                     )
                 message_id = int(linkps[4])
 
             return await self.get_messages(
                 chat_id=raw_chat_id,
-                message_ids=message_id
+                message_ids=message_id,
             )
 
-        raise ValueError("No valid argument supplied. https://telegramplayground.github.io/pyrogram/api/methods/get_messages")
-
+        msg = "No valid argument supplied. https://telegramplayground.github.io/pyrogram/api/methods/get_messages"
+        raise ValueError(msg)
 
     async def get_chat_pinned_message(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
-        replies: int = 1
-    ) -> Optional["types.Message"]:
+        self: pyrogram.Client,
+        chat_id: int | str,
+        replies: int = 1,
+    ) -> types.Message | None:
         """Returns information about a newest pinned message in the chat.
         Use :meth:`~pyrogram.Client.search_messages` to return all the pinned messages.
 
         .. include:: /_includes/usable-by/users-bots.rst
-        
-        Parameters:
+
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
                 For your personal cloud (Saved Messages) you can simply use "me" or "self".
@@ -257,11 +261,13 @@ class GetMessages:
                 Defaults to 1.
 
         """
-
         peer = await self.resolve_peer(chat_id)
         if not isinstance(peer, raw.types.InputPeerChannel):
-            raise ValueError("chat_id must belong to a supergroup or channel.")
-        rpc = raw.functions.channels.GetMessages(channel=peer, id=[raw.types.InputMessagePinned()])
+            msg = "chat_id must belong to a supergroup or channel."
+            raise ValueError(msg)
+        rpc = raw.functions.channels.GetMessages(
+            channel=peer, id=[raw.types.InputMessagePinned()]
+        )
         r = await self.invoke(rpc, sleep_threshold=-1)
         if replies < 0:
             replies = (1 << 31) - 1
@@ -269,23 +275,23 @@ class GetMessages:
             self,
             r,
             is_scheduled=False,
-            replies=replies
+            replies=replies,
         )
         return messages[0] if messages else None
 
-
     async def get_callback_query_message(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
+        self: pyrogram.Client,
+        chat_id: int | str,
         message_id: int,
         callback_query_id: int,
-        replies: int = 1
-    ) -> Optional["types.Message"]:
+        replies: int = 1,
+    ) -> types.Message | None:
         """Returns information about a message with the callback button that originated a callback query.
 
         .. include:: /_includes/usable-by/bots.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``, *optional*):
                 Unique identifier (int) or username (str) of the target chat.
                 For your personal cloud (Saved Messages) you can simply use "me" or "self".
@@ -303,9 +309,12 @@ class GetMessages:
                 Defaults to 1.
 
         """
-
         peer = await self.resolve_peer(chat_id)
-        ids = [raw.types.InputMessageCallbackQuery(id=message_id, query_id=callback_query_id)]
+        ids = [
+            raw.types.InputMessageCallbackQuery(
+                id=message_id, query_id=callback_query_id
+            )
+        ]
         if isinstance(peer, raw.types.InputPeerChannel):
             rpc = raw.functions.channels.GetMessages(channel=peer, id=ids)
         else:
@@ -317,17 +326,16 @@ class GetMessages:
             self,
             r,
             is_scheduled=False,
-            replies=replies
+            replies=replies,
         )
         return messages[0] if messages else None
 
-
     async def get_replied_message(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
-        message_ids: Union[int, Iterable[int]],
-        replies: int = 1
-    ) -> Optional["types.Message"]:
+        self: pyrogram.Client,
+        chat_id: int | str,
+        message_ids: int | Iterable[int],
+        replies: int = 1,
+    ) -> types.Message | None:
         """Returns information about a non-bundled message that is replied by a given message.
 
         .. include:: /_includes/usable-by/users-bots.rst
@@ -337,7 +345,8 @@ class GetMessages:
         messagePinMessage, messageGameScore, messagePaymentSuccessful, messageChatSetBackground, messageGiveawayCompleted and topic messages
         without non-bundled replied message respectively.
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
                 For your personal cloud (Saved Messages) you can simply use "me" or "self".
@@ -359,7 +368,6 @@ class GetMessages:
                 await app.get_replied_message(chat_id=chat_id, message_ids=message_id)
 
         """
-
         peer = await self.resolve_peer(chat_id)
         is_iterable = utils.is_list_like(message_ids)
         ids = list(message_ids) if is_iterable else [message_ids]
@@ -375,6 +383,6 @@ class GetMessages:
             self,
             r,
             is_scheduled=False,
-            replies=replies
+            replies=replies,
         )
         return messages if is_iterable else messages[0] if messages else None

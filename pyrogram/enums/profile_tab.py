@@ -21,6 +21,7 @@
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
 from pyrogram import raw
+
 from .auto_name import AutoName
 
 
@@ -50,4 +51,3 @@ class ProfileTab(AutoName):
 
     GIFS = raw.types.ProfileTabGifs
     "A tab with animations posted by the channel."
-

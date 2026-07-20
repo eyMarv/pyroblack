@@ -20,7 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union
+from __future__ import annotations
 
 import pyrogram
 from pyrogram import raw, types
@@ -28,23 +28,28 @@ from pyrogram import raw, types
 
 class TranscribeAudio:
     async def transcribe_audio(
-        self: "pyrogram.Client", chat_id: Union[int, str], message_id: int
-    ) -> "types.TranscribedAudio":
+        self: pyrogram.Client,
+        chat_id: int | str,
+        message_id: int,
+    ) -> types.TranscribedAudio:
         """Transcribes the audio of a voice message.
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
 
             message_id (``int``):
                 Identifier of the message containing the voice message.
 
-        Returns:
+        Returns
+        -------
             :obj:`~pyrogram.types.TranscribeAudio`: On success.
+
         """
         chat = await self.resolve_peer(chat_id)
         r = await self.invoke(
-            raw.functions.messages.TranscribeAudio(peer=chat, msg_id=message_id)
+            raw.functions.messages.TranscribeAudio(peer=chat, msg_id=message_id),
         )
 
         return types.TranscribedAudio._parse(r)

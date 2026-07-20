@@ -20,23 +20,25 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import pyrogram
 from pyrogram import raw
-from typing import Union
 
 
 class ToggleForumTopicIsPinned:
     async def toggle_forum_topic_is_pinned(
-        self: "pyrogram.Client",
-        chat_id: Union[int, str],
+        self: pyrogram.Client,
+        chat_id: int | str,
         message_thread_id: int,
-        is_pinned: bool
+        is_pinned: bool,
     ) -> bool:
         """Changes the pinned state of a forum topic; requires can_manage_topics right in the supergroup. There can be up to ``pinned_forum_topic_count_max`` pinned forum topics.
 
         .. include:: /_includes/usable-by/users.rst
 
-        Parameters:
+        Parameters
+        ----------
             chat_id (``int`` | ``str``):
                 Unique identifier (int) or username (str) of the target chat.
 
@@ -46,23 +48,26 @@ class ToggleForumTopicIsPinned:
             is_pinned (``bool``):
                 Pass True to pin the topic; pass False to unpin it.
 
-        Returns:
+        Returns
+        -------
             ``bool``: On success, True is returned.
 
-        Raises:
+        Raises
+        ------
             :obj:`~pyrogram.errors.RPCError`: In case of a Telegram RPC error.
 
         Example:
             .. code-block:: python
 
                 await app.toggle_forum_topic_is_pinned(chat_id, topic_id, True)
+
         """
         await self.invoke(
             raw.functions.messages.UpdatePinnedForumTopic(
                 peer=await self.resolve_peer(chat_id),
                 topic_id=message_thread_id,
-                pinned=is_pinned
-            )
+                pinned=is_pinned,
+            ),
         )
         # TODO
         return True

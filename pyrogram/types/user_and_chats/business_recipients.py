@@ -20,16 +20,17 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import List, Dict
+from __future__ import annotations
 
-from pyrogram import types, raw
-from ..object import Object
+from pyrogram import raw, types
+from pyrogram.types.object import Object
 
 
 class BusinessRecipients(Object):
     """Business recipients.
 
-    Parameters:
+    Parameters
+    ----------
         existing_chats (``bool``, *optional*):
             True, if the message should be sent to existing chats.
 
@@ -47,18 +48,19 @@ class BusinessRecipients(Object):
 
         users (List of :obj:`~pyrogram.types.User`, *optional*):
             Recipients of the message.
+
     """
 
     def __init__(
         self,
         *,
-        existing_chats: bool = None,
-        new_chats: bool = None,
-        contacts: bool = None,
-        non_contacts: bool = None,
-        exclude_selected: bool = None,
-        users: List[int] = None,
-    ):
+        existing_chats: bool | None = None,
+        new_chats: bool | None = None,
+        contacts: bool | None = None,
+        non_contacts: bool | None = None,
+        exclude_selected: bool | None = None,
+        users: list[int] | None = None,
+    ) -> None:
         self.existing_chats = existing_chats
         self.new_chats = new_chats
         self.contacts = contacts
@@ -69,9 +71,9 @@ class BusinessRecipients(Object):
     @staticmethod
     def _parse(
         client,
-        recipients: "raw.types.BusinessRecipients",
-        users: Dict[int, "raw.types.User"] = None,
-    ) -> "BusinessRecipients":
+        recipients: raw.types.BusinessRecipients,
+        users: dict[int, raw.types.User] | None = None,
+    ) -> BusinessRecipients:
         return BusinessRecipients(
             existing_chats=getattr(recipients, "existing_chats", None),
             new_chats=getattr(recipients, "new_chats", None),

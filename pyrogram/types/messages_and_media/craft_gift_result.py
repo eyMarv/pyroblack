@@ -20,9 +20,13 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from pyrogram import types
 
-from ..object import Object
+from typing import TYPE_CHECKING
+
+from pyrogram.types.object import Object
+
+if TYPE_CHECKING:
+    from pyrogram import types
 
 
 class CraftGiftResult(Object):
@@ -34,22 +38,24 @@ class CraftGiftResult(Object):
     - :obj:`~pyrogram.types.CraftGiftResultFail`
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
 
 class CraftGiftResultSuccess(CraftGiftResult):
     """Craft was successful.
 
-    Parameters:
+    Parameters
+    ----------
         gift (:obj:`~pyrogram.types.Gift`):
             The created gift.
+
     """
 
     def __init__(
         self,
-        gift: "types.Gift"
-    ):
+        gift: "types.Gift",
+    ) -> None:
         super().__init__()
 
         self.gift = gift
@@ -58,6 +64,5 @@ class CraftGiftResultSuccess(CraftGiftResult):
 class CraftGiftResultFail(CraftGiftResult):
     """Craft has failed."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
-

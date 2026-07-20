@@ -20,18 +20,22 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import datetime
-from typing import Optional
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 from pyrogram import raw, utils
+from pyrogram.types.object import Object
 
-from ..object import Object
+if TYPE_CHECKING:
+    from datetime import datetime
 
 
 class UpgradedGiftValueInfo(Object):
     """Contains information about value of an upgraded gift.
 
-    Parameters:
+    Parameters
+    ----------
         currency (``str``):
             ISO 4217 currency code of the currency in which the prices are represented.
 
@@ -73,24 +77,27 @@ class UpgradedGiftValueInfo(Object):
 
         fragment_url (``str``, *optional*):
             The HTTPS link to the Fragment for the gift.
+
     """
+
     def __init__(
-        self, *,
+        self,
+        *,
         currency: str,
         value: int,
         is_value_average: bool,
         initial_sale_date: datetime,
         initial_sale_star_count: int,
         initial_sale_price: int,
-        last_sale_date: Optional[datetime] = None,
-        last_sale_price: Optional[int] = None,
-        is_last_sale_on_fragment: Optional[bool] = None,
-        minimum_price: Optional[int] = None,
-        average_sale_price: Optional[int] = None,
-        telegram_listed_gift_count: Optional[int] = None,
-        fragment_listed_gift_count: Optional[int] = None,
-        fragment_url: Optional[str] = None
-    ):
+        last_sale_date: datetime | None = None,
+        last_sale_price: int | None = None,
+        is_last_sale_on_fragment: bool | None = None,
+        minimum_price: int | None = None,
+        average_sale_price: int | None = None,
+        telegram_listed_gift_count: int | None = None,
+        fragment_listed_gift_count: int | None = None,
+        fragment_url: str | None = None,
+    ) -> None:
         super().__init__()
 
         self.currency = currency
@@ -109,7 +116,9 @@ class UpgradedGiftValueInfo(Object):
         self.fragment_url = fragment_url
 
     @staticmethod
-    def _parse(value_info: "raw.types.payments.UniqueStarGiftValueInfo") -> "UpgradedGiftValueInfo":
+    def _parse(
+        value_info: raw.types.payments.UniqueStarGiftValueInfo,
+    ) -> UpgradedGiftValueInfo:
         return UpgradedGiftValueInfo(
             currency=value_info.currency,
             value=value_info.value,
@@ -124,6 +133,5 @@ class UpgradedGiftValueInfo(Object):
             average_sale_price=value_info.average_price,
             telegram_listed_gift_count=value_info.listed_count,
             fragment_listed_gift_count=value_info.fragment_listed_count,
-            fragment_url=value_info.fragment_listed_url
+            fragment_url=value_info.fragment_listed_url,
         )
-
