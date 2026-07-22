@@ -1011,7 +1011,26 @@ class Chat(Object):
             return Chat._parse_chat_chat(client, chat)
         if isinstance(chat, (raw.types.User, raw.types.UserEmpty)):
             return Chat._parse_user_chat(client, chat)
+        if isinstance(chat, (raw.types.Community, raw.types.CommunityForbidden)):
+            return Chat._parse_community_chat(client, chat)
         return Chat._parse_channel_chat(client, chat)
+
+    @staticmethod
+    def _parse_community_chat(
+        client, community: raw.types.Community | raw.types.CommunityForbidden
+    ) -> Chat:
+        # Community is a Layer 228 boxed Chat member; it uses channel-style ids
+        # but lacks channel fields (megagroup/verified/usernames), so it needs
+        # its own branch instead of falling through to _parse_channel_chat.
+        return Chat(
+            id=utils.get_channel_id(community.id),
+            type=enums.ChatType.COMMUNITY,
+            title=community.title,
+            is_creator=getattr(community, "creator", None),
+            is_banned=isinstance(community, raw.types.CommunityForbidden),
+            client=client,
+            _raw=community,
+        )
 
     @staticmethod
     def _parse_chat_preview(client, chat_invite: raw.types.ChatInvite) -> Chat:

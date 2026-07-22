@@ -280,6 +280,9 @@ class Session:
             data = mtproto.parse(*decrypted)
         except SecurityCheckMismatch:
             return
+        except ValueError as e:
+            log.debug("Ignoring unknown constructor from server: %s", e)
+            return
 
         messages = data.body.messages if isinstance(data.body, MsgContainer) else [data]
 

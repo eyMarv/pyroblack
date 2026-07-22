@@ -43,6 +43,9 @@ class ChatType(AutoName):
     CHANNEL = auto()
     "Chat is a channel"
 
+    COMMUNITY = auto()
+    "Chat is a community (Layer 228)"
+
     # Aliases kept for pyroblack <= 2.7.2 compatibility
     FORUM = SUPERGROUP
     "Deprecated alias of SUPERGROUP (forum topics are a supergroup feature)"
