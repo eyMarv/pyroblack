@@ -44,6 +44,7 @@ log = logging.getLogger(__name__)
 
 class TCP:
     TIMEOUT = 10
+    CONNECT_TIMEOUT = 600
 
     def __init__(
         self,
@@ -105,14 +106,16 @@ class TCP:
 
     async def connect(self, address: tuple) -> None:
         if self.proxy:
-            # PySocks connect is still blocking — offload to a throwaway executor.
+            # PySocks connect is blocking — raise the socket timeout to match
+            # CONNECT_TIMEOUT, then offload to a throwaway executor.
+            self.socket.settimeout(TCP.CONNECT_TIMEOUT)
             with ThreadPoolExecutor(1) as executor:
                 await self.loop.run_in_executor(executor, self.socket.connect, address)
         else:
             try:
                 await asyncio.wait_for(
                     self.loop.sock_connect(self.socket, address),
-                    TCP.TIMEOUT,
+                    TCP.CONNECT_TIMEOUT,
                 )
             except asyncio.TimeoutError:
                 msg = "Connection timed out"
