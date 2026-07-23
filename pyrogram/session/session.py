@@ -131,7 +131,10 @@ class Session:
 
         self.instant_stop = False  # reset
 
+        attempts = 0
+
         while True:
+            attempts += 1
             self.connection = self.client.connection_factory(
                 self.dc_id,
                 self.test_mode,
@@ -192,7 +195,20 @@ class Session:
                 raise
             except (OSError, TimeoutError, RPCError):
                 await self.stop()
-                await asyncio.sleep(1)
+                if attempts >= self.MAX_RETRIES:
+                    log.warning(
+                        "Session start failed after %d attempts, giving up",
+                        attempts,
+                    )
+                    raise
+                backoff = min(2 ** (attempts - 1), 30)
+                log.debug(
+                    "Session start attempt %d/%d failed, retrying in %ds",
+                    attempts,
+                    self.MAX_RETRIES,
+                    backoff,
+                )
+                await asyncio.sleep(backoff)
             except Exception:
                 await self.stop()
                 raise
@@ -281,7 +297,7 @@ class Session:
         except SecurityCheckMismatch:
             return
         except ValueError as e:
-            log.debug("Ignoring unknown constructor from server: %s", e)
+            log.warning("Ignoring unknown constructor from server: %s", e)
             return
 
         messages = data.body.messages if isinstance(data.body, MsgContainer) else [data]
