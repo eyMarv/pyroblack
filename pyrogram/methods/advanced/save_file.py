@@ -36,6 +36,7 @@ from typing import BinaryIO, Callable
 
 import pyrogram
 from pyrogram import StopTransmission, raw
+from pyrogram.utils import run_sync
 
 log = logging.getLogger(__name__)
 
@@ -297,3 +298,13 @@ class SaveFile:
 
                 if isinstance(path, (str, PurePath)):
                     fp.close()
+
+    async def preload(self, fp, part_size):
+        """Pre-read up to *part_size* bytes from *fp* off the event loop.
+
+        Restored for pyroblack <= 2.7.6 compatibility — ``Client.preload`` was a
+        public method on the Advanced mixin. The rebased ``save_file`` now reads
+        chunks inline, so this helper is unused by the upload path; it is kept
+        purely so external callers of ``await client.preload(fp, n)`` still work.
+        """
+        return await run_sync(fp.read, part_size)

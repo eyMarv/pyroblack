@@ -122,5 +122,12 @@ async def test_migrate_pyroblack_2_7_session() -> None:
 
 
 def test_migrate_pyroblack_2_7_session_sync() -> None:
-    """Wrapper so the test runs even if pytest-asyncio isn't configured."""
-    asyncio.get_event_loop().run_until_complete(test_migrate_pyroblack_2_7_session())
+    """Wrapper so the test runs even if pytest-asyncio isn't configured.
+
+    Uses ``asyncio.run`` rather than the deprecated
+    ``asyncio.get_event_loop().run_until_complete(...)``: the latter grabs a
+    loop that may already have been created and closed by an earlier test in
+    the same session (e.g. one that calls ``asyncio.run``), which raises
+    "Event loop is closed". ``asyncio.run`` always creates a fresh loop.
+    """
+    asyncio.run(test_migrate_pyroblack_2_7_session())

@@ -225,3 +225,7 @@ class MessageServiceType(AutoName):
 
     UNKNOWN = auto()
     "This service message is unsupported by the current version of Pyrogram"
+
+    # Alias for pyroblack <= 2.7.6 (renamed to UNKNOWN during the rebase).
+    UNSUPPORTED = UNKNOWN
+    "Deprecated alias of UNKNOWN (pyroblack <= 2.7.6)"

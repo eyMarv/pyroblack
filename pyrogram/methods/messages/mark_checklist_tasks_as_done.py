@@ -34,6 +34,8 @@ class MarkChecklistTasksAsDone:
         *,
         done_task_ids: list[int] | None = None,
         not_done_task_ids: list[int] | None = None,
+        tasks: list[types.InputChecklistTask] | None = None,
+        **kwargs,
     ) -> types.Message | bool:
         """Add tasks of a checklist in a message as done or not done.
 
@@ -70,6 +72,13 @@ class MarkChecklistTasksAsDone:
                 )
 
         """
+        # pyroblack <= 2.7.6 compat: the legacy signature took
+        # ``tasks: List[InputChecklistTask]`` (full task objects). The rebase
+        # switched to explicit ``done_task_ids`` / ``not_done_task_ids`` int
+        # lists. Extract the task IDs from the legacy objects so old call sites
+        # keep working.
+        if tasks is not None and not done_task_ids:
+            done_task_ids = [t.id for t in tasks]
         r = await self.invoke(
             raw.functions.messages.ToggleTodoCompleted(
                 peer=await self.resolve_peer(chat_id),

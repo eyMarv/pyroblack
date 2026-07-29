@@ -322,6 +322,10 @@ class Client(Methods):
         max_concurrent_transmissions: int = MAX_CONCURRENT_TRANSMISSIONS,
         max_message_cache_size: int = MAX_CACHE_SIZE,
         max_business_user_connection_cache_size: int = MAX_CACHE_SIZE,
+        # pyroblack <= 2.7.6 accepted max_download_workers; download parallelism is
+        # now driven by the concurrent-transmission pool, so the value is accepted
+        # for call-site compatibility and stored unused (no internal code reads it).
+        max_download_workers: int | None = None,
         storage_engine: Storage = None,
         storage: Storage = None,  # alias for storage_engine (pyroblack <= 2.7.2)
         upload_boost: bool = False,  # accepted for <=2.7.2; concurrent txns handle this now
@@ -389,6 +393,9 @@ class Client(Methods):
         self.fetch_replies = fetch_replies
         # Kept for attribute access by older bots; networking already parallelizes uploads.
         self.upload_boost = upload_boost
+        # pyroblack <= 2.7.6 stored max_download_workers; download parallelism is now
+        # pool-driven. Stored for attribute compatibility, not read internally.
+        self.max_download_workers = max_download_workers
 
         self.executor = ThreadPoolExecutor(self.workers, thread_name_prefix="Handler")
 

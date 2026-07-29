@@ -101,3 +101,9 @@ class MessageMediaType(AutoName):
 
     UNKNOWN = auto()
     "This message media is unsupported by the current version of Pyrogram"
+
+    # Alias for pyroblack <= 2.7.6 (renamed to UNKNOWN during the rebase).
+    # Both names resolve to the same value so old code reading
+    # ``message.media == enums.MessageMediaType.UNSUPPORTED`` keeps working.
+    UNSUPPORTED = UNKNOWN
+    "Deprecated alias of UNKNOWN (pyroblack <= 2.7.6)"

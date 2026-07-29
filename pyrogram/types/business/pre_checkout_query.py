@@ -118,8 +118,9 @@ class PreCheckoutQuery(Object, Update):
 
     async def answer(
         self,
-        ok: bool,
+        ok: bool = None,
         error_message: str | None = None,
+        **kwargs,
     ):
         """Bound method *answer* of :obj:`~pyrogram.types.PreCheckoutQuery`.
 
@@ -150,6 +151,21 @@ class PreCheckoutQuery(Object, Update):
             ``bool``: True, on success.
 
         """
+        # pyroblack <= 2.7.6 compat: the legacy bound method used
+        # ``answer(success=..., error=...)``. Map them onto the current
+        # ``ok`` / ``error_message`` parameters so old call sites keep working.
+        if "success" in kwargs:
+            if ok is None:
+                ok = kwargs.pop("success")
+            else:
+                kwargs.pop("success", None)
+        if "error" in kwargs:
+            if error_message is None:
+                error_message = kwargs.pop("error")
+            else:
+                kwargs.pop("error", None)
+        if ok is None:
+            raise TypeError("answer() missing required argument: 'ok'")
         return await self._client.answer_pre_checkout_query(
             pre_checkout_query_id=self.id,
             ok=ok,

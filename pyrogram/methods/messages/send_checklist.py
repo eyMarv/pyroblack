@@ -38,7 +38,7 @@ class SendChecklist:
     async def send_checklist(
         self: pyrogram.Client,
         chat_id: int | str,
-        checklist: types.InputChecklist,
+        checklist: types.InputChecklist = None,
         disable_notification: bool | None = None,
         protect_content: bool | None = None,
         message_effect_id: int | None = None,
@@ -55,6 +55,7 @@ class SendChecklist:
         caption: str = "",
         parse_mode: enums.ParseMode | None = None,
         caption_entities: list[types.MessageEntity] | None = None,
+        **kwargs,
     ) -> types.Message:
         """Send a new checklist.
 
@@ -130,6 +131,34 @@ class SendChecklist:
                 )
 
         """
+        # pyroblack <= 2.7.6 compat: the legacy signature was
+        # ``send_checklist(chat_id, title, tasks, parse_mode=, entities=,
+        #   others_can_add_tasks=, others_can_mark_tasks_as_done=, effect_id=, ...)``.
+        # The rebase restructured this around a single ``checklist: InputChecklist``
+        # argument. When the old kwargs are present, build the InputChecklist from
+        # them so v2.7.6 call sites keep working.
+        if checklist is None or kwargs.get("title") is not None or kwargs.get("tasks") is not None:
+            legacy_title = kwargs.pop("title", None)
+            legacy_tasks = kwargs.pop("tasks", None)
+            legacy_entities = kwargs.pop("entities", None)
+            legacy_parse_mode = kwargs.pop("parse_mode", None) or parse_mode
+            legacy_others_add = kwargs.pop("others_can_add_tasks", None)
+            legacy_others_mark = kwargs.pop("others_can_mark_tasks_as_done", None)
+            legacy_effect_id = kwargs.pop("effect_id", None)
+            if legacy_effect_id is not None and message_effect_id is None:
+                message_effect_id = legacy_effect_id
+            if legacy_title is not None or legacy_tasks is not None:
+                checklist = types.InputChecklist(
+                    title=legacy_title,
+                    parse_mode=legacy_parse_mode,
+                    title_entities=legacy_entities,
+                    tasks=legacy_tasks,
+                    others_can_add_tasks=legacy_others_add,
+                    others_can_mark_tasks_as_done=legacy_others_mark,
+                )
+            elif checklist is None:
+                raise TypeError("send_checklist() missing required argument: 'checklist'")
+        # Any remaining unknown kwargs are silently ignored for forward-compat.
         title, entities = (
             await utils.parse_text_entities(
                 self,

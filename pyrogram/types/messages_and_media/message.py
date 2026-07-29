@@ -5161,6 +5161,109 @@ class Message(Object, Update):
             caption_entities=caption_entities,
         )
 
+    async def reply_checklist(
+        self,
+        title: str,
+        tasks: list,
+        parse_mode: enums.ParseMode | None = None,
+        entities: list | None = None,
+        quote: bool | None = None,
+        others_can_add_tasks: bool | None = None,
+        others_can_mark_tasks_as_done: bool | None = None,
+        disable_notification: bool | None = None,
+        protect_content: bool | None = None,
+        message_thread_id: int | None = None,
+        effect_id: int | None = None,
+        reply_parameters: types.ReplyParameters | None = None,
+        schedule_date: datetime | None = None,
+        paid_message_star_count: int | None = None,
+    ) -> Message:
+        """Bound method *reply_checklist* of :obj:`~pyrogram.types.Message`.
+
+        Restored for pyroblack <= 2.7.6 compatibility. The rebased
+        :meth:`Client.send_checklist` takes a single :obj:`types.InputChecklist`
+        object; this bound shortcut rebuilds that object from the legacy
+        ``title``/``tasks``/``entities`` arguments and delegates, preserving the
+        old call signature ``await message.reply_checklist(title, tasks, ...)``.
+
+        Parameters:
+            title (``str``):
+                Title of the checklist.
+
+            tasks (List of :obj:`types.InputChecklistTask`):
+                List of 1-30 tasks in the checklist.
+
+            parse_mode (:obj:`enums.ParseMode`, *optional*):
+                Parse mode for the checklist title.
+
+            entities (List of :obj:`types.MessageEntity`, *optional*):
+                Entities for the title (mapped to ``title_entities``).
+
+            quote (``bool``, *optional*):
+                Whether to quote the replied message. Defaults to True in
+                non-private chats.
+
+            others_can_add_tasks / others_can_mark_tasks_as_done (``bool``, *optional*):
+                Checklist permissions for other users.
+
+            disable_notification (``bool``, *optional*):
+                Send silently.
+
+            protect_content (``bool``, *optional*):
+                Protect the message content from forwarding/saving.
+
+            message_thread_id (``int``, *optional*):
+                Target forum topic id.
+
+            effect_id (``int``, *optional*):
+                Message effect id (mapped to ``message_effect_id``).
+
+            reply_parameters (:obj:`types.ReplyParameters`, *optional*):
+                Reply parameters.
+
+            schedule_date (:py:obj:`~datetime.datetime`, *optional*):
+                When to send the message.
+
+            paid_message_star_count (``int``, *optional*):
+                Stars the user agreed to pay to send the message.
+
+        Returns:
+            On success, the sent :obj:`Message` is returned.
+
+        Raises:
+            RPCError: In case of a Telegram RPC error.
+        """
+        if quote is None:
+            quote = self.chat.type != enums.ChatType.PRIVATE
+
+        if reply_parameters is None and quote:
+            reply_parameters = types.ReplyParameters(message_id=self.id)
+
+        if message_thread_id is None:
+            message_thread_id = getattr(self, "message_thread_id", None)
+
+        checklist = types.InputChecklist(
+            title=title,
+            parse_mode=parse_mode,
+            title_entities=entities,
+            tasks=tasks,
+            others_can_add_tasks=others_can_add_tasks,
+            others_can_mark_tasks_as_done=others_can_mark_tasks_as_done,
+        )
+
+        return await self._client.send_checklist(
+            chat_id=self.chat.id,
+            checklist=checklist,
+            disable_notification=disable_notification,
+            protect_content=protect_content,
+            message_effect_id=effect_id,
+            message_thread_id=message_thread_id,
+            reply_parameters=reply_parameters,
+            schedule_date=schedule_date,
+            business_connection_id=getattr(self, "business_connection_id", None),
+            paid_message_star_count=paid_message_star_count,
+        )
+
     async def edit_text(
         self,
         text: str,

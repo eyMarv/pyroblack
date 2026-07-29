@@ -21,7 +21,7 @@
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
 __fork_name__ = "pyroblack"
-__version__ = "3.0.2"
+__version__ = "3.0.3"
 __license__ = "GNU Lesser General Public License v3.0 (LGPL-3.0)"
 __copyright__ = "#  Copyright (C) 2024-present eyMarv <https://github.com/eyMarv>"
 
@@ -53,6 +53,11 @@ from .legacy_compat import install_legacy_kwargs
 from .sync import compose, idle
 
 install_legacy_kwargs()
+
+# Restore the pyroblack <= 2.7.6 ``channels.*`` forum raw constructors that the
+# Layer 228 rebase moved to ``messages.*``. Must run after `raw` is imported
+# above so the namespaces exist. See pyrogram/raw/_v276_compat.py.
+from .raw import _v276_compat  # noqa: F401  (registers aliases on import)
 
 # Single-worker crypto executor (see crypto/executor.py for why one thread beats
 # a multi-worker pool here). Keep the public name `crypto_executor` for

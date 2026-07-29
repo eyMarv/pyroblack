@@ -56,11 +56,14 @@ CLIENT_LEGACY_KWARGS: dict[str, dict[str, str | None]] = {
     "search_messages_count": {"thread_id": "message_thread_id"},
     "get_messages": {"reply_to_message_ids": "message_ids"},
     # Dialogs
+    # NOTE: ``from_archive`` is intentionally NOT listed here. It is consumed
+    # by ``_transform()`` (below) to set ``chat_list=1``. If it were mapped to
+    # ``None`` here, ``_apply_aliases`` would drop it before ``_transform``
+    # could read it, silently breaking ``get_dialogs(from_archive=True)``.
     "get_dialogs": {
-        "from_archive": None,  # use chat_list=1 instead; transformed below
         "exclude_pinned": None,
     },
-    "get_dialogs_count": {"from_archive": None},
+    "get_dialogs_count": {},
     # Payments
     "answer_pre_checkout_query": {
         "success": "ok",
@@ -73,13 +76,16 @@ CLIENT_LEGACY_KWARGS: dict[str, dict[str, str | None]] = {
         "title": None
     },  # custom title set via privileges / separate API
     # Poll
+    # NOTE: ``correct_option_id`` and ``reply_to_message_id`` are consumed by
+    # ``_transform()`` (correct_option_id -> correct_option_ids list;
+    # reply_to_message_id -> reply_parameters). They are intentionally NOT
+    # mapped to ``None`` here, or ``_apply_aliases`` would drop them before
+    # ``_transform`` could read them.
     "send_poll": {
-        "correct_option_id": None,  # transformed -> correct_option_ids
         "explanation_parse_mode": "parse_mode",
         "explanation_entities": None,
         "question_entities": None,
         "parse_mode": "parse_mode",
-        "reply_to_message_id": None,  # transformed via reply_parameters if needed
     },
     # Misc
     "send_reaction": {"story_id": "story_id", "emoji": "emoji", "big": "big"},

@@ -117,3 +117,10 @@ __all__ = [
     "UpgradedGiftOrigin",
     "UserStatus",
 ]
+
+# Restore pyroblack <= 2.7.6 enum value strings so reverse lookup
+# (e.g. ``MessageServiceType("giveaway_launched")``) keeps working after the
+# Layer 228 member renames. Must run after every enum class above is imported.
+from ._v276_value_compat import install_enum_value_compat  # noqa: E402
+
+install_enum_value_compat()
