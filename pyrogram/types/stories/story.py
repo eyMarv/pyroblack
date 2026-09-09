@@ -33,6 +33,9 @@ from pyrogram.types.messages_and_media.message import Str
 from pyrogram.types.object import Object
 from pyrogram.types.update import Update
 
+# pyroblack <= 2.7.6 attributes and bound methods; see stories/story_compat.py.
+from .story_compat import LegacyStoryMixin, _legacy_privacy_settings
+
 if TYPE_CHECKING:
     import io
     from datetime import datetime
@@ -40,7 +43,7 @@ if TYPE_CHECKING:
 log = logging.getLogger(__name__)
 
 
-class Story(Object, Update):
+class Story(Object, Update, LegacyStoryMixin):
     """This object represents a story.
 
     Parameters
@@ -147,24 +150,58 @@ class Story(Object, Update):
         deleted: bool | None = None,
         album_ids: list[int] | None = None,
         _raw=None,
+        # pyroblack <= 2.7.6 keyword names. They are accepted so the old
+        # constructor call binds; each is folded into the field that replaced it,
+        # and LegacyStoryMixin exposes the read side. See stories/story_compat.py.
+        raw=None,
+        from_user: types.Chat = None,
+        sender_chat: types.Chat = None,
+        animation=None,
+        edited: bool | None = None,
+        pinned: bool | None = None,
+        public: bool | None = None,
+        close_friends: bool | None = None,
+        contacts: bool | None = None,
+        selected_contacts: bool | None = None,
+        privacy: enums.StoryPrivacy = None,
+        forward_from: types.StoryRepostInfo = None,
+        allowed_users: list[int] | None = None,
+        denied_users: list[int] | None = None,
+        media_areas: list[types.StoryArea] | None = None,
     ) -> None:
         super().__init__(client)
 
         self.id = id
-        self.chat = chat
+        self.chat = chat if chat is not None else (from_user or sender_chat)
         self.date = date
         self.expire_date = expire_date
-        self.is_edited = is_edited
-        self.is_posted_to_chat_page = is_posted_to_chat_page
+        self.is_edited = is_edited if is_edited is not None else edited
+        self.is_posted_to_chat_page = (
+            is_posted_to_chat_page if is_posted_to_chat_page is not None else pinned
+        )
         self.is_visible_only_for_self = is_visible_only_for_self
-        self.repost_info = repost_info
-        self.privacy_settings = privacy_settings
+        self.repost_info = repost_info if repost_info is not None else forward_from
+        self.privacy_settings = (
+            privacy_settings
+            if privacy_settings is not None
+            else _legacy_privacy_settings(
+                privacy,
+                allowed_users,
+                denied_users,
+                public=public,
+                contacts=contacts,
+                close_friends=close_friends,
+                selected_contacts=selected_contacts,
+            )
+        )
         self.media = media
         self.photo = photo
-        self.video = video
+        # A v2.7.6 story "animation" is a soundless MP4, i.e. a video as far as
+        # the current parser is concerned.
+        self.video = video if video is not None else animation
         self.caption = caption
         self.caption_entities = caption_entities
-        self.areas = areas
+        self.areas = areas if areas is not None else media_areas
         self.has_protected_content = has_protected_content
         self.reactions = reactions
         self.views = views
@@ -172,7 +209,7 @@ class Story(Object, Update):
         self.skipped = skipped
         self.deleted = deleted
         self.album_ids = album_ids
-        self._raw = _raw
+        self._raw = _raw if _raw is not None else raw
 
     @staticmethod
     def _parse_story_item(

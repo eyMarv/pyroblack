@@ -118,6 +118,11 @@ class Invoice(Object):
         suggested_tip_amounts: list[int] | None = None,
         terms_url: str | None = None,
         _raw: raw.types.MessageMediaInvoice | raw.types.Invoice = None,
+        # pyroblack <= 2.7.6 spelled this ``raw``; see the property alias below.
+        # Left unannotated on purpose: inside this signature the name shadows the
+        # ``pyrogram.raw`` module, so an annotation naming ``raw.types`` would be
+        # unresolvable for anything that evaluates these hints.
+        raw=None,  # noqa: A002
     ) -> None:
         super().__init__(client)
 
@@ -139,7 +144,12 @@ class Invoice(Object):
         self.max_tip_amount = max_tip_amount
         self.suggested_tip_amounts = suggested_tip_amounts
         self.terms_url = terms_url
-        self._raw = _raw
+        self._raw = _raw if _raw is not None else raw
+
+    @property
+    def raw(self):
+        """The underlying raw object (pyroblack <= 2.7.6 spelled this ``raw``)."""
+        return self._raw
 
     @staticmethod
     def _parse(

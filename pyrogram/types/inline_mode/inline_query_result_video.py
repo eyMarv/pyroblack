@@ -101,8 +101,8 @@ class InlineQueryResultVideo(InlineQueryResult):
     def __init__(
         self,
         video_url: str,
-        thumbnail_url: str,
-        title: str,
+        thumbnail_url: str | None = None,
+        title: str | None = None,
         id: str | None = None,
         mime_type: str = "video/mp4",
         video_width: int = 0,
@@ -117,6 +117,10 @@ class InlineQueryResultVideo(InlineQueryResult):
         input_message_content: types.InputMessageContent = None,
         thumb_url: str | None = None,
     ) -> None:
+        # ``thumbnail_url`` and ``title`` are logically required, but they carry
+        # defaults so the pyroblack <= 2.7.6 keyword form
+        # ``InlineQueryResultVideo(video_url=..., thumb_url=..., title=...)``
+        # binds instead of raising "missing positional argument".
         if thumb_url and thumbnail_url:
             msg = "Parameters `thumb_url` and `thumbnail_url` are mutually exclusive."
             raise ValueError(

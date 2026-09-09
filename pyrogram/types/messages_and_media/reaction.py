@@ -158,7 +158,10 @@ class ReactionType(Object):
             return ReactionTypePaid()
         return None
 
-    def write(self, client: pyrogram.Client):
+    # *client* is unused by every subclass but kept in the signature because the
+    # rebase added it. It is defaulted so the pyroblack <= 2.7.6 zero-argument
+    # call ``reaction.write()`` still works.
+    def write(self, client: pyrogram.Client = None):
         raise NotImplementedError
 
 
@@ -183,7 +186,7 @@ class ReactionTypeEmoji(ReactionType):
             emoji=emoji,
         )
 
-    def write(self, client: pyrogram.Client) -> raw.base.Reaction:
+    def write(self, client: pyrogram.Client = None) -> raw.base.Reaction:
         return raw.types.ReactionEmoji(
             emoticon=self.emoji,
         )
@@ -210,7 +213,7 @@ class ReactionTypeCustomEmoji(ReactionType):
             custom_emoji_id=custom_emoji_id,
         )
 
-    def write(self, client: pyrogram.Client) -> raw.base.Reaction:
+    def write(self, client: pyrogram.Client = None) -> raw.base.Reaction:
         if self.custom_emoji_id is not None:
             return raw.types.ReactionCustomEmoji(
                 document_id=int(self.custom_emoji_id),
@@ -226,7 +229,7 @@ class ReactionTypePaid(ReactionType):
             type="paid",
         )
 
-    def write(self, client: pyrogram.Client) -> raw.base.Reaction:
+    def write(self, client: pyrogram.Client = None) -> raw.base.Reaction:
         return raw.types.ReactionPaid()
 
 

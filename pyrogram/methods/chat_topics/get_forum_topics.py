@@ -138,11 +138,17 @@ class GetForumTopics:
 
             last = topics[-1]
 
-            offset_message_id = last.last_message.id
-            # TODO: fix inconsistency
-            offset_date = utils.datetime_to_timestamp(
-                last.last_message.date,
-            )
+            # ``last_message`` is None when the response omitted the topic's top
+            # message (a deleted or reduced topic, or a creator we cannot
+            # resolve). Reading ``.id`` off it raised AttributeError and killed
+            # the generator mid-chat; keep the previous offsets in that case so
+            # the walk still advances on message_thread_id.
+            if last.last_message is not None:
+                offset_message_id = last.last_message.id
+                # TODO: fix inconsistency
+                offset_date = utils.datetime_to_timestamp(
+                    last.last_message.date,
+                )
             offset_message_thread_id = last.message_thread_id
 
             for topic in topics:

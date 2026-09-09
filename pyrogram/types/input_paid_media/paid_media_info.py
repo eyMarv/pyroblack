@@ -49,6 +49,19 @@ class PaidMediaInfo(Object):
         self.star_count = star_count
         self.paid_media = paid_media
 
+    # pyroblack <= 2.7.6 exposed this payload as a single ``PaidMedia`` object
+    # with ``stars_amount`` / ``extended_media``. Both names now read through to
+    # the Bot-API-aligned attributes above.
+    @property
+    def stars_amount(self) -> str:
+        """Deprecated alias of :attr:`star_count`."""
+        return self.star_count
+
+    @property
+    def extended_media(self) -> list["types.PaidMedia"]:
+        """Deprecated alias of :attr:`paid_media`."""
+        return self.paid_media
+
     @staticmethod
     def _parse(
         client: "pyrogram.Client",

@@ -28,6 +28,8 @@ from collections import OrderedDict
 import pyrogram
 from pyrogram import utils
 from pyrogram.handlers import (
+    BotBusinessConnectHandler,
+    BotBusinessMessageHandler,
     BusinessBotConnectionHandler,
     CallbackQueryHandler,
     ChatBoostHandler,
@@ -35,7 +37,9 @@ from pyrogram.handlers import (
     ChatMemberUpdatedHandler,
     ChosenInlineResultHandler,
     ConversationHandler,
+    DeletedBotBusinessMessagesHandler,
     DeletedMessagesHandler,
+    EditedBotBusinessMessageHandler,
     EditedMessageHandler,
     ErrorHandler,
     GuestMessageHandler,
@@ -134,6 +138,15 @@ class Dispatcher:
     CHAT_BOOST_UPDATES = (UpdateBotChatBoost,)
     GUEST_MESSAGE_UPDATES = (UpdateBotGuestChatQuery,)
 
+    # pyroblack <= 2.7.6 routed business updates through their own groups and
+    # handler classes. The rebase folded them into the regular message groups
+    # above (a business message is a Message), but the names are still read by
+    # applications and the dedicated handlers must keep firing, so the message
+    # parsers below report both handler types for a business update.
+    NEW_BOT_BUSINESS_MESSAGE_UPDATES = (UpdateBotNewBusinessMessage,)
+    EDIT_BOT_BUSINESS_MESSAGE_UPDATES = (UpdateBotEditBusinessMessage,)
+    DELETE_BOT_BUSINESS_MESSAGES_UPDATES = (UpdateBotDeleteBusinessMessage,)
+
     def __init__(self, client: "pyrogram.Client") -> None:
         self.client = client
 
@@ -159,7 +172,9 @@ class Dispatcher:
                     raw_reply_to_message=getattr(update, "reply_to_message", None),
                     replies=0 if business_connection_id else self.client.fetch_replies,
                 ),
-                MessageHandler,
+                MessageHandler
+                if business_connection_id is None
+                else (MessageHandler, BotBusinessMessageHandler),
             )
 
         async def edited_message_parser(update, users, chats):
@@ -168,13 +183,17 @@ class Dispatcher:
 
             return (
                 parsed,
-                EditedMessageHandler,
+                EditedMessageHandler
+                if getattr(update, "connection_id", None) is None
+                else (EditedMessageHandler, EditedBotBusinessMessageHandler),
             )
 
         async def deleted_messages_parser(update, users, chats):
             return (
                 await utils.parse_deleted_messages(self.client, update, users, chats),
-                DeletedMessagesHandler,
+                DeletedMessagesHandler
+                if getattr(update, "connection_id", None) is None
+                else (DeletedMessagesHandler, DeletedBotBusinessMessagesHandler),
             )
 
         async def callback_query_parser(update, users, chats):
@@ -291,7 +310,9 @@ class Dispatcher:
                 pyrogram.types.BusinessConnection._parse(
                     self.client, update, users, chats
                 ),
-                BusinessBotConnectionHandler,
+                # pyroblack <= 2.7.6 dispatched this to BotBusinessConnectHandler;
+                # keep both so old and new registrations both fire.
+                (BusinessBotConnectionHandler, BotBusinessConnectHandler),
             )
 
         async def purchased_paid_media_parser(update, users, chats):

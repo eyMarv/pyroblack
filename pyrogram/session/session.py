@@ -66,6 +66,14 @@ class Session:
     PING_INTERVAL = 5
     STORED_MSG_IDS_MAX_SIZE = 1000 * 2
 
+    # pyroblack <= 2.7.6 tuning knobs. ``start()`` now uses exponential backoff
+    # instead of the fixed reconnect window these described, so RECONNECT_THRESHOLD
+    # and RE_START_RANGE are advisory only; RECONN_TIMEOUT still bounds how long
+    # ``stop()`` waits for the ping/receive tasks to wind down.
+    RECONN_TIMEOUT = 5
+    RECONNECT_THRESHOLD = 13
+    RE_START_RANGE = range(4)
+
     TRANSPORT_ERRORS = {
         404: "auth key not found",
         429: "transport flood",
@@ -227,7 +235,13 @@ class Session:
             except Exception as e:
                 log.error(e, exc_info=True)
 
-    async def stop(self) -> None:
+    async def stop(self, restart: bool = False) -> None:
+        # *restart* accepted for pyroblack <= 2.7.6 call sites. It used to
+        # short-circuit the teardown when a restart was about to re-start the
+        # session; the coordinated ``restart()`` below makes that unnecessary,
+        # so the flag is accepted and ignored.
+        del restart
+
         self.is_started.clear()
 
         self.stored_msg_ids.clear()

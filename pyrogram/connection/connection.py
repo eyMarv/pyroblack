@@ -31,9 +31,16 @@ from .transport import *
 
 log = logging.getLogger(__name__)
 
+_DEFAULT_MAX_RETRIES = 3
+
 
 class Connection:
-    MAX_RETRIES = 3
+    MAX_RETRIES = _DEFAULT_MAX_RETRIES
+
+    # pyroblack <= 2.7.6 called this MAX_CONNECTION_ATTEMPTS; applications that
+    # tuned reconnect behaviour assigned to it. Kept as a second knob: whichever
+    # of the two was moved away from the default wins (see ``_max_attempts``).
+    MAX_CONNECTION_ATTEMPTS = _DEFAULT_MAX_RETRIES
 
     MODES = {
         0: TCPFull,
@@ -67,8 +74,17 @@ class Connection:
 
         self.protocol = None  # type: TCP
 
+    @classmethod
+    def _max_attempts(cls) -> int:
+        """Reconcile ``MAX_RETRIES`` with the legacy ``MAX_CONNECTION_ATTEMPTS``."""
+        retries = cls.MAX_RETRIES
+        legacy = cls.MAX_CONNECTION_ATTEMPTS
+        if legacy != _DEFAULT_MAX_RETRIES and retries == _DEFAULT_MAX_RETRIES:
+            return legacy
+        return retries
+
     async def connect(self) -> None:
-        for _i in range(Connection.MAX_RETRIES):
+        for _i in range(self._max_attempts()):
             self.protocol = self.mode(
                 self.ipv6,
                 self.proxy,

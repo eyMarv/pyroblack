@@ -52,8 +52,15 @@ class ForumTopicCreated(Object):
         title: str | None = None,
         icon_color: int | None = None,
         icon_emoji_id: int | None = None,
+        # Kurigram-style keyword names, accepted so either spelling constructs.
+        name: str | None = None,
+        icon_custom_emoji_id: str | None = None,
     ) -> None:
         super().__init__()
+
+        title = title if title is not None else name
+        if icon_emoji_id is None and icon_custom_emoji_id is not None:
+            icon_emoji_id = int(icon_custom_emoji_id)
 
         self.id = id
         self.title = title

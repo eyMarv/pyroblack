@@ -74,8 +74,10 @@ class ChatPhoto(Object):
         small_photo_unique_id: str,
         big_file_id: str,
         big_photo_unique_id: str,
-        has_animation: bool,
-        is_personal: bool,
+        # Defaulted rather than required: pyroblack <= 2.7.6 constructed
+        # ChatPhoto without these two, and they are flags the parser fills in.
+        has_animation: bool | None = None,
+        is_personal: bool | None = None,
         minithumbnail: "types.StrippedThumbnail" = None,
     ) -> None:
         super().__init__(client)

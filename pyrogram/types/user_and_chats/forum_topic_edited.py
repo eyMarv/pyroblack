@@ -59,6 +59,14 @@ class ForumTopicEdited(Object):
         self.icon_color = icon_color
         self.icon_emoji_id = icon_emoji_id
 
+        # Aliases used by the Kurigram-style chat_topics.ForumTopicEdited API,
+        # mirroring what forum_topic_created.py already does. Keep both shapes
+        # filled so either spelling resolves on the same object.
+        self.name = title
+        self.icon_custom_emoji_id = (
+            str(icon_emoji_id) if icon_emoji_id is not None else None
+        )
+
     @staticmethod
     def _parse(action: raw.types.MessageActionTopicEdit) -> ForumTopicEdited:
         # Accept bare action or a service Message wrapping it.

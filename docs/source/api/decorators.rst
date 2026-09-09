@@ -82,3 +82,27 @@ Details
 .. autodecorator:: pyrogram.Client.on_disconnect()
 .. autodecorator:: pyrogram.Client.on_invoke_err()
 .. autodecorator:: pyrogram.Client.on_raw_update()
+
+-----
+
+Alternative spellings
+---------------------
+
+The other Pyrogram forks (kurigram, wzgram, DzGram) name several of these
+decorators without the ``bot_`` infix, and use ``on_message_reaction`` where
+pyroblack uses ``on_message_reaction_updated``. Those spellings are bound as
+aliases of the same decorator, so a bot written against another fork registers
+its handlers unchanged:
+
+=================================  ================================================
+Alias                              pyroblack decorator
+=================================  ================================================
+``on_business_connect``            :meth:`~Client.on_bot_business_connect`
+``on_business_connection``         :meth:`~Client.on_bot_business_connection`
+``on_business_message``            :meth:`~Client.on_bot_business_message`
+``on_deleted_business_messages``   :meth:`~Client.on_deleted_bot_business_messages`
+``on_edited_business_message``     :meth:`~Client.on_edited_bot_business_message`
+``on_message_reaction``            :meth:`~Client.on_message_reaction_updated`
+``on_message_reaction_count``      :meth:`~Client.on_message_reaction_count_updated`
+``on_purchased_paid_media``        :meth:`~Client.on_bot_purchased_paid_media`
+=================================  ================================================

@@ -27,6 +27,7 @@ import ipaddress
 import logging
 import socket
 from concurrent.futures import ThreadPoolExecutor
+from typing import TypedDict
 
 try:
     import socks
@@ -40,6 +41,24 @@ except ImportError as e:
 from pyrogram import utils
 
 log = logging.getLogger(__name__)
+
+# pyroblack <= 2.7.6 exported these two names, and third-party transports import
+# them to describe a proxy. ``TCP`` now takes a plain ``dict`` and resolves the
+# scheme with ``getattr(socks, scheme.upper())``, but the mapping and the
+# TypedDict remain the documented shape of the ``proxy`` argument.
+proxy_type_by_scheme: dict[str, int] = {
+    "SOCKS4": socks.SOCKS4,
+    "SOCKS5": socks.SOCKS5,
+    "HTTP": socks.HTTP,
+}
+
+
+class Proxy(TypedDict):
+    scheme: str
+    hostname: str
+    port: int
+    username: str | None
+    password: str | None
 
 
 class TCP:

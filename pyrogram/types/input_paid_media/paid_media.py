@@ -20,6 +20,8 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 from typing import Union
 
 import pyrogram
@@ -35,12 +37,26 @@ class PaidMedia(Object):
     - :obj:`~pyrogram.types.PaidMediaPreview`
     - :obj:`~pyrogram.types.PaidMediaPhoto`
     - :obj:`~pyrogram.types.PaidMediaVideo`
+
+    In pyroblack <= 2.7.6 this class was the whole payload and carried
+    ``stars_amount`` plus a list of ``extended_media``. That role belongs to
+    :obj:`~pyrogram.types.PaidMediaInfo` now — which is what
+    :attr:`Message.paid_media <pyrogram.types.Message.paid_media>` holds, and
+    which still answers to both old attribute names. The two legacy keyword
+    arguments are accepted here so a direct ``PaidMedia(...)`` construction does
+    not raise, and they are readable back off the instance.
     """
 
     def __init__(
         self,
+        *,
+        stars_amount: int | None = None,
+        extended_media: list | None = None,
     ) -> None:
         super().__init__()
+
+        self.stars_amount = stars_amount
+        self.extended_media = extended_media
 
     @staticmethod
     def _parse(

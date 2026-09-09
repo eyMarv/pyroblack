@@ -103,9 +103,9 @@ class ForumTopic(Object):
     def __init__(
         self,
         *,
-        message_thread_id: int,
-        name: str,
-        icon_color: int,
+        message_thread_id: int | None = None,
+        name: str | None = None,
+        icon_color: int | None = None,
         icon_custom_emoji_id: str | None = None,
         is_name_implicit: bool | None = None,
         creation_date: datetime | None = None,
@@ -123,8 +123,52 @@ class ForumTopic(Object):
         unread_reaction_count: int | None = None,
         unread_poll_vote_count: int | None = None,
         is_reduced_version: bool | None = None,
+        # pyroblack <= 2.7.6 keyword names. Accepted so the old constructor call
+        # binds; each feeds the corresponding field above, and the read-side
+        # aliases (properties, further down) map back the other way.
+        id: int | None = None,
+        title: str | None = None,
+        date: datetime | None = None,
+        from_id: types.Chat = None,
+        top_message: int | None = None,
+        my: bool | None = None,
+        closed: bool | None = None,
+        hidden: bool | None = None,
+        pinned: bool | None = None,
+        short: bool | None = None,
+        icon_emoji_id: str | None = None,
+        read_inbox_max_id: int | None = None,
+        read_outbox_max_id: int | None = None,
+        unread_mentions_count: int | None = None,
+        unread_reactions_count: int | None = None,
+        unread_poll_votes_count: int | None = None,
     ) -> None:
         super().__init__()
+
+        def pick(new, old):
+            return new if new is not None else old
+
+        message_thread_id = pick(message_thread_id, id)
+        name = pick(name, title)
+        creation_date = pick(creation_date, date)
+        creator = pick(creator, from_id)
+        outgoing = pick(outgoing, my)
+        is_closed = pick(is_closed, closed)
+        is_hidden = pick(is_hidden, hidden)
+        is_pinned = pick(is_pinned, pinned)
+        is_reduced_version = pick(is_reduced_version, short)
+        icon_custom_emoji_id = pick(icon_custom_emoji_id, icon_emoji_id)
+        last_read_inbox_message_id = pick(last_read_inbox_message_id, read_inbox_max_id)
+        last_read_outbox_message_id = pick(
+            last_read_outbox_message_id, read_outbox_max_id
+        )
+        unread_mention_count = pick(unread_mention_count, unread_mentions_count)
+        unread_reaction_count = pick(unread_reaction_count, unread_reactions_count)
+        unread_poll_vote_count = pick(unread_poll_vote_count, unread_poll_votes_count)
+        # ``top_message`` was the id of the topic's last message; ``last_message``
+        # holds the message itself now, so the bare id has nowhere to live and is
+        # recovered from ``last_message`` by the property below.
+        del top_message
 
         self.message_thread_id = message_thread_id
         self.name = name
@@ -149,14 +193,122 @@ class ForumTopic(Object):
 
         self.is_reduced_version = is_reduced_version
 
+    # ------------------------------------------------------------------
+    # pyroblack <= 2.7.6 attribute names.
+    #
+    # The rebase renamed every field on this class to the Bot API spelling.
+    # These read-only aliases keep the old names resolving; there is one stored
+    # value per field, so the two spellings can never disagree.
+    # ------------------------------------------------------------------
+
+    @property
+    def id(self) -> int:
+        """Deprecated alias of :attr:`message_thread_id`."""
+        return self.message_thread_id
+
+    @property
+    def title(self) -> str:
+        """Deprecated alias of :attr:`name`."""
+        return self.name
+
+    @property
+    def icon_emoji_id(self) -> str | None:
+        """Deprecated alias of :attr:`icon_custom_emoji_id`."""
+        return self.icon_custom_emoji_id
+
+    @property
+    def date(self) -> datetime | None:
+        """Deprecated alias of :attr:`creation_date`.
+
+        v2.7.6 exposed a raw unix timestamp here; this returns the
+        :class:`~datetime.datetime` that :attr:`creation_date` holds.
+        """
+        return self.creation_date
+
+    @property
+    def from_id(self) -> types.Chat | None:
+        """Deprecated alias of :attr:`creator`.
+
+        v2.7.6 returned a ``PeerUser``/``PeerChannel``; this returns the
+        :obj:`~pyrogram.types.Chat` that :attr:`creator` holds, so ``.id``
+        resolves the same way.
+        """
+        return self.creator
+
+    @property
+    def top_message(self) -> int | None:
+        """Deprecated: id of the topic's last message (see :attr:`last_message`)."""
+        return getattr(self.last_message, "id", None)
+
+    @property
+    def my(self) -> bool | None:
+        """Deprecated alias of :attr:`outgoing`."""
+        return self.outgoing
+
+    @property
+    def closed(self) -> bool | None:
+        """Deprecated alias of :attr:`is_closed`."""
+        return self.is_closed
+
+    @property
+    def hidden(self) -> bool | None:
+        """Deprecated alias of :attr:`is_hidden`."""
+        return self.is_hidden
+
+    @property
+    def pinned(self) -> bool | None:
+        """Deprecated alias of :attr:`is_pinned`."""
+        return self.is_pinned
+
+    @property
+    def short(self) -> bool | None:
+        """Deprecated alias of :attr:`is_reduced_version`."""
+        return self.is_reduced_version
+
+    @property
+    def read_inbox_max_id(self) -> int | None:
+        """Deprecated alias of :attr:`last_read_inbox_message_id`."""
+        return self.last_read_inbox_message_id
+
+    @property
+    def read_outbox_max_id(self) -> int | None:
+        """Deprecated alias of :attr:`last_read_outbox_message_id`."""
+        return self.last_read_outbox_message_id
+
+    @property
+    def unread_mentions_count(self) -> int | None:
+        """Deprecated alias of :attr:`unread_mention_count`."""
+        return self.unread_mention_count
+
+    @property
+    def unread_reactions_count(self) -> int | None:
+        """Deprecated alias of :attr:`unread_reaction_count`."""
+        return self.unread_reaction_count
+
+    @property
+    def unread_poll_votes_count(self) -> int | None:
+        """Deprecated alias of :attr:`unread_poll_vote_count`."""
+        return self.unread_poll_vote_count
+
     @staticmethod
     def _parse(
-        client: pyrogram.Client,
-        forum_topic: raw.base.ForumTopic,
-        messages: dict,  # friendly
-        users: dict,  # raw
-        chats: dict,  # raw
+        client: pyrogram.Client = None,
+        forum_topic: raw.base.ForumTopic = None,
+        messages: dict | None = None,  # friendly
+        users: dict | None = None,  # raw
+        chats: dict | None = None,  # raw
     ) -> ForumTopic:
+        # pyroblack <= 2.7.6 called this as ``_parse(forum_topic)``. Both call
+        # forms are still live in-tree (``get_forum_topics_by_id`` uses the short
+        # one, ``chat_event`` the long one), so accept either: if the first
+        # argument is a raw topic rather than a Client, shift it into place.
+        if forum_topic is None and client is not None:
+            client, forum_topic = None, client
+
+        messages = messages or {}
+        users = users or {}
+        chats = chats or {}
+
         if not forum_topic:
             return None
 
@@ -173,15 +325,10 @@ class ForumTopic(Object):
         if peer:
             peer_id = utils.get_raw_peer_id(peer)
             if isinstance(peer, raw.types.PeerUser):
-                creator = types.Chat._parse_user_chat(
-                    client,
-                    users[peer_id],
-                )
-            else:
-                creator = types.Chat._parse_channel_chat(
-                    client,
-                    chats[peer_id],
-                )
+                if peer_id in users:
+                    creator = types.Chat._parse_user_chat(client, users[peer_id])
+            elif peer_id in chats:
+                creator = types.Chat._parse_channel_chat(client, chats[peer_id])
 
         last_message = None
         top_message_id = getattr(forum_topic, "top_message", None)

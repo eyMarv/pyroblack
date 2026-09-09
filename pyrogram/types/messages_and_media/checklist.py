@@ -60,14 +60,45 @@ class Checklist(Object):
         tasks: list[types.ChecklistTask] | None = None,
         others_can_add_tasks: bool | None = None,
         others_can_mark_tasks_as_done: bool | None = None,
+        # pyroblack <= 2.7.6 keyword names, accepted so the old constructor
+        # call still binds. See the property aliases below.
+        entities: list[types.MessageEntity] | None = None,
+        can_add_tasks: bool | None = None,
+        can_mark_tasks_as_done: bool | None = None,
     ) -> None:
         super().__init__()
 
         self.title = title
-        self.title_entities = title_entities
+        self.title_entities = title_entities if title_entities is not None else entities
         self.tasks = tasks
-        self.others_can_add_tasks = others_can_add_tasks
-        self.others_can_mark_tasks_as_done = others_can_mark_tasks_as_done
+        self.others_can_add_tasks = (
+            others_can_add_tasks if others_can_add_tasks is not None else can_add_tasks
+        )
+        self.others_can_mark_tasks_as_done = (
+            others_can_mark_tasks_as_done
+            if others_can_mark_tasks_as_done is not None
+            else can_mark_tasks_as_done
+        )
+
+    # pyroblack <= 2.7.6 names. ``entities`` was renamed to ``title_entities``;
+    # ``can_add_tasks``/``can_mark_tasks_as_done`` described *your own* rights
+    # and were never populated by the parser (the raw ``can_append`` /
+    # ``can_complete`` reads were commented out there too), so they mirror the
+    # ``others_*`` flags rather than inventing a value.
+    @property
+    def entities(self) -> list[types.MessageEntity] | None:
+        """Deprecated alias of :attr:`title_entities`."""
+        return self.title_entities
+
+    @property
+    def can_add_tasks(self) -> bool | None:
+        """Deprecated alias of :attr:`others_can_add_tasks`."""
+        return self.others_can_add_tasks
+
+    @property
+    def can_mark_tasks_as_done(self) -> bool | None:
+        """Deprecated alias of :attr:`others_can_mark_tasks_as_done`."""
+        return self.others_can_mark_tasks_as_done
 
     @staticmethod
     def _parse(

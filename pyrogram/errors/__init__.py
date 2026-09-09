@@ -37,6 +37,19 @@ from .pyromod.listener_stopped import ListenerStopped
 from .pyromod.listener_timeout import ListenerTimeout
 from .rpc_error import RPCError, UnknownError
 
+# pyroblack <= 2.7.6 published ``__all__`` here (including every generated RPC
+# error name). It is rebuilt below, after the exception classes are defined.
+__all__ = [
+    "BadMsgNotification",
+    "CDNFileHashMismatch",
+    "ListenerStopped",
+    "ListenerTimeout",
+    "RPCError",
+    "SecurityCheckMismatch",
+    "SecurityError",
+    "UnknownError",
+]
+
 
 class BadMsgNotification(Exception):
     descriptions = {
@@ -86,3 +99,18 @@ class CDNFileHashMismatch(SecurityError):
         super().__init__(
             "A CDN file hash mismatch has occurred." if msg is None else msg
         )
+
+
+if EXCEPTION_AVAIL:
+    # The generated RPC exception modules are star-imported above but declare no
+    # ``__all__`` of their own, so collect their public error classes here to
+    # match the v2.7.6 behaviour of re-exporting every error name.
+    __all__ += sorted(
+        name
+        for name, obj in list(globals().items())
+        if not name.startswith("_")
+        and isinstance(obj, type)
+        and issubclass(obj, RPCError)
+        and name not in __all__
+    )
+

@@ -284,6 +284,12 @@ class Client(Methods):
     DOWNLOAD_POOL_SIZE = 4
     MAX_CACHE_SIZE = 10000
 
+    # pyroblack <= 2.7.6 named these MAX_MESSAGE_CACHE_SIZE / MAX_DOWNLOAD_WORKERS
+    # and applications read them to size their own pools. Kept as aliases of the
+    # current names so those reads still resolve.
+    MAX_MESSAGE_CACHE_SIZE = MAX_CACHE_SIZE
+    MAX_DOWNLOAD_WORKERS = DOWNLOAD_POOL_SIZE
+
     mimetypes = MimeTypes()
     mimetypes.readfp(StringIO(mime_types))
 
@@ -1690,3 +1696,25 @@ class Cache:
         if len(self.store) > self.capacity:
             for _ in range(self.capacity // 2 + 1):
                 del self.store[next(iter(self.store))]
+
+    def __len__(self) -> int:
+        return len(self.store)
+
+    def __contains__(self, key) -> bool:
+        return key in self.store
+
+    # pyroblack <= 2.7.6 exposed an async lock-guarded interface here
+    # (``await cache.get(key)`` / ``await cache.set(key, value)``) before the
+    # rebase switched to plain item access. Both are kept: the coroutines wrap
+    # the same dict, so the two APIs share one store.
+    async def get(self, key, default=None):
+        """Deprecated: use ``cache[key]``."""
+        value = self.store.get(key, default)
+        if key in self.store:
+            # Preserve the recency ordering the item interface relies on.
+            self.store[key] = self.store.pop(key)
+        return value
+
+    async def set(self, key, value) -> None:
+        """Deprecated: use ``cache[key] = value``."""
+        self[key] = value

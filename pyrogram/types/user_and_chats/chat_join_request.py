@@ -64,8 +64,10 @@ class ChatJoinRequest(Object, Update):
         client: pyrogram.Client = None,
         chat: types.Chat,
         from_user: types.User,
-        user_chat_id: int,
         date: datetime,
+        # Added by the rebase; defaulted so the pyroblack <= 2.7.6 constructor
+        # call (chat / from_user / date / bio / invite_link) still binds.
+        user_chat_id: int | None = None,
         bio: str | None = None,
         invite_link: types.ChatInviteLink = None,
     ) -> None:
@@ -73,7 +75,9 @@ class ChatJoinRequest(Object, Update):
 
         self.chat = chat
         self.from_user = from_user
-        self.user_chat_id = user_chat_id
+        self.user_chat_id = (
+            user_chat_id if user_chat_id is not None else getattr(from_user, "id", None)
+        )
         self.date = date
         self.bio = bio
         self.invite_link = invite_link

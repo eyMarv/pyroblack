@@ -122,6 +122,13 @@ class MessageServiceType(AutoName):
     BOOST_APPLY = CHAT_BOOST_ADDED
     "Deprecated alias of CHAT_BOOST_ADDED"
 
+    # pyroblack <= 2.7.6 spelled the two share service types in CamelCase.
+    ChannelShared = CHAT_SHARED
+    "Deprecated alias of CHAT_SHARED"
+
+    UserShared = USERS_SHARED
+    "Deprecated alias of USERS_SHARED"
+
     # REQUESTED_CHAT covers both user and chat share flows in <=2.7.2
     REQUESTED_CHAT = auto()
     "Requested chat (compat; also see USERS_SHARED / CHAT_SHARED)"

@@ -329,6 +329,13 @@ def pyrogram_api():
             set_chat_direct_messages_group
             set_chat_message_auto_delete_time
             transfer_chat_ownership
+            restrict_sponsored_messages
+            toggle_anti_spam
+            toggle_auto_translation
+            toggle_participants_hidden
+            toggle_pre_history_hidden
+            toggle_signatures
+            toggle_view_forum_as_messages
         """,
         users="""
         Users

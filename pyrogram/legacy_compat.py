@@ -132,6 +132,26 @@ CLIENT_LEGACY_KWARGS: dict[str, dict[str, str | None]] = {
         "token": None,
         "app_sandbox": None,
     },
+    # Stories. The rebase renamed the poster parameter and reshaped how media
+    # and privacy are passed; ``_transform()`` handles the reshaping.
+    "get_stories": {"chat_id": "story_poster_chat_id"},
+    "delete_stories": {},
+    "edit_story": {},
+    "forward_story": {
+        "from_chat_id": "story_poster_chat_id",
+        "from_story_id": "story_id",
+    },
+    "send_story": {"denied_users": "disallowed_users"},
+    # Invoices: ``provider`` was renamed and two fields dropped server-side.
+    "send_invoice": {
+        "provider": "provider_token",
+        # The photo MIME type is fixed to image/jpg by the current
+        # InputWebDocument construction, so the old override is a no-op.
+        "photo_mime_type": None,
+        # ``extended_media`` (paid-media invoices) is no longer accepted here;
+        # use send_paid_media instead.
+        "extended_media": None,
+    },
 }
 
 MESSAGE_LEGACY_KWARGS: dict[str, dict[str, str | None]] = {
@@ -196,12 +216,95 @@ def _transform(method_name: str, kwargs: dict) -> dict:
         if rids is not None and kwargs.get("message_ids") is None:
             kwargs["message_ids"] = rids
 
+    # Stories: v2.7.6 passed media as animation/photo/video keywords and privacy
+    # as an enum + two user lists. Both are now single objects.
+    if method_name in ("send_story", "edit_story"):
+        kwargs = _transform_story_kwargs(method_name, kwargs)
+
+    # send_invoice: reply_to_message_id / quote_* folded into reply_parameters
+    if method_name == "send_invoice":
+        kwargs = _fold_reply_parameters(kwargs)
+
     # invert_media on caption edits -> show_caption_above_media
     if "invert_media" in kwargs and "show_caption_above_media" not in kwargs:
         # only when target method accepts show_caption_above_media (handled by alias map)
         pass
 
     return kwargs
+
+
+def _fold_reply_parameters(kwargs: dict) -> dict:
+    """Fold the v2.7.6 reply keywords into a single ``reply_parameters``."""
+    reply_to_message_id = kwargs.pop("reply_to_message_id", None)
+    quote_text = kwargs.pop("quote_text", None)
+    quote_entities = kwargs.pop("quote_entities", None)
+
+    if reply_to_message_id is None and quote_text is None:
+        return kwargs
+    if kwargs.get("reply_parameters") is not None:
+        return kwargs
+
+    from pyrogram import types
+
+    kwargs["reply_parameters"] = types.ReplyParameters(
+        message_id=reply_to_message_id,
+        quote=quote_text,
+        quote_entities=quote_entities,
+    )
+    return kwargs
+
+
+def _transform_story_kwargs(method_name: str, kwargs: dict) -> dict:
+    """Adapt the v2.7.6 ``send_story`` / ``edit_story`` keywords.
+
+    * ``animation`` / ``photo`` / ``video`` -> ``media`` (send) or ``content`` (edit)
+    * ``privacy`` + ``allowed_users`` + ``denied_users`` -> ``privacy_settings``
+      (edit only; ``send_story`` still takes the enum natively)
+    * ``media_areas`` -> ``areas`` (edit only)
+    * ``forward_from_chat_id`` / ``forward_from_story_id`` -> ``fwd_from_*``
+    """
+    from pyrogram.types.stories.story_compat import (
+        _legacy_content,
+        _legacy_privacy_settings,
+    )
+
+    animation = kwargs.pop("animation", None)
+    photo = kwargs.pop("photo", None)
+    video = kwargs.pop("video", None)
+
+    if method_name == "send_story":
+        media = animation or photo or video
+        if media is not None and kwargs.get("media") is None:
+            kwargs["media"] = media
+
+        fwd_chat = kwargs.pop("forward_from_chat_id", None)
+        fwd_story = kwargs.pop("forward_from_story_id", None)
+        if fwd_chat is not None and kwargs.get("fwd_from_id") is None:
+            kwargs["fwd_from_id"] = fwd_chat
+        if fwd_story is not None and kwargs.get("fwd_from_story") is None:
+            kwargs["fwd_from_story"] = fwd_story
+        return kwargs
+
+    # edit_story
+    content = _legacy_content(animation=animation, photo=photo, video=video)
+    if content is not None and kwargs.get("content") is None:
+        kwargs["content"] = content
+
+    media_areas = kwargs.pop("media_areas", None)
+    if media_areas is not None and kwargs.get("areas") is None:
+        kwargs["areas"] = media_areas
+
+    has_privacy = any(k in kwargs for k in ("privacy", "allowed_users", "denied_users"))
+    privacy = kwargs.pop("privacy", None)
+    allowed_users = kwargs.pop("allowed_users", None)
+    denied_users = kwargs.pop("denied_users", None)
+    if has_privacy and kwargs.get("privacy_settings") is None:
+        kwargs["privacy_settings"] = _legacy_privacy_settings(
+            privacy, allowed_users, denied_users
+        )
+
+    return kwargs
+
 
 
 def _wrap_method(

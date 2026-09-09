@@ -74,3 +74,17 @@ class Users(
     DeleteAccount,
 ):
     pass
+
+
+# pyroblack <= 2.7.6 defined the story mixins in this package, before they moved
+# to ``methods.stories``. Re-exported so ``from pyrogram.methods.users import
+# SendStory`` still resolves. Imported at the bottom to keep the ``Users`` MRO
+# above unchanged.
+from pyrogram.methods.stories import (  # noqa: E402
+    DeleteStories as DeleteStories,
+    EditStory as EditStory,
+    ForwardStory as ForwardStory,
+    GetAllStories as GetAllStories,
+    GetStories as GetStories,
+    SendStory as SendStory,
+)

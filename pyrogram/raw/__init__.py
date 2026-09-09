@@ -33,3 +33,6 @@ from .all import objects
 for k, v in objects.items():
     path, name = v.rsplit(".", 1)
     objects[k] = getattr(import_module(path), name)
+
+# Restored from pyroblack <= 2.7.6.
+__all__ = ["base", "core", "functions", "objects", "types"]

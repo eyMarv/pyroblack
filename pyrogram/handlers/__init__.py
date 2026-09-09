@@ -52,3 +52,40 @@ from .start_handler import StartHandler
 from .stop_handler import StopHandler
 from .story_handler import StoryHandler
 from .user_status_handler import UserStatusHandler
+
+# pyroblack <= 2.7.6 exported ``__all__`` from this package; restored so
+# ``from pyrogram.handlers import *`` keeps working.
+__all__ = [
+    "BotBusinessConnectHandler",
+    "BotBusinessMessageHandler",
+    "BusinessBotConnectionHandler",
+    "CallbackQueryHandler",
+    "ChatBoostHandler",
+    "ChatJoinRequestHandler",
+    "ChatMemberUpdatedHandler",
+    "ChosenInlineResultHandler",
+    "ConnectHandler",
+    "ConversationHandler",
+    "DeletedBotBusinessMessagesHandler",
+    "DeletedMessagesHandler",
+    "DisconnectHandler",
+    "EditedBotBusinessMessageHandler",
+    "EditedMessageHandler",
+    "ErrorHandler",
+    "GuestMessageHandler",
+    "InlineQueryHandler",
+    "InvokeErrHandler",
+    "ManagedBotUpdateHandler",
+    "MessageHandler",
+    "MessageReactionCountUpdatedHandler",
+    "MessageReactionUpdatedHandler",
+    "PollHandler",
+    "PreCheckoutQueryHandler",
+    "PurchasedPaidMediaHandler",
+    "RawUpdateHandler",
+    "ShippingQueryHandler",
+    "StartHandler",
+    "StopHandler",
+    "StoryHandler",
+    "UserStatusHandler",
+]

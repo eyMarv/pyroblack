@@ -20,9 +20,21 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
-from .tcp import TCP
+from .tcp import TCP, Proxy, proxy_type_by_scheme
 from .tcp_abridged import TCPAbridged
 from .tcp_abridged_o import TCPAbridgedO
 from .tcp_full import TCPFull
 from .tcp_intermediate import TCPIntermediate
 from .tcp_intermediate_o import TCPIntermediateO
+
+# ``Proxy``/``proxy_type_by_scheme`` restored from pyroblack <= 2.7.6.
+__all__ = [
+    "TCP",
+    "Proxy",
+    "TCPAbridged",
+    "TCPAbridgedO",
+    "TCPFull",
+    "TCPIntermediate",
+    "TCPIntermediateO",
+    "proxy_type_by_scheme",
+]

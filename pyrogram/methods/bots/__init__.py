@@ -102,3 +102,14 @@ class Bots(
     SendChatJoinRequestWebApp,
 ):
     pass
+
+
+# pyroblack <= 2.7.6 defined these mixins in this package, before they moved to
+# ``methods.business``. Re-exported so ``from pyrogram.methods.bots import
+# AnswerPreCheckoutQuery`` still resolves for code that composes its own Client.
+# Imported at the bottom to keep the ``Bots`` MRO above unchanged.
+from pyrogram.methods.business import (  # noqa: E402
+    AnswerPreCheckoutQuery as AnswerPreCheckoutQuery,
+    GetCollectibleItemInfo as GetCollectibleItemInfo,
+    RefundStarPayment as RefundStarPayment,
+)

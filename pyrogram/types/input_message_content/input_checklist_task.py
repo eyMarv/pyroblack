@@ -55,13 +55,20 @@ class InputChecklistTask(Object):
         text: str | None = None,
         parse_mode: enums.ParseMode = None,
         text_entities: list[types.MessageEntity] | None = None,
+        entities: list[types.MessageEntity] | None = None,
     ) -> None:
         super().__init__()
 
         self.id = id
         self.text = text
         self.parse_mode = parse_mode
-        self.text_entities = text_entities
+        # pyroblack <= 2.7.6 called this ``entities``; accepted as an alias.
+        self.text_entities = text_entities if text_entities is not None else entities
+
+    @property
+    def entities(self) -> list[types.MessageEntity] | None:
+        """Deprecated alias of :attr:`text_entities`."""
+        return self.text_entities
 
     async def write(self, client: pyrogram.Client) -> raw.types.TodoItem:
         text, entities = (

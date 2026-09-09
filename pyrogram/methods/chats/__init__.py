@@ -26,6 +26,9 @@ from .add_profile_audio import AddProfileAudio
 from .archive_chats import ArchiveChats
 from .ban_chat_member import BanChatMember
 
+# Channel/supergroup setting toggles ported from wzgram and kurigram.
+from .chat_toggles import ChatToggles
+
 # v2.7.2 compatibility: forum/general-topic/folder helpers that lived under chats/
 from .close_general_topic import CloseGeneralTopic
 from .create_channel import CreateChannel
@@ -118,6 +121,7 @@ class Chats(
     AddChatMembers,
     ArchiveChats,
     BanChatMember,
+    ChatToggles,
     CloseGeneralTopic,
     CreateChannel,
     CreateGroup,
@@ -204,3 +208,19 @@ class Chats(
     GetChatSettings,
 ):
     pass
+
+
+# pyroblack <= 2.7.6 defined the forum-topic mixins in this package, before they
+# moved to ``methods.chat_topics``. Re-exported so ``from pyrogram.methods.chats
+# import CloseForumTopic`` still resolves. Note these are the *current*
+# implementations (``message_thread_id``); the legacy ``topic_id`` spelling is
+# handled by pyrogram/legacy_compat.py, so behaviour is identical either way.
+# Imported at the bottom to keep the ``Chats`` MRO above unchanged.
+from pyrogram.methods.chat_topics import (  # noqa: E402
+    CloseForumTopic as CloseForumTopic,
+    CreateForumTopic as CreateForumTopic,
+    DeleteForumTopic as DeleteForumTopic,
+    EditForumTopic as EditForumTopic,
+    GetForumTopics as GetForumTopics,
+    ReopenForumTopic as ReopenForumTopic,
+)

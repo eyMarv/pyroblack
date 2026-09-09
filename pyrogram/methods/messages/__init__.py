@@ -21,6 +21,7 @@
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
 
+from .add_checklist_tasks import AddChecklistTasks
 from .add_paid_message_reaction import AddPaidMessageReaction
 from .add_poll_option import AddPollOption
 from .add_to_gifs import AddToGifs
@@ -123,6 +124,7 @@ from .vote_poll import VotePoll
 
 
 class Messages(
+    AddChecklistTasks,
     CopyMediaGroup,
     CopyMessage,
     DeleteChatHistory,
@@ -220,3 +222,10 @@ class Messages(
     SendRichMessageDraft,
 ):
     pass
+
+
+# pyroblack <= 2.7.6 defined ``GetStickers`` in this package, before it moved to
+# ``methods.stickers``. Re-exported so ``from pyrogram.methods.messages import
+# GetStickers`` still resolves. Imported at the bottom to keep the ``Messages``
+# MRO above unchanged.
+from pyrogram.methods.stickers import GetStickers as GetStickers  # noqa: E402

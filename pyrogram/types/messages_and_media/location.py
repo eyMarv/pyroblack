@@ -42,6 +42,13 @@ class Location(Object):
         accuracy_radius (``int``, *optional*):
             The estimated horizontal accuracy of the location, in meters as defined by the sender.
 
+        address (``str``, *optional*):
+            Textual description of the address.
+            Kept for pyroblack <= 2.7.6, where it was declared but never populated
+            by any parser — a business address lives on
+            :obj:`~pyrogram.types.BusinessLocation` and
+            :obj:`~pyrogram.types.BusinessInfo` instead.
+
     """
 
     def __init__(
@@ -51,12 +58,14 @@ class Location(Object):
         longitude: float,
         latitude: float,
         accuracy_radius: int | None = None,
+        address: str | None = None,
     ) -> None:
         super().__init__(client)
 
         self.longitude = longitude
         self.latitude = latitude
         self.accuracy_radius = accuracy_radius
+        self.address = address
 
     @staticmethod
     def _parse(client, geo_point: raw.base.GeoPoint) -> Location:

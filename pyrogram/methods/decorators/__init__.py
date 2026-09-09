@@ -20,6 +20,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from .fork_aliases import ForkDecoratorAliases
 from .on_bot_business_connect import OnBotBusinessConnect
 from .on_bot_business_connection import OnBotBusinessConnection
 from .on_bot_business_message import OnBotBusinessMessage
@@ -85,5 +86,8 @@ class Decorators(
     OnChatBoost,
     OnGuestMessage,
     OnError,
+    # Alternative spellings used by kurigram / wzgram / DzGram. Listed last so a
+    # pyroblack decorator always wins if the two ever collide.
+    ForkDecoratorAliases,
 ):
     pass

@@ -90,7 +90,12 @@ class LoginUrl(Object):
         )
 
     def write(
-        self, text: str, bot: raw.types.InputUser, style: raw.types.KeyboardButtonStyle
+        self,
+        text: str,
+        bot: raw.types.InputUser,
+        # Added by the Layer 228 rebase; defaulted so the pyroblack <= 2.7.6
+        # two-argument call ``login_url.write(text, bot)`` still works.
+        style: raw.types.KeyboardButtonStyle = None,
     ):
         return raw.types.InputKeyboardButtonUrlAuth(
             text=text,

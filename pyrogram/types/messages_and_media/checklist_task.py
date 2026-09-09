@@ -72,15 +72,22 @@ class ChecklistTask(Object):
         completed_by_user: types.User | None = None,
         completed_by_chat: types.Chat | None = None,
         completion_date: datetime | None = None,
+        # pyroblack <= 2.7.6 keyword name; see the property alias below.
+        entities: list[types.MessageEntity] | None = None,
     ) -> None:
         super().__init__()
 
         self.id = id
         self.text = text
-        self.text_entities = text_entities
+        self.text_entities = text_entities if text_entities is not None else entities
         self.completed_by_user = completed_by_user
         self.completed_by_chat = completed_by_chat
         self.completion_date = completion_date
+
+    @property
+    def entities(self) -> list[types.MessageEntity] | None:
+        """Deprecated alias of :attr:`text_entities` (pyroblack <= 2.7.6)."""
+        return self.text_entities
 
     @staticmethod
     def _parse(

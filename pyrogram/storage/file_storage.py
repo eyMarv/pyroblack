@@ -32,6 +32,23 @@ if TYPE_CHECKING:
 
 log = logging.getLogger(__name__)
 
+# pyroblack <= 2.7.6 defined this here and ran it during its v4 -> v5 migration.
+# The table is part of ``sqlite_storage.SCHEMA`` now, so the script is kept only
+# for third-party storage backends that imported it. Made idempotent (``IF NOT
+# EXISTS``) so re-running it against a current session file is a no-op rather
+# than "table update_state already exists".
+# language=SQLite
+UPDATE_STATE_SCHEMA = """
+CREATE TABLE IF NOT EXISTS update_state
+(
+    id   INTEGER PRIMARY KEY,
+    pts  INTEGER,
+    qts  INTEGER,
+    date INTEGER,
+    seq  INTEGER
+);
+"""
+
 
 class FileStorage(SQLiteStorage):
     """File-based session storage (backward-compatible alias for SQLiteStorage).

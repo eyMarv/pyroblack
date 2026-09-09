@@ -177,10 +177,10 @@ def test_legacy_kwargs_shim_installed() -> None:
     sig = inspect.signature(Client.forward_messages)
     # The shim opens the signature to accept **kwargs, so binding old names
     # must not raise TypeError at call-time (we only check signature openness).
-    assert any(
-        p.kind == inspect.Parameter.VAR_KEYWORD
-        for p in sig.parameters.values()
-    ) or "kwargs" in sig.parameters
+    assert (
+        any(p.kind == inspect.Parameter.VAR_KEYWORD for p in sig.parameters.values())
+        or "kwargs" in sig.parameters
+    )
 
 
 def test_types_identifier_listener_importable() -> None:
@@ -233,7 +233,10 @@ def test_channels_forum_raw_constructors_accept_channel_kwarg() -> None:
     # Every alias constructs + serializes
     for cls, kw in [
         (EditForumTopic, dict(channel=peer, topic_id=5, title="X")),
-        (GetForumTopics, dict(channel=peer, offset_date=0, offset_id=0, offset_topic=0, limit=10)),
+        (
+            GetForumTopics,
+            dict(channel=peer, offset_date=0, offset_id=0, offset_topic=0, limit=10),
+        ),
         (GetForumTopicsByID, dict(channel=peer, topics=[1, 2])),
         (ReorderPinnedForumTopics, dict(channel=peer, order=[1, 2])),
         (UpdatePinnedForumTopic, dict(channel=peer, topic_id=5, pinned=True)),
@@ -286,9 +289,21 @@ def test_invalidate_sign_in_codes_works() -> None:
         (MessageServiceType, "boost_apply", MessageServiceType.BOOST_APPLY),
         (MessageServiceType, "payment_refunded", MessageServiceType.PAYMENT_REFUNDED),
         (MessageServiceType, "bot_allowed", MessageServiceType.BOT_ALLOWED),
-        (MessageServiceType, "general_topic_hidden", MessageServiceType.GENERAL_TOPIC_HIDDEN),
-        (MessageServiceType, "general_topic_unhidden", MessageServiceType.GENERAL_TOPIC_UNHIDDEN),
-        (MessageServiceType, "video_chat_members_invited", MessageServiceType.VIDEO_CHAT_MEMBERS_INVITED),
+        (
+            MessageServiceType,
+            "general_topic_hidden",
+            MessageServiceType.GENERAL_TOPIC_HIDDEN,
+        ),
+        (
+            MessageServiceType,
+            "general_topic_unhidden",
+            MessageServiceType.GENERAL_TOPIC_UNHIDDEN,
+        ),
+        (
+            MessageServiceType,
+            "video_chat_members_invited",
+            MessageServiceType.VIDEO_CHAT_MEMBERS_INVITED,
+        ),
         (MessageServiceType, "unsupported", MessageServiceType.UNSUPPORTED),
         (MessageServiceType, "channelshared", MessageServiceType.CHAT_SHARED),
         (MessageServiceType, "usershared", MessageServiceType.USERS_SHARED),
@@ -493,3 +508,1134 @@ def test_edit_message_caption_invert_media_maps_to_show_caption_above_media() ->
     assert out["show_caption_above_media"] is True
 
 
+# --------------------------------------------------------------------------- #
+# N1: ``__all__`` restored on the packages that published it in v2.7.6.
+# ``from pyrogram import *`` and tooling that reads ``__all__`` broke without it.
+# --------------------------------------------------------------------------- #
+@pytest.mark.parametrize(
+    ("module_name", "expected"),
+    [
+        (
+            "pyrogram",
+            [
+                "Client",
+                "ContinuePropagation",
+                "StopPropagation",
+                "StopTransmission",
+                "compose",
+                "crypto_executor",
+                "emoji",
+                "enums",
+                "filters",
+                "handlers",
+                "idle",
+                "raw",
+                "types",
+            ],
+        ),
+        ("pyrogram.types", ["List", "Object", "Update"]),
+        ("pyrogram.raw", ["base", "core", "functions", "objects", "types"]),
+        (
+            "pyrogram.errors",
+            [
+                "BadMsgNotification",
+                "CDNFileHashMismatch",
+                "RPCError",
+                "SecurityCheckMismatch",
+                "SecurityError",
+                "UnknownError",
+            ],
+        ),
+        (
+            "pyrogram.handlers",
+            [
+                "BotBusinessConnectHandler",
+                "BotBusinessMessageHandler",
+                "CallbackQueryHandler",
+                "DeletedBotBusinessMessagesHandler",
+                "EditedBotBusinessMessageHandler",
+                "MessageHandler",
+                "RawUpdateHandler",
+            ],
+        ),
+        (
+            "pyrogram.connection.transport.tcp",
+            ["Proxy", "TCP", "TCPAbridged", "proxy_type_by_scheme"],
+        ),
+    ],
+)
+def test_dunder_all_restored(module_name: str, expected: list[str]) -> None:
+    import importlib
+
+    module = importlib.import_module(module_name)
+    assert hasattr(module, "__all__"), f"{module_name} lost __all__"
+    for name in expected:
+        assert name in module.__all__, f"{module_name}.__all__ is missing {name}"
+        assert hasattr(module, name), f"{module_name}.{name} does not resolve"
+
+
+def test_errors_dunder_all_includes_generated_rpc_errors() -> None:
+    """v2.7.6 extended errors.__all__ with every generated RPC error name."""
+    from pyrogram import errors
+
+    for name in ("FloodWait", "ChannelPrivate", "PeerIdInvalid"):
+        assert name in errors.__all__
+
+
+def test_types_dunder_all_has_no_duplicates_and_all_resolve() -> None:
+    from pyrogram import types
+
+    assert len(types.__all__) == len(set(types.__all__))
+    unresolved = [n for n in types.__all__ if not hasattr(types, n)]
+    assert unresolved == []
+
+
+# --------------------------------------------------------------------------- #
+# N2: Class constants that v2.7.6 applications read or assigned.
+# --------------------------------------------------------------------------- #
+def test_client_cache_and_worker_constants() -> None:
+    assert Client.MAX_MESSAGE_CACHE_SIZE == Client.MAX_CACHE_SIZE
+    assert Client.MAX_DOWNLOAD_WORKERS == Client.DOWNLOAD_POOL_SIZE
+
+
+def test_connection_max_connection_attempts_alias() -> None:
+    from pyrogram.connection import Connection
+
+    assert Connection.MAX_CONNECTION_ATTEMPTS == Connection.MAX_RETRIES
+    assert Connection._max_attempts() == Connection.MAX_RETRIES
+
+
+def test_connection_legacy_attempts_override_is_honoured() -> None:
+    """Assigning only the v2.7.6 name must still change the retry count."""
+    from pyrogram.connection import Connection
+
+    class Patched(Connection):
+        MAX_CONNECTION_ATTEMPTS = 7
+
+    assert Patched._max_attempts() == 7
+
+
+def test_session_reconnect_constants_present() -> None:
+    from pyrogram.session import Session
+
+    assert Session.RECONN_TIMEOUT == 5
+    assert Session.RECONNECT_THRESHOLD == 13
+    assert list(Session.RE_START_RANGE) == [0, 1, 2, 3]
+
+
+def test_session_stop_accepts_restart_kwarg() -> None:
+    """v2.7.6 called ``await session.stop(restart=True)``."""
+    from pyrogram.session import Session
+
+    assert "restart" in inspect.signature(Session.stop).parameters
+
+
+def test_dispatcher_business_update_groups_present() -> None:
+    from pyrogram.dispatcher import Dispatcher
+    from pyrogram.raw.types import (
+        UpdateBotDeleteBusinessMessage,
+        UpdateBotEditBusinessMessage,
+        UpdateBotNewBusinessMessage,
+    )
+
+    assert Dispatcher.NEW_BOT_BUSINESS_MESSAGE_UPDATES == (UpdateBotNewBusinessMessage,)
+    assert Dispatcher.EDIT_BOT_BUSINESS_MESSAGE_UPDATES == (
+        UpdateBotEditBusinessMessage,
+    )
+    assert Dispatcher.DELETE_BOT_BUSINESS_MESSAGES_UPDATES == (
+        UpdateBotDeleteBusinessMessage,
+    )
+
+
+# --------------------------------------------------------------------------- #
+# N3: Enum members renamed by the rebase.
+# --------------------------------------------------------------------------- #
+def test_message_service_type_camelcase_share_aliases() -> None:
+    assert MessageServiceType.ChannelShared is MessageServiceType.CHAT_SHARED
+    assert MessageServiceType.UserShared is MessageServiceType.USERS_SHARED
+
+
+# --------------------------------------------------------------------------- #
+# N4: pyrogram.emoji constants renamed/dropped by the CLDR regeneration.
+# --------------------------------------------------------------------------- #
+def test_emoji_renamed_constants_alias_current_values() -> None:
+    from pyrogram import emoji
+
+    assert emoji.BULLSEYE == emoji.DIRECT_HIT
+    assert emoji.RED_CIRCLE == emoji.LARGE_RED_CIRCLE
+    assert emoji.TWELVE_O_CLOCK == emoji.TWELVE_OCLOCK
+    assert emoji.MAN_S_SHOE == emoji.MANS_SHOE
+
+
+def test_emoji_removed_constants_keep_original_codepoints() -> None:
+    from pyrogram import emoji
+
+    assert emoji.DIGIT_ONE == "1\ufe0f"
+    assert emoji.ZERO_WIDTH_JOINER == "\u200d"
+    assert emoji.VARIATION_SELECTOR_16 == "\ufe0f"
+    assert emoji.REGIONAL_INDICATOR_SYMBOL_LETTER_A == "\U0001f1e6"
+    assert emoji.TAG_LATIN_SMALL_LETTER_G == "\U000e0067"
+    assert emoji.TAG_DIGIT_ZERO == "\U000e0030"
+
+
+def test_emoji_compat_covers_every_v276_name() -> None:
+    """All 215 names the regeneration lost must be bound."""
+    from pyrogram import emoji, emoji_compat
+
+    for name in (*emoji_compat.RENAMED, *emoji_compat.REMOVED):
+        assert hasattr(emoji, name), f"pyrogram.emoji.{name} is missing"
+
+
+def test_emoji_compat_does_not_shadow_generated_names() -> None:
+    """install() must never overwrite a name the generated table defines."""
+    from pyrogram import emoji, emoji_compat
+
+    before = emoji.LARGE_RED_CIRCLE
+    emoji_compat.install(emoji)
+    assert emoji.LARGE_RED_CIRCLE == before
+
+
+# --------------------------------------------------------------------------- #
+# N5: Import paths and module-level names that moved.
+# --------------------------------------------------------------------------- #
+def test_paid_media_legacy_import_path() -> None:
+    from pyrogram.types.messages_and_media.paid_media import (  # noqa: F401
+        PaidMedia,
+        PaidMediaInfo,
+        PaidMediaPhoto,
+        PaidMediaPreview,
+        PaidMediaVideo,
+    )
+    from pyrogram.types.input_paid_media.paid_media import PaidMedia as Canonical
+
+    assert PaidMedia is Canonical
+
+
+def test_paid_media_info_legacy_attribute_aliases() -> None:
+    """v2.7.6 read message.paid_media.stars_amount / .extended_media."""
+    from pyrogram.types import PaidMediaInfo
+
+    info = PaidMediaInfo(star_count=7, paid_media=[])
+    assert info.stars_amount == 7
+    assert info.extended_media == []
+
+
+def test_tcp_proxy_type_shims() -> None:
+    from pyrogram.connection.transport.tcp.tcp import Proxy, proxy_type_by_scheme
+
+    assert set(proxy_type_by_scheme) == {"SOCKS4", "SOCKS5", "HTTP"}
+    assert set(Proxy.__annotations__) == {
+        "scheme",
+        "hostname",
+        "port",
+        "username",
+        "password",
+    }
+
+
+def test_storage_schema_scripts_are_idempotent() -> None:
+    """The restored scripts must be safe to run against a current schema."""
+    import sqlite3
+
+    from pyrogram.storage.file_storage import UPDATE_STATE_SCHEMA
+    from pyrogram.storage.sqlite_storage import SCHEMA, UNAME_SCHEMA
+
+    conn = sqlite3.connect(":memory:")
+    try:
+        conn.executescript(SCHEMA)
+        conn.executescript(UNAME_SCHEMA)
+        conn.executescript(UPDATE_STATE_SCHEMA)
+    finally:
+        conn.close()
+
+
+def test_storage_schema_scripts_create_their_tables() -> None:
+    import sqlite3
+
+    from pyrogram.storage.file_storage import UPDATE_STATE_SCHEMA
+    from pyrogram.storage.sqlite_storage import UNAME_SCHEMA
+
+    conn = sqlite3.connect(":memory:")
+    try:
+        conn.executescript(UNAME_SCHEMA)
+        conn.executescript(UPDATE_STATE_SCHEMA)
+        tables = {
+            row[0]
+            for row in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")
+        }
+    finally:
+        conn.close()
+
+    assert {"usernames", "update_state"} <= tables
+
+
+# --------------------------------------------------------------------------- #
+# N6: Method mixin classes that moved between ``pyrogram.methods`` packages.
+# Code that composed its own Client imported these directly.
+# --------------------------------------------------------------------------- #
+@pytest.mark.parametrize(
+    ("module_name", "class_name"),
+    [
+        ("pyrogram.methods.bots", "AnswerPreCheckoutQuery"),
+        ("pyrogram.methods.bots", "GetCollectibleItemInfo"),
+        ("pyrogram.methods.bots", "RefundStarPayment"),
+        ("pyrogram.methods.chats", "CloseForumTopic"),
+        ("pyrogram.methods.chats", "CreateForumTopic"),
+        ("pyrogram.methods.chats", "DeleteForumTopic"),
+        ("pyrogram.methods.chats", "EditForumTopic"),
+        ("pyrogram.methods.chats", "GetForumTopics"),
+        ("pyrogram.methods.chats", "ReopenForumTopic"),
+        ("pyrogram.methods.messages", "AddChecklistTasks"),
+        ("pyrogram.methods.messages", "GetStickers"),
+        ("pyrogram.methods.users", "DeleteStories"),
+        ("pyrogram.methods.users", "EditStory"),
+        ("pyrogram.methods.users", "ForwardStory"),
+        ("pyrogram.methods.users", "GetAllStories"),
+        ("pyrogram.methods.users", "GetStories"),
+        ("pyrogram.methods.users", "SendStory"),
+    ],
+)
+def test_method_mixin_legacy_import_paths(module_name: str, class_name: str) -> None:
+    import importlib
+
+    module = importlib.import_module(module_name)
+    assert hasattr(module, class_name), f"{module_name}.{class_name} is missing"
+
+
+def test_add_checklist_tasks_bound_to_client() -> None:
+    """The mixin existed but was never wired into ``Messages``."""
+    assert hasattr(Client, "add_checklist_tasks")
+    params = inspect.signature(inspect.unwrap(Client.add_checklist_tasks)).parameters
+    assert {"chat_id", "message_id", "tasks"} <= set(params)
+
+
+def test_every_v276_client_method_still_exists() -> None:
+    """Guard against another silently-unwired mixin."""
+    for name in (
+        "add_checklist_tasks",
+        "answer_pre_checkout_query",
+        "check_gift_code",
+        "close_forum_topic",
+        "create_forum_topic",
+        "delete_forum_topic",
+        "delete_stories",
+        "edit_forum_topic",
+        "edit_story",
+        "export_story_link",
+        "forward_story",
+        "get_all_stories",
+        "get_collectible_item_info",
+        "get_forum_topics",
+        "get_stickers",
+        "get_stories",
+        "mark_checklist_tasks_as_done",
+        "refund_star_payment",
+        "reopen_forum_topic",
+        "send_checklist",
+        "send_invoice",
+        "send_story",
+    ):
+        assert hasattr(Client, name), f"Client.{name} is missing"
+
+
+# --------------------------------------------------------------------------- #
+# N7: Story — the rebase replaced the class wholesale, dropping 19 bound methods
+# and renaming most attributes. LegacyStoryMixin restores that surface.
+# --------------------------------------------------------------------------- #
+def _legacy_story(**kwargs):
+    """Build a Story with a recording stand-in for the client."""
+    from pyrogram import enums as e
+    from pyrogram import types as t
+
+    calls: list[tuple[str, dict]] = []
+
+    class RecordingClient:
+        def __getattr__(self, name):
+            async def call(**kw):
+                calls.append((name, kw))
+                return "called"
+
+            return call
+
+    kwargs.setdefault(
+        "chat",
+        t.Chat(
+            id=777,
+            type=e.ChatType.PRIVATE,
+            username="alice",
+            first_name="Alice",
+        ),
+    )
+    story = t.Story(client=RecordingClient(), id=42, **kwargs)
+    return story, calls
+
+
+def _run(*coro_factories) -> None:
+    """Await bound methods inside a running loop.
+
+    ``pyrogram.sync`` rewrites every async bound method on a type into a wrapper
+    that runs the coroutine itself when no loop is running, so these have to be
+    awaited from inside one to observe the delegated call.
+    """
+
+    async def main() -> None:
+        for factory in coro_factories:
+            await factory()
+
+    asyncio.run(main())
+
+
+def test_story_legacy_bound_methods_exist() -> None:
+    from pyrogram.types import Story
+
+    for name in (
+        "delete",
+        "edit",
+        "edit_animation",
+        "edit_caption",
+        "edit_photo",
+        "edit_privacy",
+        "edit_video",
+        "export_link",
+        "forward",
+        "reply",
+        "reply_animation",
+        "reply_audio",
+        "reply_cached_media",
+        "reply_media_group",
+        "reply_photo",
+        "reply_sticker",
+        "reply_text",
+        "reply_video",
+        "reply_video_note",
+        "reply_voice",
+    ):
+        assert hasattr(Story, name), f"Story.{name} is missing"
+
+
+def test_story_legacy_attributes_exist() -> None:
+    from pyrogram.types import Story
+
+    for name in (
+        "allowed_users",
+        "animation",
+        "close_friends",
+        "contacts",
+        "denied_users",
+        "forward_from",
+        "from_user",
+        "media_areas",
+        "privacy",
+        "public",
+        "raw",
+        "selected_contacts",
+        "sender_chat",
+    ):
+        assert hasattr(Story, name), f"Story.{name} is missing"
+
+
+def test_story_from_user_and_sender_chat_split_on_chat_type() -> None:
+    from pyrogram import enums as e
+    from pyrogram import types as t
+
+    private, _ = _legacy_story()
+    assert private.from_user is private.chat
+    assert private.sender_chat is None
+
+    channel, _ = _legacy_story(
+        chat=t.Chat(id=-100123, type=e.ChatType.CHANNEL, title="News"),
+    )
+    assert channel.from_user is None
+    assert channel.sender_chat is channel.chat
+
+
+def test_story_privacy_attributes_derive_from_privacy_settings() -> None:
+    from pyrogram import enums as e
+    from pyrogram import types as t
+
+    everyone, _ = _legacy_story(
+        privacy_settings=t.StoryPrivacySettingsEveryone(except_user_ids=[9]),
+    )
+    assert everyone.privacy is e.StoryPrivacy.PUBLIC
+    assert everyone.public is True
+    assert everyone.contacts is False
+    assert everyone.denied_users == [9]
+
+    selected, _ = _legacy_story(
+        privacy_settings=t.StoryPrivacySettingsSelectedUsers(user_ids=[1, 2]),
+    )
+    assert selected.privacy is e.StoryPrivacy.PRIVATE
+    assert selected.selected_contacts is True
+    assert selected.allowed_users == [1, 2]
+
+    friends, _ = _legacy_story(
+        privacy_settings=t.StoryPrivacySettingsCloseFriends(),
+    )
+    assert friends.privacy is e.StoryPrivacy.CLOSE_FRIENDS
+    assert friends.close_friends is True
+
+
+def test_story_privacy_attributes_are_none_without_settings() -> None:
+    story, _ = _legacy_story()
+    assert story.privacy is None
+    assert story.public is None
+    assert story.contacts is None
+
+
+def test_story_reply_methods_target_poster_and_story() -> None:
+    story, calls = _legacy_story()
+
+    _run(
+        lambda: story.reply_text("hi"),
+        lambda: story.reply_photo("p.png"),
+        lambda: story.reply_video("v.mp4"),
+        lambda: story.reply_animation("a.mp4"),
+        lambda: story.reply_audio("a.mp3"),
+        lambda: story.reply_voice("v.ogg"),
+        lambda: story.reply_sticker("sid"),
+        lambda: story.reply_video_note("vn.mp4"),
+        lambda: story.reply_cached_media("fid"),
+        lambda: story.reply_media_group([1, 2]),
+    )
+
+    assert [name for name, _ in calls] == [
+        "send_message",
+        "send_photo",
+        "send_video",
+        "send_animation",
+        "send_audio",
+        "send_voice",
+        "send_sticker",
+        "send_video_note",
+        "send_cached_media",
+        "send_media_group",
+    ]
+    for _name, kwargs in calls:
+        assert kwargs["chat_id"] == 777
+        assert kwargs["reply_to_story_id"] == 42
+
+
+def test_story_reply_honours_explicit_reply_to_story_id() -> None:
+    story, calls = _legacy_story()
+
+    _run(lambda: story.reply_text("hi", reply_to_story_id=11))
+    assert calls[-1][1]["reply_to_story_id"] == 11
+
+
+def test_story_reply_is_an_alias_of_reply_text() -> None:
+    from pyrogram.types import Story
+
+    story, calls = _legacy_story()
+    _run(lambda: Story.reply(story, "hi"))
+    assert calls[-1][0] == "send_message"
+
+
+def test_story_delete_forwards_to_delete_stories() -> None:
+    story, calls = _legacy_story()
+
+    _run(story.delete)
+    name, kwargs = calls[-1]
+    assert name == "delete_stories"
+    assert kwargs == {"chat_id": 777, "story_ids": 42}
+
+
+def test_story_export_link_forwards_to_export_story_link() -> None:
+    story, calls = _legacy_story()
+
+    _run(story.export_link)
+    name, kwargs = calls[-1]
+    assert name == "export_story_link"
+    assert kwargs == {"chat_id": 777, "story_id": 42}
+
+
+def test_story_edit_media_helpers_build_input_story_content() -> None:
+    from pyrogram import types as t
+
+    story, calls = _legacy_story()
+
+    _run(lambda: story.edit_photo("p.png"))
+    content = calls[-1][1]["content"]
+    assert isinstance(content, t.InputStoryContentPhoto)
+    assert content.photo == "p.png"
+
+    _run(lambda: story.edit_video("v.mp4"))
+    content = calls[-1][1]["content"]
+    assert isinstance(content, t.InputStoryContentVideo)
+    assert content.video == "v.mp4"
+    assert not getattr(content, "is_animation", False)
+
+    _run(lambda: story.edit_animation("a.mp4"))
+    content = calls[-1][1]["content"]
+    assert isinstance(content, t.InputStoryContentVideo)
+    assert content.is_animation is True
+
+
+def test_story_edit_caption_passes_caption_only() -> None:
+    story, calls = _legacy_story()
+
+    _run(lambda: story.edit_caption("new caption"))
+    name, kwargs = calls[-1]
+    assert name == "edit_story"
+    assert kwargs["chat_id"] == 777
+    assert kwargs["story_id"] == 42
+    assert kwargs["caption"] == "new caption"
+    assert kwargs["content"] is None
+
+
+def test_story_edit_privacy_builds_privacy_settings() -> None:
+    from pyrogram import enums as e
+    from pyrogram import types as t
+
+    story, calls = _legacy_story()
+
+    _run(lambda: story.edit_privacy(privacy=e.StoriesPrivacyRules.CLOSE_FRIENDS))
+    settings = calls[-1][1]["privacy_settings"]
+    assert isinstance(settings, t.StoryPrivacySettingsCloseFriends)
+
+    _run(
+        lambda: story.edit_privacy(
+            privacy=e.StoriesPrivacyRules.SELECTED_USERS,
+            allowed_users=[5, 6],
+        )
+    )
+    settings = calls[-1][1]["privacy_settings"]
+    assert isinstance(settings, t.StoryPrivacySettingsSelectedUsers)
+    assert settings.user_ids == [5, 6]
+
+
+def test_story_forward_reposts_via_send_story() -> None:
+    story, calls = _legacy_story()
+
+    _run(lambda: story.forward(chat_id=-100999, caption="repost"))
+    name, kwargs = calls[-1]
+    assert name == "send_story"
+    assert kwargs["chat_id"] == -100999
+    assert kwargs["fwd_from_id"] == 777
+    assert kwargs["fwd_from_story"] == 42
+    assert kwargs["caption"] == "repost"
+
+
+def test_story_legacy_import_path_is_the_canonical_class() -> None:
+    """The old module held a second, unreachable copy of the class."""
+    from pyrogram.types import Story as Canonical
+    from pyrogram.types.messages_and_media.story import Story as Legacy
+
+    assert Legacy is Canonical
+
+
+# --------------------------------------------------------------------------- #
+# N8: Story and invoice keyword adapters in legacy_compat.
+# --------------------------------------------------------------------------- #
+def test_get_stories_chat_id_maps_to_story_poster_chat_id() -> None:
+    out = _map("get_stories", {"chat_id": 5, "story_ids": [1]})
+    assert out == {"story_poster_chat_id": 5, "story_ids": [1]}
+
+
+def test_forward_story_legacy_source_kwargs() -> None:
+    out = _map(
+        "forward_story",
+        {"from_chat_id": 5, "from_story_id": 3, "chat_id": -100},
+    )
+    assert out == {"chat_id": -100, "story_poster_chat_id": 5, "story_id": 3}
+
+
+def test_send_story_media_and_repost_kwargs() -> None:
+    out = _map(
+        "send_story",
+        {
+            "chat_id": 5,
+            "photo": "p.png",
+            "denied_users": [9],
+            "forward_from_chat_id": 7,
+            "forward_from_story_id": 2,
+        },
+    )
+    assert out["media"] == "p.png"
+    assert out["disallowed_users"] == [9]
+    assert out["fwd_from_id"] == 7
+    assert out["fwd_from_story"] == 2
+    assert "photo" not in out
+
+
+def test_edit_story_media_privacy_and_areas_kwargs() -> None:
+    from pyrogram import enums as e
+    from pyrogram import types as t
+
+    out = _map(
+        "edit_story",
+        {
+            "chat_id": 5,
+            "story_id": 3,
+            "video": "v.mp4",
+            "media_areas": ["area"],
+            "privacy": e.StoriesPrivacyRules.CONTACTS,
+            "denied_users": [8],
+        },
+    )
+    assert isinstance(out["content"], t.InputStoryContentVideo)
+    assert out["areas"] == ["area"]
+    assert isinstance(out["privacy_settings"], t.StoryPrivacySettingsContacts)
+    assert out["privacy_settings"].except_user_ids == [8]
+    assert "media_areas" not in out
+    assert "privacy" not in out
+
+
+def test_edit_story_without_legacy_kwargs_is_untouched() -> None:
+    out = _map("edit_story", {"chat_id": 5, "story_id": 3, "caption": "c"})
+    assert out == {"chat_id": 5, "story_id": 3, "caption": "c"}
+
+
+def test_send_invoice_provider_rename_and_reply_folding() -> None:
+    out = _map(
+        "send_invoice",
+        {
+            "provider": "tok",
+            "photo_mime_type": "image/png",
+            "extended_media": "ignored",
+            "reply_to_message_id": 11,
+            "quote_text": "q",
+        },
+    )
+    assert out["provider_token"] == "tok"
+    assert "photo_mime_type" not in out
+    assert "extended_media" not in out
+    assert out["reply_parameters"].message_id == 11
+    assert out["reply_parameters"].quote == "q"
+
+
+def test_send_invoice_leaves_existing_reply_parameters_alone() -> None:
+    from pyrogram import types as t
+
+    existing = t.ReplyParameters(message_id=99)
+    out = _map(
+        "send_invoice",
+        {"reply_parameters": existing, "reply_to_message_id": 11},
+    )
+    assert out["reply_parameters"] is existing
+
+
+# --------------------------------------------------------------------------- #
+# N9: ForumTopic — the v2.7.6 copy under types.user_and_chats shadowed the
+# rebased class (star-import order), so ``types.ForumTopic`` was the old class
+# while the live client methods called the new five-argument ``_parse``.
+# --------------------------------------------------------------------------- #
+def _raw_forum_topic(**overrides):
+    from pyrogram import raw
+
+    fields = {
+        "id": 9,
+        "date": 1700000000,
+        "title": "Topic",
+        "icon_color": 7,
+        "top_message": 2,
+        "read_inbox_max_id": 3,
+        "read_outbox_max_id": 4,
+        "unread_count": 5,
+        "unread_mentions_count": 6,
+        "unread_reactions_count": 7,
+        "unread_poll_votes_count": 8,
+        "from_id": raw.types.PeerUser(user_id=5),
+        "peer": raw.types.PeerChannel(channel_id=123),
+        "notify_settings": raw.types.PeerNotifySettings(),
+    }
+    fields.update(overrides)
+    return raw.types.ForumTopic(**fields)
+
+
+def test_forum_topic_legacy_import_path_is_the_canonical_class() -> None:
+    from pyrogram.types import ForumTopic as Canonical
+    from pyrogram.types.chat_topics.forum_topic import ForumTopic as Modern
+    from pyrogram.types.user_and_chats.forum_topic import ForumTopic as Legacy
+
+    assert Canonical is Modern
+    assert Legacy is Modern
+
+
+def test_forum_topic_parse_accepts_the_legacy_single_argument_form() -> None:
+    """v2.7.6 called ``ForumTopic._parse(raw_topic)``; get_forum_topics_by_id still does."""
+    from pyrogram.types import ForumTopic
+
+    topic = ForumTopic._parse(_raw_forum_topic())
+    assert topic.message_thread_id == 9
+    assert topic.name == "Topic"
+
+
+def test_forum_topic_parse_accepts_the_current_five_argument_form() -> None:
+    from pyrogram.types import ForumTopic
+
+    topic = ForumTopic._parse(None, _raw_forum_topic(), {}, {}, {})
+    assert topic.message_thread_id == 9
+    assert topic.name == "Topic"
+
+
+def test_forum_topic_exposes_both_attribute_spellings() -> None:
+    from pyrogram.types import ForumTopic
+
+    topic = ForumTopic._parse(
+        _raw_forum_topic(closed=True, pinned=True, hidden=True, my=True, short=True)
+    )
+
+    # current names
+    assert topic.message_thread_id == 9
+    assert topic.name == "Topic"
+    assert topic.is_closed is True
+    assert topic.is_pinned is True
+    assert topic.is_hidden is True
+    assert topic.outgoing is True
+    assert topic.is_reduced_version is True
+    assert topic.last_read_inbox_message_id == 3
+    assert topic.last_read_outbox_message_id == 4
+    assert topic.unread_mention_count == 6
+    assert topic.unread_reaction_count == 7
+    assert topic.unread_poll_vote_count == 8
+
+    # v2.7.6 names resolve to the same values
+    assert topic.id == topic.message_thread_id
+    assert topic.title == topic.name
+    assert topic.closed == topic.is_closed
+    assert topic.pinned == topic.is_pinned
+    assert topic.hidden == topic.is_hidden
+    assert topic.my == topic.outgoing
+    assert topic.short == topic.is_reduced_version
+    assert topic.read_inbox_max_id == topic.last_read_inbox_message_id
+    assert topic.read_outbox_max_id == topic.last_read_outbox_message_id
+    assert topic.unread_mentions_count == topic.unread_mention_count
+    assert topic.unread_reactions_count == topic.unread_reaction_count
+    assert topic.unread_poll_votes_count == topic.unread_poll_vote_count
+    assert topic.date == topic.creation_date
+    assert topic.from_id is topic.creator
+    assert topic.icon_emoji_id == topic.icon_custom_emoji_id
+
+
+def test_forum_topic_parse_tolerates_unresolvable_creator() -> None:
+    """An empty users/chats map must not raise KeyError."""
+    from pyrogram.types import ForumTopic
+
+    topic = ForumTopic._parse(None, _raw_forum_topic(), {}, {}, {})
+    assert topic.creator is None
+    assert topic.from_id is None
+
+
+def test_forum_topic_deleted_is_reported_via_is_deleted() -> None:
+    from pyrogram import raw
+    from pyrogram.types import ForumTopic
+
+    topic = ForumTopic._parse(raw.types.ForumTopicDeleted(id=4))
+    assert topic.is_deleted is True
+    assert topic.id == 4
+
+
+def test_forum_topic_created_and_edited_expose_both_spellings() -> None:
+    from pyrogram import raw
+    from pyrogram.types import ForumTopicCreated, ForumTopicEdited
+
+    created = ForumTopicCreated._parse(
+        raw.types.MessageActionTopicCreate(
+            title="Hello", icon_color=7, icon_emoji_id=99
+        )
+    )
+    assert created.title == "Hello"
+    assert created.name == "Hello"
+    assert created.icon_emoji_id == 99
+    assert created.icon_custom_emoji_id == "99"
+
+    edited = ForumTopicEdited._parse(
+        raw.types.MessageActionTopicEdit(title="New", icon_emoji_id=5)
+    )
+    assert edited.title == "New"
+    assert edited.name == "New"
+    assert edited.icon_emoji_id == 5
+    assert edited.icon_custom_emoji_id == "5"
+
+
+# --------------------------------------------------------------------------- #
+# N10: Type attributes renamed by the rebase.
+# --------------------------------------------------------------------------- #
+def test_checklist_legacy_attribute_aliases() -> None:
+    from pyrogram.types import Checklist
+
+    checklist = Checklist(
+        title="t",
+        title_entities=["entity"],
+        others_can_add_tasks=True,
+        others_can_mark_tasks_as_done=False,
+    )
+    assert checklist.entities == ["entity"]
+    assert checklist.can_add_tasks is True
+    assert checklist.can_mark_tasks_as_done is False
+
+
+def test_checklist_task_entities_alias() -> None:
+    from pyrogram.types import ChecklistTask
+
+    task = ChecklistTask(id=1, text="x", text_entities=["entity"])
+    assert task.entities == ["entity"]
+
+
+def test_input_checklist_task_accepts_legacy_entities_kwarg() -> None:
+    from pyrogram.types import InputChecklistTask
+
+    legacy = InputChecklistTask(id=1, text="x", entities=["entity"])
+    assert legacy.text_entities == ["entity"]
+    assert legacy.entities == ["entity"]
+
+    modern = InputChecklistTask(id=1, text="x", text_entities=["entity"])
+    assert modern.entities == ["entity"]
+
+
+def test_invoice_raw_alias() -> None:
+    from pyrogram.types import Invoice
+
+    invoice = Invoice(currency="USD", is_test=True, _raw="RAW")
+    assert invoice.raw == "RAW"
+
+
+def test_location_accepts_address() -> None:
+    """v2.7.6 declared Location.address; keep the kwarg and the attribute."""
+    from pyrogram.types import Location
+
+    location = Location(longitude=1.0, latitude=2.0, address="somewhere")
+    assert location.address == "somewhere"
+    assert Location(longitude=1.0, latitude=2.0).address is None
+
+
+def test_paid_media_accepts_legacy_kwargs() -> None:
+    from pyrogram.types import PaidMedia
+
+    media = PaidMedia(stars_amount=5, extended_media=[])
+    assert media.stars_amount == 5
+    assert media.extended_media == []
+
+
+# --------------------------------------------------------------------------- #
+# N11: Constructor keyword names the rebase renamed. A v2.7.6 application that
+# builds these objects itself (tests, fixtures, custom parsers) must not
+# TypeError.
+# --------------------------------------------------------------------------- #
+def test_checklist_accepts_legacy_constructor_kwargs() -> None:
+    from pyrogram.types import Checklist
+
+    checklist = Checklist(
+        title="t",
+        entities=["entity"],
+        can_add_tasks=True,
+        can_mark_tasks_as_done=False,
+    )
+    assert checklist.title_entities == ["entity"]
+    assert checklist.others_can_add_tasks is True
+    assert checklist.others_can_mark_tasks_as_done is False
+
+
+def test_checklist_task_accepts_legacy_constructor_kwargs() -> None:
+    from pyrogram.types import ChecklistTask
+
+    task = ChecklistTask(id=1, text="x", entities=["entity"])
+    assert task.text_entities == ["entity"]
+
+
+def test_invoice_accepts_legacy_raw_kwarg() -> None:
+    from pyrogram.types import Invoice
+
+    invoice = Invoice(currency="USD", is_test=True, raw="RAW")
+    assert invoice.raw == "RAW"
+    assert invoice._raw == "RAW"
+
+
+def test_forum_topic_accepts_legacy_constructor_kwargs() -> None:
+    from pyrogram.types import ForumTopic
+
+    topic = ForumTopic(
+        id=11,
+        date=None,
+        title="Legacy",
+        icon_color=3,
+        top_message=7,
+        read_inbox_max_id=1,
+        read_outbox_max_id=2,
+        unread_count=3,
+        unread_mentions_count=4,
+        unread_reactions_count=5,
+        from_id=None,
+        my=True,
+        closed=True,
+        pinned=True,
+        short=True,
+        icon_emoji_id="42",
+    )
+    assert topic.message_thread_id == 11
+    assert topic.name == "Legacy"
+    assert topic.is_closed is True
+    assert topic.is_pinned is True
+    assert topic.outgoing is True
+    assert topic.is_reduced_version is True
+    assert topic.icon_custom_emoji_id == "42"
+    assert topic.last_read_inbox_message_id == 1
+    assert topic.last_read_outbox_message_id == 2
+    assert topic.unread_mention_count == 4
+    assert topic.unread_reaction_count == 5
+
+
+def test_forum_topic_created_accepts_either_spelling() -> None:
+    from pyrogram.types import ForumTopicCreated
+
+    legacy = ForumTopicCreated(id=1, title="T", icon_color=2, icon_emoji_id=3)
+    assert legacy.name == "T"
+    assert legacy.icon_custom_emoji_id == "3"
+
+    modern = ForumTopicCreated(name="T", icon_color=2, icon_custom_emoji_id="3")
+    assert modern.title == "T"
+    assert modern.icon_emoji_id == 3
+
+
+def test_story_accepts_legacy_constructor_kwargs() -> None:
+    from pyrogram import enums as e
+    from pyrogram import types as t
+
+    story = t.Story(
+        id=5,
+        from_user=t.Chat(id=42, type=e.ChatType.PRIVATE, username="bob"),
+        edited=True,
+        pinned=False,
+        public=True,
+        denied_users=[9],
+        media_areas=["area"],
+        raw="RAW",
+    )
+    assert story.id == 5
+    assert story.chat.id == 42
+    assert story.is_edited is True
+    assert story.is_posted_to_chat_page is False
+    assert isinstance(story.privacy_settings, t.StoryPrivacySettingsEveryone)
+    assert story.areas == ["area"]
+    assert story._raw == "RAW"
+
+    # and the read side still answers to the old names
+    assert story.from_user.id == 42
+    assert story.sender_chat is None
+    assert story.privacy is e.StoryPrivacy.PUBLIC
+    assert story.denied_users == [9]
+    assert story.media_areas == ["area"]
+    assert story.raw == "RAW"
+
+
+def test_story_legacy_privacy_booleans_build_privacy_settings() -> None:
+    from pyrogram import enums as e
+    from pyrogram import types as t
+
+    friends = t.Story(id=1, close_friends=True)
+    assert isinstance(friends.privacy_settings, t.StoryPrivacySettingsCloseFriends)
+    assert friends.privacy is e.StoryPrivacy.CLOSE_FRIENDS
+
+    contacts = t.Story(id=2, contacts=True)
+    assert isinstance(contacts.privacy_settings, t.StoryPrivacySettingsContacts)
+
+    selected = t.Story(id=3, selected_contacts=True, allowed_users=[7])
+    assert isinstance(selected.privacy_settings, t.StoryPrivacySettingsSelectedUsers)
+    assert selected.allowed_users == [7]
+
+
+def test_chat_photo_accepts_legacy_constructor_kwargs() -> None:
+    """v2.7.6 built ChatPhoto without has_animation / is_personal."""
+    from pyrogram.types import ChatPhoto
+
+    photo = ChatPhoto(
+        small_file_id="s",
+        small_photo_unique_id="su",
+        big_file_id="b",
+        big_photo_unique_id="bu",
+    )
+    assert photo.has_animation is None
+    assert photo.is_personal is None
+
+
+def test_chat_join_request_accepts_legacy_constructor_kwargs() -> None:
+    """v2.7.6 built ChatJoinRequest without user_chat_id."""
+    from datetime import datetime
+
+    from pyrogram import enums as e
+    from pyrogram import types as t
+
+    request = t.ChatJoinRequest(
+        chat=t.Chat(id=-100, type=e.ChatType.SUPERGROUP),
+        from_user=t.User(id=42),
+        date=datetime.now(),
+    )
+    # Defaults to the requesting user's id, which is what it identifies.
+    assert request.user_chat_id == 42
+
+
+def test_inline_query_result_video_accepts_legacy_thumb_url_kwarg() -> None:
+    from pyrogram.types import InlineQueryResultVideo
+
+    result = InlineQueryResultVideo(video_url="v", thumb_url="t", title="T")
+    assert result.thumbnail_url == "t"
+
+
+def test_sqlite_storage_accepts_name_only() -> None:
+    """v2.7.6 constructed SQLiteStorage(name) with no workdir."""
+    from pyrogram.storage import SQLiteStorage
+
+    storage = SQLiteStorage("legacy_session")
+    assert str(storage.database).endswith("legacy_session.session")
+
+    in_memory = SQLiteStorage("mem", in_memory=True)
+    assert in_memory.database == ":memory:"
+
+
+def test_reaction_type_write_accepts_no_client() -> None:
+    """v2.7.6 called ``reaction.write()`` with no arguments."""
+    from pyrogram import raw
+    from pyrogram.types import (
+        ReactionTypeCustomEmoji,
+        ReactionTypeEmoji,
+        ReactionTypePaid,
+    )
+
+    assert isinstance(ReactionTypeEmoji(emoji="👍").write(), raw.types.ReactionEmoji)
+    assert isinstance(
+        ReactionTypeCustomEmoji(custom_emoji_id="123").write(),
+        raw.types.ReactionCustomEmoji,
+    )
+    assert isinstance(ReactionTypePaid().write(), raw.types.ReactionPaid)
+
+
+def test_login_url_write_accepts_two_arguments() -> None:
+    """v2.7.6 called ``login_url.write(text, bot)``; ``style`` came later."""
+    from pyrogram import raw
+    from pyrogram.types import LoginUrl
+
+    button = LoginUrl(url="https://example.com").write("text", None)
+    assert isinstance(button, raw.types.InputKeyboardButtonUrlAuth)
+
+
+def test_cache_async_interface_shares_the_item_store() -> None:
+    """v2.7.6 used ``await cache.get`` / ``await cache.set``."""
+    from pyrogram.client import Cache
+
+    cache = Cache(4)
+
+    async def main() -> None:
+        await cache.set(("chat", 1), "msg")
+        assert await cache.get(("chat", 1)) == "msg"
+        assert await cache.get("missing", "fallback") == "fallback"
+        # the item interface reads and writes the same store
+        assert cache[("chat", 1)] == "msg"
+        cache[("chat", 2)] = "msg2"
+        assert await cache.get(("chat", 2)) == "msg2"
+        assert len(cache) == 2
+        assert ("chat", 2) in cache
+
+    asyncio.run(main())
+
+
+def test_cache_stays_bounded_through_both_interfaces() -> None:
+    from pyrogram.client import Cache
+
+    cache = Cache(4)
+
+    async def main() -> None:
+        for i in range(20):
+            await cache.set(i, i)
+        assert len(cache) <= cache.capacity
+
+    asyncio.run(main())

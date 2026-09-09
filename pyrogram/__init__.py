@@ -21,7 +21,7 @@
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
 __fork_name__ = "pyroblack"
-__version__ = "3.0.3"
+__version__ = "3.0.4"
 __license__ = "GNU Lesser General Public License v3.0 (LGPL-3.0)"
 __copyright__ = "#  Copyright (C) 2024-present eyMarv <https://github.com/eyMarv>"
 
@@ -48,10 +48,15 @@ from . import emoji, enums, filters, handlers, raw, types
 from .client import Client
 from .crypto.executor import get_crypto_executor
 
+# Re-add the emoji constants that the CLDR-name regeneration renamed or dropped
+# after 2.7.6. See pyrogram/emoji_compat.py.
+from .emoji_compat import install as _install_emoji_compat  # noqa: E402
+
 # Accept pyroblack <= 2.7.2 kwargs on Client/Message methods
 from .legacy_compat import install_legacy_kwargs
 from .sync import compose, idle
 
+_install_emoji_compat(emoji)
 install_legacy_kwargs()
 
 # Restore the pyroblack <= 2.7.6 ``channels.*`` forum raw constructors that the
@@ -63,3 +68,24 @@ from .raw import _v276_compat  # noqa: F401  (registers aliases on import)
 # a multi-worker pool here). Keep the public name `crypto_executor` for
 # backward compatibility with any code that imported it.
 crypto_executor = get_crypto_executor()
+
+# pyroblack <= 2.7.6 declared ``__all__`` here. Tools and applications that do
+# ``from pyrogram import *`` (or introspect ``pyrogram.__all__``) broke when the
+# rebase dropped it, so it is restored verbatim plus the names added since.
+__all__ = [
+    "Client",
+    "ContinuePropagation",
+    "StopPropagation",
+    "StopTransmission",
+    "ThreadPoolExecutor",
+    "compose",
+    "crypto_executor",
+    "emoji",
+    "enums",
+    "filters",
+    "get_crypto_executor",
+    "handlers",
+    "idle",
+    "raw",
+    "types",
+]

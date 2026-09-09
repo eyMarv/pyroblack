@@ -20,140 +20,31 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+"""Import location kept for pyroblack <= 2.7.6.
+
+``ForumTopic`` moved to :mod:`pyrogram.types.chat_topics.forum_topic` during the
+rebase. This module held a second copy of the class, and because
+``pyrogram/types/__init__.py`` star-imports ``user_and_chats`` *after*
+``chat_topics``, that copy shadowed the real one — so ``types.ForumTopic`` was
+the v2.7.6 class while :meth:`~pyrogram.Client.get_forum_topics` and
+:meth:`~pyrogram.Client.get_forum_topic` called the new five-argument
+``_parse``. Listing topics raised ``TypeError: _parse() takes 1 positional
+argument but 5 were given``.
+
+It re-exports the canonical class now. That class carries the v2.7.6 attribute
+names (``id``, ``title``, ``date``, ``closed``, ``pinned``, ``icon_emoji_id``, …)
+as read-only aliases, and its ``_parse`` accepts both the old one-argument and
+the new five-argument call forms.
+
+One behavioural difference remains: parsing a deleted topic yields a
+``ForumTopic`` with ``is_deleted=True`` rather than a separate
+:obj:`~pyrogram.types.ForumTopicDeleted`. The ``ForumTopicDeleted`` class is
+still exported, so imports keep working, but ``isinstance`` checks against it no
+longer match — test ``topic.is_deleted`` instead.
+"""
+
 from __future__ import annotations
 
-from pyrogram import raw, types
-from pyrogram.types.object import Object
+from pyrogram.types.chat_topics.forum_topic import ForumTopic
 
-
-class ForumTopic(Object):
-    # TODO
-    # notify_settings: `~pyrogram.types.PeerNotifySettings`
-    # draft: `~pyrogram.types.DraftMessage`
-    """A forum topic.
-
-    Parameters
-    ----------
-        id (``Integer``):
-            Id of the topic
-
-        date (``Integer``):
-            Date topic created
-
-        title (``String``):
-            Name of the topic
-
-        icon_color (``Integer``):
-            Color of the topic icon in RGB format
-
-        top_message (``Integer``):
-            N/A
-
-        read_inbox_max_id (``Integer``):
-            N/A
-
-        read_outbox_max_id (``Integer``):
-            N/A
-
-        unread_count (``Integer``):
-            N/A
-
-        unread_mentions_count (``Integer``):
-            N/A
-
-        unread_reactions_count (``Integer``):
-            N/A
-
-        from_id (:obj:`~pyrogram.types.PeerChannel` | :obj:`~pyrogram.types.PeerUser`):
-            Topic creator.
-
-        my (``Boolean``, *optional*):
-            N/A
-
-        closed (``Boolean``, *optional*):
-            N/A
-
-        pinned (``Boolean``, *optional*):
-            N/A
-
-        short (``Boolean``, *optional*):
-            N/A
-
-        icon_emoji_id (``Integer``, *optional*):
-            Unique identifier of the custom emoji shown as the topic icon
-
-    """
-
-    def __init__(
-        self,
-        *,
-        id: int,
-        date: int,
-        title: str,
-        icon_color: int,
-        top_message: int,
-        read_inbox_max_id: int,
-        read_outbox_max_id: int,
-        unread_count: int,
-        unread_mentions_count: int,
-        unread_reactions_count: int,
-        from_id: types.PeerChannel | types.PeerUser,
-        # notify_settings: "types.PeerNotifySettings", //todo
-        my: bool | None = None,
-        closed: bool | None = None,
-        pinned: bool | None = None,
-        short: bool | None = None,
-        icon_emoji_id: int | None = None,
-        # draft: "types.DraftMessage" = None //todo
-    ) -> None:
-        super().__init__()
-
-        self.id = id
-        self.date = date
-        self.title = title
-        self.icon_color = icon_color
-        self.top_message = top_message
-        self.read_inbox_max_id = read_inbox_max_id
-        self.read_outbox_max_id = read_outbox_max_id
-        self.unread_count = unread_count
-        self.unread_mentions_count = unread_mentions_count
-        self.unread_reactions_count = unread_reactions_count
-        self.from_id = from_id
-        # self.notify_settings = notify_settings //todo
-        self.my = my
-        self.closed = closed
-        self.pinned = pinned
-        self.short = short
-        self.icon_emoji_id = icon_emoji_id
-        # self.draft = draft //todo
-
-    @staticmethod
-    def _parse(forum_topic: raw.types.ForumTopic) -> ForumTopic:
-        if isinstance(forum_topic, raw.types.ForumTopicDeleted):
-            return types.ForumTopicDeleted._parse(forum_topic)
-        from_id = forum_topic.from_id
-        if isinstance(from_id, raw.types.PeerChannel):
-            peer = types.PeerChannel._parse(from_id)
-        if isinstance(from_id, raw.types.PeerUser):
-            peer = types.PeerUser._parse(from_id)
-
-        return ForumTopic(
-            id=getattr(forum_topic, "id", None),
-            date=getattr(forum_topic, "date", None),
-            title=getattr(forum_topic, "title", None),
-            icon_color=getattr(forum_topic, "icon_color", None),
-            top_message=getattr(forum_topic, "top_message", None),
-            read_inbox_max_id=getattr(forum_topic, "read_inbox_max_id", None),
-            read_outbox_max_id=getattr(forum_topic, "read_outbox_max_id", None),
-            unread_count=getattr(forum_topic, "unread_count", None),
-            unread_mentions_count=getattr(forum_topic, "unread_mentions_count", None),
-            unread_reactions_count=getattr(forum_topic, "unread_reactions_count", None),
-            from_id=peer,
-            # notify_settings=None, //todo
-            my=getattr(forum_topic, "my", None),
-            closed=getattr(forum_topic, "closed", None),
-            pinned=getattr(forum_topic, "pinned", None),
-            short=getattr(forum_topic, "short", None),
-            icon_emoji_id=getattr(forum_topic, "icon_emoji_id", None),
-            # draft=None //todo
-        )
+__all__ = ["ForumTopic"]

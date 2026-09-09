@@ -20,6 +20,22 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyroblack.  If not, see <http://www.gnu.org/licenses/>.
 
+from . import (
+    authorization,
+    bots_and_keyboards,
+    business,
+    chat_drafts,
+    chat_topics,
+    inline_mode,
+    input_media,
+    input_message_content,
+    input_paid_media,
+    input_privacy_rule,
+    message_origin,
+    messages_and_media,
+    stories,
+    user_and_chats,
+)
 from .authorization import *
 from .bots_and_keyboards import *
 from .business import *
@@ -36,5 +52,37 @@ from .messages_and_media import *
 from .object import Object
 from .pyromod import Identifier, Listener
 from .stories import *
-from .update import *
+from .update import Update
 from .user_and_chats import *
+
+# pyroblack <= 2.7.6 published ``__all__`` here, assembled from each
+# sub-package. Restored so ``from pyrogram.types import *`` and tooling that
+# reads ``pyrogram.types.__all__`` keep working.
+__all__ = [
+    "Identifier",
+    "List",
+    "Listener",
+    "Object",
+    "Update",
+]
+__all__ += [
+    *authorization.__all__,
+    *bots_and_keyboards.__all__,
+    *business.__all__,
+    *chat_drafts.__all__,
+    *chat_topics.__all__,
+    *inline_mode.__all__,
+    *input_media.__all__,
+    *input_message_content.__all__,
+    *input_paid_media.__all__,
+    *input_privacy_rule.__all__,
+    *message_origin.__all__,
+    *messages_and_media.__all__,
+    *stories.__all__,
+    *user_and_chats.__all__,
+]
+# Several names are declared by more than one sub-package (the later star-import
+# wins at runtime); keep ``__all__`` free of duplicates. Note that ``list`` is
+# shadowed in this namespace by the ``pyrogram.types.list`` submodule, so the
+# builtin is reached through ``dict.fromkeys(...).keys()`` instead.
+__all__ = [*dict.fromkeys(__all__)]

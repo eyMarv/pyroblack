@@ -98,6 +98,23 @@ BEGIN
 END;
 """
 
+# pyroblack <= 2.7.6 kept the usernames table in its own script so migrations
+# could re-run it. It is folded into SCHEMA above now, but the name is still
+# imported by third-party storage backends, so keep it as a standalone,
+# idempotent script.
+# language=SQLite
+UNAME_SCHEMA = """
+CREATE TABLE IF NOT EXISTS usernames
+(
+    id       INTEGER,
+    username TEXT,
+    FOREIGN KEY (id) REFERENCES peers(id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_usernames_id ON usernames (id);
+CREATE INDEX IF NOT EXISTS idx_usernames_username ON usernames (username);
+"""
+
 
 def get_input_peer(peer_id: int, access_hash: int, peer_type: str):
     if peer_type in ["user", "bot"]:
@@ -129,7 +146,11 @@ class SQLiteStorage(Storage):
     def __init__(
         self,
         name: str,
-        workdir: Path,
+        # pyroblack <= 2.7.6 took only ``name`` here and resolved the directory
+        # itself; ``workdir`` is defaulted so that call still binds. When it is
+        # omitted the session file lands in the current working directory, which
+        # is what the old MemoryStorage/FileStorage split effectively did.
+        workdir: Path | None = None,
         session_string: str | None = None,
         is_telethon_string: bool | None = False,
         in_memory: bool | None = False,
@@ -153,7 +174,7 @@ class SQLiteStorage(Storage):
         if self.in_memory:
             self.database = ":memory:"
         else:
-            self.database = workdir / (self.name + self.FILE_EXTENSION)
+            self.database = Path(workdir or ".") / (self.name + self.FILE_EXTENSION)
 
     @property
     def executor(self):
