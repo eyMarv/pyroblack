@@ -52,6 +52,8 @@ from pyrogram.errors import (
     CDNFileHashMismatch,
     ChannelInvalid,
     ChannelPrivate,
+    FloodPremiumWait,
+    FloodWait,
     PersistentTimestampInvalid,
     PersistentTimestampOutdated,
     SessionPasswordNeeded,
@@ -71,6 +73,7 @@ from .file_id import FileId, FileType, ThumbnailSource
 from .mime_types import mime_types
 from .parser import Parser
 from .session.internals import MsgId
+from .streaming import get_download_budget
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator
@@ -281,7 +284,11 @@ class Client(Methods):
     # model. One concurrent transmission left the media session pool idle
     # under multi-file bots. Callers can still lower it via the constructor.
     MAX_CONCURRENT_TRANSMISSIONS = 16
-    DOWNLOAD_POOL_SIZE = 4
+    # Parallel GetFile workers per download (each holds ~1 chunk in
+    # flight). Per-stream ceiling ≈ POOL_SIZE x chunk_size / RTT:
+    # 8 x 1 MiB @50ms ≈ 160 MiB/s, @80ms ≈ 100 MiB/s. Bounded globally
+    # by the process download budget (streaming.py).
+    DOWNLOAD_POOL_SIZE = 8
     MAX_CACHE_SIZE = 10000
 
     # pyroblack <= 2.7.6 named these MAX_MESSAGE_CACHE_SIZE / MAX_DOWNLOAD_WORKERS
@@ -343,6 +350,7 @@ class Client(Methods):
         connection_factory: type[Connection] = Connection,
         protocol_factory: type[TCP] = TCPAbridged,
         connection_mode: int = 1,
+        download_budget_bytes: int | None = None,
         _un_docu_gnihts: list | None = None,
     ) -> None:
         if _un_docu_gnihts is None:
@@ -402,6 +410,11 @@ class Client(Methods):
         # pyroblack <= 2.7.6 stored max_download_workers; download parallelism is now
         # pool-driven. Stored for attribute compatibility, not read internally.
         self.max_download_workers = max_download_workers
+
+        # Process-wide cap on in-flight download bytes (shared by every client
+        # in the process). Downloads queue for budget instead of growing RSS.
+        if download_budget_bytes is not None:
+            get_download_budget().set_total(download_budget_bytes)
 
         self.executor = ThreadPoolExecutor(self.workers, thread_name_prefix="Handler")
 
@@ -1303,7 +1316,16 @@ class Client(Methods):
         offset: int = 0,
         progress: Callable | None = None,
         progress_args: tuple = (),
+        chunk_size: int = 1024 * 1024,
     ) -> AsyncGenerator[bytes, None] | None:
+        if (
+            chunk_size <= 0
+            or chunk_size > 1024 * 1024
+            or chunk_size % 4096 != 0
+        ):
+            msg = "chunk_size must be a multiple of 4096 within (0, 1 MiB]"
+            raise ValueError(msg)
+
         async with self.get_file_semaphore:
             file_type = file_id.file_type
 
@@ -1345,7 +1367,6 @@ class Client(Methods):
 
             current = 0
             total = abs(limit) or (1 << 31) - 1
-            chunk_size = 1024 * 1024
             offset_bytes = abs(offset) * chunk_size
             _last_progress_time = 0.0
 
@@ -1376,12 +1397,55 @@ class Client(Methods):
 
                 asyncio.ensure_future(report())
 
+            # In-flight accounting: every GetFile response materializes a
+            # full chunk in RAM, so reservations (chunk_size each) are taken
+            # from the process-wide budget before fetching and returned once
+            # the chunk leaves our hands. `held` tracks outstanding
+            # reservations so the finally below can always balance the books.
+            budget = get_download_budget()
+            held = [0]
+
+            async def _acq(n: int) -> None:
+                await budget.acquire(n)
+                held[0] += n
+
+            async def _rel(n: int) -> None:
+                # Release first, decrement after: a cancel between the two
+                # can only over-count `held` (the outer finally then
+                # releases a little extra) rather than leak a reservation.
+                try:
+                    await budget.release(n)
+                finally:
+                    held[0] -= n
+
+            async def _acq_chunk(off: int, n: int) -> bool:
+                """Reserve ``n`` budget bytes for fetching ``off``.
+
+                Returns False without reserving when ``off`` is the chunk
+                the consumer is currently waiting for — the head-of-line
+                bypass. Without it, a full budget held by out-of-order
+                buffered chunks starves the one fetch that can unblock
+                the stream: guaranteed deadlock. Re-checked continuously
+                while waiting (an offset may *become* needed mid-wait).
+                """
+                while off != offset_bytes:
+                    try:
+                        await asyncio.wait_for(
+                            budget.acquire(n), timeout=0.25
+                        )
+                    except asyncio.TimeoutError:
+                        continue
+                    held[0] += n
+                    return True
+                return False
+
             try:
                 # Reuse the persistent media pool (same pool as uploads) so a
                 # download doesn't pay a full TCP+auth handshake every time.
                 pool = await self._get_media_session_pool(dc_id, 1)
                 session = pool[0]
 
+                await _acq(chunk_size)
                 r = await session.invoke(
                     raw.functions.upload.GetFile(
                         location=location,
@@ -1394,6 +1458,7 @@ class Client(Methods):
                 if isinstance(r, raw.types.upload.File):
                     first_chunk = r.bytes
                     yield first_chunk
+                    await _rel(chunk_size)
                     current += 1
                     offset_bytes += chunk_size
                     await _report_progress(
@@ -1414,6 +1479,7 @@ class Client(Methods):
                     # callers / photos without a size field).
                     if file_size <= 0:
                         while current < total:
+                            await _acq(chunk_size)
                             r = await session.invoke(
                                 raw.functions.upload.GetFile(
                                     location=location,
@@ -1426,6 +1492,7 @@ class Client(Methods):
                             if not chunk:
                                 return
                             yield chunk
+                            await _rel(chunk_size)
                             current += 1
                             offset_bytes += chunk_size
                             await _report_progress(
@@ -1466,16 +1533,47 @@ class Client(Methods):
                             except asyncio.QueueEmpty:
                                 return
 
-                            rr = await s.invoke(
-                                raw.functions.upload.GetFile(
-                                    location=location,
-                                    offset=off,
-                                    limit=chunk_size,
-                                ),
-                                sleep_threshold=30,
-                            )
-                            chunk_data = rr.bytes
-                            received[off] = chunk_data
+                            # Budget-gated fetch with FloodWait retry. Waits
+                            # longer than sleep_threshold surface here; the
+                            # reservation is released for the sleep so other
+                            # streams aren't starved by our rate-limit pause.
+                            chunk_data = None
+                            budgeted = await _acq_chunk(off, chunk_size)
+                            for attempt in range(5):
+                                try:
+                                    rr = await s.invoke(
+                                        raw.functions.upload.GetFile(
+                                            location=location,
+                                            offset=off,
+                                            limit=chunk_size,
+                                        ),
+                                        sleep_threshold=30,
+                                    )
+                                    chunk_data = rr.bytes
+                                    break
+                                except (FloodWait, FloodPremiumWait) as e:
+                                    if budgeted:
+                                        await _rel(chunk_size)
+                                        budgeted = False
+                                    if attempt == 4:
+                                        raise
+                                    wait = min(e.value, 300)
+                                    log.warning(
+                                        f"[{self.name}] FloodWait {wait}s on "
+                                        f"GetFile (offset {off}), retry "
+                                        f"{attempt + 1}/4"
+                                    )
+                                    await asyncio.sleep(wait)
+                                    budgeted = await _acq_chunk(
+                                        off, chunk_size
+                                    )
+                                except Exception:
+                                    if budgeted:
+                                        await _rel(chunk_size)
+                                        budgeted = False
+                                    raise
+
+                            received[off] = (chunk_data, budgeted)
                             data_ready.set()
 
                             if len(chunk_data) < chunk_size:
@@ -1501,7 +1599,9 @@ class Client(Methods):
                                 await data_ready.wait()
                                 data_ready.clear()
 
-                            chunk = received.pop(offset_bytes)
+                            chunk, budgeted = received.pop(offset_bytes)
+                            if budgeted:
+                                await _rel(chunk_size)
                             yield chunk
                             current += 1
                             offset_bytes += chunk_size
@@ -1535,6 +1635,7 @@ class Client(Methods):
                         await cdn_session.start()
 
                         while True:
+                            await _acq(chunk_size)
                             r2 = await cdn_session.invoke(
                                 raw.functions.upload.GetCdnFile(
                                     file_token=r.file_token,
@@ -1595,6 +1696,7 @@ class Client(Methods):
                             )
 
                             yield decrypted_chunk
+                            await _rel(chunk_size)
 
                             current += 1
                             offset_bytes += chunk_size
@@ -1616,6 +1718,96 @@ class Client(Methods):
                 raise
             except Exception as e:
                 log.exception(e)
+            finally:
+                # Balance any reservations still held — buffered chunks never
+                # consumed, a fetch in flight at GeneratorExit, etc.
+                if held[0] > 0:
+                    with contextlib.suppress(Exception):
+                        await budget.release(held[0])
+
+    async def iter_download(
+        self,
+        file_id: FileId,
+        offset: int = 0,
+        limit: int = 0,
+        file_size: int = 0,
+        chunk_size: int = 1024 * 1024,
+    ) -> AsyncGenerator[bytes, None]:
+        """Stream a file over an exact byte range.
+
+        Unlike :meth:`get_file` — which works in whole ``chunk_size`` units —
+        this accepts byte ``offset``/``limit`` and yields exactly the bytes
+        requested, with range edges trimmed. Offsets are aligned internally
+        to the 4 KiB grid the Telegram API requires.
+
+        Parameters
+        ----------
+            file_id (:obj:`~pyrogram.file_id.FileId`):
+                Decoded file id object (``FileId.decode(...)``).
+
+            offset (``int``, *optional*):
+                Byte offset to start streaming from. Defaults to 0.
+
+            limit (``int``, *optional*):
+                Number of bytes to stream. Defaults to 0 (until EOF).
+
+            file_size (``int``, *optional*):
+                Total file size in bytes, used to clamp ``limit``.
+                Defaults to 0 (unknown).
+
+            chunk_size (``int``, *optional*):
+                Size of each internal request in bytes. Must be a multiple
+                of 4096 and at most 1 MiB. Defaults to 1 MiB.
+
+        Yields
+        ------
+            ``memoryview`` slices over the requested byte range.
+        """
+        if offset < 0:
+            msg = "offset must be >= 0"
+            raise ValueError(msg)
+        if limit < 0:
+            msg = "limit must be >= 0"
+            raise ValueError(msg)
+
+        base = offset - (offset % chunk_size)
+        first_cut = offset - base
+
+        end = offset + limit if limit else None
+        if file_size:
+            end = min(end, file_size) if end is not None else file_size
+
+        if end is not None and end <= offset:
+            return
+
+        n_chunks = (
+            math.ceil((end - base) / chunk_size) if end is not None else 0
+        )
+        remaining = (end - offset) if end is not None else None
+
+        async for chunk in self.get_file(
+            file_id,
+            file_size=file_size,
+            limit=n_chunks,
+            offset=base // chunk_size,
+            chunk_size=chunk_size,
+        ):
+            view = memoryview(chunk)
+            if first_cut:
+                if len(view) <= first_cut:
+                    first_cut -= len(view)
+                    continue
+                view = view[first_cut:]
+                first_cut = 0
+            if remaining is not None and len(view) > remaining:
+                view = view[:remaining]
+            if not len(view):
+                break
+            yield view
+            if remaining is not None:
+                remaining -= len(view)
+                if remaining <= 0:
+                    return
 
     def guess_mime_type(self, filename: str) -> str | None:
         return self.mimetypes.guess_type(filename)[0]
